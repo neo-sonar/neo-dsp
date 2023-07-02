@@ -11,8 +11,8 @@ PluginProcessor::PluginProcessor()
                          .withInput("Input", juce::AudioChannelSet::stereo(), true)
                          .withOutput("Output", juce::AudioChannelSet::stereo(), true))
     , _valueTree{*this, nullptr, juce::Identifier("PerceptualConvolution"), mc::createParameters()}
-    // , _inGain{*mc::getFloatParameter(_valueTree, mc::ParamID::inGain)}
-    // , _outGain{*mc::getFloatParameter(_valueTree, mc::ParamID::outGain)}
+// , _inGain{*mc::getFloatParameter(_valueTree, mc::ParamID::inGain)}
+// , _outGain{*mc::getFloatParameter(_valueTree, mc::ParamID::outGain)}
 {
 }
 
