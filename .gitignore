@@ -1,0 +1,12 @@
+.atom
+.idea
+.vscode
+.vs
+
+/build*
+cmake-build-*
+
+.DS_Store
+*.pdf
+/venv
+.env
