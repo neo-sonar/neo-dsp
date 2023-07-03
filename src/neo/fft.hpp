@@ -3,6 +3,11 @@
 #include <juce_dsp/juce_dsp.h>
 #include <juce_graphics/juce_graphics.h>
 
+JUCE_BEGIN_IGNORE_WARNINGS_GCC_LIKE("-Wextra-semi")
+#include <mdspan/mdarray.hpp>
+#include <mdspan/mdspan.hpp>
+JUCE_END_IGNORE_WARNINGS_GCC_LIKE
+
 #include <span>
 
 namespace neo
@@ -11,6 +16,8 @@ namespace neo
 inline auto stft(juce::AudioBuffer<float> const& buffer, int windowSize)
     -> std::vector<std::vector<std::complex<float>>>
 {
+    auto md = Kokkos::mdspan<std::complex<float>, Kokkos::dextents<size_t, 2>>{};
+
     auto order  = juce::roundToInt(std::log2(windowSize));
     auto fft    = juce::dsp::FFT{order};
     auto window = juce::dsp::WindowingFunction<float>{size_t(windowSize), juce::dsp::WindowingFunction<float>::hann};

@@ -20,6 +20,10 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+include(FetchContent)
+FetchContent_Declare(mdspan_repo GIT_REPOSITORY "https://github.com/kokkos/mdspan" GIT_TAG "stable")
+FetchContent_MakeAvailable(mdspan_repo)
+
 add_subdirectory(3rd_party/JUCE)
 set_directory_properties(PROPERTIES JUCE_COMPANY_COPYRIGHT "Copyright 2023 neo-sonar. All rights reserved.")
 set_directory_properties(PROPERTIES JUCE_COMPANY_NAME "neo-sonar")
@@ -75,6 +79,7 @@ target_link_libraries(PerceptualConvolution
         juce::juce_dsp
 
     PUBLIC
+        std::mdspan
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
