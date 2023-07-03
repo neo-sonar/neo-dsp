@@ -49,7 +49,7 @@ static auto summary(juce::AudioBuffer<float> const& buffer, double sampleRate, f
     auto const max_coeff_db   = juce::Decibels::gainToDecibels(minmax_coeff.second, min_db);
     auto const coeff_range_db = std::abs(min_coeff_db) - std::abs(max_coeff_db);
 
-    auto const num_coeff = frames.size() * frames[0].size();
+    auto const num_coeff = frames.size();
     auto const below_40  = count_below_threshold(frames, -40.0F);
     auto const below_50  = count_below_threshold(frames, -50.0F);
     auto const below_60  = count_below_threshold(frames, -60.0F);
@@ -64,7 +64,7 @@ static auto summary(juce::AudioBuffer<float> const& buffer, double sampleRate, f
         copy.getNumSamples(), copy.getNumChannels(), sampleRate,
         juce::Decibels::gainToDecibels(std::max(std::abs(minmax.getStart()), std::abs(minmax.getEnd())), min_db),
         juce::Decibels::gainToDecibels(std::max(std::abs(minmax_n.getStart()), std::abs(minmax_n.getEnd())), min_db),
-        frames.size(), min_coeff_db, max_coeff_db, coeff_range_db, num_coeff, below_40,
+        frames.extent(0), min_coeff_db, max_coeff_db, coeff_range_db, num_coeff, below_40,
         double(below_40) / double(num_coeff) * 100.0, below_50, double(below_50) / double(num_coeff) * 100.0, below_60,
         double(below_60) / double(num_coeff) * 100.0, below_70, double(below_70) / double(num_coeff) * 100.0, below_80,
         double(below_80) / double(num_coeff) * 100.0, below_90, double(below_90) / double(num_coeff) * 100.0);

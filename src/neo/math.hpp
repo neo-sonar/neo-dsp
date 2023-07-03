@@ -4,11 +4,18 @@
 
 #include <algorithm>
 #include <cmath>
+#include <concepts>
 #include <numeric>
 #include <span>
 
 namespace neo
 {
+
+template<std::integral T>
+[[nodiscard]] constexpr auto div_round(T x, T y) noexcept -> T
+{
+    return (x + y - 1) / y;
+}
 
 inline auto peak_normalization_factor(std::span<float const> buf) -> float
 {
