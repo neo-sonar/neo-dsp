@@ -68,10 +68,10 @@ inline auto normalized_power_spectrum_image(std::span<std::vector<std::complex<f
             img.setPixelAt(c, r, juce::Colours::black);
 
             auto const bin = std::abs(frames[size_t(r)][size_t(c)]);
-            auto const dB  = std::max(juce::Decibels::gainToDecibels(bin * bin * scale), -100.0F);
+            auto const dB  = std::max(juce::Decibels::gainToDecibels(bin * bin * scale, -144.0F), -144.0F);
             if (dB < threshold)
             {
-                auto level = juce::jmap(dB, -100.0F, threshold, 0.0F, 1.0F);
+                auto level = juce::jmap(dB, -144.0F, threshold, 0.0F, 1.0F);
                 img.setPixelAt(c, r, juce::Colours::white.darker(level));
                 // img.setPixelAt(c, r, juce::Colour::fromHSV(level, 1.0F, level, 1.0F));
             }

@@ -20,8 +20,10 @@ private:
     auto openFile() -> void;
 
     juce::AudioFormatManager _formats;
+    juce::AudioBuffer<float> _impulse;
 
     juce::TextButton _openFile{"Open File"};
+    juce::Slider _threshold{juce::Slider::LinearHorizontal, juce::Slider::TextBoxRight};
     juce::TextEditor _fileInfo{};
     juce::ImageComponent _image{};
 

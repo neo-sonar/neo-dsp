@@ -5,8 +5,8 @@
 namespace neo
 {
 
-inline auto resampleImpulseResponse(juce::AudioBuffer<float> const& buf, double const srcSampleRate,
-                                    double const destSampleRate) -> juce::AudioBuffer<float>
+inline auto resample(juce::AudioBuffer<float> const& buf, double const srcSampleRate, double const destSampleRate)
+    -> juce::AudioBuffer<float>
 {
     if (srcSampleRate == destSampleRate) return buf;
 
