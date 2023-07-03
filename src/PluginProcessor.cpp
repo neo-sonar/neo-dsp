@@ -6,6 +6,9 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
+namespace neo
+{
+
 PluginProcessor::PluginProcessor()
     : AudioProcessor(BusesProperties()
                          .withInput("Input", juce::AudioChannelSet::stereo(), true)
@@ -116,5 +119,7 @@ auto PluginProcessor::setStateInformation(void const* data, int sizeInBytes) -> 
 auto PluginProcessor::getState() noexcept -> juce::AudioProcessorValueTreeState& { return _valueTree; }
 auto PluginProcessor::getState() const noexcept -> juce::AudioProcessorValueTreeState const& { return _valueTree; }
 
+}  // namespace neo
+
 // This creates new instances of the plugin..
-auto JUCE_CALLTYPE createPluginFilter() -> juce::AudioProcessor* { return new PluginProcessor(); }
+auto JUCE_CALLTYPE createPluginFilter() -> juce::AudioProcessor* { return new neo::PluginProcessor{}; }

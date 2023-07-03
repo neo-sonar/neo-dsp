@@ -1,8 +1,12 @@
 #pragma once
 
+#include "PluginProcessor.hpp"
+
+#include <juce_audio_formats/juce_audio_formats.h>
 #include <juce_gui_extra/juce_gui_extra.h>
 
-#include "PluginProcessor.hpp"
+namespace neo
+{
 
 struct PluginEditor final : juce::AudioProcessorEditor
 {
@@ -13,5 +17,16 @@ struct PluginEditor final : juce::AudioProcessorEditor
     auto resized() -> void override;
 
 private:
+    auto openFile() -> void;
+
+    juce::AudioFormatManager _formats;
+
+    juce::TextButton _openFile{"Open File"};
+    juce::TextEditor _fileInfo{};
+    juce::ImageComponent _image{};
+
+    std::unique_ptr<juce::FileChooser> _fileChooser{nullptr};
     juce::SharedResourcePointer<juce::TooltipWindow> _tooltipWindow;
 };
+
+}  // namespace neo

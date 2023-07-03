@@ -5,6 +5,8 @@
 #include <juce_dsp/juce_dsp.h>
 #include <juce_gui_extra/juce_gui_extra.h>
 
+namespace neo
+{
 struct PluginProcessor final
     : juce::AudioProcessor
     , juce::AudioProcessorValueTreeState::Listener
@@ -50,3 +52,5 @@ private:
     // juce::AudioParameterFloat& _inGain;
     // juce::AudioParameterFloat& _outGain;
 };
+
+}  // namespace neo
