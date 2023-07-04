@@ -14,7 +14,6 @@ namespace neo
 
 static auto loadAndResample(juce::AudioFormatManager& formats, juce::File const& file) -> juce::AudioBuffer<float>
 {
-
     auto reader = std::unique_ptr<juce::AudioFormatReader>{formats.createReaderFor(file.createInputStream())};
     if (reader == nullptr) { return {}; }
 
@@ -28,50 +27,6 @@ static auto loadAndResample(juce::AudioFormatManager& formats, juce::File const&
     return buffer;
 }
 
-static auto summary(juce::AudioBuffer<float> const& buffer, double sampleRate, float threshold)
-    -> std::pair<std::string, juce::Image>
-{
-    auto const min_db = std::min(-100.0F, threshold);
-    if (buffer.getNumSamples() == 0) { return {}; }
-
-    auto copy         = buffer;
-    auto const block  = juce::dsp::AudioBlock<float>{copy};
-    auto const minmax = block.findMinAndMax();
-
-    neo::juce_normalization(copy);
-    // neo::peak_normalization(std::span<float>{copy.getWritePointer(0), size_t(copy.getNumSamples())});
-
-    auto const minmax_n = block.findMinAndMax();
-    auto const frames   = stft(copy, 1024);
-
-    auto const minmax_coeff   = minmax_bin(frames);
-    auto const min_coeff_db   = juce::Decibels::gainToDecibels(minmax_coeff.first, min_db);
-    auto const max_coeff_db   = juce::Decibels::gainToDecibels(minmax_coeff.second, min_db);
-    auto const coeff_range_db = std::abs(min_coeff_db) - std::abs(max_coeff_db);
-
-    auto const num_coeff = frames.size();
-    auto const below_40  = count_below_threshold(frames, -40.0F);
-    auto const below_50  = count_below_threshold(frames, -50.0F);
-    auto const below_60  = count_below_threshold(frames, -60.0F);
-    auto const below_70  = count_below_threshold(frames, -70.0F);
-    auto const below_80  = count_below_threshold(frames, -80.0F);
-    auto const below_90  = count_below_threshold(frames, -90.0F);
-
-    auto const str = std::format(
-        "length: {}\nch: {}\nsr: {}\npeak: {}\nnorm_peak: {}\nframes: {}\ncoeff_min: {}\ncoeff_max: "
-        "{}\nrange: {}\ncoeffs: {}\nbelow(-40dB): {} ({:.2f}%)\nbelow(-50dB): {} ({:.2f}%)\nbelow(-60dB): {} "
-        "({:.2f}%)\nbelow(-70dB): {} ({:.2f}%)\nbelow(-80dB): {} ({:.2f}%)\nbelow(-90dB): {} ({:.2f}%)",
-        copy.getNumSamples(), copy.getNumChannels(), sampleRate,
-        juce::Decibels::gainToDecibels(std::max(std::abs(minmax.getStart()), std::abs(minmax.getEnd())), min_db),
-        juce::Decibels::gainToDecibels(std::max(std::abs(minmax_n.getStart()), std::abs(minmax_n.getEnd())), min_db),
-        frames.extent(0), min_coeff_db, max_coeff_db, coeff_range_db, num_coeff, below_40,
-        double(below_40) / double(num_coeff) * 100.0, below_50, double(below_50) / double(num_coeff) * 100.0, below_60,
-        double(below_60) / double(num_coeff) * 100.0, below_70, double(below_70) / double(num_coeff) * 100.0, below_80,
-        double(below_80) / double(num_coeff) * 100.0, below_90, double(below_90) / double(num_coeff) * 100.0);
-
-    return std::make_pair(str, normalized_power_spectrum_image(frames, threshold));
-}
-
 PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 {
     _formats.registerBasicFormats();
@@ -81,7 +36,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     _threshold.setValue(-90.0, juce::dontSendNotification);
     _threshold.onDragEnd = [this]
     {
-        auto img = summary(_impulse, 44'100.0, static_cast<float>(_threshold.getValue())).second;
+        auto img = powerSpectrumImage(_impulse, static_cast<float>(_threshold.getValue()));
         _image.setImage(img);
     };
 
@@ -132,9 +87,11 @@ auto PluginEditor::openFile() -> void
 
         _impulse = loadAndResample(_formats, file);
 
-        auto s = summary(_impulse, 44'100.0, static_cast<float>(_threshold.getValue()));
-        _fileInfo.setText(std::format("{}:\n{}\n\n", filename.toStdString(), s.first));
-        _image.setImage(s.second);
+        auto img = powerSpectrumImage(_impulse, static_cast<float>(_threshold.getValue()));
+        _image.setImage(img);
+
+        _fileInfo.setText(filename + " (" + juce::String(_impulse.getNumSamples()) + ")");
+
         repaint();
     };
 
