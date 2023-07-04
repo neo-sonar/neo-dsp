@@ -36,19 +36,21 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     _threshold.setValue(-90.0, juce::dontSendNotification);
     _threshold.onDragEnd = [this]
     {
-        auto img = powerSpectrumImage(_impulse, static_cast<float>(_threshold.getValue()));
-        _image.setImage(img);
+        auto img = powerSpectrumImage(_spectrum, static_cast<float>(_threshold.getValue()));
+        _spectogramImage.setImage(img);
     };
 
     _fileInfo.setReadOnly(true);
     _fileInfo.setMultiLine(true);
-    _image.setImagePlacement(juce::RectanglePlacement::centred);
+    _spectogramImage.setImagePlacement(juce::RectanglePlacement::centred);
+    _histogramImage.setImagePlacement(juce::RectanglePlacement::centred);
     _tooltipWindow->setMillisecondsBeforeTipAppears(750);
 
     addAndMakeVisible(_openFile);
     addAndMakeVisible(_threshold);
     addAndMakeVisible(_fileInfo);
-    addAndMakeVisible(_image);
+    addAndMakeVisible(_spectogramImage);
+    addAndMakeVisible(_histogramImage);
 
     setResizable(true, true);
     setSize(600, 400);
@@ -69,8 +71,9 @@ auto PluginEditor::resized() -> void
     _openFile.setBounds(controls.removeFromLeft(controls.proportionOfWidth(0.5)));
     _threshold.setBounds(controls);
 
-    _fileInfo.setBounds(bounds.removeFromLeft(bounds.proportionOfWidth(0.25)));
-    _image.setBounds(bounds);
+    _fileInfo.setBounds(bounds.removeFromLeft(bounds.proportionOfWidth(0.15)));
+    _spectogramImage.setBounds(bounds.removeFromLeft(bounds.proportionOfWidth(0.60)));
+    _histogramImage.setBounds(bounds.reduced(4));
 }
 
 auto PluginEditor::openFile() -> void
@@ -85,10 +88,11 @@ auto PluginEditor::openFile() -> void
         auto const file     = chooser.getResult();
         auto const filename = file.getFileNameWithoutExtension();
 
-        _impulse = loadAndResample(_formats, file);
+        _impulse  = loadAndResample(_formats, file);
+        _spectrum = stft(_impulse, 1024);
 
-        auto img = powerSpectrumImage(_impulse, static_cast<float>(_threshold.getValue()));
-        _image.setImage(img);
+        _spectogramImage.setImage(powerSpectrumImage(_spectrum, static_cast<float>(_threshold.getValue())));
+        _histogramImage.setImage(powerHistogramImage(_spectrum));
 
         _fileInfo.setText(filename + " (" + juce::String(_impulse.getNumSamples()) + ")");
 

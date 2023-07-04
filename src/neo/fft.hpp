@@ -16,4 +16,10 @@ namespace neo
 
 [[nodiscard]] auto powerSpectrumImage(juce::AudioBuffer<float> const& buffer, float threshold) -> juce::Image;
 
+[[nodiscard]] auto powerHistogram(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> frames)
+    -> std::vector<int>;
+
+[[nodiscard]] auto
+powerHistogramImage(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> spectogram) -> juce::Image;
+
 }  // namespace neo

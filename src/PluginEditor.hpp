@@ -2,6 +2,8 @@
 
 #include "PluginProcessor.hpp"
 
+#include "neo/mdspan.hpp"
+
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <juce_gui_extra/juce_gui_extra.h>
 
@@ -21,11 +23,13 @@ private:
 
     juce::AudioFormatManager _formats;
     juce::AudioBuffer<float> _impulse;
+    KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _spectrum;
 
     juce::TextButton _openFile{"Open File"};
     juce::Slider _threshold{juce::Slider::LinearHorizontal, juce::Slider::TextBoxRight};
     juce::TextEditor _fileInfo{};
-    juce::ImageComponent _image{};
+    juce::ImageComponent _spectogramImage{};
+    juce::ImageComponent _histogramImage{};
 
     std::unique_ptr<juce::FileChooser> _fileChooser{nullptr};
     juce::SharedResourcePointer<juce::TooltipWindow> _tooltipWindow;
