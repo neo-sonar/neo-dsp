@@ -3,26 +3,45 @@
 namespace neo::fft
 {
 
-auto rfft(juce::dsp::FFT& fft, std::span<float const> input, std::span<std::complex<float>> output) -> void
+rfft_plan::rfft_plan(std::size_t size)
+    : _fft{juce::roundToInt(std::log2(size))}
+    , _in(static_cast<std::size_t>(_fft.getSize()))
+    , _out(static_cast<std::size_t>(_fft.getSize()))
 {
-    jassert(fft.getSize() == static_cast<int>(output.size()));
-
-    auto in  = std::vector<juce::dsp::Complex<float>>(static_cast<size_t>(fft.getSize()));
-    auto out = std::vector<juce::dsp::Complex<float>>(static_cast<size_t>(fft.getSize()));
-    std::copy(input.begin(), input.end(), in.begin());
-    fft.perform(in.data(), out.data(), false);
-    std::copy(out.begin(), std::next(out.begin(), fft.getSize() / 2 + 1), output.begin());
 }
 
-auto irfft(juce::dsp::FFT& fft, std::span<std::complex<float> const> input, std::span<float> output) -> void
+auto rfft_plan::operator()(std::span<float const> input, std::span<std::complex<float>> output) -> void
 {
-    jassert(fft.getSize() == static_cast<int>(output.size()));
+    jassert(_fft.getSize() == static_cast<int>(output.size()));
 
-    auto in  = std::vector<juce::dsp::Complex<float>>(static_cast<size_t>(fft.getSize()));
-    auto out = std::vector<juce::dsp::Complex<float>>(static_cast<size_t>(fft.getSize()));
-    std::copy(input.begin(), input.end(), in.begin());
-    fft.perform(in.data(), out.data(), true);
-    std::transform(out.begin(), out.end(), output.begin(), [](auto c) { return c.real(); });
+    std::fill(_in.begin(), _in.end(), 0.0F);
+    std::fill(_out.begin(), _out.end(), 0.0F);
+
+    std::copy(input.begin(), input.end(), _in.begin());
+    _fft.perform(_in.data(), _out.data(), false);
+    std::copy(_out.begin(), std::next(_out.begin(), _fft.getSize() / 2 + 1), output.begin());
+}
+
+auto rfft_plan::operator()(std::span<std::complex<float> const> input, std::span<float> output) -> void
+{
+    jassert(_fft.getSize() == static_cast<int>(output.size()));
+
+    std::fill(_in.begin(), _in.end(), 0.0F);
+    std::fill(_out.begin(), _out.end(), 0.0F);
+
+    std::copy(input.begin(), input.end(), _in.begin());
+    _fft.perform(_in.data(), _out.data(), true);
+    std::transform(_out.begin(), _out.end(), output.begin(), [](auto c) { return c.real(); });
+}
+
+auto rfft(rfft_plan& plan, std::span<float const> input, std::span<std::complex<float>> output) -> void
+{
+    plan(input, output);
+}
+
+auto irfft(rfft_plan& plan, std::span<std::complex<float> const> input, std::span<float> output) -> void
+{
+    plan(input, output);
 }
 
 }  // namespace neo::fft

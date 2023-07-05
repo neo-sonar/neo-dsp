@@ -1,5 +1,6 @@
 #pragma once
 
+#include "neo/fft/rfft.hpp"
 #include "neo/mdspan.hpp"
 
 #include <juce_dsp/juce_dsp.h>
@@ -24,7 +25,7 @@ private:
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _fdl;
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _filter;
 
-    std::unique_ptr<juce::dsp::FFT> _fft;
+    std::unique_ptr<rfft_plan> _rfft;
     std::vector<std::complex<float>> _tmp;
 };
 

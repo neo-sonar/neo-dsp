@@ -1,6 +1,5 @@
 #include "convolution.hpp"
 
-#include "neo/fft/rfft.hpp"
 #include "neo/math.hpp"
 
 namespace neo::fft
@@ -8,19 +7,18 @@ namespace neo::fft
 
 auto upols_convolver::filter(KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> filter) -> void
 {
-    auto const K     = std::bit_ceil((filter.extent(1) - 1U) * 2U);
-    auto const order = juce::roundToInt(std::log2(K));
+    auto const K = std::bit_ceil((filter.extent(1) - 1U) * 2U);
 
     _fdlWritePos = 0;
     _fdl         = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{filter.extents()};
     _filter      = std::move(filter);
 
-    _fft = std::make_unique<juce::dsp::FFT>(order);
+    _rfft = std::make_unique<rfft_plan>(K);
     _window.resize(K);
     _tmp.resize(_window.size());
     _accumlator.resize(_filter.extent(1));
 
-    DBG("FFT-SIZE:" << _fft->getSize());
+    DBG("FFT-SIZE:" << _rfft->size());
     DBG("WIN-SIZE:" << _window.size());
     DBG("ACC-SIZE:" << _accumlator.size());
 
@@ -40,16 +38,17 @@ auto upols_convolver::operator()(std::span<float> block) -> void
     std::shift_left(_window.begin(), _window.end(), B);
     std::copy(block.begin(), block.end(), std::prev(_window.end(), B));
 
+    // All contents (DFT spectra) in the FDL are shifted up by one slot.
     for (auto p{_fdl.extent(0) - 1U}; p > 0; --p)
     {
         for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(p, i) = _fdl(p - 1U, i); }
     }
 
     // 2B-point R2C-FFT
-    rfft(*_fft, _window, _tmp);
+    rfft(*_rfft, _window, _tmp);
 
     // Copy to FDL
-    for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(0, i) = _tmp[i] / float(_fft->getSize()); }
+    for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(0, i) = _tmp[i] / float(_rfft->size()); }
 
     // DFT-spectrum additions
     std::fill(_accumlator.begin(), _accumlator.end(), 0.0F);
@@ -60,11 +59,11 @@ auto upols_convolver::operator()(std::span<float> block) -> void
     }
 
     // Increment fdl position
-    if (++_fdlWritePos == _fdl.extent(0)) { _fdlWritePos = 0; }
+    // if (++_fdlWritePos == _fdl.extent(0)) { _fdlWritePos = 0; }
 
     // 2B-point C2R-IFFT
     auto tmp = std::vector<float>(_window.size());
-    irfft(*_fft, _accumlator, tmp);
+    irfft(*_rfft, _accumlator, tmp);
 
     // Copy B samples to output
     std::copy(std::prev(tmp.end(), B), tmp.end(), block.begin());
