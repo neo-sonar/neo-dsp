@@ -21,8 +21,7 @@ struct rfft_plan
 
 private:
     juce::dsp::FFT _fft;
-    std::vector<juce::dsp::Complex<float>> _in;
-    std::vector<juce::dsp::Complex<float>> _out;
+    std::vector<float> _buf;
 };
 
 auto rfft(rfft_plan& plan, std::span<float const> input, std::span<std::complex<float>> output) -> void;
