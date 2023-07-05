@@ -54,15 +54,20 @@ target_sources(PerceptualConvolution
         src/PluginProcessor.hpp
         src/PluginProcessor.cpp
 
-        src/neo/convolution.cpp
-        src/neo/convolution.hpp
-        src/neo/fft.cpp
-        src/neo/fft.hpp
         src/neo/math.cpp
         src/neo/math.hpp
         src/neo/mdspan.hpp
         src/neo/resample.cpp
         src/neo/resample.hpp
+
+        src/neo/fft/convolution.cpp
+        src/neo/fft/convolution.hpp
+        src/neo/fft/rfft.cpp
+        src/neo/fft/rfft.hpp
+        src/neo/fft/spectogram.cpp
+        src/neo/fft/spectogram.hpp
+        src/neo/fft/stft.cpp
+        src/neo/fft/stft.hpp
 )
 
 target_compile_definitions(PerceptualConvolution

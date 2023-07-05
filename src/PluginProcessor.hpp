@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include "neo/convolution.hpp"
-
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 #include <juce_gui_extra/juce_gui_extra.h>
@@ -51,7 +49,6 @@ private:
     juce::UndoManager _undoManager{};
     juce::AudioProcessorValueTreeState _valueTree;
 
-    upols_convolver _convolver;
     // juce::AudioParameterFloat& _inGain;
     // juce::AudioParameterFloat& _outGain;
 };

@@ -1,7 +1,8 @@
 #include "PluginEditor.hpp"
 
-#include "neo/convolution.hpp"
-#include "neo/fft.hpp"
+#include "neo/fft/convolution.hpp"
+#include "neo/fft/spectogram.hpp"
+#include "neo/fft/stft.hpp"
 #include "neo/math.hpp"
 #include "neo/resample.hpp"
 
@@ -22,7 +23,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     _threshold.setValue(-90.0, juce::dontSendNotification);
     _threshold.onDragEnd = [this]
     {
-        auto img = powerSpectrumImage(_spectrum, static_cast<float>(_threshold.getValue()));
+        auto img = fft::powerSpectrumImage(_spectrum, static_cast<float>(_threshold.getValue()));
         _spectogramImage.setImage(img);
     };
 
@@ -46,7 +47,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 
     auto const signal = loadAndResample(_formats, signalFile, 44'100.0);
     auto const filter = loadAndResample(_formats, filterFile, 44'100.0);
-    auto convolved    = convolve(signal, filter);
+    auto convolved    = fft::convolve(signal, filter);
     DBG(convolved.getNumSamples());
 
     peak_normalization(std::span{convolved.getWritePointer(0), size_t(convolved.getNumSamples())});
@@ -97,10 +98,10 @@ auto PluginEditor::openFile() -> void
         auto const filename = file.getFileNameWithoutExtension();
 
         _impulse  = loadAndResample(_formats, file, 44'100.0);
-        _spectrum = stft(_impulse, 1024);
+        _spectrum = fft::stft(_impulse, 1024);
 
-        _spectogramImage.setImage(powerSpectrumImage(_spectrum, static_cast<float>(_threshold.getValue())));
-        _histogramImage.setImage(powerHistogramImage(_spectrum));
+        _spectogramImage.setImage(fft::powerSpectrumImage(_spectrum, static_cast<float>(_threshold.getValue())));
+        _histogramImage.setImage(fft::powerHistogramImage(_spectrum));
 
         _fileInfo.setText(filename + " (" + juce::String(_impulse.getNumSamples()) + ")");
 

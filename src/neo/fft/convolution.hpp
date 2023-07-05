@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace neo
+namespace neo::fft
 {
 
 struct upols_convolver
@@ -31,4 +31,4 @@ private:
 [[nodiscard]] auto convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)
     -> juce::AudioBuffer<float>;
 
-}  // namespace neo
+}  // namespace neo::fft

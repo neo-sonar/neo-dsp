@@ -1,9 +1,9 @@
 #include "convolution.hpp"
 
-#include "neo/fft.hpp"
+#include "neo/fft/rfft.hpp"
 #include "neo/math.hpp"
 
-namespace neo
+namespace neo::fft
 {
 
 auto upols_convolver::filter(KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> filter) -> void
@@ -129,4 +129,4 @@ auto convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> c
     return output;
 }
 
-}  // namespace neo
+}  // namespace neo::fft
