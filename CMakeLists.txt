@@ -54,6 +54,8 @@ target_sources(PerceptualConvolution
         src/PluginProcessor.hpp
         src/PluginProcessor.cpp
 
+        src/neo/convolution.cpp
+        src/neo/convolution.hpp
         src/neo/fft.cpp
         src/neo/fft.hpp
         src/neo/math.cpp

@@ -1,5 +1,6 @@
 #include "PluginEditor.hpp"
 
+#include "neo/convolution.hpp"
 #include "neo/fft.hpp"
 #include "neo/math.hpp"
 #include "neo/resample.hpp"
@@ -11,21 +12,6 @@
 
 namespace neo
 {
-
-static auto loadAndResample(juce::AudioFormatManager& formats, juce::File const& file) -> juce::AudioBuffer<float>
-{
-    auto reader = std::unique_ptr<juce::AudioFormatReader>{formats.createReaderFor(file.createInputStream())};
-    if (reader == nullptr) { return {}; }
-
-    auto buffer = juce::AudioBuffer<float>{int(reader->numChannels), int(reader->lengthInSamples)};
-    if (!reader->read(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), 0, buffer.getNumSamples()))
-    {
-        return {};
-    }
-
-    if (reader->sampleRate != 44'100.0) { return resample(buffer, reader->sampleRate, 44100.0); }
-    return buffer;
-}
 
 PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 {
@@ -54,6 +40,28 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 
     setResizable(true, true);
     setSize(600, 400);
+
+    auto const signalFile = juce::File{R"(C:\Users\tobias\Music\Loops\Drums.wav)"};
+    auto const filterFile = juce::File{R"(C:\Users\tobias\Music\Samples\IR\LexiconPCM90 Halls\LIVE_cannon gate.wav)"};
+
+    auto const signal = loadAndResample(_formats, signalFile, 44'100.0);
+    auto const filter = loadAndResample(_formats, filterFile, 44'100.0);
+    auto convolved    = convolve(signal, filter);
+    DBG(convolved.getNumSamples());
+
+    peak_normalization(std::span{convolved.getWritePointer(0), size_t(convolved.getNumSamples())});
+
+    auto wav = juce::WavAudioFormat{};
+    auto out = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("TestConv", ".wav").createOutputStream();
+    auto writer = std::unique_ptr<juce::AudioFormatWriter>{
+        wav.createWriterFor(out.get(), 44'100.0, static_cast<unsigned>(convolved.getNumChannels()), 16, {}, 0),
+    };
+
+    if (writer != nullptr)
+    {
+        out.release();
+        writer->writeFromAudioSampleBuffer(convolved, 0, convolved.getNumSamples());
+    }
 }
 
 PluginEditor::~PluginEditor() noexcept { setLookAndFeel(nullptr); }
@@ -88,7 +96,7 @@ auto PluginEditor::openFile() -> void
         auto const file     = chooser.getResult();
         auto const filename = file.getFileNameWithoutExtension();
 
-        _impulse  = loadAndResample(_formats, file);
+        _impulse  = loadAndResample(_formats, file, 44'100.0);
         _spectrum = stft(_impulse, 1024);
 
         _spectogramImage.setImage(powerSpectrumImage(_spectrum, static_cast<float>(_threshold.getValue())));
