@@ -30,7 +30,7 @@ private:
     std::vector<float> _irfftBuf;
 };
 
-[[nodiscard]] auto convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)
+[[nodiscard]] auto convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter, float thresholdDB)
     -> juce::AudioBuffer<float>;
 
 struct juce_convolver
