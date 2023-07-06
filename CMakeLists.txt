@@ -54,8 +54,6 @@ target_sources(PerceptualConvolution
         src/PluginProcessor.hpp
         src/PluginProcessor.cpp
 
-        src/neo/math.cpp
-        src/neo/math.hpp
         src/neo/mdspan.hpp
         src/neo/render.hpp
         src/neo/resample.cpp
@@ -70,6 +68,10 @@ target_sources(PerceptualConvolution
         src/neo/fft/spectogram.hpp
         src/neo/fft/stft.cpp
         src/neo/fft/stft.hpp
+
+        src/neo/math/normalize.cpp
+        src/neo/math/normalize.hpp
+        src/neo/math/sparse_matrix.hpp
 )
 
 target_compile_definitions(PerceptualConvolution

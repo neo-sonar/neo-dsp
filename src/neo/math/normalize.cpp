@@ -1,4 +1,4 @@
-#include "math.hpp"
+#include "normalize.hpp"
 
 #include <algorithm>
 #include <cmath>
