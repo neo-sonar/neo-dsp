@@ -5,8 +5,8 @@
 namespace neo::fft
 {
 
-static auto multiply_and_accumulate(Kokkos::mdspan<std::complex<float>, Kokkos::dextents<std::size_t, 2>> lhs,
-                                    Kokkos::mdspan<std::complex<float>, Kokkos::dextents<std::size_t, 2>> rhs,
+static auto multiply_and_accumulate(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<std::size_t, 2>> lhs,
+                                    Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<std::size_t, 2>> rhs,
                                     std::span<std::complex<float>> accumulator, std::size_t shift)
 {
     jassert(lhs.extents() == rhs.extents());
@@ -29,7 +29,7 @@ static auto multiply_and_accumulate(Kokkos::mdspan<std::complex<float>, Kokkos::
     }
 }
 
-auto upols_convolver::filter(KokkosEx::mdspan<std::complex<float>, Kokkos::dextents<size_t, 2>> filter) -> void
+auto upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter) -> void
 {
     auto const K = std::bit_ceil((filter.extent(1) - 1U) * 2U);
 
@@ -121,16 +121,16 @@ auto convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> c
 {
     auto const blockSize = 512;
 
-    auto output = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
-    auto block  = std::vector<float>(size_t(blockSize));
-
+    auto output     = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
+    auto block      = std::vector<float>(size_t(blockSize));
     auto partitions = partition_filter(filter, blockSize);
-    auto mdp        = Kokkos::mdspan<std::complex<float>, Kokkos::dextents<size_t, 3>>{partitions};
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch)
     {
-        auto convolver = upols_convolver{};
-        convolver.filter(KokkosEx::submdspan(mdp, static_cast<size_t>(ch), Kokkos::full_extent, Kokkos::full_extent));
+        auto convolver     = upols_convolver{};
+        auto const channel = static_cast<size_t>(ch);
+        auto const full    = Kokkos::full_extent;
+        convolver.filter(KokkosEx::submdspan(partitions.to_mdspan(), channel, full, full));
 
         auto const* const in = signal.getReadPointer(ch);
         auto* const out      = output.getWritePointer(ch);

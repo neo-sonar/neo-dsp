@@ -15,14 +15,14 @@ struct upols_convolver
 {
     upols_convolver() = default;
 
-    auto filter(KokkosEx::mdspan<std::complex<float>, Kokkos::dextents<size_t, 2>> filter) -> void;
+    auto filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter) -> void;
     auto operator()(std::span<float> block) -> void;
 
 private:
     std::vector<float> _window;
     std::vector<std::complex<float>> _accumulator;
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _fdl;
-    KokkosEx::mdspan<std::complex<float>, Kokkos::dextents<size_t, 2>> _filter;
+    KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> _filter;
     std::size_t _fdlIndex{0};
 
     std::unique_ptr<rfft_plan> _rfft;
