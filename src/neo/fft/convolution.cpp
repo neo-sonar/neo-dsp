@@ -5,27 +5,27 @@
 namespace neo::fft
 {
 
-static auto shift_rows_up(Kokkos::mdspan<std::complex<float>, Kokkos::dextents<std::size_t, 2>> matrix)
-{
-    for (auto p{matrix.extent(0) - 1U}; p > 0; --p)
-    {
-        for (auto i{0U}; i < matrix.extent(1); ++i) { matrix(p, i) = matrix(p - 1U, i); }
-    }
-}
-
 static auto multiply_and_accumulate(Kokkos::mdspan<std::complex<float>, Kokkos::dextents<std::size_t, 2>> lhs,
                                     Kokkos::mdspan<std::complex<float>, Kokkos::dextents<std::size_t, 2>> rhs,
-                                    std::span<std::complex<float>> accumulator)
+                                    std::span<std::complex<float>> accumulator, std::size_t shift)
 {
     jassert(lhs.extents() == rhs.extents());
     jassert(lhs.extent(1) > 0);
+    jassert(shift < lhs.extent(0));
 
     // First loop, so we don't need to clear the accumulator from previous iteration
-    for (auto i{0U}; i < lhs.extent(1); ++i) { accumulator[i] = lhs(0, i) * rhs(0, i); }
+    for (auto bin{0U}; bin < lhs.extent(1); ++bin) { accumulator[bin] = lhs(0, bin) * rhs(shift, bin); }
 
-    for (auto p{1U}; p < lhs.extent(0); ++p)
+    for (auto row{1U}; row <= shift; ++row)
     {
-        for (auto i{0U}; i < lhs.extent(1); ++i) { accumulator[i] += lhs(p, i) * rhs(p, i); }
+        for (auto bin{0U}; bin < lhs.extent(1); ++bin) { accumulator[bin] += lhs(row, bin) * rhs(shift - row, bin); }
+    }
+
+    for (auto row{shift + 1}; row < lhs.extent(0); ++row)
+    {
+        auto const offset    = row - shift;
+        auto const offsetRow = lhs.extent(0) - offset - 1;
+        for (auto bin{0U}; bin < lhs.extent(1); ++bin) { accumulator[bin] += lhs(row, bin) * rhs(offsetRow, bin); }
     }
 }
 
@@ -41,6 +41,8 @@ auto upols_convolver::filter(KokkosEx::mdarray<std::complex<float>, Kokkos::dext
     _rfftBuf.resize(_window.size());
     _irfftBuf.resize(_window.size());
     _accumulator.resize(_filter.extent(1));
+
+    _fdlIndex = 0;
 }
 
 auto upols_convolver::operator()(std::span<float> block) -> void
@@ -53,17 +55,18 @@ auto upols_convolver::operator()(std::span<float> block) -> void
     std::shift_left(_window.begin(), _window.end(), blockSize);
     std::copy(block.begin(), block.end(), std::prev(_window.end(), blockSize));
 
-    // All contents (DFT spectra) in the FDL are shifted up by one slot.
-    shift_rows_up(_fdl);
-
     // 2B-point R2C-FFT
     rfft(*_rfft, _window, _rfftBuf);
 
     // Copy to FDL
-    for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(0, i) = _rfftBuf[i] / float(_rfft->size()); }
+    for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(_fdlIndex, i) = _rfftBuf[i] / float(_rfft->size()); }
 
     // DFT-spectrum additions
-    multiply_and_accumulate(_fdl, _filter, _accumulator);
+    multiply_and_accumulate(_fdl, _filter, _accumulator, _fdlIndex);
+
+    // All contents (DFT spectra) in the FDL are shifted up by one slot.
+    ++_fdlIndex;
+    if (_fdlIndex == _fdl.extent(0)) { _fdlIndex = 0; }
 
     // 2B-point C2R-IFFT
     irfft(*_rfft, _accumulator, _irfftBuf);
@@ -76,7 +79,6 @@ static auto partition_filter(juce::AudioBuffer<float> const& buffer, int blockSi
     -> KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>
 {
     auto const windowSize = blockSize * 2;
-    auto const order      = juce::roundToInt(std::log2(windowSize));
     auto const numBins    = windowSize / 2 + 1;
 
     auto result = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{

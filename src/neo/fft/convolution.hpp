@@ -23,6 +23,7 @@ private:
     std::vector<std::complex<float>> _accumulator;
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _fdl;
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _filter;
+    std::size_t _fdlIndex{0};
 
     std::unique_ptr<rfft_plan> _rfft;
     std::vector<std::complex<float>> _rfftBuf;
