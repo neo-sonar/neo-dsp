@@ -84,8 +84,8 @@ static auto partition_filter(juce::AudioBuffer<float> const& buffer, int blockSi
         numBins,
     };
 
-    auto fft    = juce::dsp::FFT{order};
-    auto input  = std::vector<std::complex<float>>(size_t(windowSize));
+    auto rfft   = rfft_plan{static_cast<std::size_t>(windowSize)};
+    auto input  = std::vector<float>(size_t(windowSize));
     auto output = std::vector<std::complex<float>>(size_t(windowSize));
 
     for (auto f{0UL}; f < result.extent(0); ++f)
@@ -95,7 +95,7 @@ static auto partition_filter(juce::AudioBuffer<float> const& buffer, int blockSi
         for (auto i{0}; i < numSamples; ++i) { input[static_cast<size_t>(i)] = buffer.getSample(0, idx + i); }
 
         std::fill(output.begin(), output.end(), 0.0F);
-        fft.perform(input.data(), output.data(), false);
+        rfft(input, output);
         for (auto b{0UL}; b < result.extent(1); ++b) { result(f, b) = output[b] / float(windowSize); }
     }
 
