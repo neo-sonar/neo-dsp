@@ -107,11 +107,8 @@ auto convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> c
 {
     auto const blockSize = 512;
 
-    auto ir = filter;
-    juce_normalization(ir);
-
     auto convolver = upols_convolver{};
-    convolver.filter(partition_filter(ir, blockSize));
+    convolver.filter(partition_filter(filter, blockSize));
 
     auto output = juce::AudioBuffer<float>{1, signal.getNumSamples()};
     auto block  = std::vector<float>(size_t(blockSize));

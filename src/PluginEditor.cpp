@@ -4,11 +4,10 @@
 #include "neo/fft/spectogram.hpp"
 #include "neo/fft/stft.hpp"
 #include "neo/math.hpp"
+#include "neo/render.hpp"
 #include "neo/resample.hpp"
+#include "neo/wav.hpp"
 
-#include <juce_dsp/juce_dsp.h>
-
-#include <format>
 #include <span>
 
 namespace neo
@@ -47,20 +46,36 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 
     auto const signal = loadAndResample(_formats, signalFile, 44'100.0);
     auto const filter = loadAndResample(_formats, filterFile, 44'100.0);
-    auto convolved    = fft::convolve(signal, filter);
 
-    peak_normalization(std::span{convolved.getWritePointer(0), size_t(convolved.getNumSamples())});
-
-    auto wav = juce::WavAudioFormat{};
-    auto out = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("TestConv", ".wav").createOutputStream();
-    auto writer = std::unique_ptr<juce::AudioFormatWriter>{
-        wav.createWriterFor(out.get(), 44'100.0, static_cast<unsigned>(convolved.getNumChannels()), 16, {}, 0),
-    };
-
-    if (writer != nullptr)
     {
-        out.release();
-        writer->writeFromAudioSampleBuffer(convolved, 0, convolved.getNumSamples());
+        auto start = std::chrono::system_clock::now();
+
+        auto proc   = fft::juce_convolver{filterFile};
+        auto output = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
+        auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("jconv", ".wav");
+
+        processBlocks(proc, signal, output, 512, 44'100.0);
+        peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
+        peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
+
+        auto end = std::chrono::system_clock::now();
+        std::cout << "JCONV: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << '\n';
+
+        writeToWavFile(file, output, 44'100.0, 32);
+    }
+
+    {
+        auto start = std::chrono::system_clock::now();
+
+        auto output = fft::convolve(signal, filter);
+        auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("TestConv", ".wav");
+
+        peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
+
+        auto end = std::chrono::system_clock::now();
+        std::cout << "TCONV: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << '\n';
+
+        writeToWavFile(file, output, 44'100.0, 32);
     }
 }
 

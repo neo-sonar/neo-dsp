@@ -57,8 +57,10 @@ target_sources(PerceptualConvolution
         src/neo/math.cpp
         src/neo/math.hpp
         src/neo/mdspan.hpp
+        src/neo/render.hpp
         src/neo/resample.cpp
         src/neo/resample.hpp
+        src/neo/wav.hpp
 
         src/neo/fft/convolution.cpp
         src/neo/fft/convolution.hpp
