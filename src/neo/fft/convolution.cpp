@@ -5,68 +5,71 @@
 namespace neo::fft
 {
 
+static auto shift_rows_up(Kokkos::mdspan<std::complex<float>, Kokkos::dextents<std::size_t, 2>> matrix)
+{
+    for (auto p{matrix.extent(0) - 1U}; p > 0; --p)
+    {
+        for (auto i{0U}; i < matrix.extent(1); ++i) { matrix(p, i) = matrix(p - 1U, i); }
+    }
+}
+
+static auto multiply_and_accumulate(Kokkos::mdspan<std::complex<float>, Kokkos::dextents<std::size_t, 2>> lhs,
+                                    Kokkos::mdspan<std::complex<float>, Kokkos::dextents<std::size_t, 2>> rhs,
+                                    std::span<std::complex<float>> accumulator)
+{
+    jassert(lhs.extents() == rhs.extents());
+    jassert(lhs.extent(1) > 0);
+
+    // First loop, so we don't need to clear the accumulator from previous iteration
+    for (auto i{0U}; i < lhs.extent(1); ++i) { accumulator[i] = lhs(0, i) * rhs(0, i); }
+
+    for (auto p{1U}; p < lhs.extent(0); ++p)
+    {
+        for (auto i{0U}; i < lhs.extent(1); ++i) { accumulator[i] += lhs(p, i) * rhs(p, i); }
+    }
+}
+
 auto upols_convolver::filter(KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> filter) -> void
 {
     auto const K = std::bit_ceil((filter.extent(1) - 1U) * 2U);
 
-    _fdlWritePos = 0;
-    _fdl         = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{filter.extents()};
-    _filter      = std::move(filter);
+    _fdl    = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{filter.extents()};
+    _filter = std::move(filter);
 
     _rfft = std::make_unique<rfft_plan>(K);
     _window.resize(K);
-    _tmp.resize(_window.size());
-    _accumlator.resize(_filter.extent(1));
-
-    DBG("FFT-SIZE:" << _rfft->size());
-    DBG("WIN-SIZE:" << _window.size());
-    DBG("ACC-SIZE:" << _accumlator.size());
-
-    DBG("SIGNAL-EXTENT(0):" << _fdl.extent(0));
-    DBG("FILTER-EXTENT(0):" << _filter.extent(0));
-    DBG("SIGNAL-EXTENT(1):" << _fdl.extent(1));
-    DBG("FILTER-EXTENT(1):" << _filter.extent(1));
+    _rfftBuf.resize(_window.size());
+    _irfftBuf.resize(_window.size());
+    _accumulator.resize(_filter.extent(1));
 }
 
 auto upols_convolver::operator()(std::span<float> block) -> void
 {
     jassert(block.size() * 2U == _window.size());
 
-    auto const B = std::ssize(block);
+    auto const blockSize = std::ssize(block);
 
     // Time domain input buffer
-    std::shift_left(_window.begin(), _window.end(), B);
-    std::copy(block.begin(), block.end(), std::prev(_window.end(), B));
+    std::shift_left(_window.begin(), _window.end(), blockSize);
+    std::copy(block.begin(), block.end(), std::prev(_window.end(), blockSize));
 
     // All contents (DFT spectra) in the FDL are shifted up by one slot.
-    for (auto p{_fdl.extent(0) - 1U}; p > 0; --p)
-    {
-        for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(p, i) = _fdl(p - 1U, i); }
-    }
+    shift_rows_up(_fdl);
 
     // 2B-point R2C-FFT
-    rfft(*_rfft, _window, _tmp);
+    rfft(*_rfft, _window, _rfftBuf);
 
     // Copy to FDL
-    for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(0, i) = _tmp[i] / float(_rfft->size()); }
+    for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(0, i) = _rfftBuf[i] / float(_rfft->size()); }
 
     // DFT-spectrum additions
-    std::fill(_accumlator.begin(), _accumlator.end(), 0.0F);
-    for (auto p{0U}; p < _fdl.extent(0); ++p)
-    {
-        // auto const pidx = (p + _fdlWritePos) % _fdl.extent(0);
-        for (auto i{0U}; i < _fdl.extent(1); ++i) { _accumlator[i] += _fdl(p, i) * _filter(p, i); }
-    }
-
-    // Increment fdl position
-    // if (++_fdlWritePos == _fdl.extent(0)) { _fdlWritePos = 0; }
+    multiply_and_accumulate(_fdl, _filter, _accumulator);
 
     // 2B-point C2R-IFFT
-    auto tmp = std::vector<float>(_window.size());
-    irfft(*_rfft, _accumlator, tmp);
+    irfft(*_rfft, _accumulator, _irfftBuf);
 
-    // Copy B samples to output
-    std::copy(std::prev(tmp.end(), B), tmp.end(), block.begin());
+    // Copy blockSize samples to output
+    std::copy(std::prev(_irfftBuf.end(), blockSize), _irfftBuf.end(), block.begin());
 }
 
 static auto partition_filter(juce::AudioBuffer<float> const& buffer, int blockSize)

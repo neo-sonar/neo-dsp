@@ -20,13 +20,13 @@ struct upols_convolver
 
 private:
     std::vector<float> _window;
-    std::vector<std::complex<float>> _accumlator;
-    std::size_t _fdlWritePos{0};
+    std::vector<std::complex<float>> _accumulator;
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _fdl;
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _filter;
 
     std::unique_ptr<rfft_plan> _rfft;
-    std::vector<std::complex<float>> _tmp;
+    std::vector<std::complex<float>> _rfftBuf;
+    std::vector<float> _irfftBuf;
 };
 
 [[nodiscard]] auto convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)

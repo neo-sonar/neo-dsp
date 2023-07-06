@@ -48,7 +48,6 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     auto const signal = loadAndResample(_formats, signalFile, 44'100.0);
     auto const filter = loadAndResample(_formats, filterFile, 44'100.0);
     auto convolved    = fft::convolve(signal, filter);
-    DBG(convolved.getNumSamples());
 
     peak_normalization(std::span{convolved.getWritePointer(0), size_t(convolved.getNumSamples())});
 
