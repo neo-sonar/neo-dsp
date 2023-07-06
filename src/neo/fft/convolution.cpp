@@ -29,12 +29,12 @@ static auto multiply_and_accumulate(Kokkos::mdspan<std::complex<float>, Kokkos::
     }
 }
 
-auto upols_convolver::filter(KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> filter) -> void
+auto upols_convolver::filter(KokkosEx::mdspan<std::complex<float>, Kokkos::dextents<size_t, 2>> filter) -> void
 {
     auto const K = std::bit_ceil((filter.extent(1) - 1U) * 2U);
 
     _fdl    = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{filter.extents()};
-    _filter = std::move(filter);
+    _filter = filter;
 
     _rfft = std::make_unique<rfft_plan>(K);
     _window.resize(K);
@@ -76,13 +76,14 @@ auto upols_convolver::operator()(std::span<float> block) -> void
 }
 
 static auto partition_filter(juce::AudioBuffer<float> const& buffer, int blockSize)
-    -> KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>
+    -> KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 3>>
 {
     auto const windowSize = blockSize * 2;
     auto const numBins    = windowSize / 2 + 1;
 
-    auto result = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{
-        static_cast<size_t>(div_round(buffer.getNumSamples(), blockSize)),
+    auto result = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 3>>{
+        static_cast<std::size_t>(buffer.getNumChannels()),
+        static_cast<std::size_t>(div_round(buffer.getNumSamples(), blockSize)),
         numBins,
     };
 
@@ -90,15 +91,26 @@ static auto partition_filter(juce::AudioBuffer<float> const& buffer, int blockSi
     auto input  = std::vector<float>(size_t(windowSize));
     auto output = std::vector<std::complex<float>>(size_t(windowSize));
 
-    for (auto f{0UL}; f < result.extent(0); ++f)
+    for (auto channel{0UL}; channel < result.extent(0); ++channel)
     {
-        auto const idx        = static_cast<int>(f * result.extent(1));
-        auto const numSamples = std::min(buffer.getNumSamples() - idx, blockSize);
-        for (auto i{0}; i < numSamples; ++i) { input[static_cast<size_t>(i)] = buffer.getSample(0, idx + i); }
 
-        std::fill(output.begin(), output.end(), 0.0F);
-        rfft(input, output);
-        for (auto b{0UL}; b < result.extent(1); ++b) { result(f, b) = output[b] / float(windowSize); }
+        for (auto partition{0UL}; partition < result.extent(1); ++partition)
+        {
+            auto const idx        = static_cast<int>(partition * result.extent(2));
+            auto const numSamples = std::min(buffer.getNumSamples() - idx, blockSize);
+            std::fill(input.begin(), input.end(), 0.0F);
+            for (auto i{0}; i < numSamples; ++i)
+            {
+                input[static_cast<size_t>(i)] = buffer.getSample(static_cast<int>(channel), idx + i);
+            }
+
+            std::fill(output.begin(), output.end(), 0.0F);
+            rfft(input, output);
+            for (auto bin{0UL}; bin < result.extent(2); ++bin)
+            {
+                result(channel, partition, bin) = output[bin] / float(windowSize);
+            }
+        }
     }
 
     return result;
@@ -109,22 +121,28 @@ auto convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> c
 {
     auto const blockSize = 512;
 
-    auto convolver = upols_convolver{};
-    convolver.filter(partition_filter(filter, blockSize));
-
-    auto output = juce::AudioBuffer<float>{1, signal.getNumSamples()};
+    auto output = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
     auto block  = std::vector<float>(size_t(blockSize));
 
-    auto const* const in = signal.getReadPointer(0);
-    auto* const out      = output.getWritePointer(0);
+    auto partitions = partition_filter(filter, blockSize);
+    auto mdp        = Kokkos::mdspan<std::complex<float>, Kokkos::dextents<size_t, 3>>{partitions};
 
-    for (auto i{0}; i < output.getNumSamples(); i += blockSize)
+    for (auto ch{0}; ch < signal.getNumChannels(); ++ch)
     {
-        auto const numSamples = std::min(output.getNumSamples() - i, blockSize);
-        std::fill(block.begin(), block.end(), 0.0F);
-        std::copy(std::next(in, i), std::next(in, i + numSamples), block.begin());
-        convolver(block);
-        std::copy(block.begin(), std::next(block.begin(), numSamples), std::next(out, i));
+        auto convolver = upols_convolver{};
+        convolver.filter(KokkosEx::submdspan(mdp, static_cast<size_t>(ch), Kokkos::full_extent, Kokkos::full_extent));
+
+        auto const* const in = signal.getReadPointer(ch);
+        auto* const out      = output.getWritePointer(ch);
+
+        for (auto i{0}; i < output.getNumSamples(); i += blockSize)
+        {
+            auto const numSamples = std::min(output.getNumSamples() - i, blockSize);
+            std::fill(block.begin(), block.end(), 0.0F);
+            std::copy(std::next(in, i), std::next(in, i + numSamples), block.begin());
+            convolver(block);
+            std::copy(block.begin(), std::next(block.begin(), numSamples), std::next(out, i));
+        }
     }
 
     return output;

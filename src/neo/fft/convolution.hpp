@@ -15,14 +15,14 @@ struct upols_convolver
 {
     upols_convolver() = default;
 
-    auto filter(KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> filter) -> void;
+    auto filter(KokkosEx::mdspan<std::complex<float>, Kokkos::dextents<size_t, 2>> filter) -> void;
     auto operator()(std::span<float> block) -> void;
 
 private:
     std::vector<float> _window;
     std::vector<std::complex<float>> _accumulator;
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _fdl;
-    KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _filter;
+    KokkosEx::mdspan<std::complex<float>, Kokkos::dextents<size_t, 2>> _filter;
     std::size_t _fdlIndex{0};
 
     std::unique_ptr<rfft_plan> _rfft;
@@ -40,7 +40,7 @@ struct juce_convolver
     auto prepare(juce::dsp::ProcessSpec const& spec) -> void
     {
         auto const trim      = juce::dsp::Convolution::Trim::no;
-        auto const stereo    = juce::dsp::Convolution::Stereo::no;
+        auto const stereo    = juce::dsp::Convolution::Stereo::yes;
         auto const normalize = juce::dsp::Convolution::Normalise::no;
 
         _convolver.prepare(spec);

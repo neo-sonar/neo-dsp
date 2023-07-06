@@ -42,7 +42,8 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     setSize(600, 400);
 
     auto const signalFile = juce::File{R"(C:\Users\tobias\Music\Loops\Drums.wav)"};
-    auto const filterFile = juce::File{R"(C:\Users\tobias\Music\Samples\IR\LexiconPCM90 Halls\LIVE_cannon gate.wav)"};
+    auto const filterFile = juce::File{
+        R"(C:\Users\tobias\Music\Samples\IR\Waves_Complete_IR_Library\Sampled Acoustics V2\Concert Halls\SOH - Concert Hall\SOH Concert Hall_SBg2v2.wav)"};
 
     auto const signal = loadAndResample(_formats, signalFile, 44'100.0);
     auto const filter = loadAndResample(_formats, filterFile, 44'100.0);
@@ -71,6 +72,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
         auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("TestConv", ".wav");
 
         peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
+        peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
 
         auto end = std::chrono::system_clock::now();
         std::cout << "TCONV: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << '\n';
