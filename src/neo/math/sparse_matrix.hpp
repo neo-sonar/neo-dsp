@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <iterator>
+#include <span>
 #include <vector>
 
 namespace neo
@@ -32,6 +33,9 @@ struct sparse_matrix
     [[nodiscard]] auto operator()(index_type row, index_type col) const -> T;
 
     auto insert(index_type row, index_type col, T value) -> void;
+
+    template<typename U, std::size_t Extent, typename Filter>
+    auto insert_row(index_type row, std::span<U, Extent> values, Filter filter) -> void;
 
     auto value_container() const noexcept -> value_container_type const& { return _values; }
     auto column_container() const noexcept -> index_container_type const& { return _columIndices; }
@@ -97,6 +101,53 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert(index_t
     _columIndices.insert(std::next(_columIndices.begin(), pidx), col);
 
     for (auto i{row + 1}; i <= rows(); ++i) { ++_rowIndices[i]; }
+}
+
+template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
+template<typename U, std::size_t Extent, typename Filter>
+auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert_row(index_type row,
+                                                                             std::span<U, Extent> values, Filter filter)
+    -> void
+{
+    auto const rowStart    = _rowIndices[row];
+    auto const rowEnd      = _rowIndices[row + 1];
+    auto const currentSize = static_cast<std::ptrdiff_t>(rowEnd - rowStart);
+    auto const newSize     = std::count_if(values.begin(), values.end(), filter);
+
+    if (newSize < currentSize)
+    {
+        auto const delta = currentSize - newSize;
+        std::shift_left(std::next(_values.begin(), static_cast<ptrdiff_t>(rowEnd)), _values.end(), delta);
+        std::shift_left(std::next(_columIndices.begin(), static_cast<ptrdiff_t>(rowEnd)), _columIndices.end(), delta);
+
+        auto nextRow = std::next(_rowIndices.begin(), static_cast<ptrdiff_t>(row + 1));
+        std::transform(nextRow, _rowIndices.end(), nextRow, [delta](auto idx) { return idx - size_t(delta); });
+    }
+    else if (newSize > currentSize)
+    {
+        auto const delta = newSize - currentSize;
+
+        _values.resize(_values.size() + size_t(delta));
+        _columIndices.resize(_columIndices.size() + size_t(delta));
+
+        std::shift_right(std::next(_values.begin(), static_cast<ptrdiff_t>(rowEnd)), _values.end(), delta);
+        std::shift_right(std::next(_columIndices.begin(), static_cast<ptrdiff_t>(rowEnd)), _columIndices.end(), delta);
+
+        auto nextRow = std::next(_rowIndices.begin(), static_cast<ptrdiff_t>(row + 1));
+        std::transform(nextRow, _rowIndices.end(), nextRow, [delta](auto idx) { return idx + size_t(delta); });
+    }
+
+    auto idx = 0UL;
+    for (auto i{0UL}; i < values.size(); ++i)
+    {
+        auto const val = values[i];
+        if (filter(val))
+        {
+            _values[rowStart + idx]       = val;
+            _columIndices[rowStart + idx] = i;
+            ++idx;
+        }
+    }
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>

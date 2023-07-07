@@ -43,6 +43,11 @@ namespace neo
     jassert(other.columns() == lhs.extent(1));
     jassert(other.value_container().size() == 0);
 
+    auto row = std::vector<float>(lhs.extent(1));
+    std::fill(row.begin(), row.end(), 2.0F);
+    other.insert_row(0, std::span{row}, [](auto) { return true; });
+    jassert(other.value_container().size() == 32);
+    jassert(other.column_container().size() == 32);
     return true;
 }
 
