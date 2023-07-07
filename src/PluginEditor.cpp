@@ -32,6 +32,17 @@ namespace neo
     jassert(accumulator[0] == 2.0F);
     jassert(std::all_of(std::next(accumulator.begin()), accumulator.end(), [](auto x) { return x == 0.0F; }));
     // std::fill(accumulator.begin(), accumulator.end(), 0.0F);
+
+    auto other = sparse_matrix<float>{lhs.to_mdspan(), [](auto v) { return v >= 1.0F; }};
+    jassert(other.rows() == lhs.extent(0));
+    jassert(other.columns() == lhs.extent(1));
+    jassert(other.value_container().size() == lhs.size());
+
+    other = sparse_matrix<float>{lhs.to_mdspan(), [](auto v) { return v >= 2.0F; }};
+    jassert(other.rows() == lhs.extent(0));
+    jassert(other.columns() == lhs.extent(1));
+    jassert(other.value_container().size() == 0);
+
     return true;
 }
 
