@@ -1,6 +1,6 @@
 #pragma once
 
-#include "neo/fft/rfft.hpp"
+#include "neo/fft/real_fft.hpp"
 #include "neo/mdspan.hpp"
 
 #include <juce_dsp/juce_dsp.h>

@@ -24,6 +24,8 @@ include(FetchContent)
 FetchContent_Declare(mdspan_repo GIT_REPOSITORY "https://github.com/kokkos/mdspan" GIT_TAG "stable")
 FetchContent_MakeAvailable(mdspan_repo)
 
+add_subdirectory(3rd_party/neo-fft/include)
+
 add_subdirectory(3rd_party/JUCE)
 set_directory_properties(PROPERTIES JUCE_COMPANY_COPYRIGHT "Copyright 2023 neo-sonar. All rights reserved.")
 set_directory_properties(PROPERTIES JUCE_COMPANY_NAME "neo-sonar")
@@ -62,8 +64,8 @@ target_sources(PerceptualConvolution
 
         src/neo/fft/convolution.cpp
         src/neo/fft/convolution.hpp
-        src/neo/fft/rfft.cpp
-        src/neo/fft/rfft.hpp
+        src/neo/fft/real_fft.cpp
+        src/neo/fft/real_fft.hpp
         src/neo/fft/spectogram.cpp
         src/neo/fft/spectogram.hpp
         src/neo/fft/stft.cpp
@@ -99,6 +101,7 @@ target_link_libraries(PerceptualConvolution
 
     PUBLIC
         std::mdspan
+        neo::fft
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
