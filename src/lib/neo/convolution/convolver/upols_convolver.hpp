@@ -30,4 +30,23 @@ private:
     std::vector<float> _irfftBuf;
 };
 
+struct stereo_upols_convolver
+{
+    stereo_upols_convolver() = default;
+
+    auto filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 3>> filter) -> void;
+    auto operator()(KokkosEx::mdspan<float, Kokkos::dextents<size_t, 2>> block) -> void;
+
+private:
+    KokkosEx::mdarray<float, Kokkos::dextents<size_t, 2>> _window;
+    KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _accumulator;
+    KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 3>> _fdl;
+    KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 3>> _filter;
+    std::size_t _fdlIndex{0};
+
+    std::unique_ptr<rfft_radix2_plan<float>> _fft;
+    std::vector<std::complex<float>> _rfftBuf;
+    std::vector<float> _irfftBuf;
+};
+
 }  // namespace neo::fft

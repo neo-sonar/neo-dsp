@@ -144,6 +144,7 @@ auto PluginEditor::runBenchmarks() -> void
 
     runJuceConvolverBenchmark();
     runDenseConvolverBenchmark();
+    runDenseStereoConvolverBenchmark();
     runSparseConvolverBenchmark();
 }
 
@@ -160,7 +161,7 @@ auto PluginEditor::runJuceConvolverBenchmark() -> void
     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
 
     auto end = std::chrono::system_clock::now();
-    std::cout << "JCONV: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << '\n';
+    std::cout << "JCONV: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << '\n';
 
     writeToWavFile(file, output, 44'100.0, 32);
 }
@@ -176,7 +177,24 @@ auto PluginEditor::runDenseConvolverBenchmark() -> void
     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
 
     auto end = std::chrono::system_clock::now();
-    std::cout << "TCONV-DENSE: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << '\n';
+    std::cout << "TCONV-DENSE: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << '\n';
+
+    writeToWavFile(file, output, 44'100.0, 32);
+}
+
+auto PluginEditor::runDenseStereoConvolverBenchmark() -> void
+{
+    auto start = std::chrono::system_clock::now();
+
+    auto output = fft::dense_stereo_convolve(_signal, _filter);
+    auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_dense_stereo", ".wav");
+
+    peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
+    peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
+
+    auto end = std::chrono::system_clock::now();
+    std::cout << "TCONV-DENSE-STEREO: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+              << '\n';
 
     writeToWavFile(file, output, 44'100.0, 32);
 }
@@ -193,7 +211,7 @@ auto PluginEditor::runSparseConvolverBenchmark() -> void
     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
 
     auto end = std::chrono::system_clock::now();
-    std::cout << "TCONV-SPARSE(40): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+    std::cout << "TCONV-SPARSE(40): " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
               << '\n';
 
     writeToWavFile(file, output, 44'100.0, 32);

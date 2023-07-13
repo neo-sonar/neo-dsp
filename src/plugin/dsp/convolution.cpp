@@ -78,6 +78,41 @@ auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<fl
     return output;
 }
 
+auto dense_stereo_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)
+    -> juce::AudioBuffer<float>
+{
+    auto blockSize = 512;
+    auto block     = KokkosEx::mdarray<float, Kokkos::dextents<size_t, 2>>{2, size_t(blockSize)};
+
+    auto output     = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
+    auto partitions = partition_filter(filter, blockSize);
+
+    auto convolver = stereo_upols_convolver{};
+    convolver.filter(partitions);
+
+    for (auto i{0}; i < output.getNumSamples(); i += blockSize)
+    {
+        auto const numSamples = std::min(output.getNumSamples() - i, blockSize);
+        std::fill(block.data(), block.data() + block.size(), 0.0F);
+
+        for (auto j{0}; j < numSamples; ++j)
+        {
+            block(0, static_cast<size_t>(j)) = signal.getSample(0, i + j);
+            block(1, static_cast<size_t>(j)) = signal.getSample(1, i + j);
+        }
+
+        convolver(block);
+
+        for (auto j{0}; j < numSamples; ++j)
+        {
+            output.setSample(0, i + j, block(0, static_cast<size_t>(j)));
+            output.setSample(1, i + j, block(1, static_cast<size_t>(j)));
+        }
+    }
+
+    return output;
+}
+
 auto sparse_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter, float thresholdDB)
     -> juce::AudioBuffer<float>
 {

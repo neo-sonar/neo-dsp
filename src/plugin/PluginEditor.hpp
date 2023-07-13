@@ -23,6 +23,7 @@ private:
     auto runBenchmarks() -> void;
     auto runJuceConvolverBenchmark() -> void;
     auto runDenseConvolverBenchmark() -> void;
+    auto runDenseStereoConvolverBenchmark() -> void;
     auto runSparseConvolverBenchmark() -> void;
 
     juce::AudioFormatManager _formats;
