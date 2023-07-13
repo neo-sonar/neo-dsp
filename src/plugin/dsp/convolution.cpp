@@ -5,6 +5,16 @@
 namespace neo::fft
 {
 
+static auto multiply_and_accumulate_row(std::span<std::complex<float> const> lhs,
+                                        std::span<std::complex<float> const> rhs,
+                                        std::span<std::complex<float>> accumulator)
+{
+    auto* NEO_FFT_RESTRICT acc         = accumulator.data();
+    auto const* NEO_FFT_RESTRICT left  = lhs.data();
+    auto const* NEO_FFT_RESTRICT right = rhs.data();
+    for (decltype(lhs.size()) i{0}; i < lhs.size(); ++i) { acc[i] += left[i] * right[i]; }
+}
+
 static auto multiply_and_accumulate(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<std::size_t, 2>> lhs,
                                     Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<std::size_t, 2>> rhs,
                                     std::span<std::complex<float>> accumulator, std::size_t shift)
@@ -13,19 +23,23 @@ static auto multiply_and_accumulate(Kokkos::mdspan<std::complex<float> const, Ko
     jassert(lhs.extent(1) > 0);
     jassert(shift < lhs.extent(0));
 
+    auto getRow = [](auto const& matrix, size_t row) {
+        return std::span<std::complex<float> const>{std::addressof(matrix(row, 0)), matrix.extent(1)};
+    };
+
     // First loop, so we don't need to clear the accumulator from previous iteration
-    for (auto bin{0U}; bin < lhs.extent(1); ++bin) { accumulator[bin] = lhs(0, bin) * rhs(shift, bin); }
+    multiply_and_accumulate_row(getRow(lhs, 0), getRow(rhs, shift), accumulator);
 
     for (auto row{1U}; row <= shift; ++row)
     {
-        for (auto bin{0U}; bin < lhs.extent(1); ++bin) { accumulator[bin] += lhs(row, bin) * rhs(shift - row, bin); }
+        multiply_and_accumulate_row(getRow(lhs, row), getRow(rhs, shift - row), accumulator);
     }
 
     for (auto row{shift + 1}; row < lhs.extent(0); ++row)
     {
         auto const offset    = row - shift;
         auto const offsetRow = lhs.extent(0) - offset - 1;
-        for (auto bin{0U}; bin < lhs.extent(1); ++bin) { accumulator[bin] += lhs(row, bin) * rhs(offsetRow, bin); }
+        multiply_and_accumulate_row(getRow(lhs, row), getRow(rhs, offsetRow), accumulator);
     }
 }
 
@@ -62,6 +76,7 @@ auto upols_convolver::operator()(std::span<float> block) -> void
     for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(_fdlIndex, i) = _rfftBuf[i] / float(_rfft->size()); }
 
     // DFT-spectrum additions
+    std::fill(_accumulator.begin(), _accumulator.end(), 0.0F);
     multiply_and_accumulate(_fdl, _filter, _accumulator, _fdlIndex);
 
     // All contents (DFT spectra) in the FDL are shifted up by one slot.

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "neo/convolution/container/mdspan.hpp"
-#include "neo/fft/radix2.hpp"
+#include "neo/fft.hpp"
 
 #include <juce_dsp/juce_dsp.h>
 
