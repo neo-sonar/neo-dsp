@@ -46,7 +46,39 @@ static auto partition_filter(juce::AudioBuffer<float> const& buffer, int blockSi
     return result;
 }
 
-auto convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter, float thresholdDB)
+auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)
+    -> juce::AudioBuffer<float>
+{
+    auto const blockSize = 512;
+
+    auto output     = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
+    auto block      = std::vector<float>(size_t(blockSize));
+    auto partitions = partition_filter(filter, blockSize);
+
+    for (auto ch{0}; ch < signal.getNumChannels(); ++ch)
+    {
+        auto convolver     = upols_convolver{};
+        auto const channel = static_cast<size_t>(ch);
+        auto const full    = Kokkos::full_extent;
+        convolver.filter(KokkosEx::submdspan(partitions.to_mdspan(), channel, full, full));
+
+        auto const* const in = signal.getReadPointer(ch);
+        auto* const out      = output.getWritePointer(ch);
+
+        for (auto i{0}; i < output.getNumSamples(); i += blockSize)
+        {
+            auto const numSamples = std::min(output.getNumSamples() - i, blockSize);
+            std::fill(block.begin(), block.end(), 0.0F);
+            std::copy(std::next(in, i), std::next(in, i + numSamples), block.begin());
+            convolver(block);
+            std::copy(block.begin(), std::next(block.begin(), numSamples), std::next(out, i));
+        }
+    }
+
+    return output;
+}
+
+auto sparse_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter, float thresholdDB)
     -> juce::AudioBuffer<float>
 {
     auto const blockSize = 512;

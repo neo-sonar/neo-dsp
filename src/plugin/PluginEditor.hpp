@@ -20,16 +20,27 @@ struct PluginEditor final : juce::AudioProcessorEditor
 
 private:
     auto openFile() -> void;
+    auto runBenchmarks() -> void;
+    auto runJuceConvolverBenchmark() -> void;
+    auto runDenseConvolverBenchmark() -> void;
+    auto runSparseConvolverBenchmark() -> void;
 
     juce::AudioFormatManager _formats;
     juce::AudioBuffer<float> _impulse;
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _spectrum;
 
     juce::TextButton _openFile{"Open File"};
+    juce::TextButton _runBenchmarks{"Run"};
     juce::Slider _threshold{juce::Slider::LinearHorizontal, juce::Slider::TextBoxRight};
     juce::TextEditor _fileInfo{};
     juce::ImageComponent _spectogramImage{};
     juce::ImageComponent _histogramImage{};
+
+    juce::File _signalFile{};
+    juce::File _filterFile{};
+
+    juce::AudioBuffer<float> _signal{};
+    juce::AudioBuffer<float> _filter{};
 
     std::unique_ptr<juce::FileChooser> _fileChooser{nullptr};
     juce::SharedResourcePointer<juce::TooltipWindow> _tooltipWindow;

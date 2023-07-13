@@ -57,7 +57,9 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 {
     _formats.registerBasicFormats();
 
-    _openFile.onClick = [this] { openFile(); };
+    _openFile.onClick      = [this] { openFile(); };
+    _runBenchmarks.onClick = [this] { runBenchmarks(); };
+
     _threshold.setRange({-144.0, -10.0}, 0.0);
     _threshold.setValue(-90.0, juce::dontSendNotification);
     _threshold.onDragEnd = [this]
@@ -73,6 +75,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     _tooltipWindow->setMillisecondsBeforeTipAppears(750);
 
     addAndMakeVisible(_openFile);
+    addAndMakeVisible(_runBenchmarks);
     addAndMakeVisible(_threshold);
     addAndMakeVisible(_fileInfo);
     addAndMakeVisible(_spectogramImage);
@@ -80,128 +83,6 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 
     setResizable(true, true);
     setSize(600, 400);
-
-    auto const signalFile = juce::File{R"(C:\Users\tobias\Music\Loops\Drums.wav)"};
-    // auto const filterFile = juce::File{R"(C:\Users\tobias\Music\Samples\IR\LexiconPCM90 Halls\ORCH_gothic
-    // hall.WAV)"};
-    auto const filterFile
-        = juce::File{R"(C:\Users\tobias\Music\Samples\IR\JC-IR-Synthetic-Prototypes\JC-IR-Big\Freeze 1-Audio.wav)"};
-
-    auto const signal = loadAndResample(_formats, signalFile, 44'100.0);
-    auto const filter = loadAndResample(_formats, filterFile, 44'100.0);
-
-    {
-        auto proc = JuceConvolver{filterFile, {44'100.0, 512, 2}};
-
-        auto start  = std::chrono::system_clock::now();
-        auto output = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
-        auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("jconv", ".wav");
-
-        processBlocks(proc, signal, output, 512, 44'100.0);
-        peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-        peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
-
-        auto end = std::chrono::system_clock::now();
-        std::cout << "JCONV: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << '\n';
-
-        writeToWavFile(file, output, 44'100.0, 32);
-    }
-
-    // {
-    //     auto start = std::chrono::system_clock::now();
-
-    //     auto output = fft::convolve(signal, filter, -25.0F);
-    //     auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_25", ".wav");
-
-    //     peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-    //     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
-
-    //     auto end = std::chrono::system_clock::now();
-    //     std::cout << "TCONV(25): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
-    //               << '\n';
-
-    //     writeToWavFile(file, output, 44'100.0, 32);
-    // }
-
-    // {
-    //     auto start = std::chrono::system_clock::now();
-
-    //     auto output = fft::convolve(signal, filter, -30.0F);
-    //     auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_30", ".wav");
-
-    //     peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-    //     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
-
-    //     auto end = std::chrono::system_clock::now();
-    //     std::cout << "TCONV(30): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
-    //               << '\n';
-
-    //     writeToWavFile(file, output, 44'100.0, 32);
-    // }
-
-    {
-        auto start = std::chrono::system_clock::now();
-
-        auto output = fft::convolve(signal, filter, -40.0F);
-        auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_40", ".wav");
-
-        peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-        peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
-
-        auto end = std::chrono::system_clock::now();
-        std::cout << "TCONV(40): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
-                  << '\n';
-
-        writeToWavFile(file, output, 44'100.0, 32);
-    }
-
-    // {
-    //     auto start = std::chrono::system_clock::now();
-
-    //     auto output = fft::convolve(signal, filter, -60.0F);
-    //     auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_60", ".wav");
-
-    //     peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-    //     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
-
-    //     auto end = std::chrono::system_clock::now();
-    //     std::cout << "TCONV(60): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
-    //               << '\n';
-
-    //     writeToWavFile(file, output, 44'100.0, 32);
-    // }
-
-    // {
-    //     auto start = std::chrono::system_clock::now();
-
-    //     auto output = fft::convolve(signal, filter, -80.0F);
-    //     auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_80", ".wav");
-
-    //     peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-    //     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
-
-    //     auto end = std::chrono::system_clock::now();
-    //     std::cout << "TCONV(80): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
-    //               << '\n';
-
-    //     writeToWavFile(file, output, 44'100.0, 32);
-    // }
-
-    // {
-    //     auto start = std::chrono::system_clock::now();
-
-    //     auto output = fft::convolve(signal, filter, -90.0F);
-    //     auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_90", ".wav");
-
-    //     peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-    //     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
-
-    //     auto end = std::chrono::system_clock::now();
-    //     std::cout << "TCONV(90): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
-    //               << '\n';
-
-    //     writeToWavFile(file, output, 44'100.0, 32);
-    // }
 }
 
 PluginEditor::~PluginEditor() noexcept { setLookAndFeel(nullptr); }
@@ -216,7 +97,9 @@ auto PluginEditor::resized() -> void
     auto bounds = getLocalBounds();
 
     auto controls = bounds.removeFromTop(bounds.proportionOfHeight(0.1));
-    _openFile.setBounds(controls.removeFromLeft(controls.proportionOfWidth(0.5)));
+    auto width    = controls.proportionOfWidth(0.333);
+    _openFile.setBounds(controls.removeFromLeft(width));
+    _runBenchmarks.setBounds(controls.removeFromLeft(width));
     _threshold.setBounds(controls);
 
     _fileInfo.setBounds(bounds.removeFromLeft(bounds.proportionOfWidth(0.15)));
@@ -249,6 +132,71 @@ auto PluginEditor::openFile() -> void
 
     _fileChooser = std::make_unique<juce::FileChooser>(msg, homeDir, _formats.getWildcardForAllFormats());
     _fileChooser->launchAsync(chooserFlags, load);
+}
+
+auto PluginEditor::runBenchmarks() -> void
+{
+    _signalFile = juce::File{R"(C:\Users\tobias\Music\Loops\Drums.wav)"};
+    _filterFile = juce::File{R"(C:\Users\tobias\Music\Samples\IR\LexiconPCM90 Halls\ORCH_gothic hall.WAV)"};
+
+    _signal = loadAndResample(_formats, _signalFile, 44'100.0);
+    _filter = loadAndResample(_formats, _filterFile, 44'100.0);
+
+    runJuceConvolverBenchmark();
+    runDenseConvolverBenchmark();
+    runSparseConvolverBenchmark();
+}
+
+auto PluginEditor::runJuceConvolverBenchmark() -> void
+{
+    auto proc = JuceConvolver{_filterFile, {44'100.0, 512, 2}};
+
+    auto start  = std::chrono::system_clock::now();
+    auto output = juce::AudioBuffer<float>{_signal.getNumChannels(), _signal.getNumSamples()};
+    auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("jconv", ".wav");
+
+    processBlocks(proc, _signal, output, 512, 44'100.0);
+    peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
+    peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
+
+    auto end = std::chrono::system_clock::now();
+    std::cout << "JCONV: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << '\n';
+
+    writeToWavFile(file, output, 44'100.0, 32);
+}
+
+auto PluginEditor::runDenseConvolverBenchmark() -> void
+{
+    auto start = std::chrono::system_clock::now();
+
+    auto output = fft::dense_convolve(_signal, _filter);
+    auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_dense", ".wav");
+
+    peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
+    peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
+
+    auto end = std::chrono::system_clock::now();
+    std::cout << "TCONV-DENSE: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << '\n';
+
+    writeToWavFile(file, output, 44'100.0, 32);
+}
+
+auto PluginEditor::runSparseConvolverBenchmark() -> void
+{
+    auto start = std::chrono::system_clock::now();
+
+    auto thresholdDB = -40.0F;
+    auto output      = fft::sparse_convolve(_signal, _filter, thresholdDB);
+    auto file        = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_sparse_40", ".wav");
+
+    peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
+    peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
+
+    auto end = std::chrono::system_clock::now();
+    std::cout << "TCONV-SPARSE(40): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+              << '\n';
+
+    writeToWavFile(file, output, 44'100.0, 32);
 }
 
 }  // namespace neo
