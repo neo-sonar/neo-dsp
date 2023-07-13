@@ -1,6 +1,6 @@
 #pragma once
 
-#include "neo/mdspan.hpp"
+#include "neo/convolution/container/mdspan.hpp"
 
 #include <cstddef>
 #include <iterator>
@@ -161,9 +161,9 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::operator()(ind
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
-auto schur_product_accumulate_columns(Kokkos::mdspan<T, Kokkos::dextents<std::size_t, 2>> lhs,
-                                      sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& rhs,
-                                      std::span<T> accumulator) -> void
+auto schur_product_accumulate_columnwise(Kokkos::mdspan<T, Kokkos::dextents<std::size_t, 2>> lhs,
+                                         sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& rhs,
+                                         std::span<T> accumulator) -> void
 {
     jassert(lhs.extent(0) == rhs.rows());
     jassert(lhs.extent(1) == rhs.columns());
@@ -183,9 +183,9 @@ auto schur_product_accumulate_columns(Kokkos::mdspan<T, Kokkos::dextents<std::si
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
-auto schur_product_accumulate_columns(sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& lhs,
-                                      sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& rhs,
-                                      std::span<T> accumulator) -> void
+auto schur_product_accumulate_columnwise(sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& lhs,
+                                         sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& rhs,
+                                         std::span<T> accumulator) -> void
 {
     jassert(lhs.rows() == rhs.rows());
     jassert(lhs.columns() == rhs.columns());

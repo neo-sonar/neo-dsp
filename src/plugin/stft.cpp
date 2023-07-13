@@ -1,6 +1,6 @@
 #include "stft.hpp"
 
-#include "neo/math/normalize.hpp"
+#include "normalize.hpp"
 
 #include <juce_audio_basics/juce_audio_basics.h>
 

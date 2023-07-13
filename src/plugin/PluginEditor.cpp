@@ -1,13 +1,14 @@
 #include "PluginEditor.hpp"
 
-#include "neo/fft/convolution.hpp"
-#include "neo/fft/spectogram.hpp"
-#include "neo/fft/stft.hpp"
-#include "neo/math/normalize.hpp"
-#include "neo/math/sparse_matrix.hpp"
-#include "neo/render.hpp"
-#include "neo/resample.hpp"
-#include "neo/wav.hpp"
+#include "convolution.hpp"
+#include "normalize.hpp"
+#include "render.hpp"
+#include "resample.hpp"
+#include "spectogram.hpp"
+#include "stft.hpp"
+#include "wav.hpp"
+
+#include "neo/convolution/container/sparse_matrix.hpp"
 
 #include <span>
 
@@ -24,11 +25,11 @@ namespace neo
     jassertquiet(rhs.columns() == 32);
 
     auto accumulator = std::vector<float>(lhs.extent(1));
-    schur_product_accumulate_columns(lhs.to_mdspan(), rhs, std::span<float>{accumulator});
+    schur_product_accumulate_columnwise(lhs.to_mdspan(), rhs, std::span<float>{accumulator});
     jassert(std::all_of(accumulator.begin(), accumulator.end(), [](auto x) { return x == 0.0F; }));
 
     rhs.insert(0, 0, 2.0F);
-    schur_product_accumulate_columns(lhs.to_mdspan(), rhs, std::span<float>{accumulator});
+    schur_product_accumulate_columnwise(lhs.to_mdspan(), rhs, std::span<float>{accumulator});
     jassert(accumulator[0] == 2.0F);
     jassert(std::all_of(std::next(accumulator.begin()), accumulator.end(), [](auto x) { return x == 0.0F; }));
     // std::fill(accumulator.begin(), accumulator.end(), 0.0F);

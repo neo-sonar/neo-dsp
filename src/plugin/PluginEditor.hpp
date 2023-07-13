@@ -2,7 +2,7 @@
 
 #include "PluginProcessor.hpp"
 
-#include "neo/mdspan.hpp"
+#include "neo/convolution/container/mdspan.hpp"
 
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <juce_gui_extra/juce_gui_extra.h>

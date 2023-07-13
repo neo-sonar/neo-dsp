@@ -1,6 +1,6 @@
 #include "convolution.hpp"
 
-#include "neo/math/normalize.hpp"
+#include "normalize.hpp"
 
 namespace neo::fft
 {
