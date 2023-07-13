@@ -15,47 +15,8 @@
 namespace neo
 {
 
-[[maybe_unused]] static auto testSparseMatrix() -> bool
-{
-    auto lhs = KokkosEx::mdarray<float, Kokkos::dextents<std::size_t, 2>>{16, 32};
-    std::fill(lhs.data(), std::next(lhs.data(), std::ssize(lhs)), 1.0F);
-
-    auto rhs = sparse_matrix<float>{16, 32};
-    jassertquiet(rhs.rows() == 16);
-    jassertquiet(rhs.columns() == 32);
-
-    auto accumulator = std::vector<float>(lhs.extent(1));
-    schur_product_accumulate_columnwise(lhs.to_mdspan(), rhs, std::span<float>{accumulator});
-    jassert(std::all_of(accumulator.begin(), accumulator.end(), [](auto x) { return x == 0.0F; }));
-
-    rhs.insert(0, 0, 2.0F);
-    schur_product_accumulate_columnwise(lhs.to_mdspan(), rhs, std::span<float>{accumulator});
-    jassert(accumulator[0] == 2.0F);
-    jassert(std::all_of(std::next(accumulator.begin()), accumulator.end(), [](auto x) { return x == 0.0F; }));
-    // std::fill(accumulator.begin(), accumulator.end(), 0.0F);
-
-    auto other = sparse_matrix<float>{lhs.to_mdspan(), [](auto v) { return v >= 1.0F; }};
-    jassert(other.rows() == lhs.extent(0));
-    jassert(other.columns() == lhs.extent(1));
-    jassert(other.value_container().size() == lhs.size());
-
-    other = sparse_matrix<float>{lhs.to_mdspan(), [](auto v) { return v >= 2.0F; }};
-    jassert(other.rows() == lhs.extent(0));
-    jassert(other.columns() == lhs.extent(1));
-    jassert(other.value_container().size() == 0);
-
-    auto row = std::vector<float>(lhs.extent(1));
-    std::fill(row.begin(), row.end(), 2.0F);
-    other.insert_row(0, std::span{row}, [](auto) { return true; });
-    jassert(other.value_container().size() == 32);
-    jassert(other.column_container().size() == 32);
-    return true;
-}
-
 PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 {
-    jassert(testSparseMatrix());
-
     _formats.registerBasicFormats();
 
     _openFile.onClick = [this] { openFile(); };

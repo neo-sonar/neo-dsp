@@ -2,6 +2,7 @@
 
 #include "neo/convolution/container/mdspan.hpp"
 
+#include <cassert>
 #include <cstddef>
 #include <iterator>
 #include <span>
@@ -165,8 +166,8 @@ auto schur_product_accumulate_columnwise(Kokkos::mdspan<T, Kokkos::dextents<std:
                                          sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& rhs,
                                          std::span<T> accumulator) -> void
 {
-    jassert(lhs.extent(0) == rhs.rows());
-    jassert(lhs.extent(1) == rhs.columns());
+    assert(lhs.extent(0) == rhs.rows());
+    assert(lhs.extent(1) == rhs.columns());
 
     auto const& rrows = rhs.row_container();
     auto const& rcols = rhs.column_container();
@@ -187,8 +188,8 @@ auto schur_product_accumulate_columnwise(sparse_matrix<T, IndexType, ValueContai
                                          sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& rhs,
                                          std::span<T> accumulator) -> void
 {
-    jassert(lhs.rows() == rhs.rows());
-    jassert(lhs.columns() == rhs.columns());
+    assert(lhs.rows() == rhs.rows());
+    assert(lhs.columns() == rhs.columns());
 
     auto const& lrows = lhs.row_container();
     auto const& lcols = lhs.column_container();
