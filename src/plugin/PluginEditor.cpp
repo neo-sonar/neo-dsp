@@ -1,12 +1,12 @@
 #include "PluginEditor.hpp"
 
-#include "convolution.hpp"
-#include "normalize.hpp"
-#include "render.hpp"
-#include "resample.hpp"
-#include "spectogram.hpp"
-#include "stft.hpp"
-#include "wav.hpp"
+#include "dsp/convolution.hpp"
+#include "dsp/normalize.hpp"
+#include "dsp/render.hpp"
+#include "dsp/resample.hpp"
+#include "dsp/spectogram.hpp"
+#include "dsp/stft.hpp"
+#include "dsp/wav.hpp"
 
 #include "neo/convolution/container/sparse_matrix.hpp"
 

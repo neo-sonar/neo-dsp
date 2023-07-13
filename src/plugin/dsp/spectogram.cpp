@@ -1,7 +1,7 @@
 #include "spectogram.hpp"
 
-#include "normalize.hpp"
-#include "stft.hpp"
+#include "dsp/normalize.hpp"
+#include "dsp/stft.hpp"
 
 #include <juce_dsp/juce_dsp.h>
 

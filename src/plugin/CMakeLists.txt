@@ -24,20 +24,19 @@ target_sources(PerceptualConvolution
         PluginProcessor.hpp
         PluginProcessor.cpp
 
-        render.hpp
-        resample.cpp
-        resample.hpp
-        wav.hpp
-
-        convolution.cpp
-        convolution.hpp
-        spectogram.cpp
-        spectogram.hpp
-        stft.cpp
-        stft.hpp
-
-        normalize.cpp
-        normalize.hpp
+        dsp/convolution.cpp
+        dsp/convolution.hpp
+        dsp/normalize.cpp
+        dsp/normalize.hpp
+        dsp/render.hpp
+        dsp/resample.cpp
+        dsp/resample.hpp
+        dsp/spectogram.cpp
+        dsp/spectogram.hpp
+        dsp/stft.cpp
+        dsp/stft.hpp
+        dsp/wav.cpp
+        dsp/wav.hpp
 )
 
 target_compile_definitions(PerceptualConvolution
@@ -54,6 +53,7 @@ target_compile_definitions(PerceptualConvolution
 
 target_include_directories(PerceptualConvolution
     PUBLIC
+        ${PROJECT_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/3rd_party/JUCE/modules
 )
 

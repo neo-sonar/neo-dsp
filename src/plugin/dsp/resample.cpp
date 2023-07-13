@@ -41,4 +41,22 @@ auto loadAndResample(juce::AudioFormatManager& formats, juce::File const& file, 
     return buffer;
 }
 
+auto to_mdarray(juce::AudioBuffer<float> const& buffer) -> KokkosEx::mdarray<float, Kokkos::dextents<std::size_t, 2>>
+{
+    auto result = KokkosEx::mdarray<float, Kokkos::dextents<std::size_t, 2>>{
+        static_cast<std::size_t>(buffer.getNumChannels()),
+        static_cast<std::size_t>(buffer.getNumSamples()),
+    };
+
+    for (auto ch{0ULL}; ch < result.extent(0); ++ch)
+    {
+        for (auto i{0ULL}; i < result.extent(1); ++i)
+        {
+            result(ch, i) = buffer.getSample(static_cast<int>(ch), static_cast<int>(i));
+        }
+    }
+
+    return result;
+}
+
 }  // namespace neo
