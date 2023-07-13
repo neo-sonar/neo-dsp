@@ -1,7 +1,7 @@
 #pragma once
 
 #include "neo/convolution/container/mdspan.hpp"
-#include "real_fft.hpp"
+#include "neo/fft/radix2.hpp"
 
 #include <juce_dsp/juce_dsp.h>
 
@@ -25,43 +25,12 @@ private:
     KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> _filter;
     std::size_t _fdlIndex{0};
 
-    std::unique_ptr<rfft_plan> _rfft;
+    std::unique_ptr<rfft_radix2_plan<float>> _rfft;
     std::vector<std::complex<float>> _rfftBuf;
     std::vector<float> _irfftBuf;
 };
 
 [[nodiscard]] auto convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter,
                             float thresholdDB) -> juce::AudioBuffer<float>;
-
-struct juce_convolver
-{
-    explicit juce_convolver(juce::File impulse) : _impulse{std::move(impulse)} {}
-
-    auto prepare(juce::dsp::ProcessSpec const& spec) -> void
-    {
-        auto const trim      = juce::dsp::Convolution::Trim::no;
-        auto const stereo    = juce::dsp::Convolution::Stereo::yes;
-        auto const normalize = juce::dsp::Convolution::Normalise::no;
-
-        _convolver.prepare(spec);
-        _convolver.loadImpulseResponse(_impulse, stereo, trim, 0, normalize);
-
-        // impulse is loaded on background thread, may not have loaded fast enough in unit-tests
-        std::this_thread::sleep_for(std::chrono::milliseconds{100});
-    }
-
-    auto reset() -> void { _convolver.reset(); }
-
-    template<typename Context>
-    auto process(Context const& context) -> void
-    {
-        _convolver.process(context);
-    }
-
-private:
-    juce::File _impulse;
-    juce::dsp::ConvolutionMessageQueue _queue;
-    juce::dsp::Convolution _convolver{juce::dsp::Convolution::Latency{0}, _queue};
-};
 
 }  // namespace neo::fft

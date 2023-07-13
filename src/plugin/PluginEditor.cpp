@@ -15,6 +15,42 @@
 namespace neo
 {
 
+namespace
+{
+
+struct JuceConvolver
+{
+    explicit JuceConvolver(juce::File impulse) : _impulse{std::move(impulse)} {}
+
+    auto prepare(juce::dsp::ProcessSpec const& spec) -> void
+    {
+        auto const trim      = juce::dsp::Convolution::Trim::no;
+        auto const stereo    = juce::dsp::Convolution::Stereo::yes;
+        auto const normalize = juce::dsp::Convolution::Normalise::no;
+
+        _convolver.prepare(spec);
+        _convolver.loadImpulseResponse(_impulse, stereo, trim, 0, normalize);
+
+        // impulse is loaded on background thread, may not have loaded fast enough in unit-tests
+        std::this_thread::sleep_for(std::chrono::milliseconds{100});
+    }
+
+    auto reset() -> void { _convolver.reset(); }
+
+    template<typename Context>
+    auto process(Context const& context) -> void
+    {
+        _convolver.process(context);
+    }
+
+private:
+    juce::File _impulse;
+    juce::dsp::ConvolutionMessageQueue _queue;
+    juce::dsp::Convolution _convolver{juce::dsp::Convolution::Latency{0}, _queue};
+};
+
+}  // namespace
+
 PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 {
     _formats.registerBasicFormats();
@@ -43,61 +79,60 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     setResizable(true, true);
     setSize(600, 400);
 
-    // auto const signalFile = juce::File{R"(C:\Users\tobias\Music\Loops\Drums.wav)"};
-    // auto const filterFile = juce::File{R"(C:\Users\tobias\Music\Samples\IR\LexiconPCM90 Halls\ORCH_gothic
-    // hall.WAV)"};
+    auto const signalFile = juce::File{R"(C:\Users\tobias\Music\Loops\Drums.wav)"};
+    auto const filterFile = juce::File{R"(C:\Users\tobias\Music\Samples\IR\LexiconPCM90 Halls\ORCH_gothic hall.WAV)"};
 
-    // auto const signal = loadAndResample(_formats, signalFile, 44'100.0);
-    // auto const filter = loadAndResample(_formats, filterFile, 44'100.0);
+    auto const signal = loadAndResample(_formats, signalFile, 44'100.0);
+    auto const filter = loadAndResample(_formats, filterFile, 44'100.0);
 
-    // {
-    //     auto start = std::chrono::system_clock::now();
+    {
+        auto start = std::chrono::system_clock::now();
 
-    //     auto proc   = fft::juce_convolver{filterFile};
-    //     auto output = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
-    //     auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("jconv", ".wav");
+        auto proc   = JuceConvolver{filterFile};
+        auto output = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
+        auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("jconv", ".wav");
 
-    //     processBlocks(proc, signal, output, 512, 44'100.0);
-    //     peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-    //     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
+        processBlocks(proc, signal, output, 512, 44'100.0);
+        peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
+        peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
 
-    //     auto end = std::chrono::system_clock::now();
-    //     std::cout << "JCONV: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << '\n';
+        auto end = std::chrono::system_clock::now();
+        std::cout << "JCONV: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << '\n';
 
-    //     writeToWavFile(file, output, 44'100.0, 32);
-    // }
+        writeToWavFile(file, output, 44'100.0, 32);
+    }
 
-    // {
-    //     auto start = std::chrono::system_clock::now();
+    {
+        auto start = std::chrono::system_clock::now();
 
-    //     auto output = fft::convolve(signal, filter, -25.0F);
-    //     auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_25", ".wav");
+        auto output = fft::convolve(signal, filter, -25.0F);
+        auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_25", ".wav");
 
-    //     peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-    //     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
+        peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
+        peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
 
-    //     auto end = std::chrono::system_clock::now();
-    //     std::cout << "TCONV(25): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
-    //               << '\n';
+        auto end = std::chrono::system_clock::now();
+        std::cout << "TCONV(25): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+                  << '\n';
 
-    //     writeToWavFile(file, output, 44'100.0, 32);
-    // }
+        writeToWavFile(file, output, 44'100.0, 32);
+    }
 
-    // {
-    //     auto start = std::chrono::system_clock::now();
+    {
+        auto start = std::chrono::system_clock::now();
 
-    //     auto output = fft::convolve(signal, filter, -30.0F);
-    //     auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_30", ".wav");
+        auto output = fft::convolve(signal, filter, -30.0F);
+        auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_30", ".wav");
 
-    //     peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-    //     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
+        peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
+        peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
 
-    //     auto end = std::chrono::system_clock::now();
-    //     std::cout << "TCONV(30): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
-    //               << '\n';
+        auto end = std::chrono::system_clock::now();
+        std::cout << "TCONV(30): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+                  << '\n';
 
-    //     writeToWavFile(file, output, 44'100.0, 32);
-    // }
+        writeToWavFile(file, output, 44'100.0, 32);
+    }
 
     // {
     //     auto start = std::chrono::system_clock::now();

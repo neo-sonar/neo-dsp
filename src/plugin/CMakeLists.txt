@@ -31,8 +31,6 @@ target_sources(PerceptualConvolution
 
         convolution.cpp
         convolution.hpp
-        real_fft.cpp
-        real_fft.hpp
         spectogram.cpp
         spectogram.hpp
         stft.cpp

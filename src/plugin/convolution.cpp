@@ -36,7 +36,7 @@ auto upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos:
     _fdl    = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{filter.extents()};
     _filter = filter;
 
-    _rfft = std::make_unique<rfft_plan>(K);
+    _rfft = std::make_unique<rfft_radix2_plan<float>>(ilog2(K));
     _window.resize(K);
     _rfftBuf.resize(_window.size());
     _irfftBuf.resize(_window.size());
@@ -56,7 +56,7 @@ auto upols_convolver::operator()(std::span<float> block) -> void
     std::copy(block.begin(), block.end(), std::prev(_window.end(), blockSize));
 
     // 2B-point R2C-FFT
-    rfft(*_rfft, _window, _rfftBuf);
+    std::invoke(*_rfft, _window, _rfftBuf);
 
     // Copy to FDL
     for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(_fdlIndex, i) = _rfftBuf[i] / float(_rfft->size()); }
@@ -69,7 +69,7 @@ auto upols_convolver::operator()(std::span<float> block) -> void
     if (_fdlIndex == _fdl.extent(0)) { _fdlIndex = 0; }
 
     // 2B-point C2R-IFFT
-    irfft(*_rfft, _accumulator, _irfftBuf);
+    std::invoke(*_rfft, _accumulator, _irfftBuf);
 
     // Copy blockSize samples to output
     std::copy(std::prev(_irfftBuf.end(), blockSize), _irfftBuf.end(), block.begin());
@@ -87,7 +87,7 @@ static auto partition_filter(juce::AudioBuffer<float> const& buffer, int blockSi
         numBins,
     };
 
-    auto rfft   = rfft_plan{static_cast<std::size_t>(windowSize)};
+    auto rfft   = rfft_radix2_plan<float>{ilog2(static_cast<size_t>(windowSize))};
     auto input  = std::vector<float>(size_t(windowSize));
     auto output = std::vector<std::complex<float>>(size_t(windowSize));
 
