@@ -43,6 +43,18 @@ static auto multiply_and_accumulate(Kokkos::mdspan<std::complex<float> const, Ko
     }
 }
 
+static auto multiply_and_accumulate(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<std::size_t, 2>> lhs,
+                                    sparse_matrix<std::complex<float>> const& rhs,
+                                    std::span<std::complex<float>> accumulator, std::size_t shift)
+{
+    jassert(lhs.extent(0) == rhs.rows());
+    jassert(lhs.extent(1) == rhs.columns());
+    jassert(lhs.extent(1) > 0);
+    jassert(shift < lhs.extent(0));
+
+    schur_product_accumulate_columnwise(lhs, rhs, accumulator, shift);
+}
+
 auto upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter) -> void
 {
     auto const K = std::bit_ceil((filter.extent(1) - 1U) * 2U);
@@ -60,6 +72,54 @@ auto upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos:
 }
 
 auto upols_convolver::operator()(std::span<float> block) -> void
+{
+    jassert(block.size() * 2U == _window.size());
+
+    auto const blockSize = std::ssize(block);
+
+    // Time domain input buffer
+    std::shift_left(_window.begin(), _window.end(), blockSize);
+    std::copy(block.begin(), block.end(), std::prev(_window.end(), blockSize));
+
+    // 2B-point R2C-FFT
+    std::invoke(*_rfft, _window, _rfftBuf);
+
+    // Copy to FDL
+    for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(_fdlIndex, i) = _rfftBuf[i] / float(_rfft->size()); }
+
+    // DFT-spectrum additions
+    std::fill(_accumulator.begin(), _accumulator.end(), 0.0F);
+    multiply_and_accumulate(_fdl, _filter, _accumulator, _fdlIndex);
+
+    // All contents (DFT spectra) in the FDL are shifted up by one slot.
+    ++_fdlIndex;
+    if (_fdlIndex == _fdl.extent(0)) { _fdlIndex = 0; }
+
+    // 2B-point C2R-IFFT
+    std::invoke(*_rfft, _accumulator, _irfftBuf);
+
+    // Copy blockSize samples to output
+    std::copy(std::prev(_irfftBuf.end(), blockSize), _irfftBuf.end(), block.begin());
+}
+
+auto sparse_upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter)
+    -> void
+{
+    auto const K = std::bit_ceil((filter.extent(1) - 1U) * 2U);
+
+    _fdl    = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{filter.extents()};
+    _filter = sparse_matrix<std::complex<float>>{filter, [](auto) { return true; }};
+
+    _rfft = std::make_unique<rfft_radix2_plan<float>>(ilog2(K));
+    _window.resize(K);
+    _rfftBuf.resize(_window.size());
+    _irfftBuf.resize(_window.size());
+    _accumulator.resize(_filter.columns());
+
+    _fdlIndex = 0;
+}
+
+auto sparse_upols_convolver::operator()(std::span<float> block) -> void
 {
     jassert(block.size() * 2U == _window.size());
 
@@ -189,7 +249,7 @@ auto convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> c
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch)
     {
-        auto convolver     = upols_convolver{};
+        auto convolver     = sparse_upols_convolver{};
         auto const channel = static_cast<size_t>(ch);
         auto const full    = Kokkos::full_extent;
         convolver.filter(KokkosEx::submdspan(partitions.to_mdspan(), channel, full, full));

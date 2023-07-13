@@ -162,25 +162,28 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::operator()(ind
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
-auto schur_product_accumulate_columnwise(Kokkos::mdspan<T, Kokkos::dextents<std::size_t, 2>> lhs,
+auto schur_product_accumulate_columnwise(Kokkos::mdspan<T const, Kokkos::dextents<std::size_t, 2>> lhs,
                                          sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& rhs,
-                                         std::span<T> accumulator) -> void
+                                         std::span<T> accumulator, std::size_t shift = 0) -> void
 {
     assert(lhs.extent(0) == rhs.rows());
     assert(lhs.extent(1) == rhs.columns());
 
-    auto const& rrows = rhs.row_container();
-    auto const& rcols = rhs.column_container();
-    auto const& rvals = rhs.value_container();
-
-    for (auto row(std::size_t{0}); row < rhs.rows(); ++row)
+    auto multiplyRow = [&](auto leftRow, auto rightRow)
     {
-        for (auto i = rrows[row]; i < rrows[row + 1]; i++)
+        auto const& rrows = rhs.row_container();
+        auto const& rcols = rhs.column_container();
+        auto const& rvals = rhs.value_container();
+
+        for (auto i{rrows[rightRow]}; i < rrows[rightRow + 1]; i++)
         {
-            auto col = rcols[i];
-            accumulator[col] += rvals[i] * lhs(col, row);
+            auto const col = rcols[i];
+            accumulator[col] += lhs(leftRow, col) * rvals[i];
         }
-    }
+    };
+
+    for (auto row{0U}; row <= shift; ++row) { multiplyRow(row, shift - row); }
+    for (auto row{shift + 1}; row < rhs.rows(); ++row) { multiplyRow(row, rhs.rows() - (row - shift) - 1); }
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>

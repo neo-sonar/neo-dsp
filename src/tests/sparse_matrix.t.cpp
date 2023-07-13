@@ -14,11 +14,11 @@
     assert(rhs.columns() == 32);
 
     auto accumulator = std::vector<float>(lhs.extent(1));
-    neo::schur_product_accumulate_columnwise(lhs.to_mdspan(), rhs, std::span<float>{accumulator});
+    neo::schur_product_accumulate_columnwise<float>(lhs.to_mdspan(), rhs, std::span<float>{accumulator});
     assert(std::all_of(accumulator.begin(), accumulator.end(), [](auto x) { return x == 0.0F; }));
 
     rhs.insert(0, 0, 2.0F);
-    neo::schur_product_accumulate_columnwise(lhs.to_mdspan(), rhs, std::span<float>{accumulator});
+    neo::schur_product_accumulate_columnwise<float>(lhs.to_mdspan(), rhs, std::span<float>{accumulator});
     assert(accumulator[0] == 2.0F);
     assert(std::all_of(std::next(accumulator.begin()), accumulator.end(), [](auto x) { return x == 0.0F; }));
     // std::fill(accumulator.begin(), accumulator.end(), 0.0F);
