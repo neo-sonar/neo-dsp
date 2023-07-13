@@ -171,6 +171,7 @@ auto schur_product_accumulate_columnwise(Kokkos::mdspan<T const, Kokkos::dextent
 
     auto multiplyRow = [&](auto leftRow, auto rightRow)
     {
+        auto const left   = KokkosEx::submdspan(lhs, leftRow, Kokkos::full_extent);
         auto const& rrows = rhs.row_container();
         auto const& rcols = rhs.column_container();
         auto const& rvals = rhs.value_container();
@@ -178,7 +179,7 @@ auto schur_product_accumulate_columnwise(Kokkos::mdspan<T const, Kokkos::dextent
         for (auto i{rrows[rightRow]}; i < rrows[rightRow + 1]; i++)
         {
             auto const col = rcols[i];
-            accumulator[col] += lhs(leftRow, col) * rvals[i];
+            accumulator[col] += left(col) * rvals[i];
         }
     };
 

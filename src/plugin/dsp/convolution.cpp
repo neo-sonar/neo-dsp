@@ -46,65 +46,18 @@ static auto partition_filter(juce::AudioBuffer<float> const& buffer, int blockSi
     return result;
 }
 
-static auto normalization_factor(Kokkos::mdspan<std::complex<float>, Kokkos::dextents<size_t, 3>> filter) -> float
-{
-    auto maxGain = 0.0F;
-
-    for (auto ch{0UL}; ch < filter.extent(0); ++ch)
-    {
-        for (auto partition{0UL}; partition < filter.extent(1); ++partition)
-        {
-            for (auto bin{0UL}; bin < filter.extent(2); ++bin)
-            {
-                maxGain = std::max(maxGain, std::abs(filter(ch, partition, bin)));
-            }
-        }
-    }
-
-    return 1.0F / maxGain;
-}
-
-static auto clamp_coefficients_to_zero(Kokkos::mdspan<std::complex<float>, Kokkos::dextents<size_t, 3>> filter,
-                                       float thresholdDB) -> void
-{
-    auto const factor = normalization_factor(filter);
-
-    auto counter = 0;
-    for (auto ch{0UL}; ch < filter.extent(0); ++ch)
-    {
-        for (auto partition{0UL}; partition < filter.extent(1); ++partition)
-        {
-            for (auto bin{0UL}; bin < filter.extent(2); ++bin)
-            {
-                auto const amplitude = std::abs(filter(ch, partition, bin)) * factor;
-                auto const dB        = juce::Decibels::gainToDecibels(amplitude);
-                if (dB < thresholdDB)
-                {
-                    filter(ch, partition, bin) = 0.0F;
-                    ++counter;
-                }
-            }
-        }
-    }
-
-    auto const percentage = double(counter) / double(filter.size()) * 100.0;
-    std::cout << "Clamp(" << thresholdDB << "): " << counter << " (" << percentage << " %)\n";
-}
-
 auto convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter, float thresholdDB)
     -> juce::AudioBuffer<float>
 {
     auto const blockSize = 512;
 
-    auto output = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
-    auto block  = std::vector<float>(size_t(blockSize));
-
+    auto output     = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
+    auto block      = std::vector<float>(size_t(blockSize));
     auto partitions = partition_filter(filter, blockSize);
-    clamp_coefficients_to_zero(partitions, thresholdDB);
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch)
     {
-        auto convolver     = sparse_upols_convolver{};
+        auto convolver     = sparse_upols_convolver{thresholdDB};
         auto const channel = static_cast<size_t>(ch);
         auto const full    = Kokkos::full_extent;
         convolver.filter(KokkosEx::submdspan(partitions.to_mdspan(), channel, full, full));

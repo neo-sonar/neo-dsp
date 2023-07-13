@@ -13,12 +13,14 @@ namespace neo::fft
 
 struct sparse_upols_convolver
 {
-    sparse_upols_convolver() = default;
+    explicit sparse_upols_convolver(float thresholdDB) : _thresholdDB{thresholdDB} {}
 
     auto filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter) -> void;
     auto operator()(std::span<float> block) -> void;
 
 private:
+    float _thresholdDB;
+
     std::vector<float> _window;
     std::vector<std::complex<float>> _accumulator;
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _fdl;

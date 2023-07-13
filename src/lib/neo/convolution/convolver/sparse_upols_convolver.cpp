@@ -1,7 +1,15 @@
 #include "sparse_upols_convolver.hpp"
 
+#include <random>
+
 namespace neo::fft
 {
+
+static auto toDecibels(float gain) -> float
+{
+    if (gain == 0.0F) { return -144.0F; }
+    return 20.0F * std::log10(gain);
+}
 
 static auto multiply_and_accumulate(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<std::size_t, 2>> lhs,
                                     sparse_matrix<std::complex<float>> const& rhs,
@@ -15,13 +23,34 @@ static auto multiply_and_accumulate(Kokkos::mdspan<std::complex<float> const, Ko
     schur_product_accumulate_columnwise(lhs, rhs, accumulator, shift);
 }
 
+static auto normalization_factor(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter) -> float
+{
+    auto maxGain = 0.0F;
+
+    for (auto partition{0UL}; partition < filter.extent(0); ++partition)
+    {
+        for (auto bin{0UL}; bin < filter.extent(1); ++bin)
+        {
+            maxGain = std::max(maxGain, std::abs(filter(partition, bin)));
+        }
+    }
+
+    return 1.0F / maxGain;
+}
+
 auto sparse_upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter)
     -> void
 {
     auto const K = std::bit_ceil((filter.extent(1) - 1U) * 2U);
 
+    auto const discardBelowThreshold = [threshold = _thresholdDB, scale = normalization_factor(filter)](auto bin)
+    {
+        auto const dB = toDecibels(std::abs(bin) * scale);
+        return dB > threshold;
+    };
+
     _fdl    = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{filter.extents()};
-    _filter = sparse_matrix<std::complex<float>>{filter, [](auto) { return true; }};
+    _filter = sparse_matrix<std::complex<float>>{filter, discardBelowThreshold};
 
     _rfft = std::make_unique<rfft_radix2_plan<float>>(ilog2(K));
     _window.resize(K);
