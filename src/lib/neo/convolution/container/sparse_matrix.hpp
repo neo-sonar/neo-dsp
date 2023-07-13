@@ -182,8 +182,17 @@ auto schur_product_accumulate_columnwise(Kokkos::mdspan<T const, Kokkos::dextent
         }
     };
 
-    for (auto row{0U}; row <= shift; ++row) { multiplyRow(row, shift - row); }
-    for (auto row{shift + 1}; row < rhs.rows(); ++row) { multiplyRow(row, rhs.rows() - (row - shift) - 1); }
+    for (auto row{0U}; row <= shift; ++row)
+    {
+        auto const shifted = shift - row;
+        multiplyRow(row, shifted);
+    }
+
+    for (auto row{shift + 1}; row < rhs.rows(); ++row)
+    {
+        auto const shifted = rhs.rows() - (row - shift);
+        multiplyRow(row, shifted);
+    }
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
