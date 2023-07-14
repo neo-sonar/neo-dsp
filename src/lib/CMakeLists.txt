@@ -9,6 +9,7 @@ target_link_libraries(neo_convolution PUBLIC neo::fft std::mdspan)
 target_sources(neo_convolution
     PUBLIC
         "neo/convolution.hpp"
+        "neo/convolution.cpp"
 
         "neo/convolution/container.hpp"
         "neo/convolution/convolver.hpp"
