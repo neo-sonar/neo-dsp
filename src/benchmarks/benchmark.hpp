@@ -12,7 +12,7 @@
 namespace neo::fft {
 
 template<typename Func>
-auto timeit(std::string_view name, size_t N, Func func)
+auto timeit(std::string_view name, size_t sizeOfT, size_t N, Func func)
 {
     using microseconds = std::chrono::duration<double, std::micro>;
 
@@ -31,20 +31,13 @@ auto timeit(std::string_view name, size_t N, Func func)
         all_runs.push_back(std::chrono::duration_cast<microseconds>(stop - start).count());
     }
 
-    auto const runs        = std::span<double>(all_runs).subspan(1000, all_runs.size() - 1000 * 2);
-    auto const dsize       = static_cast<double>(size);
-    auto const avg         = std::reduce(runs.begin(), runs.end(), 0.0) / double(runs.size());
-    auto const itemsPerSec = static_cast<int>(std::lround(double(size) / avg));
+    auto const runs            = std::span<double>(all_runs).subspan(500, all_runs.size() - 500 * 2);
+    auto const dsize           = static_cast<double>(size);
+    auto const avg             = std::reduce(runs.begin(), runs.end(), 0.0) / double(runs.size());
+    auto const itemsPerSec     = static_cast<int>(std::lround(double(size) / avg));
+    auto const megaBytesPerSec = std::round(double(size * sizeOfT) / avg) / 1000.0;
 
-    std::printf(
-        "%-32s size: %-7zu - avg: %.1fus - min: %.1fus - max: %.1fus - N/usec: %d\n",
-        name.data(),
-        size,
-        avg,
-        *std::min_element(runs.begin(), runs.end()),
-        *std::max_element(runs.begin(), runs.end()),
-        itemsPerSec
-    );
+    std::printf("%-32s avg: %.1fus - N/usec: %d - GB/sec: %.2f\n", name.data(), avg, itemsPerSec, megaBytesPerSec);
 }
 
 }  // namespace neo::fft
