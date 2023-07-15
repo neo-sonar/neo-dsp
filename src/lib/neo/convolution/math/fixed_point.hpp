@@ -62,6 +62,19 @@ struct fixed_point
 
     [[nodiscard]] constexpr auto value() const noexcept -> storage_type { return _value; }
 
+    [[nodiscard]] constexpr auto operator+() const -> fixed_point { return *this; }
+
+    [[nodiscard]] constexpr auto operator-() const -> fixed_point
+    {
+        auto const min_v = std::numeric_limits<StorageType>::min();
+        auto const max_v = std::numeric_limits<StorageType>::max();
+
+        return fixed_point{
+            underlying_value,
+            value() == min_v ? max_v : static_cast<StorageType>(-value()),
+        };
+    }
+
     friend constexpr auto operator+(fixed_point lhs, fixed_point rhs) -> fixed_point
     {
         return {

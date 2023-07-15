@@ -3,6 +3,7 @@
 #undef NDEBUG
 #include <cassert>
 #include <cstdio>
+#include <functional>
 #include <vector>
 
 [[nodiscard]] static auto approx_equal(float a, float b, float tolerance) -> bool
@@ -39,72 +40,202 @@
     return true;
 }
 
-[[nodiscard]] static auto test_q7_t_arithmetic() -> bool
+[[nodiscard]] static auto test_q7_t_unary_ops() -> bool
 {
     using fxp_t          = neo::fft::q7_t;
     auto const tolerance = 0.01F;
 
+    auto unary_op = [tolerance](auto val, auto op)
+    {
+        auto const result   = to_float(op(fxp_t{val}));
+        auto const expected = op(val);
+        return approx_equal(result, expected, tolerance);
+    };
+
     // operator+
-    assert(approx_equal(to_float(fxp_t{0.00F} + fxp_t{0.5F}), 0.00F + 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.12F} + fxp_t{0.5F}), 0.12F + 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.25F} + fxp_t{0.5F}), 0.25F + 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.33F} + fxp_t{0.5F}), 0.33F + 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.40F} + fxp_t{0.5F}), 0.40F + 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.45F} + fxp_t{0.5F}), 0.45F + 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.49F} + fxp_t{0.5F}), 0.49F + 0.5F, tolerance));
+    auto const unary_plus = [](auto val) { return +val; };
+    assert(unary_op(0.00F, unary_plus));
+    assert(unary_op(0.12F, unary_plus));
+    assert(unary_op(0.25F, unary_plus));
+    assert(unary_op(0.33F, unary_plus));
+    assert(unary_op(0.40F, unary_plus));
+    assert(unary_op(0.45F, unary_plus));
+    assert(unary_op(0.49F, unary_plus));
+    assert(unary_op(0.75F, unary_plus));
+    assert(unary_op(0.99F, unary_plus));
+
+    assert(unary_op(-0.00F, unary_plus));
+    assert(unary_op(-0.12F, unary_plus));
+    assert(unary_op(-0.25F, unary_plus));
+    assert(unary_op(-0.33F, unary_plus));
+    assert(unary_op(-0.40F, unary_plus));
+    assert(unary_op(-0.45F, unary_plus));
+    assert(unary_op(-0.49F, unary_plus));
+    assert(unary_op(-0.75F, unary_plus));
+    assert(unary_op(-0.99F, unary_plus));
 
     // operator-
-    assert(approx_equal(to_float(fxp_t{0.00F} - fxp_t{0.5F}), 0.00F - 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.12F} - fxp_t{0.5F}), 0.12F - 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.25F} - fxp_t{0.5F}), 0.25F - 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.33F} - fxp_t{0.5F}), 0.33F - 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.40F} - fxp_t{0.5F}), 0.40F - 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.45F} - fxp_t{0.5F}), 0.45F - 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.49F} - fxp_t{0.5F}), 0.49F - 0.5F, tolerance));
+    assert(unary_op(0.00F, std::negate()));
+    assert(unary_op(0.12F, std::negate()));
+    assert(unary_op(0.25F, std::negate()));
+    assert(unary_op(0.33F, std::negate()));
+    assert(unary_op(0.40F, std::negate()));
+    assert(unary_op(0.45F, std::negate()));
+    assert(unary_op(0.49F, std::negate()));
+    assert(unary_op(0.75F, std::negate()));
+    assert(unary_op(0.99F, std::negate()));
 
-    // operator*
-    assert(approx_equal(to_float(fxp_t{0.00F} * fxp_t{0.5F}), 0.00F * 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.12F} * fxp_t{0.5F}), 0.12F * 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.25F} * fxp_t{0.5F}), 0.25F * 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.33F} * fxp_t{0.5F}), 0.33F * 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.40F} * fxp_t{0.5F}), 0.40F * 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.45F} * fxp_t{0.5F}), 0.45F * 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.49F} * fxp_t{0.5F}), 0.49F * 0.5F, tolerance));
+    assert(unary_op(-0.00F, std::negate()));
+    assert(unary_op(-0.12F, std::negate()));
+    assert(unary_op(-0.25F, std::negate()));
+    assert(unary_op(-0.33F, std::negate()));
+    assert(unary_op(-0.40F, std::negate()));
+    assert(unary_op(-0.45F, std::negate()));
+    assert(unary_op(-0.49F, std::negate()));
+    assert(unary_op(-0.75F, std::negate()));
+    assert(unary_op(-0.99F, std::negate()));
 
     return true;
 }
 
-[[nodiscard]] static auto test_q15_t_arithmetic() -> bool
+[[nodiscard]] static auto test_q15_t_unary_ops() -> bool
 {
     using fxp_t          = neo::fft::q15_t;
     auto const tolerance = 0.0001F;
 
+    auto unary_op = [tolerance](auto val, auto op)
+    {
+        auto const result   = to_float(op(fxp_t{val}));
+        auto const expected = op(val);
+        return approx_equal(result, expected, tolerance);
+    };
+
     // operator+
-    assert(approx_equal(to_float(fxp_t{0.00F} + fxp_t{0.5F}), 0.00F + 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.12F} + fxp_t{0.5F}), 0.12F + 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.25F} + fxp_t{0.5F}), 0.25F + 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.33F} + fxp_t{0.5F}), 0.33F + 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.40F} + fxp_t{0.5F}), 0.40F + 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.45F} + fxp_t{0.5F}), 0.45F + 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.49F} + fxp_t{0.5F}), 0.49F + 0.5F, tolerance));
+    auto const unary_plus = [](auto val) { return +val; };
+    assert(unary_op(0.00F, unary_plus));
+    assert(unary_op(0.12F, unary_plus));
+    assert(unary_op(0.25F, unary_plus));
+    assert(unary_op(0.33F, unary_plus));
+    assert(unary_op(0.40F, unary_plus));
+    assert(unary_op(0.45F, unary_plus));
+    assert(unary_op(0.49F, unary_plus));
+    assert(unary_op(0.75F, unary_plus));
+    assert(unary_op(0.99F, unary_plus));
+
+    assert(unary_op(-0.00F, unary_plus));
+    assert(unary_op(-0.12F, unary_plus));
+    assert(unary_op(-0.25F, unary_plus));
+    assert(unary_op(-0.33F, unary_plus));
+    assert(unary_op(-0.40F, unary_plus));
+    assert(unary_op(-0.45F, unary_plus));
+    assert(unary_op(-0.49F, unary_plus));
+    assert(unary_op(-0.75F, unary_plus));
+    assert(unary_op(-0.99F, unary_plus));
 
     // operator-
-    assert(approx_equal(to_float(fxp_t{0.00F} - fxp_t{0.5F}), 0.00F - 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.12F} - fxp_t{0.5F}), 0.12F - 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.25F} - fxp_t{0.5F}), 0.25F - 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.33F} - fxp_t{0.5F}), 0.33F - 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.40F} - fxp_t{0.5F}), 0.40F - 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.45F} - fxp_t{0.5F}), 0.45F - 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.49F} - fxp_t{0.5F}), 0.49F - 0.5F, tolerance));
+    assert(unary_op(0.00F, std::negate()));
+    assert(unary_op(0.12F, std::negate()));
+    assert(unary_op(0.25F, std::negate()));
+    assert(unary_op(0.33F, std::negate()));
+    assert(unary_op(0.40F, std::negate()));
+    assert(unary_op(0.45F, std::negate()));
+    assert(unary_op(0.49F, std::negate()));
+    assert(unary_op(0.75F, std::negate()));
+    assert(unary_op(0.99F, std::negate()));
+
+    assert(unary_op(-0.00F, std::negate()));
+    assert(unary_op(-0.12F, std::negate()));
+    assert(unary_op(-0.25F, std::negate()));
+    assert(unary_op(-0.33F, std::negate()));
+    assert(unary_op(-0.40F, std::negate()));
+    assert(unary_op(-0.45F, std::negate()));
+    assert(unary_op(-0.49F, std::negate()));
+    assert(unary_op(-0.75F, std::negate()));
+    assert(unary_op(-0.99F, std::negate()));
+
+    return true;
+}
+
+[[nodiscard]] static auto test_q7_t_binary_ops() -> bool
+{
+    using fxp_t          = neo::fft::q7_t;
+    auto const tolerance = 0.01F;
+
+    auto binary_op = [tolerance](auto lhs, auto rhs, auto op)
+    {
+        auto const result   = to_float(op(fxp_t{lhs}, fxp_t{rhs}));
+        auto const expected = op(lhs, rhs);
+        return approx_equal(result, expected, tolerance);
+    };
+
+    // operator+
+    assert(binary_op(0.00F, 0.5F, std::plus()));
+    assert(binary_op(0.12F, 0.5F, std::plus()));
+    assert(binary_op(0.25F, 0.5F, std::plus()));
+    assert(binary_op(0.33F, 0.5F, std::plus()));
+    assert(binary_op(0.40F, 0.5F, std::plus()));
+    assert(binary_op(0.45F, 0.5F, std::plus()));
+    assert(binary_op(0.49F, 0.5F, std::plus()));
+
+    // operator-
+    assert(binary_op(0.00F, 0.5F, std::minus()));
+    assert(binary_op(0.12F, 0.5F, std::minus()));
+    assert(binary_op(0.25F, 0.5F, std::minus()));
+    assert(binary_op(0.33F, 0.5F, std::minus()));
+    assert(binary_op(0.40F, 0.5F, std::minus()));
+    assert(binary_op(0.45F, 0.5F, std::minus()));
+    assert(binary_op(0.49F, 0.5F, std::minus()));
 
     // operator*
-    assert(approx_equal(to_float(fxp_t{0.00F} * fxp_t{0.5F}), 0.00F * 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.12F} * fxp_t{0.5F}), 0.12F * 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.25F} * fxp_t{0.5F}), 0.25F * 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.33F} * fxp_t{0.5F}), 0.33F * 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.40F} * fxp_t{0.5F}), 0.40F * 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.45F} * fxp_t{0.5F}), 0.45F * 0.5F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.49F} * fxp_t{0.5F}), 0.49F * 0.5F, tolerance));
+    assert(binary_op(0.00F, 0.5F, std::multiplies()));
+    assert(binary_op(0.12F, 0.5F, std::multiplies()));
+    assert(binary_op(0.25F, 0.5F, std::multiplies()));
+    assert(binary_op(0.33F, 0.5F, std::multiplies()));
+    assert(binary_op(0.40F, 0.5F, std::multiplies()));
+    assert(binary_op(0.45F, 0.5F, std::multiplies()));
+    assert(binary_op(0.49F, 0.5F, std::multiplies()));
+
+    return true;
+}
+
+[[nodiscard]] static auto test_q15_t_binary_ops() -> bool
+{
+    using fxp_t          = neo::fft::q15_t;
+    auto const tolerance = 0.0001F;
+
+    auto binary_op = [tolerance](auto lhs, auto rhs, auto op)
+    {
+        auto const result   = to_float(op(fxp_t{lhs}, fxp_t{rhs}));
+        auto const expected = op(lhs, rhs);
+        return approx_equal(result, expected, tolerance);
+    };
+
+    // operator+
+    assert(binary_op(0.00F, 0.5F, std::plus()));
+    assert(binary_op(0.12F, 0.5F, std::plus()));
+    assert(binary_op(0.25F, 0.5F, std::plus()));
+    assert(binary_op(0.33F, 0.5F, std::plus()));
+    assert(binary_op(0.40F, 0.5F, std::plus()));
+    assert(binary_op(0.45F, 0.5F, std::plus()));
+    assert(binary_op(0.49F, 0.5F, std::plus()));
+
+    // operator-
+    assert(binary_op(0.00F, 0.5F, std::minus()));
+    assert(binary_op(0.12F, 0.5F, std::minus()));
+    assert(binary_op(0.25F, 0.5F, std::minus()));
+    assert(binary_op(0.33F, 0.5F, std::minus()));
+    assert(binary_op(0.40F, 0.5F, std::minus()));
+    assert(binary_op(0.45F, 0.5F, std::minus()));
+    assert(binary_op(0.49F, 0.5F, std::minus()));
+
+    // operator*
+    assert(binary_op(0.00F, 0.5F, std::multiplies()));
+    assert(binary_op(0.12F, 0.5F, std::multiplies()));
+    assert(binary_op(0.25F, 0.5F, std::multiplies()));
+    assert(binary_op(0.33F, 0.5F, std::multiplies()));
+    assert(binary_op(0.40F, 0.5F, std::multiplies()));
+    assert(binary_op(0.45F, 0.5F, std::multiplies()));
+    assert(binary_op(0.49F, 0.5F, std::multiplies()));
 
     return true;
 }
@@ -150,11 +281,12 @@
 auto main() -> int
 {
     assert(test_q7_t_conversion());
+    assert(test_q7_t_unary_ops());
+    assert(test_q7_t_binary_ops());
+
     assert(test_q15_t_conversion());
-
-    assert(test_q7_t_arithmetic());
-    assert(test_q15_t_arithmetic());
-
+    assert(test_q15_t_unary_ops());
+    assert(test_q15_t_binary_ops());
     assert(test_q15_t_fixed_point_multiply());
 
     return EXIT_SUCCESS;
