@@ -240,6 +240,106 @@
     return true;
 }
 
+[[nodiscard]] static auto test_q7_t_comparison() -> bool
+{
+    using fxp_t = neo::fft::q7_t;
+
+    auto compare_op = [](auto lhs, auto rhs, auto op)
+    {
+        auto const result   = op(fxp_t{lhs}, fxp_t{rhs});
+        auto const expected = op(lhs, rhs);
+        return result == expected;
+    };
+
+    // operator==
+    assert(compare_op(+0.00F, +0.00F, std::equal_to()));
+    assert(compare_op(+0.50F, +0.00F, std::equal_to()));
+    assert(compare_op(+0.50F, -0.50F, std::equal_to()));
+    assert(compare_op(+0.50F, +0.50F, std::equal_to()));
+
+    // operator!=
+    assert(compare_op(+0.00F, +0.00F, std::not_equal_to()));
+    assert(compare_op(+0.50F, +0.00F, std::not_equal_to()));
+    assert(compare_op(+0.50F, -0.50F, std::not_equal_to()));
+    assert(compare_op(+0.50F, +0.50F, std::not_equal_to()));
+
+    // operator<
+    assert(compare_op(+0.00F, +0.00F, std::less()));
+    assert(compare_op(+0.50F, +0.00F, std::less()));
+    assert(compare_op(+0.50F, -0.50F, std::less()));
+    assert(compare_op(+0.50F, +0.50F, std::less()));
+
+    // operator<=
+    assert(compare_op(+0.00F, +0.00F, std::less_equal()));
+    assert(compare_op(+0.50F, +0.00F, std::less_equal()));
+    assert(compare_op(+0.50F, -0.50F, std::less_equal()));
+    assert(compare_op(+0.50F, +0.50F, std::less_equal()));
+
+    // operator>
+    assert(compare_op(+0.00F, +0.00F, std::greater()));
+    assert(compare_op(+0.50F, +0.00F, std::greater()));
+    assert(compare_op(+0.50F, -0.50F, std::greater()));
+    assert(compare_op(+0.50F, +0.50F, std::greater()));
+
+    // operator>=
+    assert(compare_op(+0.00F, +0.00F, std::greater_equal()));
+    assert(compare_op(+0.50F, +0.00F, std::greater_equal()));
+    assert(compare_op(+0.50F, -0.50F, std::greater_equal()));
+    assert(compare_op(+0.50F, +0.50F, std::greater_equal()));
+
+    return true;
+}
+
+[[nodiscard]] static auto test_q15_t_comparison() -> bool
+{
+    using fxp_t = neo::fft::q15_t;
+
+    auto compare_op = [](auto lhs, auto rhs, auto op)
+    {
+        auto const result   = op(fxp_t{lhs}, fxp_t{rhs});
+        auto const expected = op(lhs, rhs);
+        return result == expected;
+    };
+
+    // operator==
+    assert(compare_op(+0.00F, +0.00F, std::equal_to()));
+    assert(compare_op(+0.50F, +0.00F, std::equal_to()));
+    assert(compare_op(+0.50F, -0.50F, std::equal_to()));
+    assert(compare_op(+0.50F, +0.50F, std::equal_to()));
+
+    // operator!=
+    assert(compare_op(+0.00F, +0.00F, std::not_equal_to()));
+    assert(compare_op(+0.50F, +0.00F, std::not_equal_to()));
+    assert(compare_op(+0.50F, -0.50F, std::not_equal_to()));
+    assert(compare_op(+0.50F, +0.50F, std::not_equal_to()));
+
+    // operator<
+    assert(compare_op(+0.00F, +0.00F, std::less()));
+    assert(compare_op(+0.50F, +0.00F, std::less()));
+    assert(compare_op(+0.50F, -0.50F, std::less()));
+    assert(compare_op(+0.50F, +0.50F, std::less()));
+
+    // operator<=
+    assert(compare_op(+0.00F, +0.00F, std::less_equal()));
+    assert(compare_op(+0.50F, +0.00F, std::less_equal()));
+    assert(compare_op(+0.50F, -0.50F, std::less_equal()));
+    assert(compare_op(+0.50F, +0.50F, std::less_equal()));
+
+    // operator>
+    assert(compare_op(+0.00F, +0.00F, std::greater()));
+    assert(compare_op(+0.50F, +0.00F, std::greater()));
+    assert(compare_op(+0.50F, -0.50F, std::greater()));
+    assert(compare_op(+0.50F, +0.50F, std::greater()));
+
+    // operator>=
+    assert(compare_op(+0.00F, +0.00F, std::greater_equal()));
+    assert(compare_op(+0.50F, +0.00F, std::greater_equal()));
+    assert(compare_op(+0.50F, -0.50F, std::greater_equal()));
+    assert(compare_op(+0.50F, +0.50F, std::greater_equal()));
+
+    return true;
+}
+
 [[nodiscard]] static auto test_q15_t_fixed_point_multiply() -> bool
 {
     using fxp_t          = neo::fft::q15_t;
@@ -283,10 +383,12 @@ auto main() -> int
     assert(test_q7_t_conversion());
     assert(test_q7_t_unary_ops());
     assert(test_q7_t_binary_ops());
+    assert(test_q7_t_comparison());
 
     assert(test_q15_t_conversion());
     assert(test_q15_t_unary_ops());
     assert(test_q15_t_binary_ops());
+    assert(test_q15_t_comparison());
     assert(test_q15_t_fixed_point_multiply());
 
     return EXIT_SUCCESS;

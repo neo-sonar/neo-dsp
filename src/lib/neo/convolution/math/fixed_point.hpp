@@ -99,6 +99,13 @@ struct fixed_point
         };
     }
 
+    friend constexpr auto operator==(fixed_point lhs, fixed_point rhs) -> bool { return lhs.value() == rhs.value(); }
+    friend constexpr auto operator!=(fixed_point lhs, fixed_point rhs) -> bool { return lhs.value() != rhs.value(); }
+    friend constexpr auto operator<(fixed_point lhs, fixed_point rhs) -> bool { return lhs.value() < rhs.value(); }
+    friend constexpr auto operator<=(fixed_point lhs, fixed_point rhs) -> bool { return lhs.value() <= rhs.value(); }
+    friend constexpr auto operator>(fixed_point lhs, fixed_point rhs) -> bool { return lhs.value() > rhs.value(); }
+    friend constexpr auto operator>=(fixed_point lhs, fixed_point rhs) -> bool { return lhs.value() >= rhs.value(); }
+
 private:
     StorageType _value;
 };
