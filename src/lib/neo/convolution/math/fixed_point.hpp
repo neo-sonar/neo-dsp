@@ -59,7 +59,6 @@ inline constexpr auto apply_fixed_point_kernel_sse
 template<int ValueSizeBits>
 inline constexpr auto apply_fixed_point_kernel_neon128
     = [](auto const& lhs, auto const& rhs, auto const& out, auto scalar_kernel, auto vector_kernel) {
-    using storage_t = std::remove_cvref_t<decltype(lhs)>::storage_type;
 
     auto load = [](auto* ptr) {
         if constexpr (ValueSizeBits == 8) {
@@ -72,10 +71,10 @@ inline constexpr auto apply_fixed_point_kernel_neon128
 
     auto store = [](auto* ptr, auto val) {
         if constexpr (ValueSizeBits == 8) {
-            return vst1q_s8(reinterpret_cast<std::int8_t const*>(ptr));
+            return vst1q_s8(reinterpret_cast<std::int8_t*>(ptr), val);
         } else {
             static_assert(ValueSizeBits == 16);
-            return vst1q_s16(reinterpret_cast<std::int16_t const*>(ptr));
+            return vst1q_s16(reinterpret_cast<std::int16_t*>(ptr), val);
         }
     };
 
@@ -214,7 +213,7 @@ auto add(
         auto const kernel = [](auto left, auto right) { return _mm_adds_epi8(left, right); };
         detail::apply_fixed_point_kernel_sse<8>(lhs, rhs, out, std::plus{}, kernel);
 #elif defined(__ARM_NEON__)
-        auto const kernel = [](int8x16_t left, int8x16_t right) { return vqaddq_s8(left, right) };
+        auto const kernel = [](int8x16_t left, int8x16_t right) { return vqaddq_s8(left, right); };
         detail::apply_fixed_point_kernel_neon128<8>(lhs, rhs, out, std::multiplies{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::plus{}(lhs[i], rhs[i]); }
@@ -224,7 +223,7 @@ auto add(
         auto const kernel = [](auto left, auto right) { return _mm_adds_epi16(left, right); };
         detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::plus{}, kernel);
 #elif defined(__ARM_NEON__)
-        auto const kernel = [](int16x8_t left, int16x8_t right) { return vqaddq_s16(left, right) };
+        auto const kernel = [](int16x8_t left, int16x8_t right) { return vqaddq_s16(left, right); };
         detail::apply_fixed_point_kernel_neon128<16>(lhs, rhs, out, std::multiplies{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::plus{}(lhs[i], rhs[i]); }
@@ -250,7 +249,7 @@ auto subtract(
         auto const kernel = [](auto left, auto right) { return _mm_subs_epi8(left, right); };
         detail::apply_fixed_point_kernel_sse<8>(lhs, rhs, out, std::minus{}, kernel);
 #elif defined(__ARM_NEON__)
-        auto const kernel = [](int8x16_t left, int8x16_t right) { return vqsubq_s8(left, right) };
+        auto const kernel = [](int8x16_t left, int8x16_t right) { return vqsubq_s8(left, right); };
         detail::apply_fixed_point_kernel_neon128<8>(lhs, rhs, out, std::multiplies{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
@@ -260,7 +259,7 @@ auto subtract(
         auto const kernel = [](auto left, auto right) { return _mm_subs_epi16(left, right); };
         detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::minus{}, kernel);
 #elif defined(__ARM_NEON__)
-        auto const kernel = [](int16x8_t left, int16x8_t right) { return vqsubq_s16(left, right) };
+        auto const kernel = [](int16x8_t left, int16x8_t right) { return vqsubq_s16(left, right); };
         detail::apply_fixed_point_kernel_neon128<16>(lhs, rhs, out, std::multiplies{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
@@ -286,7 +285,7 @@ auto multiply(
         auto const kernel = [](__m128i left, __m128i right) -> __m128i { return _mm_mulhrs_epi16(left, right); };
         detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::multiplies{}, kernel);
 #elif defined(__ARM_NEON__)
-        auto const kernel = [](int16x8_t left, int16x8_t right) { return vqdmulhq_s16(left, right) };
+        auto const kernel = [](int16x8_t left, int16x8_t right) { return vqdmulhq_s16(left, right); };
         detail::apply_fixed_point_kernel_neon128<16>(lhs, rhs, out, std::multiplies{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::multiplies{}(lhs[i], rhs[i]); }
@@ -329,7 +328,7 @@ auto multiply(
 
             detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::multiplies{}, kernel);
 #elif defined(__ARM_NEON__)
-            auto const kernel = [](int16x8_t left, int16x8_t right) { return vqdmulhq_s16(left, right) };
+            auto const kernel = [](int16x8_t left, int16x8_t right) { return vqdmulhq_s16(left, right); };
             detail::apply_fixed_point_kernel_neon128<8>(lhs, rhs, out, std::multiplies{}, kernel);
 #else
             for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::multiplies{}(lhs[i], rhs[i]); }
