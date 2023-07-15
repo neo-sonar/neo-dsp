@@ -18,6 +18,9 @@ namespace neo::fft
 namespace detail
 {
 
+template<typename... T>
+constexpr bool always_false = false;
+
 template<typename StorageType>
 constexpr auto saturate(std::int32_t x) -> StorageType
 {
@@ -27,10 +30,11 @@ constexpr auto saturate(std::int32_t x) -> StorageType
 }
 
 #if defined(__SSE2__)
+template<int ValueSizeBits>
 inline constexpr auto apply_fixed_point_kernel_sse
     = [](auto const& lhs, auto const& rhs, auto const& out, auto scalar_kernel, auto vector_kernel)
 {
-    static constexpr auto vectorSize = static_cast<ptrdiff_t>(128 / 16);
+    static constexpr auto vectorSize = static_cast<ptrdiff_t>(128 / ValueSizeBits);
     auto const remainder             = static_cast<ptrdiff_t>(lhs.size()) % vectorSize;
 
     for (auto i{0}; i < remainder; ++i)
@@ -147,6 +151,72 @@ template<int IntegerBits, int FractionalBits, typename StorageType>
     return static_cast<double>(val);
 }
 
+/// out[i] = saturate16(lhs[i] + rhs[i])
+template<int IntegerBits, int FractionalBits, typename StorageType, std::size_t Extent>
+auto add(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> lhs,
+         std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> rhs,
+         std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out)
+{
+    assert(lhs.size() == rhs.size());
+    assert(lhs.size() == out.size());
+
+    if constexpr (std::same_as<StorageType, std::int8_t>)
+    {
+#if defined(__SSE2__)
+        auto const kernel = [](auto left, auto right) { return _mm_adds_epi8(left, right); };
+        detail::apply_fixed_point_kernel_sse<8>(lhs, rhs, out, std::plus{}, kernel);
+#else
+        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::plus{}(lhs[i], rhs[i]); }
+#endif
+    }
+    else if constexpr (std::same_as<StorageType, std::int16_t>)
+    {
+#if defined(__SSE2__)
+        auto const kernel = [](auto left, auto right) { return _mm_adds_epi16(left, right); };
+        detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::plus{}, kernel);
+#else
+        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::plus{}(lhs[i], rhs[i]); }
+#endif
+    }
+    else
+    {
+        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::plus{}(lhs[i], rhs[i]); }
+    }
+}
+
+/// out[i] = saturate16(lhs[i] - rhs[i])
+template<int IntegerBits, int FractionalBits, typename StorageType, std::size_t Extent>
+auto subtract(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> lhs,
+              std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> rhs,
+              std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out)
+{
+    assert(lhs.size() == rhs.size());
+    assert(lhs.size() == out.size());
+
+    if constexpr (std::same_as<StorageType, std::int8_t>)
+    {
+#if defined(__SSE2__)
+        auto const kernel = [](auto left, auto right) { return _mm_subs_epi8(left, right); };
+        detail::apply_fixed_point_kernel_sse<8>(lhs, rhs, out, std::minus{}, kernel);
+#else
+        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
+#endif
+    }
+    else if constexpr (std::same_as<StorageType, std::int16_t>)
+    {
+#if defined(__SSE2__)
+        auto const kernel = [](auto left, auto right) { return _mm_subs_epi16(left, right); };
+        detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::minus{}, kernel);
+#else
+        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
+#endif
+    }
+    else
+    {
+        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
+    }
+}
+
 template<int IntegerBits, int FractionalBits, typename StorageType, std::size_t Extent>
 auto multiply(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> lhs,
               std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> rhs,
@@ -154,8 +224,6 @@ auto multiply(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> co
 {
     assert(lhs.size() == rhs.size());
     assert(lhs.size() == out.size());
-
-    auto scalarKernel = std::multiplies{};
 
     if constexpr (std::same_as<StorageType, std::int16_t>)
     {
@@ -176,15 +244,15 @@ auto multiply(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> co
             return _mm_packs_epi32(lowShifted, highShifted);
         };
 
-        detail::apply_fixed_point_kernel_sse(lhs, rhs, out, scalarKernel, vectorKernel);
+        detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::multiplies{}, vectorKernel);
 
 #else
-        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = scalarKernel(lhs[i], rhs[i]); }
+        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::multiplies{}(lhs[i], rhs[i]); }
 #endif
     }
     else
     {
-        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = scalarKernel(lhs[i], rhs[i]); }
+        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::multiplies{}(lhs[i], rhs[i]); }
     }
 }
 
