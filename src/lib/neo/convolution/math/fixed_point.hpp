@@ -148,9 +148,9 @@ template<int IntegerBits, int FractionalBits, typename StorageType>
 }
 
 template<int IntegerBits, int FractionalBits, typename StorageType, std::size_t Extent>
-auto fixed_point_multiply(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> lhs,
-                          std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> rhs,
-                          std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out)
+auto multiply(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> lhs,
+              std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> rhs,
+              std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out)
 {
     assert(lhs.size() == rhs.size());
     assert(lhs.size() == out.size());

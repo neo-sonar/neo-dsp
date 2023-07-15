@@ -340,7 +340,7 @@
     return true;
 }
 
-[[nodiscard]] static auto test_q15_t_fixed_point_multiply() -> bool
+[[nodiscard]] static auto test_q15_t_multiply() -> bool
 {
     using fxp_t          = neo::fft::q15_t;
     auto const tolerance = 0.0001F;
@@ -350,7 +350,7 @@
         auto lhs = std::vector<fxp_t>();
         auto rhs = std::vector<fxp_t>();
         auto out = std::vector<fxp_t>();
-        neo::fft::fixed_point_multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
+        neo::fft::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
     }
 
     {
@@ -358,7 +358,7 @@
         auto lhs = std::vector<fxp_t>{fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}};
         auto rhs = std::vector<fxp_t>{fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}};
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
-        neo::fft::fixed_point_multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
+        neo::fft::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.5F * 0.25F, tolerance); };
         assert(std::all_of(out.begin(), out.end(), eq));
@@ -369,7 +369,7 @@
         auto lhs = std::vector<fxp_t>(1029, fxp_t{0.125F});
         auto rhs = std::vector<fxp_t>(1029, fxp_t{0.25F});
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
-        neo::fft::fixed_point_multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
+        neo::fft::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.125F * 0.25F, tolerance); };
         assert(std::all_of(out.begin(), out.end(), eq));
@@ -389,7 +389,7 @@ auto main() -> int
     assert(test_q15_t_unary_ops());
     assert(test_q15_t_binary_ops());
     assert(test_q15_t_comparison());
-    assert(test_q15_t_fixed_point_multiply());
+    assert(test_q15_t_multiply());
 
     return EXIT_SUCCESS;
 }
