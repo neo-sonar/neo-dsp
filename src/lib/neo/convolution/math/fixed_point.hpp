@@ -214,7 +214,7 @@ auto add(
         detail::apply_fixed_point_kernel_sse<8>(lhs, rhs, out, std::plus{}, kernel);
 #elif defined(__ARM_NEON__)
         auto const kernel = [](int8x16_t left, int8x16_t right) { return vqaddq_s8(left, right); };
-        detail::apply_fixed_point_kernel_neon128<8>(lhs, rhs, out, std::multiplies{}, kernel);
+        detail::apply_fixed_point_kernel_neon128<8>(lhs, rhs, out, std::plus{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::plus{}(lhs[i], rhs[i]); }
 #endif
@@ -224,7 +224,7 @@ auto add(
         detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::plus{}, kernel);
 #elif defined(__ARM_NEON__)
         auto const kernel = [](int16x8_t left, int16x8_t right) { return vqaddq_s16(left, right); };
-        detail::apply_fixed_point_kernel_neon128<16>(lhs, rhs, out, std::multiplies{}, kernel);
+        detail::apply_fixed_point_kernel_neon128<16>(lhs, rhs, out, std::plus{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::plus{}(lhs[i], rhs[i]); }
 #endif
@@ -250,7 +250,7 @@ auto subtract(
         detail::apply_fixed_point_kernel_sse<8>(lhs, rhs, out, std::minus{}, kernel);
 #elif defined(__ARM_NEON__)
         auto const kernel = [](int8x16_t left, int8x16_t right) { return vqsubq_s8(left, right); };
-        detail::apply_fixed_point_kernel_neon128<8>(lhs, rhs, out, std::multiplies{}, kernel);
+        detail::apply_fixed_point_kernel_neon128<8>(lhs, rhs, out, std::minus{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
 #endif
@@ -260,7 +260,7 @@ auto subtract(
         detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::minus{}, kernel);
 #elif defined(__ARM_NEON__)
         auto const kernel = [](int16x8_t left, int16x8_t right) { return vqsubq_s16(left, right); };
-        detail::apply_fixed_point_kernel_neon128<16>(lhs, rhs, out, std::multiplies{}, kernel);
+        detail::apply_fixed_point_kernel_neon128<16>(lhs, rhs, out, std::minus{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
 #endif
