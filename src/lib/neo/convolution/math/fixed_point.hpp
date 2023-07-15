@@ -221,6 +221,7 @@ auto subtract(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> co
     }
 }
 
+/// out[i] = (lhs[i] * rhs[i]) >> FractionalBits;
 template<int IntegerBits, int FractionalBits, typename StorageType, std::size_t Extent>
 auto multiply(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> lhs,
               std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> rhs,
@@ -231,8 +232,7 @@ auto multiply(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> co
 
     if constexpr (std::same_as<StorageType, std::int16_t>)
     {
-#if defined(__SSE4_1__)
-        // out[i] = (lhs[i] * rhs[i]) >> FractionalBits;
+#if 0//defined(__SSE4_1__)
         auto const kernel = [](__m128i left, __m128i right) -> __m128i
         {
             auto const lowLeft    = _mm_cvtepi16_epi32(left);
@@ -258,7 +258,25 @@ auto multiply(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> co
     }
     else
     {
+#if defined(__SSE4_1__)
+        auto const kernel = [](__m128i left, __m128i right) -> __m128i
+        {
+            auto const lowLeft    = _mm_cvtepi8_epi16(left);
+            auto const lowRight   = _mm_cvtepi8_epi16(right);
+            auto const lowProduct = _mm_mullo_epi16(lowLeft, lowRight);
+            auto const lowShifted = _mm_srli_epi16(lowProduct, FractionalBits);
+
+            auto const highLeft    = _mm_cvtepi8_epi16(_mm_srli_si128(left, 8));
+            auto const highRight   = _mm_cvtepi8_epi16(_mm_srli_si128(right, 8));
+            auto const highProduct = _mm_mullo_epi16(highLeft, highRight);
+            auto const highShifted = _mm_srli_epi16(highProduct, FractionalBits);
+
+            return _mm_packs_epi16(lowShifted, highShifted);
+        };
+        detail::apply_fixed_point_kernel_sse<8>(lhs, rhs, out, std::multiplies{}, kernel);
+#else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::multiplies{}(lhs[i], rhs[i]); }
+#endif
     }
 }
 
