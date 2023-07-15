@@ -16,28 +16,30 @@ auto timeit(std::string_view name, size_t sizeOfT, size_t N, Func func)
 {
     using microseconds = std::chrono::duration<double, std::micro>;
 
-    auto const size = N;
-    auto all_runs   = std::vector<double>{};
+    auto const size       = N;
+    auto const iterations = 100'000U;
+    auto const margin     = iterations / 20U;
+
+    auto all_runs = std::vector<double>(iterations);
 
     func();
     func();
     func();
 
-    for (auto i{0}; i < 10'000; ++i) {
+    for (auto i{0U}; i < iterations; ++i) {
         auto start = std::chrono::system_clock::now();
         func();
         auto stop = std::chrono::system_clock::now();
 
-        all_runs.push_back(std::chrono::duration_cast<microseconds>(stop - start).count());
+        all_runs[i] = std::chrono::duration_cast<microseconds>(stop - start).count();
     }
 
-    auto const runs            = std::span<double>(all_runs).subspan(500, all_runs.size() - 500 * 2);
+    auto const runs            = std::span<double>(all_runs).subspan(margin, all_runs.size() - margin * 2);
     auto const dsize           = static_cast<double>(size);
     auto const avg             = std::reduce(runs.begin(), runs.end(), 0.0) / double(runs.size());
     auto const itemsPerSec     = static_cast<int>(std::lround(double(size) / avg));
     auto const megaBytesPerSec = std::round(double(size * sizeOfT) / avg) / 1000.0;
-
-    std::printf("%-32s avg: %.1fus - N/usec: %d - GB/sec: %.2f\n", name.data(), avg, itemsPerSec, megaBytesPerSec);
+    std::printf("%-32s avg: %.1fus - GB/sec: %.2f - N/usec: %d\n", name.data(), avg, megaBytesPerSec, itemsPerSec);
 }
 
 }  // namespace neo::fft

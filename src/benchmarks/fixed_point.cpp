@@ -19,7 +19,6 @@ struct floating_point_mul_bench
 
     auto operator()() -> void
     {
-        std::fill(_out.begin(), _out.end(), 1.0F);
         std::transform(_lhs.begin(), _lhs.end(), _rhs.begin(), _out.begin(), std::multiplies{});
     }
 
@@ -46,7 +45,6 @@ struct float16_mul_bench
         static constexpr auto const vectorSize = 128 / 16;
         static_assert((Size % vectorSize) == 0);
 
-        std::fill(_out.begin(), _out.end(), 1.0F);
         for (auto i{0}; i < Size; i += vectorSize) {
             auto const lhsWord = _mm_loadu_si128(reinterpret_cast<__m128i const*>(_lhs.data() + i));
             auto const rhsWord = _mm_loadu_si128(reinterpret_cast<__m128i const*>(_rhs.data() + i));
@@ -82,7 +80,6 @@ struct fixed_point_mul_bench
     auto operator()() -> void
     {
         static constexpr auto one = FixedPoint{1.0F};
-        std::fill(_out.begin(), _out.end(), one);
 
         auto const left   = std::span{std::as_const(_lhs)};
         auto const right  = std::span{std::as_const(_rhs)};
