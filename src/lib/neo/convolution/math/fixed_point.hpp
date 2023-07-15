@@ -1,7 +1,11 @@
 #pragma once
 
-#if defined(__SSE4_1__)
+#if defined(__SSE2__)
     #include <smmintrin.h>
+#endif
+
+#if defined(__SSE3__)
+    #include <tmmintrin.h>
 #endif
 
 #include <algorithm>
@@ -229,7 +233,7 @@ auto multiply(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> co
     {
 #if defined(__SSE4_1__)
         // out[i] = (lhs[i] * rhs[i]) >> FractionalBits;
-        auto const vectorKernel = [](__m128i left, __m128i right) -> __m128i
+        auto const kernel = [](__m128i left, __m128i right) -> __m128i
         {
             auto const lowLeft    = _mm_cvtepi16_epi32(left);
             auto const lowRight   = _mm_cvtepi16_epi32(right);
@@ -244,8 +248,10 @@ auto multiply(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> co
             return _mm_packs_epi32(lowShifted, highShifted);
         };
 
-        detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::multiplies{}, vectorKernel);
-
+        detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::multiplies{}, kernel);
+#elif defined(__SSE3__)
+        auto const kernel = [](__m128i left, __m128i right) -> __m128i { return _mm_mulhrs_epi16(left, right); };
+        detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::multiplies{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::multiplies{}(lhs[i], rhs[i]); }
 #endif
