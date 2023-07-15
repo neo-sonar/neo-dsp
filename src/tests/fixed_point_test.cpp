@@ -568,6 +568,8 @@ auto main() -> int
     assert(test_q7_t_unary_ops());
     assert(test_q7_t_binary_ops());
     assert(test_q7_t_comparison());
+    assert(test_q7_t_add());
+    assert(test_q7_t_subtract());
     assert(test_q7_t_multiply());
 
     assert(test_q15_t_conversion());
