@@ -1,33 +1,14 @@
 #pragma once
 
-#if defined(__SSE2__)
-    #include <smmintrin.h>
-#endif
-
-#if defined(__SSE3__)
-    #include <tmmintrin.h>
-#endif
-
-#if defined(__ARM_NEON__)
-    #include <arm_neon.h>
-#endif
-
 #include <algorithm>
-#include <array>
-#include <cassert>
 #include <concepts>
 #include <cstdint>
-#include <functional>
 #include <limits>
-#include <span>
 #include <type_traits>
 
 namespace neo::fft {
 
 namespace detail {
-
-template<typename... T>
-constexpr bool always_false = false;
 
 template<typename StorageType>
 constexpr auto saturate(std::int32_t x) -> StorageType

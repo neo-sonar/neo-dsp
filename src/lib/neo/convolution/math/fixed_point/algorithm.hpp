@@ -2,6 +2,22 @@
 
 #include "neo/convolution/math/fixed_point/fixed_point.hpp"
 
+#if defined(__SSE2__)
+    #include <smmintrin.h>
+#endif
+
+#if defined(__SSE3__)
+    #include <tmmintrin.h>
+#endif
+
+#if defined(__ARM_NEON__)
+    #include <arm_neon.h>
+#endif
+
+#include <cassert>
+#include <functional>
+#include <span>
+
 namespace neo::fft {
 
 namespace detail {
