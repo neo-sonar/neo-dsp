@@ -8,6 +8,7 @@
 #include <cassert>
 #include <concepts>
 #include <cstdint>
+#include <functional>
 #include <limits>
 #include <span>
 
@@ -24,6 +25,27 @@ constexpr auto saturate(std::int32_t x) -> StorageType
     auto const max_v = static_cast<std::int32_t>(std::numeric_limits<StorageType>::max());
     return static_cast<StorageType>(std::clamp(x, min_v, max_v));
 }
+
+#if defined(__SSE2__)
+inline constexpr auto apply_fixed_point_kernel_sse
+    = [](auto const& lhs, auto const& rhs, auto const& out, auto scalar_kernel, auto vector_kernel)
+{
+    static constexpr auto vectorSize = static_cast<ptrdiff_t>(128 / 16);
+    auto const remainder             = static_cast<ptrdiff_t>(lhs.size()) % vectorSize;
+
+    for (auto i{0}; i < remainder; ++i)
+    {
+        out[static_cast<size_t>(i)] = scalar_kernel(lhs[static_cast<size_t>(i)], rhs[static_cast<size_t>(i)]);
+    }
+
+    for (auto i{remainder}; i < lhs.size(); i += vectorSize)
+    {
+        auto const left  = _mm_loadu_si128(reinterpret_cast<__m128i const*>(std::next(lhs.data(), i)));
+        auto const right = _mm_loadu_si128(reinterpret_cast<__m128i const*>(std::next(rhs.data(), i)));
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(std::next(out.data(), i)), vector_kernel(left, right));
+    }
+};
+#endif
 
 }  // namespace detail
 
@@ -133,42 +155,37 @@ auto fixed_point_multiply(std::span<fixed_point<IntegerBits, FractionalBits, Sto
     assert(lhs.size() == rhs.size());
     assert(lhs.size() == out.size());
 
+    auto scalarKernel = std::multiplies{};
+
+    if constexpr (std::same_as<StorageType, std::int16_t>)
+    {
 #if defined(__SSE4_1__)
-    static constexpr auto vectorSize = 128U / 16U;
+        // out[i] = (lhs[i] * rhs[i]) >> FractionalBits;
+        auto const vectorKernel = [](__m128i left, __m128i right) -> __m128i
+        {
+            auto const lowLeft    = _mm_cvtepi16_epi32(left);
+            auto const lowRight   = _mm_cvtepi16_epi32(right);
+            auto const lowProduct = _mm_mullo_epi32(lowLeft, lowRight);
+            auto const lowShifted = _mm_srli_epi32(lowProduct, FractionalBits);
 
-    auto sse_kernel = [](__m128i l, __m128i r) -> __m128i
-    {
-        auto const low_left    = _mm_cvtepi16_epi32(l);
-        auto const low_right   = _mm_cvtepi16_epi32(r);
-        auto const low_product = _mm_mullo_epi32(low_left, low_right);
-        auto const low_result  = _mm_srli_epi32(low_product, FractionalBits);
+            auto const highLeft    = _mm_cvtepi16_epi32(_mm_srli_si128(left, 8));
+            auto const highRight   = _mm_cvtepi16_epi32(_mm_srli_si128(right, 8));
+            auto const highProduct = _mm_mullo_epi32(highLeft, highRight);
+            auto const highShifted = _mm_srli_epi32(highProduct, FractionalBits);
 
-        auto const high_left    = _mm_cvtepi16_epi32(_mm_srli_si128(l, 8));
-        auto const high_right   = _mm_cvtepi16_epi32(_mm_srli_si128(r, 8));
-        auto const high_product = _mm_mullo_epi32(high_left, high_right);
-        auto const high_result  = _mm_srli_epi32(high_product, FractionalBits);
+            return _mm_packs_epi32(lowShifted, highShifted);
+        };
 
-        return _mm_packs_epi32(low_result, high_result);
-    };
-
-    auto const remainder = lhs.size() % vectorSize;
-    auto const* lptr     = reinterpret_cast<StorageType const*>(lhs.data());
-    auto const* rptr     = reinterpret_cast<StorageType const*>(rhs.data());
-    auto const* optr     = reinterpret_cast<StorageType const*>(out.data());
-
-    for (auto i{0U}; i < remainder; ++i) { out[i] = lhs[i] * rhs[i]; }
-
-    for (auto i{remainder}; i < lhs.size(); i += vectorSize)
-    {
-        auto l = _mm_loadu_si128((__m128i const*)(lptr + i));
-        auto r = _mm_loadu_si128((__m128i const*)(rptr + i));
-        auto p = sse_kernel(l, r);
-        _mm_storeu_si128((__m128i*)(optr + i), p);
-    }
+        detail::apply_fixed_point_kernel_sse(lhs, rhs, out, scalarKernel, vectorKernel);
 
 #else
-    for (auto i{0U}; i < lhs.size(); ++i) { out[i] = lhs[i] * rhs[i]; }
+        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = scalarKernel(lhs[i], rhs[i]); }
 #endif
+    }
+    else
+    {
+        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = scalarKernel(lhs[i], rhs[i]); }
+    }
 }
 
 }  // namespace neo::fft
