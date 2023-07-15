@@ -22,7 +22,7 @@ static auto multiply_and_accumulate(
     assert(lhs.extent(1) > 0);
     assert(shift < lhs.extent(0));
 
-    schur_product_accumulate_columnwise(lhs, rhs, accumulator, shift);
+    multiply_elementwise_accumulate_columnwise(lhs, rhs, accumulator, shift);
 }
 
 static auto normalization_factor(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter) -> float
