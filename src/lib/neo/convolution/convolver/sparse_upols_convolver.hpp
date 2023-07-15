@@ -2,14 +2,12 @@
 
 #include "neo/convolution/container/mdspan.hpp"
 #include "neo/convolution/container/sparse_matrix.hpp"
-
 #include "neo/fft.hpp"
 
 #include <algorithm>
 #include <vector>
 
-namespace neo::fft
-{
+namespace neo::fft {
 
 struct sparse_upols_convolver
 {

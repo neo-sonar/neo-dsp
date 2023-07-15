@@ -6,8 +6,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
-namespace neo
-{
+namespace neo {
 
 PluginProcessor::PluginProcessor()
     : AudioProcessor(BusesProperties()
@@ -16,8 +15,7 @@ PluginProcessor::PluginProcessor()
     , _valueTree{*this, nullptr, juce::Identifier("PerceptualConvolution"), mc::createParameters()}
 // , _inGain{*mc::getFloatParameter(_valueTree, mc::ParamID::inGain)}
 // , _outGain{*mc::getFloatParameter(_valueTree, mc::ParamID::outGain)}
-{
-}
+{}
 
 PluginProcessor::~PluginProcessor() = default;
 
@@ -64,8 +62,7 @@ auto PluginProcessor::releaseResources() -> void {}
 auto PluginProcessor::isBusesLayoutSupported(BusesLayout const& layouts) const -> bool
 {
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-    {
+        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo()) {
         return false;
     }
 
@@ -81,8 +78,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiB
 
     juce::ScopedNoDenormals const noDenormals;
 
-    for (auto i = getTotalNumInputChannels(); i < getTotalNumOutputChannels(); ++i)
-    {
+    for (auto i = getTotalNumInputChannels(); i < getTotalNumOutputChannels(); ++i) {
         buffer.clear(i, 0, buffer.getNumSamples());
     }
 
@@ -117,6 +113,7 @@ auto PluginProcessor::setStateInformation(void const* data, int sizeInBytes) -> 
 }
 
 auto PluginProcessor::getState() noexcept -> juce::AudioProcessorValueTreeState& { return _valueTree; }
+
 auto PluginProcessor::getState() const noexcept -> juce::AudioProcessorValueTreeState const& { return _valueTree; }
 
 }  // namespace neo

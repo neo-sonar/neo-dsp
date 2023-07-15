@@ -1,8 +1,7 @@
 
 #include "resample.hpp"
 
-namespace neo
-{
+namespace neo {
 
 auto resample(juce::AudioBuffer<float> const& buf, double srcSampleRate, double destSampleRate)
     -> juce::AudioBuffer<float>
@@ -32,8 +31,7 @@ auto loadAndResample(juce::AudioFormatManager& formats, juce::File const& file, 
     if (reader == nullptr) { return {}; }
 
     auto buffer = juce::AudioBuffer<float>{int(reader->numChannels), int(reader->lengthInSamples)};
-    if (!reader->read(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), 0, buffer.getNumSamples()))
-    {
+    if (!reader->read(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), 0, buffer.getNumSamples())) {
         return {};
     }
 
@@ -48,10 +46,8 @@ auto to_mdarray(juce::AudioBuffer<float> const& buffer) -> KokkosEx::mdarray<flo
         static_cast<std::size_t>(buffer.getNumSamples()),
     };
 
-    for (auto ch{0ULL}; ch < result.extent(0); ++ch)
-    {
-        for (auto i{0ULL}; i < result.extent(1); ++i)
-        {
+    for (auto ch{0ULL}; ch < result.extent(0); ++ch) {
+        for (auto i{0ULL}; i < result.extent(1); ++i) {
             result(ch, i) = buffer.getSample(static_cast<int>(ch), static_cast<int>(i));
         }
     }

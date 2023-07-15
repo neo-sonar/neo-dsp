@@ -9,8 +9,7 @@
 #include <string_view>
 #include <vector>
 
-namespace neo::fft
-{
+namespace neo::fft {
 
 template<typename Func>
 auto timeit(std::string_view name, size_t N, Func func)
@@ -24,8 +23,7 @@ auto timeit(std::string_view name, size_t N, Func func)
     func();
     func();
 
-    for (auto i{0}; i < 10'000; ++i)
-    {
+    for (auto i{0}; i < 10'000; ++i) {
         auto start = std::chrono::system_clock::now();
         func();
         auto stop = std::chrono::system_clock::now();
@@ -38,8 +36,15 @@ auto timeit(std::string_view name, size_t N, Func func)
     auto const avg         = std::reduce(runs.begin(), runs.end(), 0.0) / double(runs.size());
     auto const itemsPerSec = static_cast<int>(std::lround(double(size) / avg));
 
-    std::printf("%-32s size: %-7zu - avg: %.1fus - min: %.1fus - max: %.1fus - N/usec: %d\n", name.data(), size, avg,
-                *std::min_element(runs.begin(), runs.end()), *std::max_element(runs.begin(), runs.end()), itemsPerSec);
+    std::printf(
+        "%-32s size: %-7zu - avg: %.1fus - min: %.1fus - max: %.1fus - N/usec: %d\n",
+        name.data(),
+        size,
+        avg,
+        *std::min_element(runs.begin(), runs.end()),
+        *std::max_element(runs.begin(), runs.end()),
+        itemsPerSec
+    );
 }
 
 }  // namespace neo::fft

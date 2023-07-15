@@ -3,8 +3,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
-namespace mc
-{
+namespace mc {
 
 auto createParameters() -> juce::AudioProcessorValueTreeState::ParameterLayout
 {
@@ -19,10 +18,12 @@ auto createParameters() -> juce::AudioProcessorValueTreeState::ParameterLayout
     // auto filterTypes = juce::StringArray{"Low Cut", "Peak", "High Cut"};
 
     return {
-        // makeFloatParameter(ParamID::inGain, "Input Gain", gainRange, 1.0F, gainAttributes),
+        // makeFloatParameter(ParamID::inGain, "Input Gain", gainRange, 1.0F,
+        // gainAttributes),
         // makeBoolParameter(ParamID::filterEnable, "Filter Enable", false),
         // makeChoiceParameter(ParamID::filterType, "Filter Type", filterTypes, 1),
-        // makeFloatParameter(ParamID::outGain, "Output Gain", gainRange, 1.0F, gainAttributes),
+        // makeFloatParameter(ParamID::outGain, "Output Gain", gainRange, 1.0F,
+        // gainAttributes),
     };
 }
 

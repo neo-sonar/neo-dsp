@@ -1,12 +1,10 @@
 #pragma once
 
-#include <juce_audio_basics/juce_audio_basics.h>
-
 #include <concepts>
+#include <juce_audio_basics/juce_audio_basics.h>
 #include <span>
 
-namespace neo
-{
+namespace neo {
 
 // normalized_sample = sample / max(abs(buffer))
 auto peak_normalization(std::span<float> buffer) -> void;

@@ -7,21 +7,19 @@
 #include "dsp/spectogram.hpp"
 #include "dsp/stft.hpp"
 #include "dsp/wav.hpp"
-
 #include "neo/convolution/container/sparse_matrix.hpp"
 
 #include <span>
 
-namespace neo
-{
+namespace neo {
 
-namespace
-{
+namespace {
 
 struct JuceConvolver
 {
     explicit JuceConvolver(juce::File impulse, juce::dsp::ProcessSpec const& spec)
-        : _impulse{std::move(impulse)}, _spec{spec}
+        : _impulse{std::move(impulse)}
+        , _spec{spec}
     {
         auto const trim      = juce::dsp::Convolution::Trim::no;
         auto const stereo    = juce::dsp::Convolution::Stereo::yes;
@@ -30,7 +28,8 @@ struct JuceConvolver
         _convolver.prepare(spec);
         _convolver.loadImpulseResponse(_impulse, stereo, trim, 0, normalize);
 
-        // impulse is loaded on background thread, may not have loaded fast enough in unit-tests
+        // impulse is loaded on background thread, may not have loaded fast enough in
+        // unit-tests
         std::this_thread::sleep_for(std::chrono::milliseconds{2000});
     }
 
@@ -62,8 +61,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 
     _threshold.setRange({-144.0, -10.0}, 0.0);
     _threshold.setValue(-90.0, juce::dontSendNotification);
-    _threshold.onDragEnd = [this]
-    {
+    _threshold.onDragEnd = [this] {
         auto img = fft::powerSpectrumImage(_spectrum, static_cast<float>(_threshold.getValue()));
         _spectogramImage.setImage(img);
     };
@@ -112,8 +110,7 @@ auto PluginEditor::openFile() -> void
     auto const* msg         = "Please select a impulse response";
     auto const homeDir      = juce::File::getSpecialLocation(juce::File::userMusicDirectory);
     auto const chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles;
-    auto const load         = [this](juce::FileChooser const& chooser)
-    {
+    auto const load         = [this](juce::FileChooser const& chooser) {
         if (chooser.getResults().isEmpty()) { return; }
 
         auto const file     = chooser.getResult();
@@ -150,7 +147,10 @@ auto PluginEditor::runBenchmarks() -> void
 
 auto PluginEditor::runJuceConvolverBenchmark() -> void
 {
-    auto proc = JuceConvolver{_filterFile, {44'100.0, 512, 2}};
+    auto proc = JuceConvolver{
+        _filterFile,
+        {44'100.0, 512, 2}
+    };
 
     auto start  = std::chrono::system_clock::now();
     auto output = juce::AudioBuffer<float>{_signal.getNumChannels(), _signal.getNumSamples()};

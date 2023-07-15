@@ -2,12 +2,10 @@
 
 #include "dsp/normalize.hpp"
 
+#include <complex>
 #include <juce_audio_basics/juce_audio_basics.h>
 
-#include <complex>
-
-namespace neo::fft
-{
+namespace neo::fft {
 
 auto stft(juce::AudioBuffer<float> const& buffer, int windowSize)
     -> KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>
@@ -30,8 +28,7 @@ auto stft(juce::AudioBuffer<float> const& buffer, int windowSize)
         numBins,
     };
 
-    for (auto f{0UL}; f < result.extent(0); ++f)
-    {
+    for (auto f{0UL}; f < result.extent(0); ++f) {
         auto const idx        = static_cast<int>(f * result.extent(1));
         auto const numSamples = std::min(buffer.getNumSamples() - idx, windowSize);
 

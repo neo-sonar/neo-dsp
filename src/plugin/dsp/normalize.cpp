@@ -4,11 +4,9 @@
 #include <cmath>
 #include <numeric>
 
-namespace neo
-{
+namespace neo {
 
-namespace
-{
+namespace {
 
 [[nodiscard]] auto peak_normalization_factor(std::span<float const> buf) -> float
 {
@@ -54,8 +52,7 @@ auto rms_normalization(std::span<float> buffer) -> void
 
 auto juce_normalization(juce::AudioBuffer<float>& buf) -> void
 {
-    auto calculateNormalisationFactor = [](float sumSquaredMagnitude)
-    {
+    auto calculateNormalisationFactor = [](float sumSquaredMagnitude) {
         if (sumSquaredMagnitude < 1e-8F) return 1.0F;
         return 0.125F / std::sqrt(sumSquaredMagnitude);
     };
@@ -65,18 +62,16 @@ auto juce_normalization(juce::AudioBuffer<float>& buf) -> void
     auto const channelPtrs = buf.getArrayOfWritePointers();
 
     auto const maxSumSquaredMag
-        = std::accumulate(channelPtrs, channelPtrs + numChannels, 0.0f,
-                          [numSamples](auto max, auto* channel)
-                          {
-                              auto const square_sum = [](auto sum, auto samp) { return sum + (samp * samp); };
-                              return std::max(max, std::accumulate(channel, channel + numSamples, 0.0f, square_sum));
-                          });
+        = std::accumulate(channelPtrs, channelPtrs + numChannels, 0.0f, [numSamples](auto max, auto* channel) {
+              auto const square_sum = [](auto sum, auto samp) { return sum + (samp * samp); };
+              return std::max(max, std::accumulate(channel, channel + numSamples, 0.0f, square_sum));
+          });
 
     auto const normalisationFactor = calculateNormalisationFactor(maxSumSquaredMag);
 
-    std::for_each(channelPtrs, channelPtrs + numChannels,
-                  [normalisationFactor, numSamples](auto* channel)
-                  { juce::FloatVectorOperations::multiply(channel, normalisationFactor, numSamples); });
+    std::for_each(channelPtrs, channelPtrs + numChannels, [normalisationFactor, numSamples](auto* channel) {
+        juce::FloatVectorOperations::multiply(channel, normalisationFactor, numSamples);
+    });
 }
 
 }  // namespace neo

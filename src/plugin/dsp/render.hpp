@@ -2,12 +2,16 @@
 
 #include <juce_dsp/juce_dsp.h>
 
-namespace neo
-{
+namespace neo {
 
 template<typename Processor>
-auto processBlocks(Processor& processor, juce::dsp::AudioBlock<float const> const& input,
-                   juce::dsp::AudioBlock<float> const& output, std::size_t blockSize, double sampleRate) -> void
+auto processBlocks(
+    Processor& processor,
+    juce::dsp::AudioBlock<float const> const& input,
+    juce::dsp::AudioBlock<float> const& output,
+    std::size_t blockSize,
+    double sampleRate
+) -> void
 {
     jassert(input.getNumChannels() == output.getNumChannels());
     jassert(input.getNumSamples() == output.getNumSamples());
@@ -18,8 +22,7 @@ auto processBlocks(Processor& processor, juce::dsp::AudioBlock<float const> cons
         static_cast<std::uint32_t>(input.getNumChannels()),
     });
 
-    for (auto i{0UL}; i < output.getNumSamples(); i += blockSize)
-    {
+    for (auto i{0UL}; i < output.getNumSamples(); i += blockSize) {
         auto const numSamples = std::min(output.getNumSamples() - i, blockSize);
 
         auto in  = input.getSubBlock(i, numSamples);

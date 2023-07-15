@@ -16,11 +16,9 @@
 #include <limits>
 #include <span>
 
-namespace neo::fft
-{
+namespace neo::fft {
 
-namespace detail
-{
+namespace detail {
 
 template<typename... T>
 constexpr bool always_false = false;
@@ -36,18 +34,15 @@ constexpr auto saturate(std::int32_t x) -> StorageType
 #if defined(__SSE2__)
 template<int ValueSizeBits>
 inline constexpr auto apply_fixed_point_kernel_sse
-    = [](auto const& lhs, auto const& rhs, auto const& out, auto scalar_kernel, auto vector_kernel)
-{
+    = [](auto const& lhs, auto const& rhs, auto const& out, auto scalar_kernel, auto vector_kernel) {
     static constexpr auto vectorSize = static_cast<ptrdiff_t>(128 / ValueSizeBits);
     auto const remainder             = static_cast<ptrdiff_t>(lhs.size()) % vectorSize;
 
-    for (auto i{0}; i < remainder; ++i)
-    {
+    for (auto i{0}; i < remainder; ++i) {
         out[static_cast<size_t>(i)] = scalar_kernel(lhs[static_cast<size_t>(i)], rhs[static_cast<size_t>(i)]);
     }
 
-    for (auto i{remainder}; i < lhs.size(); i += vectorSize)
-    {
+    for (auto i{remainder}; i < lhs.size(); i += vectorSize) {
         auto const left  = _mm_loadu_si128(reinterpret_cast<__m128i const*>(std::next(lhs.data(), i)));
         auto const right = _mm_loadu_si128(reinterpret_cast<__m128i const*>(std::next(rhs.data(), i)));
         _mm_storeu_si128(reinterpret_cast<__m128i*>(std::next(out.data(), i)), vector_kernel(left, right));
@@ -79,8 +74,7 @@ struct fixed_point
     template<std::floating_point Float>
     explicit constexpr fixed_point(Float val) noexcept
         : _value{detail::saturate<storage_type>(static_cast<std::int32_t>(static_cast<float>(val) * scale))}
-    {
-    }
+    {}
 
     constexpr fixed_point([[maybe_unused]] underlying_value_t tag, storage_type val) noexcept : _value{val} {}
 
@@ -130,10 +124,15 @@ struct fixed_point
     }
 
     friend constexpr auto operator==(fixed_point lhs, fixed_point rhs) -> bool { return lhs.value() == rhs.value(); }
+
     friend constexpr auto operator!=(fixed_point lhs, fixed_point rhs) -> bool { return lhs.value() != rhs.value(); }
+
     friend constexpr auto operator<(fixed_point lhs, fixed_point rhs) -> bool { return lhs.value() < rhs.value(); }
+
     friend constexpr auto operator<=(fixed_point lhs, fixed_point rhs) -> bool { return lhs.value() <= rhs.value(); }
+
     friend constexpr auto operator>(fixed_point lhs, fixed_point rhs) -> bool { return lhs.value() > rhs.value(); }
+
     friend constexpr auto operator>=(fixed_point lhs, fixed_point rhs) -> bool { return lhs.value() >= rhs.value(); }
 
 private:
@@ -157,82 +156,96 @@ template<int IntegerBits, int FractionalBits, typename StorageType>
 
 /// out[i] = saturate16(lhs[i] + rhs[i])
 template<int IntegerBits, int FractionalBits, typename StorageType, std::size_t Extent>
-auto add(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> lhs,
-         std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> rhs,
-         std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out)
+auto add(
+    std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> lhs,
+    std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> rhs,
+    std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out
+)
 {
     assert(lhs.size() == rhs.size());
     assert(lhs.size() == out.size());
 
-    if constexpr (std::same_as<StorageType, std::int8_t>)
-    {
+    if constexpr (std::same_as<StorageType, std::int8_t>) {
 #if defined(__SSE2__)
         auto const kernel = [](auto left, auto right) { return _mm_adds_epi8(left, right); };
         detail::apply_fixed_point_kernel_sse<8>(lhs, rhs, out, std::plus{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::plus{}(lhs[i], rhs[i]); }
 #endif
-    }
-    else if constexpr (std::same_as<StorageType, std::int16_t>)
-    {
+    } else if constexpr (std::same_as<StorageType, std::int16_t>) {
 #if defined(__SSE2__)
         auto const kernel = [](auto left, auto right) { return _mm_adds_epi16(left, right); };
         detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::plus{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::plus{}(lhs[i], rhs[i]); }
 #endif
-    }
-    else
-    {
+    } else {
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::plus{}(lhs[i], rhs[i]); }
     }
 }
 
 /// out[i] = saturate16(lhs[i] - rhs[i])
 template<int IntegerBits, int FractionalBits, typename StorageType, std::size_t Extent>
-auto subtract(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> lhs,
-              std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> rhs,
-              std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out)
+auto subtract(
+    std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> lhs,
+    std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> rhs,
+    std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out
+)
 {
     assert(lhs.size() == rhs.size());
     assert(lhs.size() == out.size());
 
-    if constexpr (std::same_as<StorageType, std::int8_t>)
-    {
+    if constexpr (std::same_as<StorageType, std::int8_t>) {
 #if defined(__SSE2__)
         auto const kernel = [](auto left, auto right) { return _mm_subs_epi8(left, right); };
         detail::apply_fixed_point_kernel_sse<8>(lhs, rhs, out, std::minus{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
 #endif
-    }
-    else if constexpr (std::same_as<StorageType, std::int16_t>)
-    {
+    } else if constexpr (std::same_as<StorageType, std::int16_t>) {
 #if defined(__SSE2__)
         auto const kernel = [](auto left, auto right) { return _mm_subs_epi16(left, right); };
         detail::apply_fixed_point_kernel_sse<16>(lhs, rhs, out, std::minus{}, kernel);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
 #endif
-    }
-    else
-    {
+    } else {
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
     }
 }
 
 /// out[i] = (lhs[i] * rhs[i]) >> FractionalBits;
 template<int IntegerBits, int FractionalBits, typename StorageType, std::size_t Extent>
-auto multiply(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> lhs,
-              std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> rhs,
-              std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out)
+auto multiply(
+    std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> lhs,
+    std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> rhs,
+    std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out
+)
 {
     assert(lhs.size() == rhs.size());
     assert(lhs.size() == out.size());
 
-    if constexpr (std::same_as<StorageType, std::int16_t>)
-    {
-#if 0//defined(__SSE4_1__)
+    if constexpr (std::same_as<StorageType, std::int8_t>) {
+#if defined(__SSE4_1__)
+        auto const kernel = [](__m128i left, __m128i right) -> __m128i {
+            auto const lowLeft    = _mm_cvtepi8_epi16(left);
+            auto const lowRight   = _mm_cvtepi8_epi16(right);
+            auto const lowProduct = _mm_mullo_epi16(lowLeft, lowRight);
+            auto const lowShifted = _mm_srli_epi16(lowProduct, FractionalBits);
+
+            auto const highLeft    = _mm_cvtepi8_epi16(_mm_srli_si128(left, 8));
+            auto const highRight   = _mm_cvtepi8_epi16(_mm_srli_si128(right, 8));
+            auto const highProduct = _mm_mullo_epi16(highLeft, highRight);
+            auto const highShifted = _mm_srli_epi16(highProduct, FractionalBits);
+
+            return _mm_packs_epi16(lowShifted, highShifted);
+        };
+        detail::apply_fixed_point_kernel_sse<8>(lhs, rhs, out, std::multiplies{}, kernel);
+#else
+        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::multiplies{}(lhs[i], rhs[i]); }
+#endif
+    } else if constexpr (std::same_as<StorageType, std::int16_t>) {
+#if 0  // defined(__SSE4_1__)
         auto const kernel = [](__m128i left, __m128i right) -> __m128i
         {
             auto const lowLeft    = _mm_cvtepi16_epi32(left);
@@ -255,28 +268,9 @@ auto multiply(std::span<fixed_point<IntegerBits, FractionalBits, StorageType> co
 #else
         for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::multiplies{}(lhs[i], rhs[i]); }
 #endif
-    }
-    else
-    {
-#if defined(__SSE4_1__)
-        auto const kernel = [](__m128i left, __m128i right) -> __m128i
-        {
-            auto const lowLeft    = _mm_cvtepi8_epi16(left);
-            auto const lowRight   = _mm_cvtepi8_epi16(right);
-            auto const lowProduct = _mm_mullo_epi16(lowLeft, lowRight);
-            auto const lowShifted = _mm_srli_epi16(lowProduct, FractionalBits);
 
-            auto const highLeft    = _mm_cvtepi8_epi16(_mm_srli_si128(left, 8));
-            auto const highRight   = _mm_cvtepi8_epi16(_mm_srli_si128(right, 8));
-            auto const highProduct = _mm_mullo_epi16(highLeft, highRight);
-            auto const highShifted = _mm_srli_epi16(highProduct, FractionalBits);
-
-            return _mm_packs_epi16(lowShifted, highShifted);
-        };
-        detail::apply_fixed_point_kernel_sse<8>(lhs, rhs, out, std::multiplies{}, kernel);
-#else
-        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::multiplies{}(lhs[i], rhs[i]); }
-#endif
+    } else {
+        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
     }
 }
 

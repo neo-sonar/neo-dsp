@@ -1,14 +1,12 @@
 #pragma once
 
-#include "PluginProcessor.hpp"
-
 #include "neo/convolution/container/mdspan.hpp"
+#include "PluginProcessor.hpp"
 
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <juce_gui_extra/juce_gui_extra.h>
 
-namespace neo
-{
+namespace neo {
 
 struct PluginEditor final : juce::AudioProcessorEditor
 {

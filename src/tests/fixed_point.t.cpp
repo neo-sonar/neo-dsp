@@ -45,8 +45,7 @@
     using fxp_t          = neo::fft::q7_t;
     auto const tolerance = 0.01F;
 
-    auto unary_op = [tolerance](auto val, auto op)
-    {
+    auto unary_op = [tolerance](auto val, auto op) {
         auto const result   = to_float(op(fxp_t{val}));
         auto const expected = op(val);
         return approx_equal(result, expected, tolerance);
@@ -103,8 +102,7 @@
     using fxp_t          = neo::fft::q15_t;
     auto const tolerance = 0.0001F;
 
-    auto unary_op = [tolerance](auto val, auto op)
-    {
+    auto unary_op = [tolerance](auto val, auto op) {
         auto const result   = to_float(op(fxp_t{val}));
         auto const expected = op(val);
         return approx_equal(result, expected, tolerance);
@@ -161,8 +159,7 @@
     using fxp_t          = neo::fft::q7_t;
     auto const tolerance = 0.01F;
 
-    auto binary_op = [tolerance](auto lhs, auto rhs, auto op)
-    {
+    auto binary_op = [tolerance](auto lhs, auto rhs, auto op) {
         auto const result   = to_float(op(fxp_t{lhs}, fxp_t{rhs}));
         auto const expected = op(lhs, rhs);
         return approx_equal(result, expected, tolerance);
@@ -203,8 +200,7 @@
     using fxp_t          = neo::fft::q15_t;
     auto const tolerance = 0.0001F;
 
-    auto binary_op = [tolerance](auto lhs, auto rhs, auto op)
-    {
+    auto binary_op = [tolerance](auto lhs, auto rhs, auto op) {
         auto const result   = to_float(op(fxp_t{lhs}, fxp_t{rhs}));
         auto const expected = op(lhs, rhs);
         return approx_equal(result, expected, tolerance);
@@ -244,8 +240,7 @@
 {
     using fxp_t = neo::fft::q7_t;
 
-    auto compare_op = [](auto lhs, auto rhs, auto op)
-    {
+    auto compare_op = [](auto lhs, auto rhs, auto op) {
         auto const result   = op(fxp_t{lhs}, fxp_t{rhs});
         auto const expected = op(lhs, rhs);
         return result == expected;
@@ -294,8 +289,7 @@
 {
     using fxp_t = neo::fft::q15_t;
 
-    auto compare_op = [](auto lhs, auto rhs, auto op)
-    {
+    auto compare_op = [](auto lhs, auto rhs, auto op) {
         auto const result   = op(fxp_t{lhs}, fxp_t{rhs});
         auto const expected = op(lhs, rhs);
         return result == expected;

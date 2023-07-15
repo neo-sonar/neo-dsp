@@ -5,19 +5,15 @@
 
 #include <juce_dsp/juce_dsp.h>
 
-namespace neo::fft
-{
+namespace neo::fft {
 
 auto powerSpectrumImage(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> frames, float threshold)
     -> juce::Image
 {
-    auto const scale = [=]
-    {
+    auto const scale = [=] {
         auto max = 0.0F;
-        for (auto f{0U}; f < frames.extent(0); ++f)
-        {
-            for (auto b{0U}; b < frames.extent(1); ++b)
-            {
+        for (auto f{0U}; f < frames.extent(0); ++f) {
+            for (auto b{0U}; b < frames.extent(1); ++b) {
                 auto const bin = std::abs(frames(f, b));
                 max            = std::max(max, bin * bin);
             }
@@ -25,15 +21,12 @@ auto powerSpectrumImage(Kokkos::mdspan<std::complex<float> const, Kokkos::dexten
         return 1.0F / max;
     }();
 
-    auto const fillPixel = [=](auto& img, int x, int y, auto bin)
-    {
+    auto const fillPixel = [=](auto& img, int x, int y, auto bin) {
         auto const power      = bin * bin;
         auto const normalized = power * scale;
         auto const dB         = juce::Decibels::gainToDecibels(normalized, -144.0F);
-        auto const color      = [=]
-        {
-            if (dB < threshold)
-            {
+        auto const color      = [=] {
+            if (dB < threshold) {
                 auto level = juce::jmap(dB, -144.0F, threshold, 0.0F, 1.0F);
                 return juce::Colours::white.darker(level);
             }
@@ -47,10 +40,8 @@ auto powerSpectrumImage(Kokkos::mdspan<std::complex<float> const, Kokkos::dexten
     auto const rows = static_cast<int>(frames.extent(0));
     auto img        = juce::Image{juce::Image::PixelFormat::ARGB, cols, rows, true};
 
-    for (auto f{0U}; f < frames.extent(0); ++f)
-    {
-        for (auto b{0U}; b < frames.extent(1); ++b)
-        {
+    for (auto f{0U}; f < frames.extent(0); ++f) {
+        for (auto b{0U}; b < frames.extent(1); ++b) {
             fillPixel(img, static_cast<int>(b), static_cast<int>(f), std::abs(frames(f, b)));
         }
     }
@@ -60,13 +51,10 @@ auto powerSpectrumImage(Kokkos::mdspan<std::complex<float> const, Kokkos::dexten
 
 auto powerHistogram(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> frames) -> std::vector<int>
 {
-    auto const scale = [=]
-    {
+    auto const scale = [=] {
         auto max = 0.0F;
-        for (auto f{0U}; f < frames.extent(0); ++f)
-        {
-            for (auto b{0U}; b < frames.extent(1); ++b)
-            {
+        for (auto f{0U}; f < frames.extent(0); ++f) {
+            for (auto b{0U}; b < frames.extent(1); ++b) {
                 auto const bin = std::abs(frames(f, b));
                 max            = std::max(max, bin * bin);
             }
@@ -76,10 +64,8 @@ auto powerHistogram(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<s
 
     auto histogram = std::vector<int>(144, 0);
 
-    for (auto f{0U}; f < frames.extent(0); ++f)
-    {
-        for (auto b{0U}; b < frames.extent(1); ++b)
-        {
+    for (auto f{0U}; f < frames.extent(0); ++f) {
+        for (auto b{0U}; b < frames.extent(1); ++b) {
             auto const bin        = std::abs(frames(f, b));
             auto const power      = bin * bin;
             auto const normalized = power * scale;
@@ -107,8 +93,7 @@ auto powerHistogramImage(Kokkos::mdspan<std::complex<float> const, Kokkos::dexte
     auto g   = juce::Graphics{img};
     g.fillAll(juce::Colours::black);
 
-    for (auto i{0U}; i < histogram.size() - 1U; ++i)
-    {
+    for (auto i{0U}; i < histogram.size() - 1U; ++i) {
         auto const x      = int(i) * binWidth;
         auto const height = float(histogram[i]) / float(*maxBin) * float(imgHeight);
         auto const rect   = juce::Rectangle{x, 0, binWidth, juce::roundToInt(height)};
@@ -116,8 +101,7 @@ auto powerHistogramImage(Kokkos::mdspan<std::complex<float> const, Kokkos::dexte
         g.setColour(juce::Colours::white);
         g.fillRect(rect.withBottomY(img.getBounds().getBottom()));
 
-        if ((i == 32) || (i == 64) || (i == 96))
-        {
+        if ((i == 32) || (i == 64) || (i == 96)) {
             g.setColour(juce::Colours::red.withAlpha(0.65F));
             g.fillRect(rect.withHeight(img.getHeight()));
         }
