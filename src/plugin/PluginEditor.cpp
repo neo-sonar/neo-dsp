@@ -71,6 +71,14 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     _threshold.setRange({-144.0, -10.0}, 0.0);
     _threshold.setValue(-90.0, juce::dontSendNotification);
     _threshold.onDragEnd = [this] { updateImages(); };
+
+    _peakOrPower.setClickingTogglesState(true);
+    _peakOrPower.setToggleState(true, juce::dontSendNotification);
+    _peakOrPower.onClick = [this] {
+        _peakOrPower.setButtonText(_peakOrPower.getToggleState() ? "Power" : "Peak");
+        updateImages();
+    };
+
     _weighting.setClickingTogglesState(true);
     _weighting.setToggleState(true, juce::dontSendNotification);
     _weighting.onClick = [this] { updateImages(); };
@@ -84,6 +92,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     addAndMakeVisible(_openFile);
     addAndMakeVisible(_runBenchmarks);
     addAndMakeVisible(_threshold);
+    addAndMakeVisible(_peakOrPower);
     addAndMakeVisible(_weighting);
     addAndMakeVisible(_fileInfo);
     addAndMakeVisible(_spectogramImage);
@@ -105,14 +114,15 @@ auto PluginEditor::resized() -> void
     auto bounds = getLocalBounds();
 
     auto controls = bounds.removeFromTop(bounds.proportionOfHeight(0.1));
-    auto width    = controls.proportionOfWidth(0.25);
+    auto width    = controls.proportionOfWidth(0.2);
     _openFile.setBounds(controls.removeFromLeft(width));
     _runBenchmarks.setBounds(controls.removeFromLeft(width));
+    _peakOrPower.setBounds(controls.removeFromLeft(width));
     _weighting.setBounds(controls.removeFromLeft(width));
     _threshold.setBounds(controls);
 
-    _fileInfo.setBounds(bounds.removeFromLeft(bounds.proportionOfWidth(0.15)));
-    _spectogramImage.setBounds(bounds.removeFromLeft(bounds.proportionOfWidth(0.60)));
+    _fileInfo.setBounds(bounds.removeFromLeft(bounds.proportionOfWidth(0.2)));
+    _spectogramImage.setBounds(bounds.removeFromLeft(bounds.proportionOfWidth(0.55)));
     _histogramImage.setBounds(bounds.reduced(4));
 }
 
@@ -148,7 +158,6 @@ auto PluginEditor::runBenchmarks() -> void
     _signal = loadAndResample(_formats, _signalFile, 44'100.0);
     _filter = loadAndResample(_formats, _filterFile, 44'100.0);
 
-    runWeightingTests();
     // runDynamicRangeTests();
     // runJuceConvolverBenchmark();
     // runDenseConvolverBenchmark();
@@ -158,11 +167,58 @@ auto PluginEditor::runBenchmarks() -> void
 
 auto PluginEditor::runWeightingTests() -> void
 {
-    auto normalized = _filter;
+    auto normalized = _impulse;
     juce_normalization(normalized);
 
+    auto const isPower     = _peakOrPower.getToggleState();
+    auto const powerOrPeak = [isPower](auto value) { return isPower ? value * value : value; };
+
+    auto const blockSize  = 512ULL;
     auto const impulse    = to_mdarray(normalized);
-    auto const partitions = neo::fft::uniform_partition(impulse, 512);
+    auto const partitions = neo::fft::uniform_partition(impulse, blockSize);
+    auto const scale      = [filter = partitions.to_mdspan(), powerOrPeak] {
+        auto max = 0.0F;
+        for (auto ch{0U}; ch < filter.extent(0); ++ch) {
+            for (auto f{0U}; f < filter.extent(1); ++f) {
+                for (auto b{0U}; b < filter.extent(2); ++b) {
+                    max = std::max(max, powerOrPeak(std::abs(filter(ch, f, b))));
+                }
+            }
+        }
+        return 1.0F / max;
+    }();
+
+    auto const weighting = [=, this](std::size_t binIndex) {
+        if (_weighting.getToggleState()) {
+            auto const frequency = frequencyForBin<float>(blockSize * 2ULL, binIndex, 44'100.0);
+            if (juce::exactlyEqual(frequency, 0.0F)) { return 0.0F; }
+            auto const weight = neo::fft::a_weighting(frequency);
+            return weight;
+        }
+        return 0.0F;
+    };
+
+    auto count           = 0;
+    auto const threshold = static_cast<float>(_threshold.getValue());
+
+    for (auto f{0U}; f < partitions.extent(1); ++f) {
+        for (auto b{0U}; b < partitions.extent(2); ++b) {
+            auto const weight = weighting(b);
+            for (auto ch{0U}; ch < partitions.extent(0); ++ch) {
+                auto const bin = powerOrPeak(std::abs(partitions(ch, f, b)));
+                auto const dB  = juce::Decibels::gainToDecibels(bin * scale, -144.0F) + weight;
+                count += static_cast<int>(dB > threshold);
+            }
+        }
+    }
+
+    auto const total = static_cast<double>(partitions.size());
+    auto const line  = "\n" + juce::String(static_cast<double>(count) / total * 100.0, 2) + "% "
+                    + juce::String(threshold, 1) + "dB " + (isPower ? juce::String("Power") : juce::String("Peak"))
+                    + (_weighting.getToggleState() ? juce::String(" A-Weighting") : juce::String(" No weighting"));
+
+    _fileInfo.moveCaretToEnd(false);
+    _fileInfo.insertTextAtCaret(line);
 }
 
 auto PluginEditor::runDynamicRangeTests() -> void
@@ -282,8 +338,14 @@ auto PluginEditor::updateImages() -> void
         return 0.0F;
     };
 
-    _spectogramImage.setImage(fft::powerSpectrumImage(_spectrum, weighting, static_cast<float>(_threshold.getValue())));
-    _histogramImage.setImage(fft::powerHistogramImage(_spectrum, weighting));
+    auto spectogramImage = fft::powerSpectrumImage(_spectrum, weighting, static_cast<float>(_threshold.getValue()));
+    auto histogramImage  = fft::powerHistogramImage(_spectrum, weighting);
+
+    _spectogramImage.setImage(spectogramImage);
+    _histogramImage.setImage(histogramImage);
+
+    runWeightingTests();
+    repaint();
 }
 
 }  // namespace neo
