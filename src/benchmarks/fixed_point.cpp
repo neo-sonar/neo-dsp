@@ -3,7 +3,9 @@
 #include "benchmark.hpp"
 
 #include <cfloat>
+#include <functional>
 #include <random>
+#include <utility>
 #include <vector>
 
 template<typename Float, std::size_t Size>
