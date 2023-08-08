@@ -12,13 +12,20 @@ target_sources(neo_convolution
         "neo/convolution.cpp"
 
         "neo/convolution/container.hpp"
-        "neo/convolution/convolver.hpp"
-
         "neo/convolution/container/mdspan.hpp"
         "neo/convolution/container/sparse_matrix.hpp"
 
+        "neo/convolution/convolver.hpp"
         "neo/convolution/convolver/sparse_upols_convolver.cpp"
         "neo/convolution/convolver/sparse_upols_convolver.hpp"
         "neo/convolution/convolver/upols_convolver.cpp"
         "neo/convolution/convolver/upols_convolver.hpp"
+
+        "neo/convolution/math/fixed_point.hpp"
+        "neo/convolution/math/fixed_point/algorithm.hpp"
+        "neo/convolution/math/fixed_point/complex.hpp"
+        "neo/convolution/math/fixed_point/fixed_point.hpp"
+
+        "neo/convolution/math/magnitude_scaling.hpp"
+        "neo/convolution/math/magnitude_scaling/a_weighting.hpp"
 )

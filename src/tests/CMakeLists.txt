@@ -1,5 +1,9 @@
 project(neo_convolution_tests)
 
+add_executable(a_weighting_test a_weighting_test.cpp)
+add_test(NAME a_weighting_test COMMAND a_weighting_test)
+target_link_libraries(a_weighting_test PRIVATE neo::convolution)
+
 add_executable(fixed_point_test fixed_point_test.cpp)
 add_test(NAME fixed_point_test COMMAND fixed_point_test)
 target_link_libraries(fixed_point_test PRIVATE neo::convolution)
