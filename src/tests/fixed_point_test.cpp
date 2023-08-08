@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstdio>
 #include <functional>
+#include <utility>
 #include <vector>
 
 [[nodiscard]] static auto approx_equal(float a, float b, float tolerance) -> bool
