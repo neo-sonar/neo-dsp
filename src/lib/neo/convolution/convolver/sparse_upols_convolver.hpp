@@ -5,6 +5,7 @@
 #include "neo/fft.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 namespace neo::fft {

@@ -1,5 +1,6 @@
 #include "sparse_upols_convolver.hpp"
 
+#include <functional>
 #include <random>
 
 namespace neo::fft {

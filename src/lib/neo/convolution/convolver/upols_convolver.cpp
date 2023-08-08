@@ -1,5 +1,7 @@
 #include "upols_convolver.hpp"
 
+#include <functional>
+
 namespace neo::fft {
 
 static auto shift_left(Kokkos::mdspan<float, Kokkos::dextents<size_t, 2>> buffer, std::ptrdiff_t shift) -> void
