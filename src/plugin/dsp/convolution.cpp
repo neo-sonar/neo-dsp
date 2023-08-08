@@ -1,6 +1,7 @@
 #include "convolution.hpp"
 
 #include "dsp/normalize.hpp"
+#include "neo/convolution/math/divide_round_up.hpp"
 
 namespace neo::fft {
 
@@ -12,7 +13,7 @@ static auto partition_filter(juce::AudioBuffer<float> const& buffer, int blockSi
 
     auto result = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 3>>{
         static_cast<std::size_t>(buffer.getNumChannels()),
-        static_cast<std::size_t>(div_round(buffer.getNumSamples(), blockSize)),
+        static_cast<std::size_t>(divide_round_up(buffer.getNumSamples(), blockSize)),
         numBins,
     };
 

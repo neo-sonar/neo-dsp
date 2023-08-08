@@ -14,10 +14,4 @@ auto rms_normalization(std::span<float> buffer) -> void;
 
 auto juce_normalization(juce::AudioBuffer<float>& buf) -> void;
 
-template<std::integral T>
-[[nodiscard]] constexpr auto div_round(T x, T y) noexcept -> T
-{
-    return (x + y - 1) / y;
-}
-
 }  // namespace neo
