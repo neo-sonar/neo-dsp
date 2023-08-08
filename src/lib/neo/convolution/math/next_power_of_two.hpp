@@ -5,13 +5,11 @@
 
 namespace neo::fft {
 
-template<std::unsigned_integral Integral>
-[[nodiscard]] constexpr auto next_power_of_two(Integral x) noexcept -> Integral
-{
+namespace detail {
 
-#if defined(__cpp_lib_int_pow2)
-    return std::bit_ceil(x);
-#else
+template<std::unsigned_integral Integral>
+[[nodiscard]] constexpr auto next_power_of_two_fallback(Integral x) noexcept -> Integral
+{
     --x;
     x |= (x >> 1);
     x |= (x >> 2);
@@ -19,13 +17,24 @@ template<std::unsigned_integral Integral>
     x |= (x >> 8);
     x |= (x >> 16);
     return x + 1;
+}
+
+static_assert(next_power_of_two_fallback(1U) == 1U);
+static_assert(next_power_of_two_fallback(2U) == 2U);
+static_assert(next_power_of_two_fallback(3U) == 4U);
+static_assert(next_power_of_two_fallback(4U) == 4U);
+static_assert(next_power_of_two_fallback(100U) == 128U);
+
+}  // namespace detail
+
+template<std::unsigned_integral Integral>
+[[nodiscard]] constexpr auto next_power_of_two(Integral x) noexcept -> Integral
+{
+#if defined(__cpp_lib_int_pow2)
+    return std::bit_ceil(x);
+#else
+    return detail::next_power_of_two_fallback(x);
 #endif
 }
 
 }  // namespace neo::fft
-
-static_assert(neo::fft::next_power_of_two(1U) == 1U);
-static_assert(neo::fft::next_power_of_two(2U) == 2U);
-static_assert(neo::fft::next_power_of_two(3U) == 4U);
-static_assert(neo::fft::next_power_of_two(4U) == 4U);
-static_assert(neo::fft::next_power_of_two(100U) == 128U);
