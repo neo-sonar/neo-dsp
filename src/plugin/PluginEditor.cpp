@@ -50,6 +50,15 @@ private:
     juce::dsp::ProcessSpec _spec;
 };
 
+template<typename T, typename U, typename V>
+[[nodiscard]] constexpr auto frequencyForBin(U windowSize, V index, double sampleRate) -> T
+{
+    static_assert(std::is_integral_v<U>);
+    static_assert(std::is_integral_v<V>);
+
+    return static_cast<T>(index) * static_cast<T>(sampleRate) / static_cast<T>(windowSize);
+}
+
 }  // namespace
 
 PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
@@ -61,10 +70,10 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 
     _threshold.setRange({-144.0, -10.0}, 0.0);
     _threshold.setValue(-90.0, juce::dontSendNotification);
-    _threshold.onDragEnd = [this] {
-        auto img = fft::powerSpectrumImage(_spectrum, static_cast<float>(_threshold.getValue()));
-        _spectogramImage.setImage(img);
-    };
+    _threshold.onDragEnd = [this] { updateImages(); };
+    _weighting.setClickingTogglesState(true);
+    _weighting.setToggleState(true, juce::dontSendNotification);
+    _weighting.onClick = [this] { updateImages(); };
 
     _fileInfo.setReadOnly(true);
     _fileInfo.setMultiLine(true);
@@ -75,6 +84,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     addAndMakeVisible(_openFile);
     addAndMakeVisible(_runBenchmarks);
     addAndMakeVisible(_threshold);
+    addAndMakeVisible(_weighting);
     addAndMakeVisible(_fileInfo);
     addAndMakeVisible(_spectogramImage);
     addAndMakeVisible(_histogramImage);
@@ -95,9 +105,10 @@ auto PluginEditor::resized() -> void
     auto bounds = getLocalBounds();
 
     auto controls = bounds.removeFromTop(bounds.proportionOfHeight(0.1));
-    auto width    = controls.proportionOfWidth(0.333);
+    auto width    = controls.proportionOfWidth(0.25);
     _openFile.setBounds(controls.removeFromLeft(width));
     _runBenchmarks.setBounds(controls.removeFromLeft(width));
+    _weighting.setBounds(controls.removeFromLeft(width));
     _threshold.setBounds(controls);
 
     _fileInfo.setBounds(bounds.removeFromLeft(bounds.proportionOfWidth(0.15)));
@@ -119,10 +130,8 @@ auto PluginEditor::openFile() -> void
         _impulse  = loadAndResample(_formats, file, 44'100.0);
         _spectrum = fft::stft(_impulse, 1024);
 
-        _spectogramImage.setImage(fft::powerSpectrumImage(_spectrum, static_cast<float>(_threshold.getValue())));
-        _histogramImage.setImage(fft::powerHistogramImage(_spectrum));
-
         _fileInfo.setText(filename + " (" + juce::String(_impulse.getNumSamples()) + ")");
+        updateImages();
 
         repaint();
     };
@@ -140,17 +149,20 @@ auto PluginEditor::runBenchmarks() -> void
     _filter = loadAndResample(_formats, _filterFile, 44'100.0);
 
     runWeightingTests();
-    runDynamicRangeTests();
-    runJuceConvolverBenchmark();
-    runDenseConvolverBenchmark();
-    runDenseStereoConvolverBenchmark();
-    runSparseConvolverBenchmark();
+    // runDynamicRangeTests();
+    // runJuceConvolverBenchmark();
+    // runDenseConvolverBenchmark();
+    // runDenseStereoConvolverBenchmark();
+    // runSparseConvolverBenchmark();
 }
 
 auto PluginEditor::runWeightingTests() -> void
 {
     auto normalized = _filter;
     juce_normalization(normalized);
+
+    auto const impulse    = to_mdarray(normalized);
+    auto const partitions = neo::fft::uniform_partition(impulse, 512);
 }
 
 auto PluginEditor::runDynamicRangeTests() -> void
@@ -254,6 +266,24 @@ auto PluginEditor::runSparseConvolverBenchmark() -> void
               << '\n';
 
     writeToWavFile(file, output, 44'100.0, 32);
+}
+
+auto PluginEditor::updateImages() -> void
+{
+    if (_spectrum.size() == 0) { return; }
+
+    auto const weighting = [this](std::size_t binIndex) {
+        if (_weighting.getToggleState()) {
+            auto const frequency = frequencyForBin<float>(1024, binIndex, 44'100.0);
+            if (juce::exactlyEqual(frequency, 0.0F)) { return 0.0F; }
+            auto const weight = neo::fft::a_weighting(frequency);
+            return weight;
+        }
+        return 0.0F;
+    };
+
+    _spectogramImage.setImage(fft::powerSpectrumImage(_spectrum, weighting, static_cast<float>(_threshold.getValue())));
+    _histogramImage.setImage(fft::powerHistogramImage(_spectrum, weighting));
 }
 
 }  // namespace neo

@@ -7,8 +7,11 @@
 
 namespace neo::fft {
 
-auto powerSpectrumImage(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> frames, float threshold)
-    -> juce::Image
+auto powerSpectrumImage(
+    Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> frames,
+    std::function<float(std::size_t)> const& weighting,
+    float threshold
+) -> juce::Image
 {
     auto const scale = [=] {
         auto max = 0.0F;
@@ -22,12 +25,14 @@ auto powerSpectrumImage(Kokkos::mdspan<std::complex<float> const, Kokkos::dexten
     }();
 
     auto const fillPixel = [=](auto& img, int x, int y, auto bin) {
+        auto const weight     = weighting(static_cast<std::size_t>(y));
         auto const power      = bin * bin;
         auto const normalized = power * scale;
-        auto const dB         = juce::Decibels::gainToDecibels(normalized, -144.0F);
+        auto const dB         = juce::Decibels::gainToDecibels(normalized, -144.0F) + weight;
+        auto const dBClamped  = std::clamp(dB, -144.0F, 0.0F);
         auto const color      = [=] {
             if (dB < threshold) {
-                auto level = juce::jmap(dB, -144.0F, threshold, 0.0F, 1.0F);
+                auto level = juce::jmap(dBClamped, -144.0F, threshold, 0.0F, 1.0F);
                 return juce::Colours::white.darker(level);
             }
             return juce::Colours::black;
@@ -49,13 +54,17 @@ auto powerSpectrumImage(Kokkos::mdspan<std::complex<float> const, Kokkos::dexten
     return img;
 }
 
-auto powerHistogram(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> frames) -> std::vector<int>
+auto powerHistogram(
+    Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> spectogram,
+    std::function<float(std::size_t)> const& weighting
+) -> std::vector<int>
 {
+
     auto const scale = [=] {
         auto max = 0.0F;
-        for (auto f{0U}; f < frames.extent(0); ++f) {
-            for (auto b{0U}; b < frames.extent(1); ++b) {
-                auto const bin = std::abs(frames(f, b));
+        for (auto f{0U}; f < spectogram.extent(0); ++f) {
+            for (auto b{0U}; b < spectogram.extent(1); ++b) {
+                auto const bin = std::abs(spectogram(f, b));
                 max            = std::max(max, bin * bin);
             }
         }
@@ -64,13 +73,15 @@ auto powerHistogram(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<s
 
     auto histogram = std::vector<int>(144, 0);
 
-    for (auto f{0U}; f < frames.extent(0); ++f) {
-        for (auto b{0U}; b < frames.extent(1); ++b) {
-            auto const bin        = std::abs(frames(f, b));
+    for (auto f{0U}; f < spectogram.extent(0); ++f) {
+        for (auto b{0U}; b < spectogram.extent(1); ++b) {
+            auto const weight     = weighting(b);
+            auto const bin        = std::abs(spectogram(f, b));
             auto const power      = bin * bin;
             auto const normalized = power * scale;
-            auto const dB         = std::clamp(juce::Decibels::gainToDecibels(normalized, -144.0F), -143.0F, 0.0F);
-            auto const index      = static_cast<std::size_t>(std::lround(std::abs(dB)));
+            auto const dB         = juce::Decibels::gainToDecibels(normalized, -144.0F) + weight;
+            auto const dBClamped  = std::clamp(dB, -143.0F, 0.0F);
+            auto const index      = static_cast<std::size_t>(std::lround(std::abs(dBClamped)));
             histogram[index] += 1;
         }
     }
@@ -78,10 +89,12 @@ auto powerHistogram(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<s
     return histogram;
 }
 
-auto powerHistogramImage(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> spectogram)
-    -> juce::Image
+auto powerHistogramImage(
+    Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> spectogram,
+    std::function<float(std::size_t)> const& weighting
+) -> juce::Image
 {
-    auto const histogram = powerHistogram(spectogram);
+    auto const histogram = powerHistogram(spectogram, weighting);
     auto const maxBin    = std::max_element(histogram.begin(), std::prev(histogram.end()));
     if (maxBin == histogram.end()) { return {}; }
 
@@ -108,17 +121,6 @@ auto powerHistogramImage(Kokkos::mdspan<std::complex<float> const, Kokkos::dexte
     }
 
     return img;
-}
-
-auto powerSpectrumImage(juce::AudioBuffer<float> const& buffer, float threshold) -> juce::Image
-{
-    if (buffer.getNumSamples() == 0) { return {}; }
-
-    auto copy = buffer;
-    neo::juce_normalization(copy);
-
-    auto const frames = stft(copy, 1024);
-    return powerSpectrumImage(frames, threshold);
 }
 
 }  // namespace neo::fft

@@ -25,6 +25,7 @@ private:
     auto runDenseConvolverBenchmark() -> void;
     auto runDenseStereoConvolverBenchmark() -> void;
     auto runSparseConvolverBenchmark() -> void;
+    auto updateImages() -> void;
 
     juce::AudioFormatManager _formats;
     juce::AudioBuffer<float> _impulse;
@@ -33,6 +34,7 @@ private:
     juce::TextButton _openFile{"Open File"};
     juce::TextButton _runBenchmarks{"Run"};
     juce::Slider _threshold{juce::Slider::LinearHorizontal, juce::Slider::TextBoxRight};
+    juce::TextButton _weighting{"A-Weighting"};
     juce::TextEditor _fileInfo{};
     juce::ImageComponent _spectogramImage{};
     juce::ImageComponent _histogramImage{};

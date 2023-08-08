@@ -6,13 +6,13 @@
 
 namespace neo::fft {
 
-inline auto uniform_partition(Kokkos::mdspan<float, Kokkos::dextents<size_t, 2>> buffer, std::size_t blockSize)
+inline auto uniform_partition(Kokkos::mdspan<float const, Kokkos::dextents<size_t, 2>> buffer, std::size_t blockSize)
     -> KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 3>>
 {
     auto const windowSize = blockSize * 2;
     auto const numBins    = windowSize / 2 + 1;
 
-    auto result = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 3>>{
+    auto partitions = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 3>>{
         buffer.extent(0),
         divide_round_up(buffer.extent(1), blockSize),
         numBins,
@@ -22,10 +22,10 @@ inline auto uniform_partition(Kokkos::mdspan<float, Kokkos::dextents<size_t, 2>>
     auto input  = std::vector<float>(size_t(windowSize));
     auto output = std::vector<std::complex<float>>(size_t(windowSize));
 
-    for (auto channel{0UL}; channel < result.extent(0); ++channel) {
+    for (auto channel{0UL}; channel < partitions.extent(0); ++channel) {
 
-        for (auto partition{0UL}; partition < result.extent(1); ++partition) {
-            auto const idx        = partition * result.extent(2);
+        for (auto partition{0UL}; partition < partitions.extent(1); ++partition) {
+            auto const idx        = partition * partitions.extent(2);
             auto const numSamples = std::min(buffer.extent(1) - idx, blockSize);
 
             std::fill(input.begin(), input.end(), 0.0F);
@@ -33,13 +33,13 @@ inline auto uniform_partition(Kokkos::mdspan<float, Kokkos::dextents<size_t, 2>>
 
             std::fill(output.begin(), output.end(), 0.0F);
             rfft(input, output);
-            for (auto bin{0UL}; bin < result.extent(2); ++bin) {
-                result(channel, partition, bin) = output[bin] / static_cast<float>(windowSize);
+            for (auto bin{0UL}; bin < partitions.extent(2); ++bin) {
+                partitions(channel, partition, bin) = output[bin] / static_cast<float>(windowSize);
             }
         }
     }
 
-    return result;
+    return partitions;
 }
 
 }  // namespace neo::fft
