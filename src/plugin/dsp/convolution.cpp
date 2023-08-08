@@ -1,45 +1,16 @@
 #include "convolution.hpp"
 
 #include "dsp/normalize.hpp"
-#include "neo/convolution/math/divide_round_up.hpp"
+#include "dsp/resample.hpp"
+#include "neo/convolution/convolver/uniform_partition.hpp"
 
 namespace neo::fft {
 
-static auto partition_filter(juce::AudioBuffer<float> const& buffer, int blockSize)
+static auto uniform_partition(juce::AudioBuffer<float> const& buffer, int blockSize)
     -> KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 3>>
 {
-    auto const windowSize = blockSize * 2;
-    auto const numBins    = windowSize / 2 + 1;
-
-    auto result = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 3>>{
-        static_cast<std::size_t>(buffer.getNumChannels()),
-        static_cast<std::size_t>(divide_round_up(buffer.getNumSamples(), blockSize)),
-        numBins,
-    };
-
-    auto rfft   = rfft_radix2_plan<float>{ilog2(static_cast<size_t>(windowSize))};
-    auto input  = std::vector<float>(size_t(windowSize));
-    auto output = std::vector<std::complex<float>>(size_t(windowSize));
-
-    for (auto channel{0UL}; channel < result.extent(0); ++channel) {
-
-        for (auto partition{0UL}; partition < result.extent(1); ++partition) {
-            auto const idx        = static_cast<int>(partition * result.extent(2));
-            auto const numSamples = std::min(buffer.getNumSamples() - idx, blockSize);
-            std::fill(input.begin(), input.end(), 0.0F);
-            for (auto i{0}; i < numSamples; ++i) {
-                input[static_cast<size_t>(i)] = buffer.getSample(static_cast<int>(channel), idx + i);
-            }
-
-            std::fill(output.begin(), output.end(), 0.0F);
-            rfft(input, output);
-            for (auto bin{0UL}; bin < result.extent(2); ++bin) {
-                result(channel, partition, bin) = output[bin] / float(windowSize);
-            }
-        }
-    }
-
-    return result;
+    auto matrix = to_mdarray(buffer);
+    return uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
 }
 
 auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)
@@ -49,7 +20,7 @@ auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<fl
 
     auto output     = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
     auto block      = std::vector<float>(size_t(blockSize));
-    auto partitions = partition_filter(filter, blockSize);
+    auto partitions = uniform_partition(filter, blockSize);
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
         auto convolver     = upols_convolver{};
@@ -79,7 +50,7 @@ auto dense_stereo_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBu
     auto block     = KokkosEx::mdarray<float, Kokkos::dextents<size_t, 2>>{2, size_t(blockSize)};
 
     auto output     = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
-    auto partitions = partition_filter(filter, blockSize);
+    auto partitions = uniform_partition(filter, blockSize);
 
     auto convolver = stereo_upols_convolver{};
     convolver.filter(partitions);
@@ -111,7 +82,7 @@ auto sparse_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<f
 
     auto output     = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
     auto block      = std::vector<float>(size_t(blockSize));
-    auto partitions = partition_filter(filter, blockSize);
+    auto partitions = uniform_partition(filter, blockSize);
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
         auto convolver     = sparse_upols_convolver{thresholdDB};

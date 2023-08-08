@@ -139,11 +139,18 @@ auto PluginEditor::runBenchmarks() -> void
     _signal = loadAndResample(_formats, _signalFile, 44'100.0);
     _filter = loadAndResample(_formats, _filterFile, 44'100.0);
 
+    runWeightingTests();
     runDynamicRangeTests();
     runJuceConvolverBenchmark();
     runDenseConvolverBenchmark();
     runDenseStereoConvolverBenchmark();
     runSparseConvolverBenchmark();
+}
+
+auto PluginEditor::runWeightingTests() -> void
+{
+    auto normalized = _filter;
+    juce_normalization(normalized);
 }
 
 auto PluginEditor::runDynamicRangeTests() -> void

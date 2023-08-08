@@ -19,6 +19,7 @@ struct PluginEditor final : juce::AudioProcessorEditor
 private:
     auto openFile() -> void;
     auto runBenchmarks() -> void;
+    auto runWeightingTests() -> void;
     auto runDynamicRangeTests() -> void;
     auto runJuceConvolverBenchmark() -> void;
     auto runDenseConvolverBenchmark() -> void;
