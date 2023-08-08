@@ -1,5 +1,7 @@
 #include "sparse_upols_convolver.hpp"
 
+#include "neo/convolution/math/next_power_of_two.hpp"
+
 #include <functional>
 #include <random>
 
@@ -42,7 +44,7 @@ static auto normalization_factor(Kokkos::mdspan<std::complex<float> const, Kokko
 auto sparse_upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter)
     -> void
 {
-    auto const K = std::bit_ceil((filter.extent(1) - 1U) * 2U);
+    auto const K = next_power_of_two((filter.extent(1) - 1U) * 2U);
 
     auto const discardBelowThreshold = [threshold = _thresholdDB, scale = normalization_factor(filter)](auto bin) {
         auto const dB = toDecibels(std::abs(bin) * scale);

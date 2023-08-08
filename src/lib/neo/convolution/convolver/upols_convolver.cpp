@@ -1,5 +1,7 @@
 #include "upols_convolver.hpp"
 
+#include "neo/convolution/math/next_power_of_two.hpp"
+
 #include <functional>
 
 namespace neo::fft {
@@ -92,7 +94,7 @@ static auto multiply_and_accumulate(
 
 auto upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter) -> void
 {
-    auto const K = std::bit_ceil((filter.extent(1) - 1U) * 2U);
+    auto const K = next_power_of_two((filter.extent(1) - 1U) * 2U);
 
     _fdl    = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{filter.extents()};
     _filter = filter;
@@ -142,7 +144,7 @@ auto stereo_upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, 
 {
     auto const numChannels = filter.extent(0);
     auto const numBins     = filter.extent(2);
-    auto const fftSize     = std::bit_ceil((numBins - 1U) * 2U);
+    auto const fftSize     = next_power_of_two((numBins - 1U) * 2U);
 
     _fdlIndex    = 0;
     _filter      = filter;
