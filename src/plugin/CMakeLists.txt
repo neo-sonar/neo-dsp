@@ -15,29 +15,32 @@ juce_add_plugin(PerceptualConvolution
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE                # Does the editor need keyboard focus?
 )
 
-target_sources(PerceptualConvolution
-    PRIVATE
-        PluginEditor.hpp
-        PluginEditor.cpp
-        PluginParameter.hpp
-        PluginParameter.cpp
-        PluginProcessor.hpp
-        PluginProcessor.cpp
+set(PerceptualConvolution_Sources
+    PluginEditor.hpp
+    PluginEditor.cpp
+    PluginParameter.hpp
+    PluginParameter.cpp
+    PluginProcessor.hpp
+    PluginProcessor.cpp
 
-        dsp/convolution.cpp
-        dsp/convolution.hpp
-        dsp/normalize.cpp
-        dsp/normalize.hpp
-        dsp/render.hpp
-        dsp/resample.cpp
-        dsp/resample.hpp
-        dsp/spectogram.cpp
-        dsp/spectogram.hpp
-        dsp/stft.cpp
-        dsp/stft.hpp
-        dsp/wav.cpp
-        dsp/wav.hpp
+    dsp/convolution.cpp
+    dsp/convolution.hpp
+    dsp/normalize.cpp
+    dsp/normalize.hpp
+    dsp/render.hpp
+    dsp/resample.cpp
+    dsp/resample.hpp
+    dsp/spectogram.cpp
+    dsp/spectogram.hpp
+    dsp/stft.cpp
+    dsp/stft.hpp
+    dsp/wav.cpp
+    dsp/wav.hpp
 )
+
+target_sources(PerceptualConvolution PRIVATE ${PerceptualConvolution_Sources})
+set_target_properties(PerceptualConvolution PROPERTIES UNITY_BUILD ON UNITY_BUILD_MODE GROUP)
+set_source_files_properties(PerceptualConvolution ${PerceptualConvolution_Sources} PROPERTIES UNITY_GROUP "src")
 
 target_compile_definitions(PerceptualConvolution
     PUBLIC
