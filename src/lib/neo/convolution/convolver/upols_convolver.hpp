@@ -19,10 +19,11 @@ struct upols_convolver
 
 private:
     std::vector<float> _window;
-    std::vector<std::complex<float>> _accumulator;
+
+    std::size_t _fdlIndex{0};
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _fdl;
     KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> _filter;
-    std::size_t _fdlIndex{0};
+    KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 1>> _accumulator;
 
     std::unique_ptr<rfft_radix2_plan<float>> _rfft;
     std::vector<std::complex<float>> _rfftBuf;
