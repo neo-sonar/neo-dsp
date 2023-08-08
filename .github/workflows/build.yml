@@ -9,28 +9,24 @@ concurrency:
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 3
   HOMEBREW_NO_INSTALL_CLEANUP: 1
+  MACOSX_DEPLOYMENT_TARGET: 10.15
 
 jobs:
   build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
-    env:
-      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.osx_target }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: Linux
             os: ubuntu-22.04
-            osx_target: ""
 
           - name: macOS
             os: macos-13
-            osx_target: 10.15
 
           - name: Windows
             os: windows-latest
-            osx_target: ""
 
     steps:
       - name: Checkout code
