@@ -101,7 +101,7 @@ jobs:
           --xml-pretty
           -e ".*_test\.cpp"
           --exclude-unreachable-branches
-          -r src
+          -r src/lib
           -s build
           -o build/coverage.xml
 
