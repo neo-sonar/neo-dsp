@@ -1,6 +1,6 @@
 #pragma once
 
-#include "neo/fft/transform/config.hpp"
+#include "neo/fft/config.hpp"
 
 #if defined(__amd64__) or defined(_M_AMD64)
     #include <immintrin.h>  // AVX-512F

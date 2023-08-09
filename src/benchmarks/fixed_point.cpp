@@ -1,4 +1,4 @@
-#include "neo/fft/math/fixed_point.hpp"
+#include "neo/fft/fixed_point.hpp"
 
 #include "benchmark.hpp"
 

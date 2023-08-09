@@ -1,5 +1,5 @@
 #include "catch2/catch_test_macros.hpp"
-#include "neo/fft/math/fixed_point.hpp"
+#include "neo/fft/fixed_point.hpp"
 
 #include <functional>
 #include <utility>

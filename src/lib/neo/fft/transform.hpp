@@ -1,6 +1,5 @@
 #pragma once
 
-#include <neo/fft/transform/config.hpp>
 #include <neo/fft/transform/conjugate_view.hpp>
 #include <neo/fft/transform/dft.hpp>
 #include <neo/fft/transform/direction.hpp>

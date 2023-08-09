@@ -5,10 +5,6 @@ add_library(neo::convolution ALIAS neo_fft)
 
 set(neo_fft_Sources
     "neo/fft/container.hpp"
-    "neo/fft/convolution.hpp"
-    "neo/fft/math.hpp"
-    "neo/fft/transform.hpp"
-
     "neo/fft/container/mdspan.hpp"
     "neo/fft/container/sparse_matrix.hpp"
 
@@ -18,17 +14,27 @@ set(neo_fft_Sources
     "neo/fft/convolution/upols_convolver.cpp"
     "neo/fft/convolution/upols_convolver.hpp"
 
-    "neo/fft/math/fixed_point.hpp"
-    "neo/fft/math/fixed_point/algorithm.hpp"
-    "neo/fft/math/fixed_point/complex.hpp"
-    "neo/fft/math/fixed_point/fixed_point.hpp"
+    "neo/fft/fixed_point.hpp"
+    "neo/fft/fixed_point/algorithm.hpp"
+    "neo/fft/fixed_point/complex.hpp"
+    "neo/fft/fixed_point/fixed_point.hpp"
 
+    "neo/fft/math.hpp"
     "neo/fft/math/a_weighting.hpp"
     "neo/fft/math/decibel.hpp"
     "neo/fft/math/divide_round_up.hpp"
     "neo/fft/math/ilog2.hpp"
     "neo/fft/math/next_power_of_two.hpp"
     "neo/fft/math/power.hpp"
+
+    "neo/fft/transform.hpp"
+    "neo/fft/transform/conjugate_view.hpp"
+    "neo/fft/transform/dft.hpp"
+    "neo/fft/transform/direction.hpp"
+    "neo/fft/transform/radix2.hpp"
+    "neo/fft/transform/reorder.hpp"
+    "neo/fft/transform/rfft.hpp"
+    "neo/fft/transform/simd.hpp"
 )
 
 target_sources(neo_fft PRIVATE ${neo_fft_Sources})
