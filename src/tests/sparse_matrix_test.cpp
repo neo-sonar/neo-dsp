@@ -1,4 +1,4 @@
-#include "neo/convolution/container/sparse_matrix.hpp"
+#include "neo/fft/convolution/container/sparse_matrix.hpp"
 
 #undef NDEBUG
 #include <cassert>

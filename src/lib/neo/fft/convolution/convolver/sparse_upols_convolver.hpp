@@ -1,10 +1,11 @@
 #pragma once
 
-#include "neo/convolution/container/mdspan.hpp"
-#include "neo/convolution/container/sparse_matrix.hpp"
-#include "neo/fft.hpp"
+#include "neo/fft/convolution/container/mdspan.hpp"
+#include "neo/fft/convolution/container/sparse_matrix.hpp"
+#include "neo/fft/transform.hpp"
 
 #include <algorithm>
+#include <complex>
 #include <memory>
 #include <vector>
 

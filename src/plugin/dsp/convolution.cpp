@@ -2,7 +2,7 @@
 
 #include "dsp/normalize.hpp"
 #include "dsp/resample.hpp"
-#include "neo/convolution/convolver/uniform_partition.hpp"
+#include "neo/fft/convolution/convolver/uniform_partition.hpp"
 
 namespace neo::fft {
 

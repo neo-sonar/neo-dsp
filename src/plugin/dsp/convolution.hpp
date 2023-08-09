@@ -1,7 +1,7 @@
 #pragma once
 
-#include "neo/convolution.hpp"
 #include "neo/fft.hpp"
+#include "neo/fft/convolution.hpp"
 
 #include <algorithm>
 #include <juce_dsp/juce_dsp.h>

@@ -7,7 +7,7 @@
 #include "dsp/spectogram.hpp"
 #include "dsp/stft.hpp"
 #include "dsp/wav.hpp"
-#include "neo/convolution/container/sparse_matrix.hpp"
+#include "neo/fft/convolution/container/sparse_matrix.hpp"
 
 #include <span>
 

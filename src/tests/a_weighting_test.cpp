@@ -1,4 +1,4 @@
-#include "neo/convolution/math/magnitude_scaling/a_weighting.hpp"
+#include "neo/fft/convolution/math/magnitude_scaling/a_weighting.hpp"
 
 #undef NDEBUG
 #include <algorithm>

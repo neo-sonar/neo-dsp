@@ -1,9 +1,9 @@
 #pragma once
 
-#include "neo/fft/conjugate_view.hpp"
-#include "neo/fft/direction.hpp"
-#include "neo/fft/math.hpp"
-#include "neo/fft/reorder.hpp"
+#include "neo/fft/transform/conjugate_view.hpp"
+#include "neo/fft/transform/direction.hpp"
+#include "neo/fft/transform/math.hpp"
+#include "neo/fft/transform/reorder.hpp"
 
 #include <algorithm>
 #include <cassert>

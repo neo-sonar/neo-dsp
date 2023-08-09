@@ -1,6 +1,6 @@
 #pragma once
 
-#include "neo/convolution/math/fixed_point/fixed_point.hpp"
+#include "neo/fft/convolution/math/fixed_point/fixed_point.hpp"
 
 #if defined(__SSE2__)
     #include <smmintrin.h>

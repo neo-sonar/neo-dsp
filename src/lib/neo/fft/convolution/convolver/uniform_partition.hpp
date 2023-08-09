@@ -1,8 +1,10 @@
 #pragma once
 
-#include "neo/convolution/container/mdspan.hpp"
-#include "neo/convolution/math/divide_round_up.hpp"
-#include "neo/fft.hpp"
+#include "neo/fft/convolution/container/mdspan.hpp"
+#include "neo/fft/convolution/math/divide_round_up.hpp"
+#include "neo/fft/transform.hpp"
+
+#include <complex>
 
 namespace neo::fft {
 

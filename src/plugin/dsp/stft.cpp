@@ -1,7 +1,7 @@
 #include "stft.hpp"
 
 #include "dsp/normalize.hpp"
-#include "neo/convolution/math/divide_round_up.hpp"
+#include "neo/fft/convolution/math/divide_round_up.hpp"
 
 #include <complex>
 #include <juce_audio_basics/juce_audio_basics.h>
