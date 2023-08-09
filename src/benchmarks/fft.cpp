@@ -86,6 +86,7 @@ private:
     neo::fft::c2c_radix2_plan<std::complex<Float>> _fft;
 };
 
+#if defined(__amd64__) or defined(_M_AMD64)
 struct cfft32x2
 {
     explicit cfft32x2(size_t size) : _buf(size, _mm_set1_ps(0)), _tw(size, _mm_set1_ps(0))
@@ -123,6 +124,8 @@ private:
     std::vector<neo::fft::complex64x1_t> _buf;
     std::vector<neo::fft::complex64x1_t> _tw;
 };
+
+#endif
 
 #ifdef __AVX__
 
