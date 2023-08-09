@@ -20,9 +20,9 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include(FetchContent)
-include(CTest)
 enable_testing()
+include(CTest)
+include(FetchContent)
 
 FetchContent_Declare(
     mdspan_repo

@@ -16,6 +16,7 @@
 
 #include <cassert>
 #include <functional>
+#include <iterator>
 #include <span>
 
 namespace neo::fft {
@@ -32,7 +33,7 @@ inline constexpr auto apply_kernel_sse
         out[static_cast<size_t>(i)] = scalar_kernel(lhs[static_cast<size_t>(i)], rhs[static_cast<size_t>(i)]);
     }
 
-    for (auto i{remainder}; i < lhs.size(); i += vectorSize) {
+    for (auto i{remainder}; i < std::ssize(lhs); i += vectorSize) {
         auto const left  = _mm_loadu_si128(reinterpret_cast<__m128i const*>(std::next(lhs.data(), i)));
         auto const right = _mm_loadu_si128(reinterpret_cast<__m128i const*>(std::next(rhs.data(), i)));
         _mm_storeu_si128(reinterpret_cast<__m128i*>(std::next(out.data(), i)), vector_kernel(left, right));

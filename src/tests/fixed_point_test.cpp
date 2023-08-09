@@ -1,8 +1,6 @@
+#include "catch2/catch_test_macros.hpp"
 #include "neo/fft/math/fixed_point.hpp"
 
-#undef NDEBUG
-#include <cassert>
-#include <cstdio>
 #include <functional>
 #include <utility>
 #include <vector>
@@ -15,13 +13,13 @@
 [[nodiscard]] static auto test_q7_t_conversion() -> bool
 {
     auto const tolerance = 0.01F;
-    assert(approx_equal(to_float(neo::fft::q7_t{0.00F}), 0.00F, tolerance));
-    assert(approx_equal(to_float(neo::fft::q7_t{0.12F}), 0.12F, tolerance));
-    assert(approx_equal(to_float(neo::fft::q7_t{0.25F}), 0.25F, tolerance));
-    assert(approx_equal(to_float(neo::fft::q7_t{0.33F}), 0.33F, tolerance));
-    assert(approx_equal(to_float(neo::fft::q7_t{0.40F}), 0.40F, tolerance));
-    assert(approx_equal(to_float(neo::fft::q7_t{0.50F}), 0.50F, tolerance));
-    assert(approx_equal(to_float(neo::fft::q7_t{0.75F}), 0.75F, tolerance));
+    REQUIRE(approx_equal(to_float(neo::fft::q7_t{0.00F}), 0.00F, tolerance));
+    REQUIRE(approx_equal(to_float(neo::fft::q7_t{0.12F}), 0.12F, tolerance));
+    REQUIRE(approx_equal(to_float(neo::fft::q7_t{0.25F}), 0.25F, tolerance));
+    REQUIRE(approx_equal(to_float(neo::fft::q7_t{0.33F}), 0.33F, tolerance));
+    REQUIRE(approx_equal(to_float(neo::fft::q7_t{0.40F}), 0.40F, tolerance));
+    REQUIRE(approx_equal(to_float(neo::fft::q7_t{0.50F}), 0.50F, tolerance));
+    REQUIRE(approx_equal(to_float(neo::fft::q7_t{0.75F}), 0.75F, tolerance));
     return true;
 }
 
@@ -30,13 +28,13 @@
     using fxp_t          = neo::fft::q15_t;
     auto const tolerance = 0.0001F;
 
-    assert(approx_equal(to_float(fxp_t{0.00F}), 0.00F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.12F}), 0.12F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.25F}), 0.25F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.33F}), 0.33F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.40F}), 0.40F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.50F}), 0.50F, tolerance));
-    assert(approx_equal(to_float(fxp_t{0.75F}), 0.75F, tolerance));
+    REQUIRE(approx_equal(to_float(fxp_t{0.00F}), 0.00F, tolerance));
+    REQUIRE(approx_equal(to_float(fxp_t{0.12F}), 0.12F, tolerance));
+    REQUIRE(approx_equal(to_float(fxp_t{0.25F}), 0.25F, tolerance));
+    REQUIRE(approx_equal(to_float(fxp_t{0.33F}), 0.33F, tolerance));
+    REQUIRE(approx_equal(to_float(fxp_t{0.40F}), 0.40F, tolerance));
+    REQUIRE(approx_equal(to_float(fxp_t{0.50F}), 0.50F, tolerance));
+    REQUIRE(approx_equal(to_float(fxp_t{0.75F}), 0.75F, tolerance));
 
     return true;
 }
@@ -54,46 +52,46 @@
 
     // operator+
     auto const unary_plus = [](auto val) { return +val; };
-    assert(unary_op(0.00F, unary_plus));
-    assert(unary_op(0.12F, unary_plus));
-    assert(unary_op(0.25F, unary_plus));
-    assert(unary_op(0.33F, unary_plus));
-    assert(unary_op(0.40F, unary_plus));
-    assert(unary_op(0.45F, unary_plus));
-    assert(unary_op(0.49F, unary_plus));
-    assert(unary_op(0.75F, unary_plus));
-    assert(unary_op(0.99F, unary_plus));
+    REQUIRE(unary_op(0.00F, unary_plus));
+    REQUIRE(unary_op(0.12F, unary_plus));
+    REQUIRE(unary_op(0.25F, unary_plus));
+    REQUIRE(unary_op(0.33F, unary_plus));
+    REQUIRE(unary_op(0.40F, unary_plus));
+    REQUIRE(unary_op(0.45F, unary_plus));
+    REQUIRE(unary_op(0.49F, unary_plus));
+    REQUIRE(unary_op(0.75F, unary_plus));
+    REQUIRE(unary_op(0.99F, unary_plus));
 
-    assert(unary_op(-0.00F, unary_plus));
-    assert(unary_op(-0.12F, unary_plus));
-    assert(unary_op(-0.25F, unary_plus));
-    assert(unary_op(-0.33F, unary_plus));
-    assert(unary_op(-0.40F, unary_plus));
-    assert(unary_op(-0.45F, unary_plus));
-    assert(unary_op(-0.49F, unary_plus));
-    assert(unary_op(-0.75F, unary_plus));
-    assert(unary_op(-0.99F, unary_plus));
+    REQUIRE(unary_op(-0.00F, unary_plus));
+    REQUIRE(unary_op(-0.12F, unary_plus));
+    REQUIRE(unary_op(-0.25F, unary_plus));
+    REQUIRE(unary_op(-0.33F, unary_plus));
+    REQUIRE(unary_op(-0.40F, unary_plus));
+    REQUIRE(unary_op(-0.45F, unary_plus));
+    REQUIRE(unary_op(-0.49F, unary_plus));
+    REQUIRE(unary_op(-0.75F, unary_plus));
+    REQUIRE(unary_op(-0.99F, unary_plus));
 
     // operator-
-    assert(unary_op(0.00F, std::negate()));
-    assert(unary_op(0.12F, std::negate()));
-    assert(unary_op(0.25F, std::negate()));
-    assert(unary_op(0.33F, std::negate()));
-    assert(unary_op(0.40F, std::negate()));
-    assert(unary_op(0.45F, std::negate()));
-    assert(unary_op(0.49F, std::negate()));
-    assert(unary_op(0.75F, std::negate()));
-    assert(unary_op(0.99F, std::negate()));
+    REQUIRE(unary_op(0.00F, std::negate()));
+    REQUIRE(unary_op(0.12F, std::negate()));
+    REQUIRE(unary_op(0.25F, std::negate()));
+    REQUIRE(unary_op(0.33F, std::negate()));
+    REQUIRE(unary_op(0.40F, std::negate()));
+    REQUIRE(unary_op(0.45F, std::negate()));
+    REQUIRE(unary_op(0.49F, std::negate()));
+    REQUIRE(unary_op(0.75F, std::negate()));
+    REQUIRE(unary_op(0.99F, std::negate()));
 
-    assert(unary_op(-0.00F, std::negate()));
-    assert(unary_op(-0.12F, std::negate()));
-    assert(unary_op(-0.25F, std::negate()));
-    assert(unary_op(-0.33F, std::negate()));
-    assert(unary_op(-0.40F, std::negate()));
-    assert(unary_op(-0.45F, std::negate()));
-    assert(unary_op(-0.49F, std::negate()));
-    assert(unary_op(-0.75F, std::negate()));
-    assert(unary_op(-0.99F, std::negate()));
+    REQUIRE(unary_op(-0.00F, std::negate()));
+    REQUIRE(unary_op(-0.12F, std::negate()));
+    REQUIRE(unary_op(-0.25F, std::negate()));
+    REQUIRE(unary_op(-0.33F, std::negate()));
+    REQUIRE(unary_op(-0.40F, std::negate()));
+    REQUIRE(unary_op(-0.45F, std::negate()));
+    REQUIRE(unary_op(-0.49F, std::negate()));
+    REQUIRE(unary_op(-0.75F, std::negate()));
+    REQUIRE(unary_op(-0.99F, std::negate()));
 
     return true;
 }
@@ -111,46 +109,46 @@
 
     // operator+
     auto const unary_plus = [](auto val) { return +val; };
-    assert(unary_op(0.00F, unary_plus));
-    assert(unary_op(0.12F, unary_plus));
-    assert(unary_op(0.25F, unary_plus));
-    assert(unary_op(0.33F, unary_plus));
-    assert(unary_op(0.40F, unary_plus));
-    assert(unary_op(0.45F, unary_plus));
-    assert(unary_op(0.49F, unary_plus));
-    assert(unary_op(0.75F, unary_plus));
-    assert(unary_op(0.99F, unary_plus));
+    REQUIRE(unary_op(0.00F, unary_plus));
+    REQUIRE(unary_op(0.12F, unary_plus));
+    REQUIRE(unary_op(0.25F, unary_plus));
+    REQUIRE(unary_op(0.33F, unary_plus));
+    REQUIRE(unary_op(0.40F, unary_plus));
+    REQUIRE(unary_op(0.45F, unary_plus));
+    REQUIRE(unary_op(0.49F, unary_plus));
+    REQUIRE(unary_op(0.75F, unary_plus));
+    REQUIRE(unary_op(0.99F, unary_plus));
 
-    assert(unary_op(-0.00F, unary_plus));
-    assert(unary_op(-0.12F, unary_plus));
-    assert(unary_op(-0.25F, unary_plus));
-    assert(unary_op(-0.33F, unary_plus));
-    assert(unary_op(-0.40F, unary_plus));
-    assert(unary_op(-0.45F, unary_plus));
-    assert(unary_op(-0.49F, unary_plus));
-    assert(unary_op(-0.75F, unary_plus));
-    assert(unary_op(-0.99F, unary_plus));
+    REQUIRE(unary_op(-0.00F, unary_plus));
+    REQUIRE(unary_op(-0.12F, unary_plus));
+    REQUIRE(unary_op(-0.25F, unary_plus));
+    REQUIRE(unary_op(-0.33F, unary_plus));
+    REQUIRE(unary_op(-0.40F, unary_plus));
+    REQUIRE(unary_op(-0.45F, unary_plus));
+    REQUIRE(unary_op(-0.49F, unary_plus));
+    REQUIRE(unary_op(-0.75F, unary_plus));
+    REQUIRE(unary_op(-0.99F, unary_plus));
 
     // operator-
-    assert(unary_op(0.00F, std::negate()));
-    assert(unary_op(0.12F, std::negate()));
-    assert(unary_op(0.25F, std::negate()));
-    assert(unary_op(0.33F, std::negate()));
-    assert(unary_op(0.40F, std::negate()));
-    assert(unary_op(0.45F, std::negate()));
-    assert(unary_op(0.49F, std::negate()));
-    assert(unary_op(0.75F, std::negate()));
-    assert(unary_op(0.99F, std::negate()));
+    REQUIRE(unary_op(0.00F, std::negate()));
+    REQUIRE(unary_op(0.12F, std::negate()));
+    REQUIRE(unary_op(0.25F, std::negate()));
+    REQUIRE(unary_op(0.33F, std::negate()));
+    REQUIRE(unary_op(0.40F, std::negate()));
+    REQUIRE(unary_op(0.45F, std::negate()));
+    REQUIRE(unary_op(0.49F, std::negate()));
+    REQUIRE(unary_op(0.75F, std::negate()));
+    REQUIRE(unary_op(0.99F, std::negate()));
 
-    assert(unary_op(-0.00F, std::negate()));
-    assert(unary_op(-0.12F, std::negate()));
-    assert(unary_op(-0.25F, std::negate()));
-    assert(unary_op(-0.33F, std::negate()));
-    assert(unary_op(-0.40F, std::negate()));
-    assert(unary_op(-0.45F, std::negate()));
-    assert(unary_op(-0.49F, std::negate()));
-    assert(unary_op(-0.75F, std::negate()));
-    assert(unary_op(-0.99F, std::negate()));
+    REQUIRE(unary_op(-0.00F, std::negate()));
+    REQUIRE(unary_op(-0.12F, std::negate()));
+    REQUIRE(unary_op(-0.25F, std::negate()));
+    REQUIRE(unary_op(-0.33F, std::negate()));
+    REQUIRE(unary_op(-0.40F, std::negate()));
+    REQUIRE(unary_op(-0.45F, std::negate()));
+    REQUIRE(unary_op(-0.49F, std::negate()));
+    REQUIRE(unary_op(-0.75F, std::negate()));
+    REQUIRE(unary_op(-0.99F, std::negate()));
 
     return true;
 }
@@ -167,31 +165,31 @@
     };
 
     // operator+
-    assert(binary_op(0.00F, 0.5F, std::plus()));
-    assert(binary_op(0.12F, 0.5F, std::plus()));
-    assert(binary_op(0.25F, 0.5F, std::plus()));
-    assert(binary_op(0.33F, 0.5F, std::plus()));
-    assert(binary_op(0.40F, 0.5F, std::plus()));
-    assert(binary_op(0.45F, 0.5F, std::plus()));
-    assert(binary_op(0.49F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.00F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.12F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.25F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.33F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.40F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.45F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.49F, 0.5F, std::plus()));
 
     // operator-
-    assert(binary_op(0.00F, 0.5F, std::minus()));
-    assert(binary_op(0.12F, 0.5F, std::minus()));
-    assert(binary_op(0.25F, 0.5F, std::minus()));
-    assert(binary_op(0.33F, 0.5F, std::minus()));
-    assert(binary_op(0.40F, 0.5F, std::minus()));
-    assert(binary_op(0.45F, 0.5F, std::minus()));
-    assert(binary_op(0.49F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.00F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.12F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.25F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.33F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.40F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.45F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.49F, 0.5F, std::minus()));
 
     // operator*
-    assert(binary_op(0.00F, 0.5F, std::multiplies()));
-    assert(binary_op(0.12F, 0.5F, std::multiplies()));
-    assert(binary_op(0.25F, 0.5F, std::multiplies()));
-    assert(binary_op(0.33F, 0.5F, std::multiplies()));
-    assert(binary_op(0.40F, 0.5F, std::multiplies()));
-    assert(binary_op(0.45F, 0.5F, std::multiplies()));
-    assert(binary_op(0.49F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.00F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.12F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.25F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.33F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.40F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.45F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.49F, 0.5F, std::multiplies()));
 
     return true;
 }
@@ -208,31 +206,31 @@
     };
 
     // operator+
-    assert(binary_op(0.00F, 0.5F, std::plus()));
-    assert(binary_op(0.12F, 0.5F, std::plus()));
-    assert(binary_op(0.25F, 0.5F, std::plus()));
-    assert(binary_op(0.33F, 0.5F, std::plus()));
-    assert(binary_op(0.40F, 0.5F, std::plus()));
-    assert(binary_op(0.45F, 0.5F, std::plus()));
-    assert(binary_op(0.49F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.00F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.12F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.25F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.33F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.40F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.45F, 0.5F, std::plus()));
+    REQUIRE(binary_op(0.49F, 0.5F, std::plus()));
 
     // operator-
-    assert(binary_op(0.00F, 0.5F, std::minus()));
-    assert(binary_op(0.12F, 0.5F, std::minus()));
-    assert(binary_op(0.25F, 0.5F, std::minus()));
-    assert(binary_op(0.33F, 0.5F, std::minus()));
-    assert(binary_op(0.40F, 0.5F, std::minus()));
-    assert(binary_op(0.45F, 0.5F, std::minus()));
-    assert(binary_op(0.49F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.00F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.12F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.25F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.33F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.40F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.45F, 0.5F, std::minus()));
+    REQUIRE(binary_op(0.49F, 0.5F, std::minus()));
 
     // operator*
-    assert(binary_op(0.00F, 0.5F, std::multiplies()));
-    assert(binary_op(0.12F, 0.5F, std::multiplies()));
-    assert(binary_op(0.25F, 0.5F, std::multiplies()));
-    assert(binary_op(0.33F, 0.5F, std::multiplies()));
-    assert(binary_op(0.40F, 0.5F, std::multiplies()));
-    assert(binary_op(0.45F, 0.5F, std::multiplies()));
-    assert(binary_op(0.49F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.00F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.12F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.25F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.33F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.40F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.45F, 0.5F, std::multiplies()));
+    REQUIRE(binary_op(0.49F, 0.5F, std::multiplies()));
 
     return true;
 }
@@ -248,40 +246,40 @@
     };
 
     // operator==
-    assert(compare_op(+0.00F, +0.00F, std::equal_to()));
-    assert(compare_op(+0.50F, +0.00F, std::equal_to()));
-    assert(compare_op(+0.50F, -0.50F, std::equal_to()));
-    assert(compare_op(+0.50F, +0.50F, std::equal_to()));
+    REQUIRE(compare_op(+0.00F, +0.00F, std::equal_to()));
+    REQUIRE(compare_op(+0.50F, +0.00F, std::equal_to()));
+    REQUIRE(compare_op(+0.50F, -0.50F, std::equal_to()));
+    REQUIRE(compare_op(+0.50F, +0.50F, std::equal_to()));
 
     // operator!=
-    assert(compare_op(+0.00F, +0.00F, std::not_equal_to()));
-    assert(compare_op(+0.50F, +0.00F, std::not_equal_to()));
-    assert(compare_op(+0.50F, -0.50F, std::not_equal_to()));
-    assert(compare_op(+0.50F, +0.50F, std::not_equal_to()));
+    REQUIRE(compare_op(+0.00F, +0.00F, std::not_equal_to()));
+    REQUIRE(compare_op(+0.50F, +0.00F, std::not_equal_to()));
+    REQUIRE(compare_op(+0.50F, -0.50F, std::not_equal_to()));
+    REQUIRE(compare_op(+0.50F, +0.50F, std::not_equal_to()));
 
     // operator<
-    assert(compare_op(+0.00F, +0.00F, std::less()));
-    assert(compare_op(+0.50F, +0.00F, std::less()));
-    assert(compare_op(+0.50F, -0.50F, std::less()));
-    assert(compare_op(+0.50F, +0.50F, std::less()));
+    REQUIRE(compare_op(+0.00F, +0.00F, std::less()));
+    REQUIRE(compare_op(+0.50F, +0.00F, std::less()));
+    REQUIRE(compare_op(+0.50F, -0.50F, std::less()));
+    REQUIRE(compare_op(+0.50F, +0.50F, std::less()));
 
     // operator<=
-    assert(compare_op(+0.00F, +0.00F, std::less_equal()));
-    assert(compare_op(+0.50F, +0.00F, std::less_equal()));
-    assert(compare_op(+0.50F, -0.50F, std::less_equal()));
-    assert(compare_op(+0.50F, +0.50F, std::less_equal()));
+    REQUIRE(compare_op(+0.00F, +0.00F, std::less_equal()));
+    REQUIRE(compare_op(+0.50F, +0.00F, std::less_equal()));
+    REQUIRE(compare_op(+0.50F, -0.50F, std::less_equal()));
+    REQUIRE(compare_op(+0.50F, +0.50F, std::less_equal()));
 
     // operator>
-    assert(compare_op(+0.00F, +0.00F, std::greater()));
-    assert(compare_op(+0.50F, +0.00F, std::greater()));
-    assert(compare_op(+0.50F, -0.50F, std::greater()));
-    assert(compare_op(+0.50F, +0.50F, std::greater()));
+    REQUIRE(compare_op(+0.00F, +0.00F, std::greater()));
+    REQUIRE(compare_op(+0.50F, +0.00F, std::greater()));
+    REQUIRE(compare_op(+0.50F, -0.50F, std::greater()));
+    REQUIRE(compare_op(+0.50F, +0.50F, std::greater()));
 
     // operator>=
-    assert(compare_op(+0.00F, +0.00F, std::greater_equal()));
-    assert(compare_op(+0.50F, +0.00F, std::greater_equal()));
-    assert(compare_op(+0.50F, -0.50F, std::greater_equal()));
-    assert(compare_op(+0.50F, +0.50F, std::greater_equal()));
+    REQUIRE(compare_op(+0.00F, +0.00F, std::greater_equal()));
+    REQUIRE(compare_op(+0.50F, +0.00F, std::greater_equal()));
+    REQUIRE(compare_op(+0.50F, -0.50F, std::greater_equal()));
+    REQUIRE(compare_op(+0.50F, +0.50F, std::greater_equal()));
 
     return true;
 }
@@ -297,40 +295,40 @@
     };
 
     // operator==
-    assert(compare_op(+0.00F, +0.00F, std::equal_to()));
-    assert(compare_op(+0.50F, +0.00F, std::equal_to()));
-    assert(compare_op(+0.50F, -0.50F, std::equal_to()));
-    assert(compare_op(+0.50F, +0.50F, std::equal_to()));
+    REQUIRE(compare_op(+0.00F, +0.00F, std::equal_to()));
+    REQUIRE(compare_op(+0.50F, +0.00F, std::equal_to()));
+    REQUIRE(compare_op(+0.50F, -0.50F, std::equal_to()));
+    REQUIRE(compare_op(+0.50F, +0.50F, std::equal_to()));
 
     // operator!=
-    assert(compare_op(+0.00F, +0.00F, std::not_equal_to()));
-    assert(compare_op(+0.50F, +0.00F, std::not_equal_to()));
-    assert(compare_op(+0.50F, -0.50F, std::not_equal_to()));
-    assert(compare_op(+0.50F, +0.50F, std::not_equal_to()));
+    REQUIRE(compare_op(+0.00F, +0.00F, std::not_equal_to()));
+    REQUIRE(compare_op(+0.50F, +0.00F, std::not_equal_to()));
+    REQUIRE(compare_op(+0.50F, -0.50F, std::not_equal_to()));
+    REQUIRE(compare_op(+0.50F, +0.50F, std::not_equal_to()));
 
     // operator<
-    assert(compare_op(+0.00F, +0.00F, std::less()));
-    assert(compare_op(+0.50F, +0.00F, std::less()));
-    assert(compare_op(+0.50F, -0.50F, std::less()));
-    assert(compare_op(+0.50F, +0.50F, std::less()));
+    REQUIRE(compare_op(+0.00F, +0.00F, std::less()));
+    REQUIRE(compare_op(+0.50F, +0.00F, std::less()));
+    REQUIRE(compare_op(+0.50F, -0.50F, std::less()));
+    REQUIRE(compare_op(+0.50F, +0.50F, std::less()));
 
     // operator<=
-    assert(compare_op(+0.00F, +0.00F, std::less_equal()));
-    assert(compare_op(+0.50F, +0.00F, std::less_equal()));
-    assert(compare_op(+0.50F, -0.50F, std::less_equal()));
-    assert(compare_op(+0.50F, +0.50F, std::less_equal()));
+    REQUIRE(compare_op(+0.00F, +0.00F, std::less_equal()));
+    REQUIRE(compare_op(+0.50F, +0.00F, std::less_equal()));
+    REQUIRE(compare_op(+0.50F, -0.50F, std::less_equal()));
+    REQUIRE(compare_op(+0.50F, +0.50F, std::less_equal()));
 
     // operator>
-    assert(compare_op(+0.00F, +0.00F, std::greater()));
-    assert(compare_op(+0.50F, +0.00F, std::greater()));
-    assert(compare_op(+0.50F, -0.50F, std::greater()));
-    assert(compare_op(+0.50F, +0.50F, std::greater()));
+    REQUIRE(compare_op(+0.00F, +0.00F, std::greater()));
+    REQUIRE(compare_op(+0.50F, +0.00F, std::greater()));
+    REQUIRE(compare_op(+0.50F, -0.50F, std::greater()));
+    REQUIRE(compare_op(+0.50F, +0.50F, std::greater()));
 
     // operator>=
-    assert(compare_op(+0.00F, +0.00F, std::greater_equal()));
-    assert(compare_op(+0.50F, +0.00F, std::greater_equal()));
-    assert(compare_op(+0.50F, -0.50F, std::greater_equal()));
-    assert(compare_op(+0.50F, +0.50F, std::greater_equal()));
+    REQUIRE(compare_op(+0.00F, +0.00F, std::greater_equal()));
+    REQUIRE(compare_op(+0.50F, +0.00F, std::greater_equal()));
+    REQUIRE(compare_op(+0.50F, -0.50F, std::greater_equal()));
+    REQUIRE(compare_op(+0.50F, +0.50F, std::greater_equal()));
 
     return true;
 }
@@ -356,7 +354,7 @@
         neo::fft::add(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.5F + 0.25F, tolerance); };
-        assert(std::all_of(out.begin(), out.end(), eq));
+        REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
     {
@@ -367,7 +365,7 @@
         neo::fft::add(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.125F + 0.25F, tolerance); };
-        assert(std::all_of(out.begin(), out.end(), eq));
+        REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
     return true;
@@ -394,7 +392,7 @@
         neo::fft::add(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.5F + 0.25F, tolerance); };
-        assert(std::all_of(out.begin(), out.end(), eq));
+        REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
     {
@@ -405,7 +403,7 @@
         neo::fft::add(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.125F + 0.25F, tolerance); };
-        assert(std::all_of(out.begin(), out.end(), eq));
+        REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
     return true;
@@ -432,7 +430,7 @@
         neo::fft::subtract(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.5F - 0.25F, tolerance); };
-        assert(std::all_of(out.begin(), out.end(), eq));
+        REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
     {
@@ -443,7 +441,7 @@
         neo::fft::subtract(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.125F - 0.25F, tolerance); };
-        assert(std::all_of(out.begin(), out.end(), eq));
+        REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
     return true;
@@ -470,7 +468,7 @@
         neo::fft::subtract(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.5F - 0.25F, tolerance); };
-        assert(std::all_of(out.begin(), out.end(), eq));
+        REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
     {
@@ -481,7 +479,7 @@
         neo::fft::subtract(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.125F - 0.25F, tolerance); };
-        assert(std::all_of(out.begin(), out.end(), eq));
+        REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
     return true;
@@ -508,7 +506,7 @@
         neo::fft::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.5F * 0.25F, tolerance); };
-        assert(std::all_of(out.begin(), out.end(), eq));
+        REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
     {
@@ -519,7 +517,7 @@
         neo::fft::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.125F * 0.25F, tolerance); };
-        assert(std::all_of(out.begin(), out.end(), eq));
+        REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
     return true;
@@ -546,7 +544,7 @@
         neo::fft::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.5F * 0.25F, tolerance); };
-        assert(std::all_of(out.begin(), out.end(), eq));
+        REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
     {
@@ -557,29 +555,27 @@
         neo::fft::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.125F * 0.25F, tolerance); };
-        assert(std::all_of(out.begin(), out.end(), eq));
+        REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
     return true;
 }
 
-auto main() -> int
+TEST_CASE("fixed_point")
 {
-    assert(test_q7_t_conversion());
-    assert(test_q7_t_unary_ops());
-    assert(test_q7_t_binary_ops());
-    assert(test_q7_t_comparison());
-    assert(test_q7_t_add());
-    assert(test_q7_t_subtract());
-    assert(test_q7_t_multiply());
+    REQUIRE(test_q7_t_conversion());
+    REQUIRE(test_q7_t_unary_ops());
+    REQUIRE(test_q7_t_binary_ops());
+    REQUIRE(test_q7_t_comparison());
+    REQUIRE(test_q7_t_add());
+    REQUIRE(test_q7_t_subtract());
+    REQUIRE(test_q7_t_multiply());
 
-    assert(test_q15_t_conversion());
-    assert(test_q15_t_unary_ops());
-    assert(test_q15_t_binary_ops());
-    assert(test_q15_t_comparison());
-    assert(test_q15_t_add());
-    assert(test_q15_t_subtract());
-    assert(test_q15_t_multiply());
-
-    return EXIT_SUCCESS;
+    REQUIRE(test_q15_t_conversion());
+    REQUIRE(test_q15_t_unary_ops());
+    REQUIRE(test_q15_t_binary_ops());
+    REQUIRE(test_q15_t_comparison());
+    REQUIRE(test_q15_t_add());
+    REQUIRE(test_q15_t_subtract());
+    REQUIRE(test_q15_t_multiply());
 }

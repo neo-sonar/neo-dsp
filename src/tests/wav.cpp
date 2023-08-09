@@ -35,7 +35,7 @@ inline auto juce_normalization_factor(std::span<float const> buf) -> float
 }
 
 // normalized_sample = sample / max(abs(buffer))
-auto peak_normalization(std::span<float> buffer) -> void
+[[maybe_unused]] static auto peak_normalization(std::span<float> buffer) -> void
 {
     auto const factor   = peak_normalization_factor(buffer);
     auto const multiply = [factor](auto sample) { return sample * factor; };
@@ -43,7 +43,7 @@ auto peak_normalization(std::span<float> buffer) -> void
 }
 
 // normalized_sample = sample / sqrt(mean(buffer^2))
-auto rms_normalization(std::span<float> buffer) -> void
+[[maybe_unused]] static auto rms_normalization(std::span<float> buffer) -> void
 {
     if (buffer.empty()) return;
     auto const factor = rms_normalization_factor(buffer);
@@ -68,12 +68,11 @@ auto rms_normalization(std::span<float> buffer) -> void
 
 auto main(int argc, char** argv) -> int
 {
-    // if (argc != 2) {
-    //     std::printf("Usage: ./a.out path/to/file.wav\n");
-    //     return EXIT_FAILURE;
-    // }
+    if (argc != 2) {
+        std::printf("Usage: ./a.out path/to/file.wav\n");
+        return EXIT_FAILURE;
+    }
 
-    // auto const* path = R"(C:\Users\tobias\Music\TobisBeat.wav)";
     auto const* path = argv[1];
 
     auto const file_data  = load_file(path);

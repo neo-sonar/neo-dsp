@@ -149,10 +149,10 @@ static auto run_r2c_test(auto const& paths) -> void
 
 static auto run_rfft_roundtrip_test(std::size_t order) -> void
 {
-    auto const size = 1 << order;
+    auto const size = 1UL << order;
 
     auto signal   = std::vector<double>(size, double(0));
-    auto spectrum = std::vector<std::complex<double>>(size / 2 + 1, 0.0);
+    auto spectrum = std::vector<std::complex<double>>(size / 2UL + 1UL, 0.0);
 
     auto rng  = std::mt19937{std::random_device{}()};
     auto dist = std::uniform_real_distribution<double>{-1.0, 1.0};

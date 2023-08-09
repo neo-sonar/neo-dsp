@@ -15,7 +15,9 @@ auto dft(std::span<std::complex<T> const> in, std::span<std::complex<T>> out) ->
     auto const N = in.size();
     for (std::size_t k = 0; k < N; ++k) {
         auto tmp = std::complex<T>{};
-        for (std::size_t n = 0; n < N; ++n) { tmp += in[n] * std::polar(T(1), T(-2) * pi * n * k / N); }
+        for (std::size_t n = 0; n < N; ++n) {
+            tmp += in[n] * std::polar(T(1), T(-2) * pi * static_cast<T>(n) * static_cast<T>(k) / static_cast<T>(N));
+        }
         out[k] = tmp;
     }
 }
