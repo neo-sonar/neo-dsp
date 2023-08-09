@@ -81,8 +81,6 @@ struct fixed_point_mul_bench
 
     auto operator()() -> void
     {
-        static constexpr auto one = FixedPoint{1.0F};
-
         auto const left   = std::span{std::as_const(_lhs)};
         auto const right  = std::span{std::as_const(_rhs)};
         auto const output = std::span{_out};

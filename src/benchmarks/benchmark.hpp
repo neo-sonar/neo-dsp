@@ -35,7 +35,6 @@ auto timeit(std::string_view name, size_t sizeOfT, size_t N, Func func)
     }
 
     auto const runs            = std::span<double>(all_runs).subspan(margin, all_runs.size() - margin * 2);
-    auto const dsize           = static_cast<double>(size);
     auto const avg             = std::reduce(runs.begin(), runs.end(), 0.0) / double(runs.size());
     auto const itemsPerSec     = static_cast<int>(std::lround(double(size) / avg));
     auto const megaBytesPerSec = std::round(double(size * sizeOfT) / avg) / 1000.0;

@@ -17,13 +17,6 @@ target_link_libraries(neo_convolution_tests
         juce::juce_recommended_warning_flags
 )
 
-add_executable(neo_fft_benchmarks benchmark.cpp)
-target_link_libraries(neo_fft_benchmarks
-    PRIVATE
-        neo::convolution
-        juce::juce_recommended_warning_flags
-)
-
 add_executable(neo_fft_wav wav.cpp)
 target_link_libraries(neo_fft_wav
     PRIVATE

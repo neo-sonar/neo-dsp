@@ -1,6 +1,6 @@
-#include "benchmark.hpp"
-
 #include "neo/fft.hpp"
+
+#include "fft_benchmark.hpp"
 
 #include <algorithm>
 #include <array>
