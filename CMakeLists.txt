@@ -20,18 +20,30 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+include(FetchContent)
 include(CTest)
 enable_testing()
 
-include(FetchContent)
-FetchContent_Declare(mdspan_repo GIT_REPOSITORY "https://github.com/kokkos/mdspan" GIT_TAG "stable")
+FetchContent_Declare(
+    mdspan_repo
+    GIT_REPOSITORY "https://github.com/kokkos/mdspan"
+    GIT_TAG "stable"
+    GIT_PROGRESS TRUE
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY "https://github.com/catchorg/Catch2.git"
+    GIT_TAG v3.3.2
+    GIT_PROGRESS TRUE
+    GIT_SHALLOW TRUE
+)
+
 FetchContent_MakeAvailable(mdspan_repo)
+FetchContent_MakeAvailable(Catch2)
 
-FetchContent_Declare(doctest GIT_REPOSITORY "https://github.com/doctest/doctest" GIT_TAG "master")
-FetchContent_MakeAvailable(doctest)
-FetchContent_GetProperties(doctest SOURCE_DIR doctest_source)
-include("${doctest_source}/scripts/cmake/doctest.cmake")
-
+include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 
 add_subdirectory(3rd_party/JUCE)
 set_directory_properties(PROPERTIES JUCE_COMPANY_COPYRIGHT "Copyright 2023 neo-sonar. All rights reserved.")
