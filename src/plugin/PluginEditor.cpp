@@ -18,7 +18,7 @@ namespace {
 struct JuceConvolver
 {
     explicit JuceConvolver(juce::File impulse, juce::dsp::ProcessSpec const& spec)
-        : _impulse{std::move(impulse)}
+        : _filter{std::move(impulse)}
         , _spec{spec}
     {
         auto const trim      = juce::dsp::Convolution::Trim::no;
@@ -26,7 +26,7 @@ struct JuceConvolver
         auto const normalize = juce::dsp::Convolution::Normalise::no;
 
         _convolver.prepare(spec);
-        _convolver.loadImpulseResponse(_impulse, stereo, trim, 0, normalize);
+        _convolver.loadImpulseResponse(_filter, stereo, trim, 0, normalize);
 
         // impulse is loaded on background thread, may not have loaded fast enough in
         // unit-tests
@@ -44,20 +44,11 @@ struct JuceConvolver
     }
 
 private:
-    juce::File _impulse;
+    juce::File _filter;
     juce::dsp::ConvolutionMessageQueue _queue;
     juce::dsp::Convolution _convolver{juce::dsp::Convolution::Latency{0}, _queue};
     juce::dsp::ProcessSpec _spec;
 };
-
-template<typename T, typename U, typename V>
-[[nodiscard]] constexpr auto frequencyForBin(U windowSize, V index, double sampleRate) -> T
-{
-    static_assert(std::is_integral_v<U>);
-    static_assert(std::is_integral_v<V>);
-
-    return static_cast<T>(index) * static_cast<T>(sampleRate) / static_cast<T>(windowSize);
-}
 
 }  // namespace
 
@@ -68,8 +59,8 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     _threshold.addListener(this);
     _weighting.addListener(this);
 
-    _openFile.onClick      = [this] { openFile(); };
-    _runBenchmarks.onClick = [this] { runBenchmarks(); };
+    _openFile.onClick = [this] { openFile(); };
+    _render.onClick   = [this] { runBenchmarks(); };
 
     _fileInfo.setReadOnly(true);
     _fileInfo.setMultiLine(true);
@@ -86,7 +77,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     );
 
     addAndMakeVisible(_openFile);
-    addAndMakeVisible(_runBenchmarks);
+    addAndMakeVisible(_render);
     addAndMakeVisible(_propertyPanel);
     addAndMakeVisible(_fileInfo);
     addAndMakeVisible(_spectogramImage);
@@ -112,7 +103,7 @@ auto PluginEditor::resized() -> void
     auto right              = bounds.removeFromRight(bounds.proportionOfWidth(0.225));
     auto const buttonHeight = right.proportionOfHeight(0.1);
     _openFile.setBounds(right.removeFromTop(buttonHeight).reduced(0, 4));
-    _runBenchmarks.setBounds(right.removeFromTop(buttonHeight).reduced(0, 4));
+    _render.setBounds(right.removeFromTop(buttonHeight).reduced(0, 4));
     _propertyPanel.setBounds(right);
 
     _spectogramImage.setBounds(bounds.removeFromTop(bounds.proportionOfHeight(0.5)).reduced(4));
@@ -132,10 +123,12 @@ auto PluginEditor::openFile() -> void
         auto const file     = chooser.getResult();
         auto const filename = file.getFileNameWithoutExtension();
 
-        _impulse  = loadAndResample(_formats, file, 44'100.0);
-        _spectrum = fft::stft(_impulse, 1024);
+        _filter     = loadAndResample(_formats, file, 44'100.0);
+        _filterFile = file;
 
-        _fileInfo.setText(filename + " (" + juce::String(_impulse.getNumSamples()) + ")");
+        _spectrum = fft::stft(_filter, 1024);
+
+        _fileInfo.setText(filename + " (" + juce::String(_filter.getNumSamples()) + ")\n");
         updateImages();
 
         repaint();
@@ -147,22 +140,21 @@ auto PluginEditor::openFile() -> void
 
 auto PluginEditor::runBenchmarks() -> void
 {
-    _signalFile = juce::File{R"(C:\Users\tobias\Music\Loops\Drums.wav)"};
-    _filterFile = juce::File{R"(C:\Users\tobias\Music\Samples\IR\LexiconPCM90 Halls\ORCH_gothic hall.WAV)"};
-
-    _signal = loadAndResample(_formats, _signalFile, 44'100.0);
-    _filter = loadAndResample(_formats, _filterFile, 44'100.0);
+    if (_signal.getNumChannels() == 0 or _signal.getNumSamples() == 0) {
+        _signalFile = juce::File{R"(C:\Users\tobias\Music\Loops\Drums.wav)"};
+        _signal     = loadAndResample(_formats, _signalFile, 44'100.0);
+    }
 
     // runDynamicRangeTests();
     // runJuceConvolverBenchmark();
-    // runDenseConvolverBenchmark();
+    runDenseConvolverBenchmark();
     // runDenseStereoConvolverBenchmark();
     runSparseConvolverBenchmark();
 }
 
 auto PluginEditor::runWeightingTests() -> void
 {
-    auto normalized = _impulse;
+    auto normalized = _filter;
     juce_normalization(normalized);
 
     auto const blockSize  = 512ULL;
@@ -185,7 +177,7 @@ auto PluginEditor::runWeightingTests() -> void
 
     auto const weighting = [=, this](std::size_t binIndex) {
         if (static_cast<bool>(_weighting.getValue())) {
-            auto const frequency = frequencyForBin<float>(blockSize * 2ULL, binIndex, 44'100.0);
+            auto const frequency = neo::fft::frequency_for_bin<float>(blockSize * 2ULL, binIndex, 44'100.0);
             if (juce::exactlyEqual(frequency, 0.0F)) { return 0.0F; }
             auto const weight = neo::fft::a_weighting(frequency);
             return weight;
@@ -210,8 +202,9 @@ auto PluginEditor::runWeightingTests() -> void
 
     auto const total = static_cast<double>(partitions.size());
     auto const line
-        = "\n" + juce::String(static_cast<double>(count) / total * 100.0, 2) + "% " + juce::String(threshold, 1) + "dB "
-        + (static_cast<bool>(_weighting.getValue()) ? juce::String(" A-Weighting") : juce::String(" No weighting"));
+        = juce::String(static_cast<double>(count) / total * 100.0, 2) + "% " + juce::String(threshold, 1) + "dB "
+        + (static_cast<bool>(_weighting.getValue()) ? juce::String(" A-Weighting") : juce::String(" No weighting"))
+        + "\n";
 
     _fileInfo.moveCaretToEnd(false);
     _fileInfo.insertTextAtCaret(line);
@@ -279,8 +272,10 @@ auto PluginEditor::runDenseConvolverBenchmark() -> void
     peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
 
-    auto end = std::chrono::system_clock::now();
-    std::cout << "TCONV-DENSE: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << '\n';
+    auto const end     = std::chrono::system_clock::now();
+    auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    _fileInfo.moveCaretToEnd(false);
+    _fileInfo.insertTextAtCaret("TCONV-DENSE(100): " + juce::String{elapsed.count()} + "\n");
 
     writeToWavFile(file, output, 44'100.0, 32);
 }
@@ -304,18 +299,24 @@ auto PluginEditor::runDenseStereoConvolverBenchmark() -> void
 
 auto PluginEditor::runSparseConvolverBenchmark() -> void
 {
-    auto start = std::chrono::system_clock::now();
+    auto const start = std::chrono::system_clock::now();
 
-    auto thresholdDB = -40.0F;
-    auto output      = fft::sparse_convolve(_signal, _filter, thresholdDB);
-    auto file        = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_sparse_40", ".wav");
+    auto const thresholdDB   = static_cast<float>(_threshold.getValue());
+    auto const thresholdText = juce::String(juce::roundToInt(std::abs(thresholdDB) * 100));
+
+    auto const filename = "tconv_sparse_" + thresholdText;
+    auto const file     = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile(filename, ".wav");
+
+    auto output = fft::sparse_convolve(_signal, _filter, thresholdDB);
 
     peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
 
-    auto end = std::chrono::system_clock::now();
-    std::cout << "TCONV-SPARSE(40): " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << '\n';
+    auto const end     = std::chrono::system_clock::now();
+    auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    auto const line    = "TCONV-SPARSE(" + thresholdText + "): " + juce::String{elapsed.count()} + "\n";
+    _fileInfo.moveCaretToEnd(false);
+    _fileInfo.insertTextAtCaret(line);
 
     writeToWavFile(file, output, 44'100.0, 32);
 }
@@ -326,7 +327,7 @@ auto PluginEditor::updateImages() -> void
 
     auto const weighting = [this](std::size_t binIndex) {
         if (static_cast<bool>(_weighting.getValue())) {
-            auto const frequency = frequencyForBin<float>(1024, binIndex, 44'100.0);
+            auto const frequency = neo::fft::frequency_for_bin<float>(1024, binIndex, 44'100.0);
             if (juce::exactlyEqual(frequency, 0.0F)) { return 0.0F; }
             auto const weight = neo::fft::a_weighting(frequency);
             return weight;

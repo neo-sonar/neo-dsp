@@ -43,13 +43,17 @@ static auto normalization_factor(Kokkos::mdspan<std::complex<float> const, Kokko
 auto sparse_upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter)
     -> void
 {
-    auto const K = next_power_of_two((filter.extent(1) - 1U) * 2U);
+    auto const K     = next_power_of_two((filter.extent(1) - 1U) * 2U);
+    auto const scale = normalization_factor(filter);
 
-    auto const isAboveThreshold = [threshold = _thresholdDB, scale = normalization_factor(filter)](auto bin) {
+    auto const isAboveThreshold = [this, scale, K](auto /*row*/, auto col, auto bin) {
+        auto const frequency = neo::fft::frequency_for_bin<float>(K, col, 44'100.0);
+        auto const weight    = frequency > 0.0F ? neo::fft::a_weighting(frequency) : 0.0F;
+
         auto const gain  = std::abs(bin);
         auto const power = gain * gain;
-        auto const dB    = toDecibels(power * scale);
-        return dB > threshold;
+        auto const dB    = toDecibels(power * scale) + weight;
+        return dB > _thresholdDB;
     };
 
     _fdl    = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{filter.extents()};

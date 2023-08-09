@@ -31,24 +31,22 @@ private:
     auto updateImages() -> void;
 
     juce::AudioFormatManager _formats;
-    juce::AudioBuffer<float> _impulse;
-    KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _spectrum;
 
-    juce::TextButton _openFile{"Open File"};
-    juce::TextButton _runBenchmarks{"Run"};
+    juce::TextButton _openFile{"Open Impulse"};
+    juce::TextButton _render{"Render"};
     juce::PropertyPanel _propertyPanel{};
     juce::TextEditor _fileInfo{};
     juce::ImageComponent _spectogramImage{};
     juce::ImageComponent _histogramImage{};
 
-    juce::Value _threshold{juce::var{-90.0F}};
-    juce::Value _weighting{juce::var{true}};
-
     juce::File _signalFile{};
     juce::File _filterFile{};
-
     juce::AudioBuffer<float> _signal{};
     juce::AudioBuffer<float> _filter{};
+    KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _spectrum;
+
+    juce::Value _threshold{juce::var{-90.0F}};
+    juce::Value _weighting{juce::var{true}};
 
     std::unique_ptr<juce::FileChooser> _fileChooser{nullptr};
     juce::SharedResourcePointer<juce::TooltipWindow> _tooltipWindow;

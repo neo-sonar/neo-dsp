@@ -23,19 +23,19 @@
     assert(std::all_of(std::next(accumulator.begin()), accumulator.end(), [](auto x) { return x == 0.0F; }));
     // std::fill(accumulator.begin(), accumulator.end(), 0.0F);
 
-    auto other = neo::sparse_matrix<float>{lhs.to_mdspan(), [](auto v) { return v >= 1.0F; }};
+    auto other = neo::sparse_matrix<float>{lhs.to_mdspan(), [](auto row, auto col, auto v) { return v >= 1.0F; }};
     assert(other.rows() == lhs.extent(0));
     assert(other.columns() == lhs.extent(1));
     assert(other.value_container().size() == lhs.size());
 
-    other = neo::sparse_matrix<float>{lhs.to_mdspan(), [](auto v) { return v >= 2.0F; }};
+    other = neo::sparse_matrix<float>{lhs.to_mdspan(), [](auto row, auto col, auto v) { return v >= 2.0F; }};
     assert(other.rows() == lhs.extent(0));
     assert(other.columns() == lhs.extent(1));
     assert(other.value_container().size() == 0);
 
     auto row = std::vector<float>(lhs.extent(1));
     std::fill(row.begin(), row.end(), 2.0F);
-    other.insert_row(0, std::span{row}, [](auto) { return true; });
+    other.insert_row(0, std::span{row}, [](auto, auto, auto) { return true; });
     assert(other.value_container().size() == 32);
     assert(other.column_container().size() == 32);
     return true;

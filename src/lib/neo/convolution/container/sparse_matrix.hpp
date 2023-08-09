@@ -71,7 +71,7 @@ sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(
     auto count = 0UL;
     for (auto row{0UL}; row < other.extent(0); ++row) {
         for (auto col{0UL}; col < other.extent(1); ++col) {
-            if (filter(other(row, col))) { ++count; }
+            if (filter(row, col, other(row, col))) { ++count; }
         }
     }
 
@@ -83,7 +83,7 @@ sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(
         _rowIndices[row] = idx;
 
         for (auto col{0UL}; col < other.extent(1); ++col) {
-            if (auto const& val = other(row, col); filter(val)) {
+            if (auto const& val = other(row, col); filter(row, col, val)) {
                 _values[idx]       = val;
                 _columIndices[idx] = col;
                 ++idx;
@@ -119,7 +119,11 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert_row(
     auto const rowStart    = _rowIndices[row];
     auto const rowEnd      = _rowIndices[row + 1];
     auto const currentSize = static_cast<std::ptrdiff_t>(rowEnd - rowStart);
-    auto const newSize     = std::count_if(values.begin(), values.end(), filter);
+    auto const newSize     = [=] {
+        auto count = 0L;
+        for (auto i{0UL}; i < values.size(); ++i) { count += static_cast<long>(filter(row, i, values[i])); }
+        return count;
+    }();
 
     if (newSize < currentSize) {
         auto const delta = currentSize - newSize;
@@ -144,7 +148,7 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert_row(
     auto idx = 0UL;
     for (auto i{0UL}; i < values.size(); ++i) {
         auto const val = values[i];
-        if (filter(val)) {
+        if (filter(row, i, val)) {
             _values[rowStart + idx]       = val;
             _columIndices[rowStart + idx] = i;
             ++idx;
