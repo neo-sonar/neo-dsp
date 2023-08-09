@@ -1,6 +1,7 @@
 #include "dft.hpp"
 #include "radix2.hpp"
 
+#include <neo/fft/algorithm/allclose.hpp>
 #include <neo/fft/testing/testing.hpp>
 
 #include <catch2/catch_template_test_macros.hpp>

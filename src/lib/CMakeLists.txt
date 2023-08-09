@@ -4,6 +4,10 @@ add_library(neo_fft)
 add_library(neo::convolution ALIAS neo_fft)
 
 set(neo_fft_Sources
+    "neo/fft/algorithm.hpp"
+    "neo/fft/algorithm/allclose.hpp"
+    "neo/fft/algorithm/rms_error.hpp"
+
     "neo/fft/container.hpp"
     "neo/fft/container/mdspan.hpp"
     "neo/fft/container/sparse_matrix.hpp"
