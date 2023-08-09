@@ -25,7 +25,15 @@ include(CTest)
 include(FetchContent)
 
 FetchContent_Declare(
-    mdspan_repo
+    JUCE
+    GIT_REPOSITORY "https://github.com/juce-framework/JUCE"
+    GIT_TAG "develop"
+    GIT_PROGRESS TRUE
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_Declare(
+    mdspan
     GIT_REPOSITORY "https://github.com/kokkos/mdspan"
     GIT_TAG "stable"
     GIT_PROGRESS TRUE
@@ -40,16 +48,10 @@ FetchContent_Declare(
     GIT_SHALLOW TRUE
 )
 
-FetchContent_MakeAvailable(mdspan_repo)
+FetchContent_MakeAvailable(JUCE)
+FetchContent_MakeAvailable(mdspan)
 FetchContent_MakeAvailable(Catch2)
-
 include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
-
-add_subdirectory(3rd_party/JUCE)
-set_directory_properties(PROPERTIES JUCE_COMPANY_COPYRIGHT "Copyright 2023 neo-sonar. All rights reserved.")
-set_directory_properties(PROPERTIES JUCE_COMPANY_NAME "neo-sonar")
-set_directory_properties(PROPERTIES JUCE_VST3_COPY_DIR "${CMAKE_BINARY_DIR}/VST3")
-set_directory_properties(PROPERTIES JUCE_AU_COPY_DIR "${CMAKE_BINARY_DIR}/AU")
 
 add_subdirectory(src/lib)
 add_subdirectory(src/plugin)

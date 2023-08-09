@@ -1,5 +1,10 @@
 project(perceptual-convolution VERSION ${CMAKE_PROJECT_VERSION})
 
+set_directory_properties(PROPERTIES JUCE_COMPANY_COPYRIGHT "Copyright 2023 neo-sonar. All rights reserved.")
+set_directory_properties(PROPERTIES JUCE_COMPANY_NAME "neo-sonar")
+set_directory_properties(PROPERTIES JUCE_VST3_COPY_DIR "${CMAKE_BINARY_DIR}/VST3")
+set_directory_properties(PROPERTIES JUCE_AU_COPY_DIR "${CMAKE_BINARY_DIR}/AU")
+
 juce_add_plugin(PerceptualConvolution
     PRODUCT_NAME "Perceptual Convolution"            # The name of the final executable, which can differ from the target name
     BUNDLE_ID "com.neo-sonar.perceptual-convolution" # Should uniquely identify this target
@@ -57,7 +62,6 @@ target_compile_definitions(PerceptualConvolution
 target_include_directories(PerceptualConvolution
     PUBLIC
         ${PROJECT_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/3rd_party/JUCE/modules
 )
 
 target_link_libraries(PerceptualConvolution
