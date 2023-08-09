@@ -93,7 +93,7 @@ jobs:
         shell: bash
         run: ctest --test-dir build -C ${{ matrix.build_type }} --output-on-failure
 
-      - name: Coverage
+      - name: Coverage report
         if: matrix.name == 'Coverage'
         shell: bash
         run: >
@@ -105,7 +105,9 @@ jobs:
           -s build
           -o build/coverage.xml
 
-      - uses: codecov/codecov-action@v3
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        if: matrix.name == 'Coverage'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./build/coverage.xml
