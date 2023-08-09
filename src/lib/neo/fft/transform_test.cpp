@@ -1,5 +1,6 @@
-#include "neo/fft/testing/testing.hpp"
-#include "neo/fft/transform.hpp"
+#include "transform.hpp"
+
+#include <neo/fft/testing/testing.hpp>
 
 #include <array>
 #include <catch2/catch_test_macros.hpp>

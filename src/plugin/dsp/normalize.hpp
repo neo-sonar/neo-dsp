@@ -1,7 +1,7 @@
 #pragma once
 
-#include <concepts>
 #include <juce_audio_basics/juce_audio_basics.h>
+
 #include <span>
 
 namespace neo {

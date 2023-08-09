@@ -55,7 +55,6 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: true
 Cpp11BracedListStyle: true
 DisableFormat: false
 FixNamespaceComments: true
-IncludeBlocks: Regroup
 IndentCaseLabels: true
 IndentPPDirectives: BeforeHash
 IndentWidth: 4
@@ -70,7 +69,7 @@ PointerAlignment: Left
 ReferenceAlignment: Left
 ReflowComments: true
 SeparateDefinitionBlocks: Always
-SortIncludes: CaseInsensitive
+SortIncludes: true
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false

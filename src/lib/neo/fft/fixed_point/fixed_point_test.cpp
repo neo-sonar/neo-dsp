@@ -1,7 +1,11 @@
-#include "neo/fft/fixed_point.hpp"
+#include "algorithm.hpp"
+#include "complex.hpp"
+#include "fixed_point.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+
 #include <functional>
+#include <span>
 #include <utility>
 #include <vector>
 

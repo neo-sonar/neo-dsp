@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <concepts>
 #include <numeric>
 
 namespace neo {

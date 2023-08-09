@@ -1,10 +1,12 @@
 #include "stft.hpp"
 
 #include "dsp/normalize.hpp"
-#include "neo/fft/math/divide_round_up.hpp"
+
+#include <neo/fft/math/divide_round_up.hpp>
+
+#include <juce_audio_basics/juce_audio_basics.h>
 
 #include <complex>
-#include <juce_audio_basics/juce_audio_basics.h>
 
 namespace neo::fft {
 

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "neo/fft/container/mdspan.hpp"
 #include "PluginProcessor.hpp"
+
+#include "neo/fft/container/mdspan.hpp"
 
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <juce_gui_extra/juce_gui_extra.h>

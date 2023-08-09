@@ -1,5 +1,7 @@
 #include "PluginEditor.hpp"
 
+#include "neo/fft/container/sparse_matrix.hpp"
+
 #include "dsp/convolution.hpp"
 #include "dsp/normalize.hpp"
 #include "dsp/render.hpp"
@@ -7,7 +9,6 @@
 #include "dsp/spectogram.hpp"
 #include "dsp/stft.hpp"
 #include "dsp/wav.hpp"
-#include "neo/fft/container/sparse_matrix.hpp"
 
 #include <span>
 
