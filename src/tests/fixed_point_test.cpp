@@ -561,7 +561,7 @@
     return true;
 }
 
-TEST_CASE("fixed_point")
+TEST_CASE("neo/fft/fixed_point: fixed_point")
 {
     REQUIRE(test_q7_t_conversion());
     REQUIRE(test_q7_t_unary_ops());

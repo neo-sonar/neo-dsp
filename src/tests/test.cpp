@@ -106,7 +106,7 @@ static auto run_c2c_roundtrip_test(std::size_t size) -> void
     REQUIRE(neo::fft::allclose(buffer, inout));
 }
 
-TEST_CASE("fft/radix2: c2c")
+TEST_CASE("neo/fft/transform/radix2: c2c")
 {
     test_N8();
 
@@ -169,7 +169,7 @@ static auto run_rfft_roundtrip_test(std::size_t order) -> void
     REQUIRE(neo::fft::allclose(original, signal));
 }
 
-TEST_CASE("fft/radix2: r2c")
+TEST_CASE("neo/fft/transform/radix2: r2c")
 {
     for (auto const& tc : std::array{
              test_path{  "./test_data/r2c_8_input.csv",   "./test_data/r2c_8_output.csv"},
@@ -191,7 +191,7 @@ TEST_CASE("fft/radix2: r2c")
     }
 }
 
-TEST_CASE("fft/rfft: extract_two_real_dfts")
+TEST_CASE("neo/fft/transform/rfft: extract_two_real_dfts")
 {
     static constexpr auto n     = 8UL;
     static constexpr auto order = neo::fft::ilog2(n);
