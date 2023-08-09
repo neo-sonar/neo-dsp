@@ -48,11 +48,12 @@ target_compile_definitions(neo_fft INTERFACE _CRT_SECURE_NO_WARNINGS=1)
 add_executable(neo_fft_tests)
 target_sources(neo_fft_tests
     PRIVATE
+        "neo/fft/math_test.cpp"
         "neo/fft/container/sparse_matrix_test.cpp"
         "neo/fft/convolution/uniform_partition_test.cpp"
         "neo/fft/fixed_point/fixed_point_test.cpp"
-        "neo/fft/math_test.cpp"
-        "neo/fft/transform_test.cpp"
+        "neo/fft/transform/radix2_test.cpp"
+        "neo/fft/transform/rfft_test.cpp"
 )
 
 catch_discover_tests(neo_fft_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})

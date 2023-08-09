@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <complex>
+#include <concepts>
 #include <filesystem>
 #include <functional>
 #include <numeric>
@@ -53,24 +54,24 @@ auto allclose_impl(std::span<T const> lhs, std::span<T const> rhs, U tolerance) 
 
 }  // namespace detail
 
-auto allclose(std::span<float const> lhs, std::span<float const> rhs, float tolerance) -> bool
+inline auto allclose(std::span<float const> lhs, std::span<float const> rhs, float tolerance) -> bool
 {
     return detail::allclose_impl<float>(lhs, rhs, tolerance);
 }
 
-auto allclose(std::span<double const> lhs, std::span<double const> rhs, double tolerance) -> bool
+inline auto allclose(std::span<double const> lhs, std::span<double const> rhs, double tolerance) -> bool
 {
     return detail::allclose_impl<double>(lhs, rhs, tolerance);
 }
 
-auto allclose(std::span<std::complex<float> const> lhs, std::span<std::complex<float> const> rhs, float tolerance)
-    -> bool
+inline auto
+allclose(std::span<std::complex<float> const> lhs, std::span<std::complex<float> const> rhs, float tolerance) -> bool
 {
     return detail::allclose_impl<std::complex<float>, float>(lhs, rhs, tolerance);
 }
 
-auto allclose(std::span<std::complex<double> const> lhs, std::span<std::complex<double> const> rhs, double tolerance)
-    -> bool
+inline auto
+allclose(std::span<std::complex<double> const> lhs, std::span<std::complex<double> const> rhs, double tolerance) -> bool
 {
     return detail::allclose_impl<std::complex<double>, double>(lhs, rhs, tolerance);
 }
@@ -133,13 +134,16 @@ struct test_path
     std::filesystem::path expected;
 };
 
+template<std::floating_point Float>
 struct test_data
 {
-    std::vector<std::complex<double>> input;
-    std::vector<std::complex<double>> expected;
+    std::vector<std::complex<Float>> input;
+    std::vector<std::complex<Float>> expected;
 };
 
-inline auto load_test_data_file(std::filesystem::path const& path) -> std::optional<std::vector<std::complex<double>>>
+template<std::floating_point Float>
+[[nodiscard]] auto load_test_data_file(std::filesystem::path const& path)
+    -> std::optional<std::vector<std::complex<Float>>>
 {
     if (not std::filesystem::exists(path)) { return {}; }
     if (not std::filesystem::is_regular_file(path)) { return {}; }
@@ -147,13 +151,13 @@ inline auto load_test_data_file(std::filesystem::path const& path) -> std::optio
     auto* file = std::fopen(path.string().c_str(), "r");
     if (file == nullptr) { return {}; }
 
-    auto result = std::vector<std::complex<double>>{};
+    auto result = std::vector<std::complex<Float>>{};
     char line[512]{};
     while (std::fgets(line, sizeof(line), file)) {
         auto re = 0.0;
         auto im = 0.0;
         std::sscanf(line, "%lf,%lf\n", &re, &im);
-        result.emplace_back(re, im);
+        result.emplace_back(static_cast<Float>(re), static_cast<Float>(im));
     }
 
     std::fclose(file);
@@ -161,15 +165,16 @@ inline auto load_test_data_file(std::filesystem::path const& path) -> std::optio
     return result;
 }
 
-inline auto load_test_data(test_path const& paths) -> std::optional<test_data>
+template<std::floating_point Float>
+[[nodiscard]] auto load_test_data(test_path const& paths) -> std::optional<test_data<Float>>
 {
-    auto input = load_test_data_file(paths.input);
+    auto input = load_test_data_file<Float>(paths.input);
     if (not input) { return {}; }
 
-    auto expected = load_test_data_file(paths.expected);
+    auto expected = load_test_data_file<Float>(paths.expected);
     if (not expected) { return {}; }
 
-    return test_data{
+    return test_data<Float>{
         .input    = std::move(*input),
         .expected = std::move(*expected),
     };
