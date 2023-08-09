@@ -1,4 +1,4 @@
-#include "neo/fft/convolution/container/sparse_matrix.hpp"
+#include "neo/fft/container/sparse_matrix.hpp"
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>

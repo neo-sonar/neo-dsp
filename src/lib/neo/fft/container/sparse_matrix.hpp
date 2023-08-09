@@ -1,6 +1,6 @@
 #pragma once
 
-#include "neo/fft/convolution/container/mdspan.hpp"
+#include "neo/fft/container/mdspan.hpp"
 
 #include <cassert>
 #include <cstddef>

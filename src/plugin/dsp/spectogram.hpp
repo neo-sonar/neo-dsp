@@ -1,6 +1,6 @@
 #pragma once
 
-#include "neo/fft/convolution/container/mdspan.hpp"
+#include "neo/fft/container/mdspan.hpp"
 
 #include <complex>
 #include <juce_audio_basics/juce_audio_basics.h>

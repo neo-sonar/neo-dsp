@@ -4,19 +4,19 @@ add_library(neo_fft)
 add_library(neo::convolution ALIAS neo_fft)
 
 set(neo_fft_Sources
+    "neo/fft/container.hpp"
     "neo/fft/convolution.hpp"
     "neo/fft/math.hpp"
     "neo/fft/transform.hpp"
 
-    "neo/fft/convolution/container.hpp"
-    "neo/fft/convolution/container/mdspan.hpp"
-    "neo/fft/convolution/container/sparse_matrix.hpp"
+    "neo/fft/container/mdspan.hpp"
+    "neo/fft/container/sparse_matrix.hpp"
 
-    "neo/fft/convolution/convolver.hpp"
-    "neo/fft/convolution/convolver/sparse_upols_convolver.cpp"
-    "neo/fft/convolution/convolver/sparse_upols_convolver.hpp"
-    "neo/fft/convolution/convolver/upols_convolver.cpp"
-    "neo/fft/convolution/convolver/upols_convolver.hpp"
+    "neo/fft/convolution.hpp"
+    "neo/fft/convolution/sparse_upols_convolver.cpp"
+    "neo/fft/convolution/sparse_upols_convolver.hpp"
+    "neo/fft/convolution/upols_convolver.cpp"
+    "neo/fft/convolution/upols_convolver.hpp"
 
     "neo/fft/math/fixed_point.hpp"
     "neo/fft/math/fixed_point/algorithm.hpp"

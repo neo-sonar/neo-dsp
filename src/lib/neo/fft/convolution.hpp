@@ -1,5 +1,5 @@
 #pragma once
 
-#include "neo/fft/convolution/container.hpp"
-#include "neo/fft/convolution/convolver.hpp"
-#include "neo/fft/math.hpp"
+#include "neo/fft/convolution/sparse_upols_convolver.hpp"
+#include "neo/fft/convolution/uniform_partition.hpp"
+#include "neo/fft/convolution/upols_convolver.hpp"

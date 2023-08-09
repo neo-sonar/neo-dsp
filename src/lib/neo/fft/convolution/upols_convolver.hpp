@@ -1,7 +1,7 @@
 #pragma once
 
-#include "neo/fft/convolution/container/mdspan.hpp"
-#include "neo/fft/convolution/container/sparse_matrix.hpp"
+#include "neo/fft/container/mdspan.hpp"
+#include "neo/fft/container/sparse_matrix.hpp"
 #include "neo/fft/transform.hpp"
 
 #include <algorithm>

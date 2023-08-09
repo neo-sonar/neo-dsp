@@ -1,6 +1,6 @@
 #pragma once
 
-#include "neo/fft/convolution/container/mdspan.hpp"
+#include "neo/fft/container/mdspan.hpp"
 #include "neo/fft/math/divide_round_up.hpp"
 #include "neo/fft/transform.hpp"
 
