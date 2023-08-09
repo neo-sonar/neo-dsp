@@ -9,24 +9,36 @@ concurrency:
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 3
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  MACOSX_DEPLOYMENT_TARGET: 10.15
 
 jobs:
   build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    env:
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.osx_target }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: Linux
             os: ubuntu-22.04
+            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=sandybridge -mtune=skylake"'
+            osx_target: ""
 
-          - name: macOS
+          - name: macOS-X64
             os: macos-13
+            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=nehalem -mtune=haswell"'
+            osx_target: 10.14
+
+          - name: macOS-ARM64
+            os: macos-13
+            cmake_flags: "-D CMAKE_OSX_ARCHITECTURES=arm64"
+            osx_target: 11.0
 
           - name: Windows
             os: windows-latest
+            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=sandybridge -mtune=skylake"'
+            osx_target: ""
 
     steps:
       - name: Checkout code
@@ -71,7 +83,7 @@ jobs:
 
       - name: CMake configure
         shell: bash
-        run: cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+        run: cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release ${{ matrix.cmake_flags }}
 
       - name: CMake build
         shell: bash
