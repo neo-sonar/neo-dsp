@@ -1,17 +1,12 @@
 #include "sparse_upols_convolver.hpp"
 
+#include "neo/convolution/math/decibel.hpp"
 #include "neo/convolution/math/next_power_of_two.hpp"
 
 #include <functional>
 #include <random>
 
 namespace neo::fft {
-
-static auto toDecibels(float gain) -> float
-{
-    if (gain == 0.0F) { return -144.0F; }
-    return 20.0F * std::log10(gain);
-}
 
 static auto multiply_and_accumulate(
     Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<std::size_t, 2>> lhs,
@@ -46,13 +41,21 @@ auto sparse_upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, 
     auto const K     = next_power_of_two((filter.extent(1) - 1U) * 2U);
     auto const scale = normalization_factor(filter);
 
-    auto const isAboveThreshold = [this, scale, K](auto /*row*/, auto col, auto bin) {
-        auto const frequency = neo::fft::frequency_for_bin<float>(K, col, 44'100.0);
-        auto const weight    = frequency > 0.0F ? neo::fft::a_weighting(frequency) : 0.0F;
+    auto const weights = [K, filter] {
+        auto w = std::vector<float>(filter.extent(1));
+        for (auto i{0U}; i < w.size(); ++i) {
+            auto const frequency = frequency_for_bin<float>(K, i, 44'100.0);
+            auto const weight    = frequency > 0.0F ? a_weighting(frequency) : 0.0F;
 
+            w[i] = weight;
+        }
+        return w;
+    }();
+
+    auto const isAboveThreshold = [this, scale, &weights](auto /*row*/, auto col, auto bin) {
         auto const gain  = std::abs(bin);
         auto const power = gain * gain;
-        auto const dB    = toDecibels(power * scale) + weight;
+        auto const dB    = to_decibels(power * scale) + weights[col];
         return dB > _thresholdDB;
     };
 
