@@ -54,6 +54,7 @@ target_sources(neo_fft_tests
     PRIVATE
         "neo/fft/math_test.cpp"
         "neo/fft/container/sparse_matrix_test.cpp"
+        "neo/fft/convolution/upols_convolver_test.cpp"
         "neo/fft/convolution/uniform_partition_test.cpp"
         "neo/fft/fixed_point/fixed_point_test.cpp"
         "neo/fft/transform/radix2_test.cpp"
