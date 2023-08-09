@@ -50,13 +50,20 @@ private:
     juce::dsp::ProcessSpec _spec;
 };
 
+auto const toStringArray(auto const& values)
+{
+    auto names = juce::StringArray{};
+    for (auto const& value : values) { names.add(value.toString()); }
+    return names;
+}
+
 }  // namespace
 
 PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 {
     _formats.registerBasicFormats();
 
-    _threshold.addListener(this);
+    _dynamicRange.addListener(this);
     _weighting.addListener(this);
 
     _openFile.onClick = [this] { openFile(); };
@@ -68,11 +75,24 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     _histogramImage.setImagePlacement(juce::RectanglePlacement::centred);
     _tooltipWindow->setMillisecondsBeforeTipAppears(750);
 
+    auto const weights     = juce::Array<juce::var>{juce::var{"No Weighting"}, juce::var{"A-Weighting"}};
+    auto const weightNames = toStringArray(weights);
+
+    auto const engines     = juce::Array<juce::var>{juce::var{"juce"}, juce::var{"dense"}, juce::var{"sparse"}};
+    auto const engineNames = toStringArray(engines);
+
     _propertyPanel.addSection(
         "Sparsity",
         juce::Array<juce::PropertyComponent*>{
-            std::make_unique<juce::SliderPropertyComponent>(_threshold, "Threshold", -100.0, -10.0, 0.0).release(),
-            std::make_unique<juce::BooleanPropertyComponent>(_weighting, "A-Weighting", "Enabled").release(),
+            std::make_unique<juce::SliderPropertyComponent>(_dynamicRange, "Dynamic Range", 10.0, 100.0, 0.5).release(),
+            std::make_unique<juce::ChoicePropertyComponent>(_weighting, "Weighting", weightNames, weights).release(),
+        }
+    );
+
+    _propertyPanel.addSection(
+        "Render",
+        juce::Array<juce::PropertyComponent*>{
+            std::make_unique<juce::MultiChoicePropertyComponent>(_engine, "Engine", engineNames, engines).release(),
         }
     );
 
@@ -140,16 +160,26 @@ auto PluginEditor::openFile() -> void
 
 auto PluginEditor::runBenchmarks() -> void
 {
+    auto hasEngineEnabled = [this](auto name) {
+        if (auto const* array = _engine.getValue().getArray(); array != nullptr) {
+            for (auto const& val : *array) {
+                if (val.toString() == name) { return true; }
+            }
+        }
+        return false;
+    };
+
     if (_signal.getNumChannels() == 0 or _signal.getNumSamples() == 0) {
         _signalFile = juce::File{R"(C:\Users\tobias\Music\Loops\Drums.wav)"};
         _signal     = loadAndResample(_formats, _signalFile, 44'100.0);
     }
 
+    if (hasEngineEnabled("juce")) { runJuceConvolverBenchmark(); }
+    if (hasEngineEnabled("dense")) { runDenseConvolverBenchmark(); }
+    if (hasEngineEnabled("sparse")) { runSparseConvolverBenchmark(); }
+
     // runDynamicRangeTests();
-    // runJuceConvolverBenchmark();
-    runDenseConvolverBenchmark();
     // runDenseStereoConvolverBenchmark();
-    runSparseConvolverBenchmark();
 }
 
 auto PluginEditor::runWeightingTests() -> void
@@ -176,7 +206,7 @@ auto PluginEditor::runWeightingTests() -> void
     }();
 
     auto const weighting = [=, this](std::size_t binIndex) {
-        if (static_cast<bool>(_weighting.getValue())) {
+        if (_weighting.getValue() == "A-Weighting") {
             auto const frequency = neo::fft::frequency_for_bin<float>(blockSize * 2ULL, binIndex, 44'100.0);
             if (juce::exactlyEqual(frequency, 0.0F)) { return 0.0F; }
             auto const weight = neo::fft::a_weighting(frequency);
@@ -186,7 +216,7 @@ auto PluginEditor::runWeightingTests() -> void
     };
 
     auto count           = 0;
-    auto const threshold = static_cast<float>(_threshold.getValue());
+    auto const threshold = -static_cast<float>(_dynamicRange.getValue());
 
     for (auto f{0U}; f < partitions.extent(1); ++f) {
         for (auto b{0U}; b < partitions.extent(2); ++b) {
@@ -201,10 +231,8 @@ auto PluginEditor::runWeightingTests() -> void
     }
 
     auto const total = static_cast<double>(partitions.size());
-    auto const line
-        = juce::String(static_cast<double>(count) / total * 100.0, 2) + "% " + juce::String(threshold, 1) + "dB "
-        + (static_cast<bool>(_weighting.getValue()) ? juce::String(" A-Weighting") : juce::String(" No weighting"))
-        + "\n";
+    auto const line  = juce::String(static_cast<double>(count) / total * 100.0, 2) + "% " + juce::String(threshold, 1)
+                    + "dB " + _weighting.getValue().toString() + "\n";
 
     _fileInfo.moveCaretToEnd(false);
     _fileInfo.insertTextAtCaret(line);
@@ -256,8 +284,10 @@ auto PluginEditor::runJuceConvolverBenchmark() -> void
     peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
     peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
 
-    auto end = std::chrono::system_clock::now();
-    std::cout << "JCONV: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << '\n';
+    auto const end     = std::chrono::system_clock::now();
+    auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    _fileInfo.moveCaretToEnd(false);
+    _fileInfo.insertTextAtCaret("JCONV-DENSE: " + juce::String{elapsed.count()} + "\n");
 
     writeToWavFile(file, output, 44'100.0, 32);
 }
@@ -275,7 +305,7 @@ auto PluginEditor::runDenseConvolverBenchmark() -> void
     auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     _fileInfo.moveCaretToEnd(false);
-    _fileInfo.insertTextAtCaret("TCONV-DENSE(100): " + juce::String{elapsed.count()} + "\n");
+    _fileInfo.insertTextAtCaret("TCONV-DENSE: " + juce::String{elapsed.count()} + "\n");
 
     writeToWavFile(file, output, 44'100.0, 32);
 }
@@ -301,7 +331,7 @@ auto PluginEditor::runSparseConvolverBenchmark() -> void
 {
     auto const start = std::chrono::system_clock::now();
 
-    auto const thresholdDB   = static_cast<float>(_threshold.getValue());
+    auto const thresholdDB   = -static_cast<float>(_dynamicRange.getValue());
     auto const thresholdText = juce::String(juce::roundToInt(std::abs(thresholdDB) * 100));
 
     auto const filename = "tconv_sparse_" + thresholdText;
@@ -326,7 +356,7 @@ auto PluginEditor::updateImages() -> void
     if (_spectrum.size() == 0) { return; }
 
     auto const weighting = [this](std::size_t binIndex) {
-        if (static_cast<bool>(_weighting.getValue())) {
+        if (_weighting.getValue() == "A-Weighting") {
             auto const frequency = neo::fft::frequency_for_bin<float>(1024, binIndex, 44'100.0);
             if (juce::exactlyEqual(frequency, 0.0F)) { return 0.0F; }
             auto const weight = neo::fft::a_weighting(frequency);
@@ -335,7 +365,7 @@ auto PluginEditor::updateImages() -> void
         return 0.0F;
     };
 
-    auto spectogramImage = fft::powerSpectrumImage(_spectrum, weighting, static_cast<float>(_threshold.getValue()));
+    auto spectogramImage = fft::powerSpectrumImage(_spectrum, weighting, -static_cast<float>(_dynamicRange.getValue()));
     auto histogramImage  = fft::powerHistogramImage(_spectrum, weighting);
 
     _spectogramImage.setImage(spectogramImage);

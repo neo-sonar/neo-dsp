@@ -45,8 +45,9 @@ private:
     juce::AudioBuffer<float> _filter{};
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _spectrum;
 
-    juce::Value _threshold{juce::var{-90.0F}};
-    juce::Value _weighting{juce::var{true}};
+    juce::Value _dynamicRange{juce::var{90.0F}};
+    juce::Value _weighting{juce::var{"A-Weighting"}};
+    juce::Value _engine{juce::Array<juce::var>{juce::var{"dense"}}};
 
     std::unique_ptr<juce::FileChooser> _fileChooser{nullptr};
     juce::SharedResourcePointer<juce::TooltipWindow> _tooltipWindow;

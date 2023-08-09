@@ -41,8 +41,8 @@ auto powerSpectrumImage(
         img.setPixelAt(x, y, color);
     };
 
-    auto const cols = static_cast<int>(frames.extent(1));
     auto const rows = static_cast<int>(frames.extent(0));
+    auto const cols = static_cast<int>(frames.extent(1));
     auto img        = juce::Image{juce::Image::PixelFormat::ARGB, cols, rows, true};
 
     for (auto f{0U}; f < frames.extent(0); ++f) {
