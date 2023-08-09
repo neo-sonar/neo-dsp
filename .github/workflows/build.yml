@@ -21,15 +21,23 @@ jobs:
         include:
           - name: Linux
             os: ubuntu-22.04
+            build_type: Release
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=sandybridge -mtune=skylake"'
 
           - name: macOS
             os: macos-13
+            build_type: Release
             cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
 
           - name: Windows
             os: windows-latest
+            build_type: Release
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=sandybridge -mtune=skylake"'
+
+          - name: Coverage
+            os: ubuntu-22.04
+            build_type: Debug
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=sandybridge -mtune=skylake"'
 
     steps:
       - name: Checkout code
@@ -53,6 +61,7 @@ jobs:
           libglu1-mesa-dev
           xvfb
           ninja-build
+          gcovr
 
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
@@ -64,7 +73,7 @@ jobs:
         run: choco install ninja ccache
 
       - name: Install clang
-        if: runner.os != 'macOS'
+        if: matrix.name != 'macOS' && matrix.name != 'Coverage'
         uses: egor-tensin/setup-clang@v1
 
       - name: Install ccache
@@ -74,7 +83,7 @@ jobs:
 
       - name: CMake configure
         shell: bash
-        run: cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release ${{ matrix.cmake_flags }}
+        run: cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_flags }}
 
       - name: CMake build
         shell: bash
@@ -82,4 +91,22 @@ jobs:
 
       - name: CTest
         shell: bash
-        run: ctest --test-dir build -C Release --output-on-failure
+        run: ctest --test-dir build -C ${{ matrix.build_type }} --output-on-failure
+
+      - name: Coverage
+        if: matrix.name == 'Coverage'
+        shell: bash
+        run: >
+          gcovr
+          --xml-pretty
+          -e ".*_test\.cpp"
+          --exclude-unreachable-branches
+          -r src
+          -s build
+          -o build/coverage.xml
+
+      - uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./build/coverage.xml
+          fail_ci_if_error: true
