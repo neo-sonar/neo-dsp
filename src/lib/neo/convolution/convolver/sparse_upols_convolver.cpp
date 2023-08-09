@@ -30,15 +30,14 @@ static auto multiply_and_accumulate(
 
 static auto normalization_factor(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter) -> float
 {
-    auto maxGain = 0.0F;
-
+    auto maxPower = 0.0F;
     for (auto partition{0UL}; partition < filter.extent(0); ++partition) {
         for (auto bin{0UL}; bin < filter.extent(1); ++bin) {
-            maxGain = std::max(maxGain, std::abs(filter(partition, bin)));
+            auto const gain = std::abs(filter(partition, bin));
+            maxPower        = std::max(maxPower, gain * gain);
         }
     }
-
-    return 1.0F / maxGain;
+    return 1.0F / maxPower;
 }
 
 auto sparse_upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter)
@@ -46,13 +45,15 @@ auto sparse_upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, 
 {
     auto const K = next_power_of_two((filter.extent(1) - 1U) * 2U);
 
-    auto const discardBelowThreshold = [threshold = _thresholdDB, scale = normalization_factor(filter)](auto bin) {
-        auto const dB = toDecibels(std::abs(bin) * scale);
+    auto const isAboveThreshold = [threshold = _thresholdDB, scale = normalization_factor(filter)](auto bin) {
+        auto const gain  = std::abs(bin);
+        auto const power = gain * gain;
+        auto const dB    = toDecibels(power * scale);
         return dB > threshold;
     };
 
     _fdl    = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{filter.extents()};
-    _filter = sparse_matrix<std::complex<float>>{filter, discardBelowThreshold};
+    _filter = sparse_matrix<std::complex<float>>{filter, isAboveThreshold};
 
     _rfft = std::make_unique<rfft_radix2_plan<float>>(ilog2(K));
     _window.resize(K);

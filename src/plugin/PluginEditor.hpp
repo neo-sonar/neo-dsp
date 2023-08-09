@@ -8,13 +8,16 @@
 
 namespace neo {
 
-struct PluginEditor final : juce::AudioProcessorEditor
+struct PluginEditor final
+    : juce::AudioProcessorEditor
+    , juce::Value::Listener
 {
     explicit PluginEditor(PluginProcessor& p);
     ~PluginEditor() noexcept override;
 
     auto paint(juce::Graphics& g) -> void override;
     auto resized() -> void override;
+    auto valueChanged(juce::Value& value) -> void override;
 
 private:
     auto openFile() -> void;
@@ -33,12 +36,13 @@ private:
 
     juce::TextButton _openFile{"Open File"};
     juce::TextButton _runBenchmarks{"Run"};
-    juce::Slider _threshold{juce::Slider::LinearHorizontal, juce::Slider::TextBoxRight};
-    juce::TextButton _weighting{"A-Weighting"};
-    juce::TextButton _peakOrPower{"Power"};
+    juce::PropertyPanel _propertyPanel{};
     juce::TextEditor _fileInfo{};
     juce::ImageComponent _spectogramImage{};
     juce::ImageComponent _histogramImage{};
+
+    juce::Value _threshold{juce::var{-90.0F}};
+    juce::Value _weighting{juce::var{true}};
 
     juce::File _signalFile{};
     juce::File _filterFile{};

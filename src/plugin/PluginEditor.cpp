@@ -65,23 +65,11 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 {
     _formats.registerBasicFormats();
 
+    _threshold.addListener(this);
+    _weighting.addListener(this);
+
     _openFile.onClick      = [this] { openFile(); };
     _runBenchmarks.onClick = [this] { runBenchmarks(); };
-
-    _threshold.setRange({-144.0, -10.0}, 0.0);
-    _threshold.setValue(-90.0, juce::dontSendNotification);
-    _threshold.onDragEnd = [this] { updateImages(); };
-
-    _peakOrPower.setClickingTogglesState(true);
-    _peakOrPower.setToggleState(true, juce::dontSendNotification);
-    _peakOrPower.onClick = [this] {
-        _peakOrPower.setButtonText(_peakOrPower.getToggleState() ? "Power" : "Peak");
-        updateImages();
-    };
-
-    _weighting.setClickingTogglesState(true);
-    _weighting.setToggleState(true, juce::dontSendNotification);
-    _weighting.onClick = [this] { updateImages(); };
 
     _fileInfo.setReadOnly(true);
     _fileInfo.setMultiLine(true);
@@ -89,17 +77,23 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     _histogramImage.setImagePlacement(juce::RectanglePlacement::centred);
     _tooltipWindow->setMillisecondsBeforeTipAppears(750);
 
+    _propertyPanel.addSection(
+        "Sparsity",
+        juce::Array<juce::PropertyComponent*>{
+            std::make_unique<juce::SliderPropertyComponent>(_threshold, "Threshold", -100.0, -10.0, 0.0).release(),
+            std::make_unique<juce::BooleanPropertyComponent>(_weighting, "A-Weighting", "Enabled").release(),
+        }
+    );
+
     addAndMakeVisible(_openFile);
     addAndMakeVisible(_runBenchmarks);
-    addAndMakeVisible(_threshold);
-    addAndMakeVisible(_peakOrPower);
-    addAndMakeVisible(_weighting);
+    addAndMakeVisible(_propertyPanel);
     addAndMakeVisible(_fileInfo);
     addAndMakeVisible(_spectogramImage);
     addAndMakeVisible(_histogramImage);
 
     setResizable(true, true);
-    setSize(600, 400);
+    setSize(1024, 576);
 }
 
 PluginEditor::~PluginEditor() noexcept { setLookAndFeel(nullptr); }
@@ -113,18 +107,19 @@ auto PluginEditor::resized() -> void
 {
     auto bounds = getLocalBounds();
 
-    auto controls = bounds.removeFromTop(bounds.proportionOfHeight(0.1));
-    auto width    = controls.proportionOfWidth(0.2);
-    _openFile.setBounds(controls.removeFromLeft(width));
-    _runBenchmarks.setBounds(controls.removeFromLeft(width));
-    _peakOrPower.setBounds(controls.removeFromLeft(width));
-    _weighting.setBounds(controls.removeFromLeft(width));
-    _threshold.setBounds(controls);
+    _fileInfo.setBounds(bounds.removeFromBottom(bounds.proportionOfHeight(0.175)));
 
-    _fileInfo.setBounds(bounds.removeFromLeft(bounds.proportionOfWidth(0.2)));
-    _spectogramImage.setBounds(bounds.removeFromLeft(bounds.proportionOfWidth(0.55)));
+    auto right              = bounds.removeFromRight(bounds.proportionOfWidth(0.225));
+    auto const buttonHeight = right.proportionOfHeight(0.1);
+    _openFile.setBounds(right.removeFromTop(buttonHeight).reduced(0, 4));
+    _runBenchmarks.setBounds(right.removeFromTop(buttonHeight).reduced(0, 4));
+    _propertyPanel.setBounds(right);
+
+    _spectogramImage.setBounds(bounds.removeFromTop(bounds.proportionOfHeight(0.5)).reduced(4));
     _histogramImage.setBounds(bounds.reduced(4));
 }
+
+auto PluginEditor::valueChanged(juce::Value& /*value*/) -> void { updateImages(); }
 
 auto PluginEditor::openFile() -> void
 {
@@ -162,7 +157,7 @@ auto PluginEditor::runBenchmarks() -> void
     // runJuceConvolverBenchmark();
     // runDenseConvolverBenchmark();
     // runDenseStereoConvolverBenchmark();
-    // runSparseConvolverBenchmark();
+    runSparseConvolverBenchmark();
 }
 
 auto PluginEditor::runWeightingTests() -> void
@@ -170,18 +165,18 @@ auto PluginEditor::runWeightingTests() -> void
     auto normalized = _impulse;
     juce_normalization(normalized);
 
-    auto const isPower     = _peakOrPower.getToggleState();
-    auto const powerOrPeak = [isPower](auto value) { return isPower ? value * value : value; };
-
     auto const blockSize  = 512ULL;
     auto const impulse    = to_mdarray(normalized);
     auto const partitions = neo::fft::uniform_partition(impulse, blockSize);
-    auto const scale      = [filter = partitions.to_mdspan(), powerOrPeak] {
+    auto const scale      = [filter = partitions.to_mdspan()] {
         auto max = 0.0F;
         for (auto ch{0U}; ch < filter.extent(0); ++ch) {
             for (auto f{0U}; f < filter.extent(1); ++f) {
                 for (auto b{0U}; b < filter.extent(2); ++b) {
-                    max = std::max(max, powerOrPeak(std::abs(filter(ch, f, b))));
+                    auto const bin   = std::abs(filter(ch, f, b));
+                    auto const power = bin * bin;
+
+                    max = std::max(max, power);
                 }
             }
         }
@@ -189,7 +184,7 @@ auto PluginEditor::runWeightingTests() -> void
     }();
 
     auto const weighting = [=, this](std::size_t binIndex) {
-        if (_weighting.getToggleState()) {
+        if (static_cast<bool>(_weighting.getValue())) {
             auto const frequency = frequencyForBin<float>(blockSize * 2ULL, binIndex, 44'100.0);
             if (juce::exactlyEqual(frequency, 0.0F)) { return 0.0F; }
             auto const weight = neo::fft::a_weighting(frequency);
@@ -205,17 +200,18 @@ auto PluginEditor::runWeightingTests() -> void
         for (auto b{0U}; b < partitions.extent(2); ++b) {
             auto const weight = weighting(b);
             for (auto ch{0U}; ch < partitions.extent(0); ++ch) {
-                auto const bin = powerOrPeak(std::abs(partitions(ch, f, b)));
-                auto const dB  = juce::Decibels::gainToDecibels(bin * scale, -144.0F) + weight;
+                auto const bin   = std::abs(partitions(ch, f, b));
+                auto const power = bin * bin;
+                auto const dB    = juce::Decibels::gainToDecibels(power * scale, -144.0F) + weight;
                 count += static_cast<int>(dB > threshold);
             }
         }
     }
 
     auto const total = static_cast<double>(partitions.size());
-    auto const line  = "\n" + juce::String(static_cast<double>(count) / total * 100.0, 2) + "% "
-                    + juce::String(threshold, 1) + "dB " + (isPower ? juce::String("Power") : juce::String("Peak"))
-                    + (_weighting.getToggleState() ? juce::String(" A-Weighting") : juce::String(" No weighting"));
+    auto const line
+        = "\n" + juce::String(static_cast<double>(count) / total * 100.0, 2) + "% " + juce::String(threshold, 1) + "dB "
+        + (static_cast<bool>(_weighting.getValue()) ? juce::String(" A-Weighting") : juce::String(" No weighting"));
 
     _fileInfo.moveCaretToEnd(false);
     _fileInfo.insertTextAtCaret(line);
@@ -329,7 +325,7 @@ auto PluginEditor::updateImages() -> void
     if (_spectrum.size() == 0) { return; }
 
     auto const weighting = [this](std::size_t binIndex) {
-        if (_weighting.getToggleState()) {
+        if (static_cast<bool>(_weighting.getValue())) {
             auto const frequency = frequencyForBin<float>(1024, binIndex, 44'100.0);
             if (juce::exactlyEqual(frequency, 0.0F)) { return 0.0F; }
             auto const weight = neo::fft::a_weighting(frequency);
