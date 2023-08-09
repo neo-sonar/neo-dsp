@@ -1,8 +1,8 @@
 #include "sparse_upols_convolver.hpp"
 
-#include "neo/fft/convolution/math/decibel.hpp"
-#include "neo/fft/convolution/math/magnitude_scaling.hpp"
-#include "neo/fft/convolution/math/next_power_of_two.hpp"
+#include "neo/fft/math/a_weighting.hpp"
+#include "neo/fft/math/decibel.hpp"
+#include "neo/fft/math/next_power_of_two.hpp"
 
 #include <functional>
 #include <random>

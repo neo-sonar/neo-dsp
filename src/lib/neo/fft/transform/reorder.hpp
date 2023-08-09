@@ -1,6 +1,6 @@
 #pragma once
 
-#include "neo/fft/transform/math.hpp"
+#include "neo/fft/math/ilog2.hpp"
 
 #include <cstddef>
 #include <span>

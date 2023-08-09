@@ -5,6 +5,7 @@ add_library(neo::convolution ALIAS neo_convolution)
 
 set(neo_convolution_Sources
     "neo/fft/convolution.hpp"
+    "neo/fft/math.hpp"
     "neo/fft/transform.hpp"
 
     "neo/fft/convolution/container.hpp"
@@ -17,13 +18,17 @@ set(neo_convolution_Sources
     "neo/fft/convolution/convolver/upols_convolver.cpp"
     "neo/fft/convolution/convolver/upols_convolver.hpp"
 
-    "neo/fft/convolution/math/fixed_point.hpp"
-    "neo/fft/convolution/math/fixed_point/algorithm.hpp"
-    "neo/fft/convolution/math/fixed_point/complex.hpp"
-    "neo/fft/convolution/math/fixed_point/fixed_point.hpp"
+    "neo/fft/math/fixed_point.hpp"
+    "neo/fft/math/fixed_point/algorithm.hpp"
+    "neo/fft/math/fixed_point/complex.hpp"
+    "neo/fft/math/fixed_point/fixed_point.hpp"
 
-    "neo/fft/convolution/math/magnitude_scaling.hpp"
-    "neo/fft/convolution/math/magnitude_scaling/a_weighting.hpp"
+    "neo/fft/math/a_weighting.hpp"
+    "neo/fft/math/decibel.hpp"
+    "neo/fft/math/divide_round_up.hpp"
+    "neo/fft/math/ilog2.hpp"
+    "neo/fft/math/next_power_of_two.hpp"
+    "neo/fft/math/power.hpp"
 )
 
 target_sources(neo_convolution PRIVATE ${neo_convolution_Sources})

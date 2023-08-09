@@ -1,6 +1,6 @@
 #pragma once
 
-#include "neo/fft/convolution/math/fixed_point/fixed_point.hpp"
+#include "neo/fft/math/fixed_point/fixed_point.hpp"
 
 #include <array>
 #include <cstdint>
