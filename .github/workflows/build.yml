@@ -28,7 +28,7 @@ jobs:
           - name: macOS-X64
             os: macos-13
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=nehalem -mtune=haswell"'
-            osx_target: 10.14
+            osx_target: 10.15
 
           - name: macOS-ARM64
             os: macos-13
