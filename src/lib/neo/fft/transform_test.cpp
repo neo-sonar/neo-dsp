@@ -1,9 +1,8 @@
-#include "test.hpp"
-
-#include "catch2/catch_test_macros.hpp"
-#include "neo/fft.hpp"
+#include "neo/fft/testing/testing.hpp"
+#include "neo/fft/transform.hpp"
 
 #include <array>
+#include <catch2/catch_test_macros.hpp>
 #include <cstdio>
 #include <iostream>
 #include <iterator>

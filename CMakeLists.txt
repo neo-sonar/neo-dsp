@@ -55,5 +55,4 @@ include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 
 add_subdirectory(src/lib)
 add_subdirectory(src/plugin)
-add_subdirectory(src/tests)
 add_subdirectory(src/benchmarks)

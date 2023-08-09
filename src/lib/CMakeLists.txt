@@ -44,3 +44,20 @@ set_source_files_properties(neo_fft ${neo_fft_Sources} PROPERTIES UNITY_GROUP "s
 target_include_directories(neo_fft PUBLIC ${PROJECT_SOURCE_DIR})
 target_link_libraries(neo_fft PUBLIC std::mdspan)
 target_compile_definitions(neo_fft INTERFACE _CRT_SECURE_NO_WARNINGS=1)
+
+add_executable(neo_fft_tests)
+target_sources(neo_fft_tests
+    PRIVATE
+        "neo/fft/container/sparse_matrix_test.cpp"
+        "neo/fft/fixed_point/fixed_point_test.cpp"
+        "neo/fft/math_test.cpp"
+        "neo/fft/transform_test.cpp"
+)
+
+catch_discover_tests(neo_fft_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+target_link_libraries(neo_fft_tests
+    PRIVATE
+        neo::convolution
+        Catch2::Catch2WithMain
+        juce::juce_recommended_warning_flags
+)
