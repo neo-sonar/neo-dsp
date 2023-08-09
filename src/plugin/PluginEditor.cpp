@@ -190,7 +190,7 @@ auto PluginEditor::runWeightingTests() -> void
 
     auto const blockSize  = 512ULL;
     auto const impulse    = to_mdarray(normalized);
-    auto const partitions = neo::fft::uniform_partition(impulse, blockSize);
+    auto const partitions = neo::fft::uniform_partition(impulse.to_mdspan(), blockSize);
     auto const scale      = [filter = partitions.to_mdspan()] {
         auto max = 0.0F;
         for (auto ch{0U}; ch < filter.extent(0); ++ch) {

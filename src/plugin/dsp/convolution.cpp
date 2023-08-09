@@ -10,7 +10,7 @@ static auto uniform_partition(juce::AudioBuffer<float> const& buffer, int blockS
     -> KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 3>>
 {
     auto matrix = to_mdarray(buffer);
-    return uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
+    return uniform_partition<float>(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
 }
 
 auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)
