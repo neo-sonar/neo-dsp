@@ -26,10 +26,11 @@ static auto multiply_and_accumulate(
 static auto normalization_factor(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter) -> float
 {
     auto maxPower = 0.0F;
-    for (auto partition{0UL}; partition < filter.extent(0); ++partition) {
+    for (auto p{0UL}; p < filter.extent(0); ++p) {
+        auto const partition = KokkosEx::submdspan(filter, p, Kokkos::full_extent);
         for (auto bin{0UL}; bin < filter.extent(1); ++bin) {
-            auto const gain = std::abs(filter(partition, bin));
-            maxPower        = std::max(maxPower, gain * gain);
+            auto const amplitude = std::abs(partition(bin));
+            maxPower             = std::max(maxPower, amplitude * amplitude);
         }
     }
     return 1.0F / maxPower;

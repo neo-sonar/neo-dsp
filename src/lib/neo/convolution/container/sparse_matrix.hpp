@@ -69,9 +69,10 @@ sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(
     static_assert(decltype(other)::rank() == 2);
 
     auto count = 0UL;
-    for (auto row{0UL}; row < other.extent(0); ++row) {
+    for (auto rowIdx{0UL}; rowIdx < other.extent(0); ++rowIdx) {
+        auto const row = KokkosEx::submdspan(other, rowIdx, Kokkos::full_extent);
         for (auto col{0UL}; col < other.extent(1); ++col) {
-            if (filter(row, col, other(row, col))) { ++count; }
+            if (filter(rowIdx, col, row(col))) { ++count; }
         }
     }
 
@@ -79,11 +80,12 @@ sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(
     _columIndices.resize(count);
 
     auto idx = 0UL;
-    for (auto row{0UL}; row < other.extent(0); ++row) {
-        _rowIndices[row] = idx;
+    for (auto rowIdx{0UL}; rowIdx < other.extent(0); ++rowIdx) {
+        auto const row      = KokkosEx::submdspan(other, rowIdx, Kokkos::full_extent);
+        _rowIndices[rowIdx] = idx;
 
         for (auto col{0UL}; col < other.extent(1); ++col) {
-            if (auto const& val = other(row, col); filter(row, col, val)) {
+            if (auto const& val = row(col); filter(rowIdx, col, val)) {
                 _values[idx]       = val;
                 _columIndices[idx] = col;
                 ++idx;
