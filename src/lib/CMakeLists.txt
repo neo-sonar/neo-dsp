@@ -1,5 +1,15 @@
 project(neo_convolution)
 
+add_library(neo_fft INTERFACE)
+add_library(neo::fft ALIAS neo_fft)
+target_include_directories(neo_fft INTERFACE ${PROJECT_SOURCE_DIR})
+target_compile_definitions(neo_fft INTERFACE _CRT_SECURE_NO_WARNINGS=1)
+
+add_library(neo_wav neo/wav/wav.cpp neo/wav/wav.hpp)
+add_library(neo::wav ALIAS neo_wav)
+target_include_directories(neo_wav INTERFACE ${PROJECT_SOURCE_DIR})
+target_compile_definitions(neo_wav INTERFACE _CRT_SECURE_NO_WARNINGS=1)
+
 add_library(neo_convolution)
 add_library(neo::convolution ALIAS neo_convolution)
 

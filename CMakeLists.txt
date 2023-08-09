@@ -27,13 +27,18 @@ include(FetchContent)
 FetchContent_Declare(mdspan_repo GIT_REPOSITORY "https://github.com/kokkos/mdspan" GIT_TAG "stable")
 FetchContent_MakeAvailable(mdspan_repo)
 
+FetchContent_Declare(doctest GIT_REPOSITORY "https://github.com/doctest/doctest" GIT_TAG "master")
+FetchContent_MakeAvailable(doctest)
+FetchContent_GetProperties(doctest SOURCE_DIR doctest_source)
+include("${doctest_source}/scripts/cmake/doctest.cmake")
+
+
 add_subdirectory(3rd_party/JUCE)
 set_directory_properties(PROPERTIES JUCE_COMPANY_COPYRIGHT "Copyright 2023 neo-sonar. All rights reserved.")
 set_directory_properties(PROPERTIES JUCE_COMPANY_NAME "neo-sonar")
 set_directory_properties(PROPERTIES JUCE_VST3_COPY_DIR "${CMAKE_BINARY_DIR}/VST3")
 set_directory_properties(PROPERTIES JUCE_AU_COPY_DIR "${CMAKE_BINARY_DIR}/AU")
 
-add_subdirectory(3rd_party/neo-fft/include)
 add_subdirectory(src/lib)
 add_subdirectory(src/plugin)
 add_subdirectory(src/tests)
