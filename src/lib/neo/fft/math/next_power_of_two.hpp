@@ -19,12 +19,6 @@ template<std::unsigned_integral Integral>
     return x + 1;
 }
 
-static_assert(next_power_of_two_fallback(1U) == 1U);
-static_assert(next_power_of_two_fallback(2U) == 2U);
-static_assert(next_power_of_two_fallback(3U) == 4U);
-static_assert(next_power_of_two_fallback(4U) == 4U);
-static_assert(next_power_of_two_fallback(100U) == 128U);
-
 }  // namespace detail
 
 template<std::unsigned_integral Integral>

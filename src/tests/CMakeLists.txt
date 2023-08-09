@@ -4,8 +4,8 @@ add_executable(neo_fft_tests)
 target_sources(neo_fft_tests
     PRIVATE
         test.cpp
-        a_weighting_test.cpp
         fixed_point_test.cpp
+        math_test.cpp
         sparse_matrix_test.cpp
 )
 
