@@ -10,7 +10,7 @@
 
 #include <span>
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: overlap_save", "", float)
+TEMPLATE_TEST_CASE("neo/fft/convolution: overlap_save", "", float, double)
 {
     using Float = TestType;
 
@@ -18,10 +18,14 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: overlap_save", "", float)
     auto const signal     = neo::fft::make_noise_signal<Float>(blockSize * 50UL);
     auto const partitions = neo::fft::make_identity_impulse<Float>(blockSize, 10UL);
 
+    auto ols = neo::fft::overlap_save<Float>{blockSize};
+
     auto output = signal;
-    auto ols    = neo::fft::overlap_save<Float>{blockSize};
+    auto blocks = Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}};
+
     for (auto i{0U}; i < output.size(); i += blockSize) {
-        ols(std::span{output}.subspan(i, blockSize), [](auto) {});
+        auto block = KokkosEx::submdspan(blocks, std::tuple{i, i + blockSize});
+        ols(block, [](auto) {});
     }
 
     for (auto i{0ULL}; i < output.size(); ++i) {

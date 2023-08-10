@@ -48,7 +48,7 @@ auto sparse_upols_convolver<Float>::filter(
 template<std::floating_point Float>
 auto sparse_upols_convolver<Float>::operator()(std::span<Float> block) -> void
 {
-    _overlapSave(block, [this](inout_vector auto inout) {
+    _overlapSave(Kokkos::mdspan{block.data(), Kokkos::extents{block.size()}}, [this](inout_vector auto inout) {
         auto const fdl         = _fdl.to_mdspan();
         auto const accumulator = _accumulator.to_mdspan();
         auto const acc         = std::span{accumulator.data_handle(), accumulator.size()};
