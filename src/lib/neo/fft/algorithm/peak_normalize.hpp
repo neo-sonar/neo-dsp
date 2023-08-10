@@ -1,5 +1,6 @@
 #pragma once
 
+#include <neo/fft/algorithm/scale.hpp>
 #include <neo/fft/container/mdspan.hpp>
 
 #include <algorithm>
