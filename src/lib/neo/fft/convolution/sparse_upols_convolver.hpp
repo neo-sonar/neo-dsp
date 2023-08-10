@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <complex>
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -15,7 +16,10 @@ struct sparse_upols_convolver
 {
     explicit sparse_upols_convolver(float thresholdDB) : _thresholdDB{thresholdDB} {}
 
-    auto filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter) -> void;
+    auto filter(
+        KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter,
+        std::function<bool(std::size_t, std::size_t, std::complex<float>)> const& sparsiyFilter
+    ) -> void;
     auto operator()(std::span<float> block) -> void;
 
 private:

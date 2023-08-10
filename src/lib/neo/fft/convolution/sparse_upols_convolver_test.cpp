@@ -20,7 +20,7 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: sparse_upols_convolver", "", float)
 
     auto convolver = neo::fft::sparse_upols_convolver{-144.0F};
     auto output    = signal;
-    convolver.filter(partitions);
+    convolver.filter(partitions, [](auto, auto, auto) { return true; });
 
     for (auto i{0U}; i < output.size(); i += blockSize) {
         auto block = std::span{output}.subspan(i, blockSize);

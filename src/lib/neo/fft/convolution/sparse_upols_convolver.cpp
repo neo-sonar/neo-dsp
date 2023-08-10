@@ -1,8 +1,6 @@
 #include "sparse_upols_convolver.hpp"
 
 #include <neo/fft/algorithm/multiply_elementwise_sum_columnwise.hpp>
-#include <neo/fft/math/a_weighting.hpp>
-#include <neo/fft/math/decibel.hpp>
 #include <neo/fft/math/next_power_of_two.hpp>
 
 #include <functional>
@@ -10,45 +8,15 @@
 
 namespace neo::fft {
 
-static auto normalization_factor(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter) -> float
+auto sparse_upols_convolver::filter(
+    KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter,
+    std::function<bool(std::size_t, std::size_t, std::complex<float>)> const& sparsiyFilter
+) -> void
 {
-    auto maxPower = 0.0F;
-    for (auto p{0UL}; p < filter.extent(0); ++p) {
-        auto const partition = KokkosEx::submdspan(filter, p, Kokkos::full_extent);
-        for (auto bin{0UL}; bin < filter.extent(1); ++bin) {
-            auto const amplitude = std::abs(partition(bin));
-            maxPower             = std::max(maxPower, amplitude * amplitude);
-        }
-    }
-    return 1.0F / maxPower;
-}
-
-auto sparse_upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter)
-    -> void
-{
-    auto const K     = next_power_of_two((filter.extent(1) - 1U) * 2U);
-    auto const scale = normalization_factor(filter);
-
-    auto const weights = [K, filter] {
-        auto w = std::vector<float>(filter.extent(1));
-        for (auto i{0U}; i < w.size(); ++i) {
-            auto const frequency = frequency_for_bin<float>(K, i, 44'100.0);
-            auto const weight    = frequency > 0.0F ? a_weighting(frequency) : 0.0F;
-
-            w[i] = weight;
-        }
-        return w;
-    }();
-
-    auto const isAboveThreshold = [this, scale, &weights](auto /*row*/, auto col, auto bin) {
-        auto const gain  = std::abs(bin);
-        auto const power = gain * gain;
-        auto const dB    = to_decibels(power * scale) + weights[col];
-        return dB > _thresholdDB;
-    };
+    auto const K = next_power_of_two((filter.extent(1) - 1U) * 2U);
 
     _fdl    = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{filter.extents()};
-    _filter = sparse_matrix<std::complex<float>>{filter, isAboveThreshold};
+    _filter = sparse_matrix<std::complex<float>>{filter, sparsiyFilter};
 
     _rfft = std::make_unique<rfft_radix2_plan<float>>(ilog2(K));
     _window.resize(K);
