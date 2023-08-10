@@ -9,21 +9,6 @@
 
 namespace neo::fft {
 
-static auto multiply_and_accumulate(
-    Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<std::size_t, 2>> lhs,
-    sparse_matrix<std::complex<float>> const& rhs,
-    std::span<std::complex<float>> accumulator,
-    std::size_t shift
-)
-{
-    assert(lhs.extent(0) == rhs.rows());
-    assert(lhs.extent(1) == rhs.columns());
-    assert(lhs.extent(1) > 0);
-    assert(shift < lhs.extent(0));
-
-    multiply_elementwise_accumulate_columnwise(lhs, rhs, accumulator, shift);
-}
-
 static auto normalization_factor(Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter) -> float
 {
     auto maxPower = 0.0F;
@@ -90,8 +75,13 @@ auto sparse_upols_convolver::operator()(std::span<float> block) -> void
     for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(_fdlIndex, i) = _rfftBuf[i] / float(_rfft->size()); }
 
     // DFT-spectrum additions
+    assert(_fdl.extent(0) == _filter.rows());
+    assert(_fdl.extent(1) == _filter.columns());
+    assert(_fdl.extent(1) > 0);
+    assert(_fdlIndex < _fdl.extent(0));
+
     std::fill(_accumulator.begin(), _accumulator.end(), 0.0F);
-    multiply_and_accumulate(_fdl, _filter, _accumulator, _fdlIndex);
+    multiply_elementwise_accumulate_columnwise(_fdl.to_mdspan(), _filter, std::span{_accumulator}, _fdlIndex);
 
     // All contents (DFT spectra) in the FDL are shifted up by one slot.
     ++_fdlIndex;

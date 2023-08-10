@@ -167,11 +167,11 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::operator()(ind
     return T{};
 }
 
-template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
+template<typename T, typename U, typename IndexType, typename ValueContainer, typename IndexContainer>
 auto multiply_elementwise_accumulate_columnwise(
-    Kokkos::mdspan<T const, Kokkos::dextents<std::size_t, 2>> lhs,
-    sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& rhs,
-    std::span<T> accumulator,
+    Kokkos::mdspan<T, Kokkos::dextents<std::size_t, 2>> lhs,
+    sparse_matrix<U, IndexType, ValueContainer, IndexContainer> const& rhs,
+    std::span<U> accumulator,
     std::size_t shift = 0
 ) -> void
 {
