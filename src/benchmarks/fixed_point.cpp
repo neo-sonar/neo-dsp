@@ -29,7 +29,7 @@ private:
     std::vector<Float> _out;
 };
 
-#if defined(__AVX2__)
+#if defined(__F16C__)
 template<std::size_t Size>
 struct float16_mul_bench
 {
@@ -107,7 +107,7 @@ auto main() -> int
     neo::fft::timeit("mul(float[262144], float[262144]):   ", 4, 262144, floating_point_mul_bench<float, 262144U>{});
     std::printf("\n");
 
-#if defined(__AVX2__)
+#if defined(__F16C__)
     neo::fft::timeit("mul(f16f32[32768], f16f32[32768]):   ", 2, 32768, float16_mul_bench<32768U>{});
     neo::fft::timeit("mul(f16f32[131072], f16f32[131072]): ", 2, 131072, float16_mul_bench<131072U>{});
     neo::fft::timeit("mul(f16f32[262144], f16f32[262144]): ", 2, 262144, float16_mul_bench<262144U>{});

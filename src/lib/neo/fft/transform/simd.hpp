@@ -3,6 +3,7 @@
 #include <neo/fft/config.hpp>
 
 #if defined(__amd64__) or defined(_M_AMD64)
+    #include <emmintrin.h>
     #include <immintrin.h>  // AVX-512F
     #include <smmintrin.h>  // SSE4
     #include <xmmintrin.h>  // AVX
