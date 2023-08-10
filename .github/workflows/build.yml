@@ -23,21 +23,31 @@ jobs:
             os: ubuntu-22.04
             build_type: Release
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=sandybridge -mtune=skylake"'
+            cmake_targets: all
 
           - name: macOS
             os: macos-13
             build_type: Release
             cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
+            cmake_targets: all
 
           - name: Windows
             os: windows-latest
             build_type: Release
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=sandybridge -mtune=skylake"'
+            cmake_targets: all
 
           - name: Coverage
             os: ubuntu-22.04
             build_type: Debug
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=sandybridge -mtune=skylake"'
+            cmake_targets: neo_fft_tests
+
+          - name: Sanitizers
+            os: ubuntu-22.04
+            build_type: Debug
+            cmake_flags: '-D CMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-sanitize-recover=all -march=sandybridge -mtune=skylake"'
+            cmake_targets: neo_fft_tests
 
     steps:
       - name: Checkout code
@@ -87,9 +97,10 @@ jobs:
 
       - name: CMake build
         shell: bash
-        run: cmake --build build --target all
+        run: cmake --build build --target ${{ matrix.cmake_targets }}
 
       - name: CTest
+        if: matrix.name == 'Coverage' || matrix.name == 'Sanitizers'
         shell: bash
         run: ctest --test-dir build -C ${{ matrix.build_type }} --output-on-failure
 
