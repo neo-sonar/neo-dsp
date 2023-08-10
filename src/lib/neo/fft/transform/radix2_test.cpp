@@ -4,6 +4,7 @@
 #include <neo/fft/algorithm/allclose.hpp>
 #include <neo/fft/testing/testing.hpp>
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
@@ -18,7 +19,12 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: make_radix2_twiddles", "", float, 
 
     auto const array  = neo::fft::make_radix2_twiddles<Complex, 64>();
     auto const vector = neo::fft::make_radix2_twiddles<Complex>(64);
-    REQUIRE(std::equal(array.begin(), array.end(), vector.begin(), vector.end()));
+
+    for (auto i{0UL}; i < array.size(); ++i) {
+        CAPTURE(i);
+        REQUIRE(array[i].real() == Catch::Approx(vector[i].real()));
+        REQUIRE(array[i].imag() == Catch::Approx(vector[i].imag()));
+    }
 }
 
 TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
