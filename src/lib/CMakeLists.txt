@@ -1,7 +1,7 @@
 project(neo_fft)
 
 add_library(neo_fft INTERFACE)
-add_library(neo::convolution ALIAS neo_fft)
+add_library(neo::fft ALIAS neo_fft)
 
 set(neo_fft_Sources
     "neo/fft/algorithm.hpp"
@@ -67,7 +67,7 @@ target_sources(neo_fft_tests
 catch_discover_tests(neo_fft_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 target_link_libraries(neo_fft_tests
     PRIVATE
-        neo::convolution
+        neo::fft
         Catch2::Catch2WithMain
         juce::juce_recommended_warning_flags
 )

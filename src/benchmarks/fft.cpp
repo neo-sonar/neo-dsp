@@ -1,13 +1,10 @@
 #include "neo/fft.hpp"
 
-#include "fft_benchmark.hpp"
+#include <neo/fft/testing/benchmark.hpp>
 
 #include <algorithm>
 #include <array>
 #include <cstdio>
-#include <filesystem>
-#include <iostream>
-#include <optional>
 #include <random>
 #include <vector>
 
@@ -32,19 +29,20 @@ private:
 template<typename Float, unsigned Size>
 struct cfft_fixed
 {
-    cfft_fixed() : _tw{neo::fft::make_radix2_twiddles<std::complex<Float>, Size>()} {}
+    cfft_fixed() = default;
 
     auto operator()() -> void
     {
-        auto const gen = [i = 0]() mutable { return static_cast<Float>(i++); };
-        std::generate_n(begin(_buf), size(_buf), gen);
-        neo::fft::c2c_radix2(Kokkos::mdspan<std::complex<Float>, Kokkos::extents<size_t, Size>>{_buf.data()}, _tw);
-        neo::fft::do_not_optimize(_buf.back());
+        auto buffer = _buffer.to_mdspan();
+        // auto const gen = [i = 0]() mutable { return static_cast<Float>(i++); };
+        // std::generate_n(begin(_buffer), size(_buffer), gen);
+        neo::fft::c2c_radix2(buffer, _tw);
+        neo::fft::do_not_optimize(buffer[0]);
     }
 
 private:
-    std::array<std::complex<Float>, Size> _buf;
-    std::array<std::complex<Float>, Size / 2> _tw;
+    KokkosEx::mdarray<std::complex<Float>, Kokkos::extents<size_t, Size>> _buffer{};
+    std::array<std::complex<Float>, Size / 2> _tw{neo::fft::make_radix2_twiddles<std::complex<Float>, Size>()};
 };
 
 template<typename Float>
@@ -231,30 +229,34 @@ private:
 
 auto main() -> int
 {
-    using neo::fft::timeit;
+    static constexpr auto N = 1024;
 
-    timeit("radix2<complex<float>>(N)", 2048, 1, cfft<float>{2048});
-    timeit("radix2<complex<float>, N>()", 2048, 1, cfft_fixed<float, 2048>{});
-#ifdef __AVX__
-    timeit("radix2<complex32x4>(N)", 2048, 4, cfft32x4{2048});
-    timeit("radix2<complex32x4, N>()", 2048, 4, cfft32x4_fixed<2048>{});
-#endif
+    neo::fft::benchmark_fft("cfft<complex<float>>(N)", N, 1, cfft<float>{N});
+    neo::fft::benchmark_fft("cfft_alt<complex<float>>(N)", N, 1, cfft_alt<float>{N});
+    neo::fft::benchmark_fft("cfft_plan<complex<float>>(N)", N, 1, cfft_plan<float>{N});
+    neo::fft::benchmark_fft("cfft_fixed<complex<float>, N>()", N, 1, cfft_fixed<float, N>{});
     std::printf("\n");
 
-    timeit("radix2<complex<float>>(N)", 4096, 1, cfft<float>{4096});
-    timeit("radix2<complex<float>, N>()", 4096, 1, cfft_fixed<float, 4096>{});
-#ifdef __AVX__
-    timeit("radix2<complex32x4>(N)", 4096, 4, cfft32x4{4096});
-    timeit("radix2<complex32x4, N>()", 4096, 4, cfft32x4_fixed<4096>{});
-#endif
+    neo::fft::benchmark_fft("cfft<complex<double>>(N)", N, 1, cfft<double>{N});
+    neo::fft::benchmark_fft("cfft_alt<complex<double>>(N)", N, 1, cfft_alt<double>{N});
+    neo::fft::benchmark_fft("cfft_plan<complex<double>>(N)", N, 1, cfft_plan<double>{N});
+    neo::fft::benchmark_fft("cfft_fixed<complex<double>, N>()", N, 1, cfft_fixed<double, N>{});
     std::printf("\n");
 
-    timeit("radix2<complex<float>>(N)", 8192, 1, cfft<float>{8192});
-    timeit("radix2<complex<float>, N>()", 8192, 1, cfft_fixed<float, 8192>{});
-#ifdef __AVX__
-    timeit("radix2<complex32x4>(N)", 8192, 4, cfft32x4{8192});
-    timeit("radix2<complex32x4, N>()", 8192, 4, cfft32x4_fixed<8192>{});
-#endif
+    // benchmark_fft("radix2<complex<float>>(N)", 2048, 1, cfft<float>{2048});
+    // benchmark_fft("radix2<complex<float>>(N)", 4096, 1, cfft<float>{4096});
+
+    // // benchmark_fft("radix2<complex<float>, N>()", 2048, 1, cfft_fixed<float, 2048>{});
+    // // benchmark_fft("radix2<complex<float>, N>()", 4096, 1, cfft_fixed<float, 4096>{});
+
+    // #ifdef __AVX__
+    //     benchmark_fft("radix2<complex32x4>(N)", 2048, 4, cfft32x4{2048});
+    //     benchmark_fft("radix2<complex32x4>(N)", 4096, 4, cfft32x4{4096});
+    //     benchmark_fft("radix2<complex32x4>(N)", 8192, 4, cfft32x4{8192});
+    //     benchmark_fft("radix2<complex32x4, N>()", 2048, 4, cfft32x4_fixed<2048>{});
+    //     benchmark_fft("radix2<complex32x4, N>()", 4096, 4, cfft32x4_fixed<4096>{});
+    //     benchmark_fft("radix2<complex32x4, N>()", 8192, 4, cfft32x4_fixed<8192>{});
+    // #endif
 
     return EXIT_SUCCESS;
 }
