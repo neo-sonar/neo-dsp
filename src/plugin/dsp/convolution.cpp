@@ -85,7 +85,7 @@ auto sparse_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<f
     }();
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
-        auto convolver               = sparse_upols_convolver{};
+        auto convolver               = sparse_upols_convolver<float>{};
         auto const channel           = static_cast<size_t>(ch);
         auto const full              = Kokkos::full_extent;
         auto const channelPartitions = KokkosEx::submdspan(partitions.to_mdspan(), channel, full, full);

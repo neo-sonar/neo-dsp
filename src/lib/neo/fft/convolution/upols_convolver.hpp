@@ -49,7 +49,7 @@ auto upols_convolver<Float>::operator()(std::span<Float> block) -> void
         auto const accumulator = _accumulator.to_mdspan();
 
         copy(inout, KokkosEx::submdspan(fdl, _fdlIndex, Kokkos::full_extent));
-        fill(accumulator, 0.0F);
+        fill(accumulator, Float(0));
         multiply_elementwise_sum_columnwise(fdl, _filter, accumulator, _fdlIndex);
         copy(accumulator, inout);
 

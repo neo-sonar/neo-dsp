@@ -10,7 +10,7 @@
 
 #include <span>
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver", "", float)
+TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver", "", float, double)
 {
     using Float = TestType;
 
