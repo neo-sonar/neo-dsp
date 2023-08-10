@@ -18,7 +18,7 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: sparse_upols_convolver", "", float)
     auto const signal     = neo::fft::make_noise_signal<Float>(blockSize * 100UL);
     auto const partitions = neo::fft::make_identity_impulse<Float>(blockSize, 10UL);
 
-    auto convolver = neo::fft::sparse_upols_convolver{-144.0F};
+    auto convolver = neo::fft::sparse_upols_convolver{};
     auto output    = signal;
     convolver.filter(partitions, [](auto, auto, auto) { return true; });
 
