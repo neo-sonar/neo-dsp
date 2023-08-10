@@ -10,6 +10,7 @@
 #include <random>
 #include <vector>
 
+namespace neo::fft {
 struct test_path
 {
     std::filesystem::path input;
@@ -91,3 +92,5 @@ template<std::floating_point Float>
     }
     return impulse;
 }
+
+}  // namespace neo::fft

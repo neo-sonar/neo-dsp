@@ -16,17 +16,17 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
     using Float = TestType;
 
     auto paths = GENERATE(
-        test_path{"./test_data/c2c_8_input.csv", "./test_data/c2c_8_output.csv"},
-        test_path{"./test_data/c2c_16_input.csv", "./test_data/c2c_16_output.csv"},
-        test_path{"./test_data/c2c_32_input.csv", "./test_data/c2c_32_output.csv"},
-        test_path{"./test_data/c2c_16_input.csv", "./test_data/c2c_16_output.csv"},
-        test_path{"./test_data/c2c_32_input.csv", "./test_data/c2c_32_output.csv"},
-        test_path{"./test_data/c2c_64_input.csv", "./test_data/c2c_64_output.csv"},
-        test_path{"./test_data/c2c_128_input.csv", "./test_data/c2c_128_output.csv"},
-        test_path{"./test_data/c2c_512_input.csv", "./test_data/c2c_512_output.csv"}
+        neo::fft::test_path{"./test_data/c2c_8_input.csv", "./test_data/c2c_8_output.csv"},
+        neo::fft::test_path{"./test_data/c2c_16_input.csv", "./test_data/c2c_16_output.csv"},
+        neo::fft::test_path{"./test_data/c2c_32_input.csv", "./test_data/c2c_32_output.csv"},
+        neo::fft::test_path{"./test_data/c2c_16_input.csv", "./test_data/c2c_16_output.csv"},
+        neo::fft::test_path{"./test_data/c2c_32_input.csv", "./test_data/c2c_32_output.csv"},
+        neo::fft::test_path{"./test_data/c2c_64_input.csv", "./test_data/c2c_64_output.csv"},
+        neo::fft::test_path{"./test_data/c2c_128_input.csv", "./test_data/c2c_128_output.csv"},
+        neo::fft::test_path{"./test_data/c2c_512_input.csv", "./test_data/c2c_512_output.csv"}
     );
 
-    auto const testCase = load_test_data<Float>(paths).value();
+    auto const testCase = neo::fft::load_test_data<Float>(paths).value();
 
     {
         auto in  = testCase.input;
@@ -87,17 +87,17 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_data(r2c)", "", float, double
     using Float = TestType;
 
     auto paths = GENERATE(
-        test_path{"./test_data/r2c_8_input.csv", "./test_data/r2c_8_output.csv"},
-        test_path{"./test_data/r2c_16_input.csv", "./test_data/r2c_16_output.csv"},
-        test_path{"./test_data/r2c_32_input.csv", "./test_data/r2c_32_output.csv"},
-        test_path{"./test_data/r2c_16_input.csv", "./test_data/r2c_16_output.csv"},
-        test_path{"./test_data/r2c_32_input.csv", "./test_data/r2c_32_output.csv"},
-        test_path{"./test_data/r2c_64_input.csv", "./test_data/r2c_64_output.csv"},
-        test_path{"./test_data/r2c_128_input.csv", "./test_data/r2c_128_output.csv"},
-        test_path{"./test_data/r2c_512_input.csv", "./test_data/r2c_512_output.csv"}
+        neo::fft::test_path{"./test_data/r2c_8_input.csv", "./test_data/r2c_8_output.csv"},
+        neo::fft::test_path{"./test_data/r2c_16_input.csv", "./test_data/r2c_16_output.csv"},
+        neo::fft::test_path{"./test_data/r2c_32_input.csv", "./test_data/r2c_32_output.csv"},
+        neo::fft::test_path{"./test_data/r2c_16_input.csv", "./test_data/r2c_16_output.csv"},
+        neo::fft::test_path{"./test_data/r2c_32_input.csv", "./test_data/r2c_32_output.csv"},
+        neo::fft::test_path{"./test_data/r2c_64_input.csv", "./test_data/r2c_64_output.csv"},
+        neo::fft::test_path{"./test_data/r2c_128_input.csv", "./test_data/r2c_128_output.csv"},
+        neo::fft::test_path{"./test_data/r2c_512_input.csv", "./test_data/r2c_512_output.csv"}
     );
 
-    auto const tc    = load_test_data<Float>(paths).value();
+    auto const tc    = neo::fft::load_test_data<Float>(paths).value();
     auto const size  = tc.input.size();
     auto const order = neo::fft::ilog2(size);
 
