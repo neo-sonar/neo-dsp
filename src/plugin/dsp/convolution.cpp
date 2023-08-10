@@ -28,7 +28,7 @@ auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<fl
     auto partitions = uniform_partition(filter, blockSize);
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
-        auto convolver     = upols_convolver{};
+        auto convolver     = upols_convolver<float>{};
         auto const channel = static_cast<size_t>(ch);
         auto const full    = Kokkos::full_extent;
         convolver.filter(KokkosEx::submdspan(partitions.to_mdspan(), channel, full, full));

@@ -16,7 +16,6 @@ set(neo_fft_Sources
     "neo/fft/convolution/overlap_save.hpp"
     "neo/fft/convolution/sparse_upols_convolver.cpp"
     "neo/fft/convolution/sparse_upols_convolver.hpp"
-    "neo/fft/convolution/upols_convolver.cpp"
     "neo/fft/convolution/upols_convolver.hpp"
 
     "neo/fft/fixed_point.hpp"

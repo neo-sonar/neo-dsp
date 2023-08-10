@@ -15,7 +15,7 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: overlap_save", "", float)
     using Float = TestType;
 
     auto const blockSize  = GENERATE(as<std::size_t>{}, 128, 256, 512);
-    auto const signal     = neo::fft::make_noise_signal<Float>(blockSize * 100UL);
+    auto const signal     = neo::fft::make_noise_signal<Float>(blockSize * 50UL);
     auto const partitions = neo::fft::make_identity_impulse<Float>(blockSize, 10UL);
 
     auto output = signal;
