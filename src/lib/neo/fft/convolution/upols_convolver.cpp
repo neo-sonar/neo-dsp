@@ -9,24 +9,6 @@
 
 namespace neo::fft {
 
-static auto copy_to_window(
-    Kokkos::mdspan<float const, Kokkos::dextents<size_t, 2>> src,
-    Kokkos::mdspan<float, Kokkos::dextents<size_t, 2>> dest
-) -> void
-{
-    assert(src.extent(0) == dest.extent(0));
-    assert(src.extent(1) * 2 == dest.extent(1));
-
-    auto const numChannels = src.extent(0);
-    auto const numSamples  = src.extent(1);
-
-    for (auto ch{0UL}; ch < numChannels; ++ch) {
-        auto source      = std::span{std::addressof(src(ch, 0)), numSamples};
-        auto destination = std::span{std::addressof(dest(ch, numSamples)), numSamples};
-        std::copy(source.begin(), source.end(), destination.begin());
-    }
-}
-
 static auto multiply_and_accumulate_row(
     Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<std::size_t, 1>> lhs,
     Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<std::size_t, 1>> rhs,
@@ -67,28 +49,6 @@ static auto multiply_and_accumulate(
             accumulator
         );
     }
-}
-
-static auto multiply_and_accumulate(
-    Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<std::size_t, 3>> lhs,
-    Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<std::size_t, 3>> rhs,
-    Kokkos::mdspan<std::complex<float>, Kokkos::dextents<std::size_t, 2>> accumulator,
-    std::size_t shift
-)
-{
-    multiply_and_accumulate(
-        KokkosEx::submdspan(lhs, 0, Kokkos::full_extent, Kokkos::full_extent),
-        KokkosEx::submdspan(rhs, 0, Kokkos::full_extent, Kokkos::full_extent),
-        KokkosEx::submdspan(accumulator, 0, Kokkos::full_extent),
-        shift
-    );
-
-    multiply_and_accumulate(
-        KokkosEx::submdspan(lhs, 1, Kokkos::full_extent, Kokkos::full_extent),
-        KokkosEx::submdspan(rhs, 1, Kokkos::full_extent, Kokkos::full_extent),
-        KokkosEx::submdspan(accumulator, 1, Kokkos::full_extent),
-        shift
-    );
 }
 
 auto upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> filter) -> void
@@ -136,64 +96,6 @@ auto upols_convolver::operator()(std::span<float> block) -> void
 
     // Copy blockSize samples to output
     std::copy(std::prev(_irfftBuf.end(), blockSize), _irfftBuf.end(), block.begin());
-}
-
-auto stereo_upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 3>> filter)
-    -> void
-{
-    auto const numChannels = filter.extent(0);
-    auto const numBins     = filter.extent(2);
-    auto const fftSize     = next_power_of_two((numBins - 1U) * 2U);
-
-    _fdlIndex    = 0;
-    _filter      = filter;
-    _fdl         = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 3>>{filter.extents()};
-    _fft         = std::make_unique<rfft_radix2_plan<float>>(ilog2(fftSize));
-    _window      = KokkosEx::mdarray<float, Kokkos::dextents<size_t, 2>>(numChannels, fftSize);
-    _accumulator = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>{numChannels, numBins};
-
-    _rfftBuf.resize(fftSize);
-    _irfftBuf.resize(fftSize);
-}
-
-auto stereo_upols_convolver::operator()(KokkosEx::mdspan<float, Kokkos::dextents<size_t, 2>> block) -> void
-{
-    auto const blockSize   = static_cast<ptrdiff_t>(block.extent(1));
-    auto const numChannels = block.extent(0);
-    auto const numSegments = _fdl.extent(1);
-    auto const numBins     = _fdl.extent(2);
-
-    assert(numChannels == 2);
-    assert(block.extent(0) == _window.extent(0));
-    assert(block.extent(1) * 2U == _window.extent(1));
-
-    // Time domain input buffer
-    auto const window = _window.to_mdspan();
-    shift_rows_left(window, blockSize);
-    copy_to_window(block, window);
-
-    // 2B-point R2C-FFT
-    // Copy to FDL
-    for (auto ch{0U}; ch < numChannels; ++ch) {
-        std::invoke(*_fft, std::span{std::addressof(_window(ch, 0)), _window.extent(1)}, _rfftBuf);
-        for (auto i{0U}; i < numBins; ++i) { _fdl(ch, _fdlIndex, i) = _rfftBuf[i] / float(_fft->size()); }
-    }
-
-    // // DFT-spectrum additions
-    std::fill(_accumulator.data(), _accumulator.data() + _accumulator.size(), 0.0F);
-    multiply_and_accumulate(_fdl, _filter, _accumulator, _fdlIndex);
-
-    // All contents (DFT spectra) in the FDL are shifted up by one slot.
-    ++_fdlIndex;
-    if (_fdlIndex == numSegments) { _fdlIndex = 0; }
-
-    // 2B-point C2R-IFFT
-    // Copy blockSize samples to output
-    for (auto ch{0U}; ch < numChannels; ++ch) {
-        auto channel = std::span{std::addressof(block(ch, 0)), block.extent(1)};
-        std::invoke(*_fft, std::span{std::addressof(_accumulator(ch, 0)), _accumulator.extent(1)}, _irfftBuf);
-        std::copy(std::prev(_irfftBuf.end(), blockSize), _irfftBuf.end(), channel.begin());
-    }
 }
 
 }  // namespace neo::fft

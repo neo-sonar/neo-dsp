@@ -180,7 +180,6 @@ auto PluginEditor::runBenchmarks() -> void
     if (hasEngineEnabled("sparse")) { runSparseConvolverBenchmark(); }
 
     // runDynamicRangeTests();
-    // runDenseStereoConvolverBenchmark();
 }
 
 auto PluginEditor::runWeightingTests() -> void
@@ -307,23 +306,6 @@ auto PluginEditor::runDenseConvolverBenchmark() -> void
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     _fileInfo.moveCaretToEnd(false);
     _fileInfo.insertTextAtCaret("TCONV-DENSE: " + juce::String{elapsed.count()} + "\n");
-
-    writeToWavFile(file, output, 44'100.0, 32);
-}
-
-auto PluginEditor::runDenseStereoConvolverBenchmark() -> void
-{
-    auto start = std::chrono::system_clock::now();
-
-    auto output = fft::dense_stereo_convolve(_signal, _filter);
-    auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_dense_stereo", ".wav");
-
-    peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-    peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
-
-    auto end = std::chrono::system_clock::now();
-    std::cout << "TCONV-DENSE-STEREO: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << '\n';
 
     writeToWavFile(file, output, 44'100.0, 32);
 }
