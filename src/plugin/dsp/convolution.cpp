@@ -40,7 +40,7 @@ auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<fl
             auto const numSamples = std::min(output.getNumSamples() - i, blockSize);
             std::fill(block.begin(), block.end(), 0.0F);
             std::copy(std::next(in, i), std::next(in, i + numSamples), block.begin());
-            convolver(block);
+            convolver(Kokkos::mdspan{block.data(), Kokkos::extents{block.size()}});
             std::copy(block.begin(), std::next(block.begin(), numSamples), std::next(out, i));
         }
     }
