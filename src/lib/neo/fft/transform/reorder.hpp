@@ -36,10 +36,10 @@ constexpr auto bit_reverse_permutation(InOutVec x) -> void
     }
 }
 
-template<typename Complex, size_t Extent, typename IndexTable>
-auto bit_reverse_permutation(std::span<Complex, Extent> x, IndexTable const& index) -> void
+template<inout_vector InOutVec, typename IndexTable>
+auto bit_reverse_permutation(InOutVec x, IndexTable const& index) -> void
 {
-    for (auto i{0U}; i < x.size(); ++i) {
+    for (auto i{0U}; i < x.extent(0); ++i) {
         if (i < index[i]) { std::swap(x[i], x[index[i]]); }
     }
 }

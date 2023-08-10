@@ -56,7 +56,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
     {
         auto inout = testCase.input;
         auto eng   = neo::fft::c2c_radix2_plan<std::complex<Float>>{inout.size()};
-        eng(inout, neo::fft::direction::forward);
+        eng(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, neo::fft::direction::forward);
         REQUIRE(neo::fft::allclose(testCase.expected, inout));
     }
 }
@@ -75,8 +75,8 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: roundtrip(c2c)", "", float, double
 
     auto inout = buffer;
     auto c2c   = neo::fft::c2c_radix2_plan<std::complex<Float>>{static_cast<std::size_t>(size)};
-    c2c(inout, neo::fft::direction::forward);
-    c2c(inout, neo::fft::direction::backward);
+    c2c(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, neo::fft::direction::forward);
+    c2c(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, neo::fft::direction::backward);
     std::transform(inout.begin(), inout.end(), inout.begin(), [size](auto c) { return c / static_cast<Float>(size); });
 
     REQUIRE(neo::fft::allclose(buffer, inout));

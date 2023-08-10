@@ -1,5 +1,6 @@
 #pragma once
 
+#include <neo/fft/algorithm/copy.hpp>
 #include <neo/fft/container/mdspan.hpp>
 #include <neo/fft/math/ilog2.hpp>
 #include <neo/fft/math/power.hpp>
@@ -123,11 +124,13 @@ struct c2c_radix2_plan
 
     [[nodiscard]] auto size() const noexcept -> std::size_t { return _len; }
 
-    auto operator()(std::span<Complex> x, direction dir) -> void
+    template<inout_vector InOutVec>
+        requires(std::same_as<typename InOutVec::value_type, Complex>)
+    auto operator()(InOutVec x, direction dir) -> void
     {
         assert(std::cmp_equal(x.size(), _len));
 
-        auto run = [this](std::span<Complex> buffer, auto const& twiddles) {
+        auto run = [this](InOutVec buffer, auto const& twiddles) {
             for (auto stage{0ULL}; stage < _order; ++stage) {
 
                 auto const stage_length = power<2ULL>(stage);
@@ -157,9 +160,11 @@ struct c2c_radix2_plan
         }
     }
 
-    auto operator()(std::span<Complex const> in, std::span<Complex> out, direction dir) -> void
+    template<in_vector InVec, out_vector OutVec>
+        requires(std::same_as<typename InVec::value_type, Complex> and std::same_as<typename OutVec::value_type, Complex>)
+    auto operator()(InVec in, OutVec out, direction dir) -> void
     {
-        std::copy(in.begin(), in.end(), out.begin());
+        copy(in, out);
         (*this)(out, dir);
     }
 
@@ -185,7 +190,8 @@ struct rfft_radix2_plan
     auto operator()(std::span<Float const> in, std::span<std::complex<Float>> out) -> void
     {
         std::copy(in.begin(), in.end(), _tmp.begin());
-        _cfft(_tmp, direction::forward);
+        auto const buf = Kokkos::mdspan{_tmp.data(), Kokkos::extents{_tmp.size()}};
+        _cfft(buf, direction::forward);
 
         auto const coeffs = std::span{_tmp}.subspan(0, _size / 2 + 1);
         std::copy(coeffs.begin(), coeffs.end(), out.begin());
@@ -198,7 +204,8 @@ struct rfft_radix2_plan
         // Fill upper half with conjugate
         for (auto i = _size / 2 + 1; i < _size; ++i) { _tmp[i] = std::conj(_tmp[_size - i]); }
 
-        _cfft(_tmp, direction::backward);
+        auto const buf = Kokkos::mdspan{_tmp.data(), Kokkos::extents{_tmp.size()}};
+        _cfft(buf, direction::backward);
         std::transform(_tmp.begin(), _tmp.end(), out.begin(), [](auto cx) { return cx.real(); });
     }
 

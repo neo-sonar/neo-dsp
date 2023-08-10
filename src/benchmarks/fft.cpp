@@ -76,8 +76,9 @@ struct cfft_plan
     auto operator()() -> void
     {
         auto const gen = [i = 0]() mutable { return static_cast<Float>(i++); };
+        auto const buf = Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}};
         std::generate_n(begin(_buf), size(_buf), gen);
-        _fft(_buf, neo::fft::direction::forward);
+        _fft(buf, neo::fft::direction::forward);
         neo::fft::do_not_optimize(_buf.back());
     }
 
