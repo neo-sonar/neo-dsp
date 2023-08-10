@@ -74,8 +74,11 @@ auto upols_convolver::operator()(std::span<float> block) -> void
     auto const blockSize = std::ssize(block);
 
     // Time domain input buffer
-    std::shift_left(_window.begin(), _window.end(), blockSize);
-    std::copy(block.begin(), block.end(), std::prev(_window.end(), blockSize));
+    auto inout     = Kokkos::mdspan<float, Kokkos::dextents<std::size_t, 1>>{block.data(), block.size()};
+    auto leftHalf  = Kokkos::mdspan<float, Kokkos::dextents<std::size_t, 1>>{_window.data(), block.size()};
+    auto rightHalf = Kokkos::mdspan<float, Kokkos::dextents<std::size_t, 1>>{_window.data() + blockSize, block.size()};
+    copy(rightHalf, leftHalf);
+    copy(inout, rightHalf);
 
     // 2B-point R2C-FFT
     std::invoke(*_rfft, _window, _rfftBuf);
@@ -95,7 +98,11 @@ auto upols_convolver::operator()(std::span<float> block) -> void
     std::invoke(*_rfft, std::span{_accumulator.data(), _accumulator.size()}, _irfftBuf);
 
     // Copy blockSize samples to output
-    std::copy(std::prev(_irfftBuf.end(), blockSize), _irfftBuf.end(), block.begin());
+    auto reconstructed = Kokkos::mdspan<float, Kokkos::dextents<std::size_t, 1>>{
+        std::prev(std::next(_irfftBuf.data(), static_cast<std::ptrdiff_t>(_irfftBuf.size())), blockSize),
+        block.size(),
+    };
+    copy(reconstructed, inout);
 }
 
 }  // namespace neo::fft
