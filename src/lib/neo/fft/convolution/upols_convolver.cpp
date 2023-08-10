@@ -150,8 +150,9 @@ auto stereo_upols_convolver::operator()(KokkosEx::mdspan<float, Kokkos::dextents
     assert(block.extent(1) * 2U == _window.extent(1));
 
     // Time domain input buffer
-    shift_rows_left(_window.to_mdspan(), blockSize);
-    copy(block, _window);
+    auto const window = _window.to_mdspan();
+    shift_rows_left(window, blockSize);
+    copy(block, window);
 
     // 2B-point R2C-FFT
     // Copy to FDL

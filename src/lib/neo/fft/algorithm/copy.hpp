@@ -9,8 +9,8 @@
 
 namespace neo::fft {
 
-template<typename InObj, typename OutObj>
-    requires((InObj::rank() == 1 or InObj::rank() == 2) and (InObj::rank() == OutObj::rank()))
+template<in_object InObj, out_object OutObj>
+    requires(InObj::rank() == OutObj::rank())
 constexpr auto copy(InObj inObj, OutObj outObj) -> void
 {
     assert(inObj.extents() == outObj.extents());

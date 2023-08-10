@@ -4,8 +4,7 @@
 
 namespace neo::fft {
 
-template<typename InOutObj, typename T>
-    requires(InOutObj::rank() == 1 or InOutObj::rank() == 2)
+template<inout_object InOutObj, typename T>
 constexpr auto fill(InOutObj obj, T const& val) -> void
 {
     if constexpr (InOutObj::rank() == 1) {
