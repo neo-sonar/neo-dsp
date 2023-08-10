@@ -16,8 +16,8 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver", "", float, double)
     using Float = TestType;
 
     auto const blockSize  = GENERATE(as<std::size_t>{}, 128, 256, 512);
-    auto const signal     = neo::fft::make_noise_signal<Float>(blockSize * 20UL, Catch::getSeed());
-    auto const partitions = neo::fft::make_identity_impulse<Float>(blockSize, 10UL);
+    auto const signal     = neo::fft::generate_noise_signal<Float>(blockSize * 20UL, Catch::getSeed());
+    auto const partitions = neo::fft::generate_identity_impulse<Float>(blockSize, 10UL);
 
     auto convolver = neo::fft::upols_convolver<Float>{};
     auto output    = signal;

@@ -51,7 +51,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: roundtrip(rfft_plan)", "", float, do
     auto order      = GENERATE(1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
     auto const size = 1UL << static_cast<std::size_t>(order);
 
-    auto signal         = neo::fft::make_noise_signal<Float>(size, Catch::getSeed());
+    auto signal         = neo::fft::generate_noise_signal<Float>(size, Catch::getSeed());
     auto spectrum       = std::vector<std::complex<Float>>(size / 2UL + 1UL, Float(0));
     auto const original = signal;
 

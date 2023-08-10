@@ -13,8 +13,8 @@ template<typename Float, std::size_t Size>
 struct floating_point_mul_bench
 {
     explicit floating_point_mul_bench()
-        : _lhs(neo::fft::make_noise_signal<Float>(Size, std::random_device{}()))
-        , _rhs(neo::fft::make_noise_signal<Float>(Size, std::random_device{}()))
+        : _lhs(neo::fft::generate_noise_signal<Float>(Size, std::random_device{}()))
+        , _rhs(neo::fft::generate_noise_signal<Float>(Size, std::random_device{}()))
         , _out(Size)
     {}
 

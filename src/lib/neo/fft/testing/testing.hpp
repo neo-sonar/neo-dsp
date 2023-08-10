@@ -74,7 +74,7 @@ template<std::floating_point Float>
 }
 
 template<std::floating_point Float>
-[[nodiscard]] auto make_noise_signal(std::size_t length, std::uint32_t seed) -> std::vector<Float>
+[[nodiscard]] auto generate_noise_signal(std::size_t length, std::uint32_t seed) -> std::vector<Float>
 {
     auto rng    = std::mt19937{seed};
     auto dist   = std::uniform_real_distribution<Float>{Float(-1), Float(1)};
@@ -84,7 +84,7 @@ template<std::floating_point Float>
 }
 
 template<std::floating_point Float>
-[[nodiscard]] auto make_identity_impulse(std::size_t blockSize, std::size_t numPartitions)
+[[nodiscard]] auto generate_identity_impulse(std::size_t blockSize, std::size_t numPartitions)
     -> KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 2>>
 {
     auto const windowSize = blockSize * 2;
