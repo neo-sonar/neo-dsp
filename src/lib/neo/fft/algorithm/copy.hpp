@@ -3,27 +3,24 @@
 #include <neo/fft/container/mdspan.hpp>
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
-#include <span>
 #include <utility>
 
 namespace neo::fft {
 
-inline auto copy(
-    Kokkos::mdspan<float const, Kokkos::dextents<std::size_t, 2>> src,
-    Kokkos::mdspan<float, Kokkos::dextents<std::size_t, 2>> dest
-) -> void
+template<typename InObj, typename OutObj>
+    requires((InObj::rank() == 1 or InObj::rank() == 2) and (InObj::rank() == OutObj::rank()))
+constexpr auto copy(InObj inObj, OutObj outObj) -> void
 {
-    assert(src.extent(0) == dest.extent(0));
-    assert(src.extent(1) * 2 == dest.extent(1));
+    assert(inObj.extents() == outObj.extents());
 
-    auto const numChannels = src.extent(0);
-    auto const numSamples  = src.extent(1);
-
-    for (auto ch{0UL}; ch < numChannels; ++ch) {
-        auto source      = std::span{std::addressof(src(ch, 0)), numSamples};
-        auto destination = std::span{std::addressof(dest(ch, numSamples)), numSamples};
-        std::copy(source.begin(), source.end(), destination.begin());
+    if constexpr (InObj::rank() == 1) {
+        for (auto i{0ULL}; i < inObj.extent(0); ++i) { outObj(i) = inObj(i); }
+    } else {
+        for (auto i{0ULL}; i < inObj.extent(0); ++i) {
+            for (auto j{0ULL}; j < inObj.extent(1); ++j) { outObj(i, j) = inObj(i, j); }
+        }
     }
 }
 

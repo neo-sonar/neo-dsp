@@ -6,7 +6,7 @@ namespace neo::fft {
 
 template<typename InOutObj, typename T>
     requires(InOutObj::rank() == 1 or InOutObj::rank() == 2)
-static auto fill(InOutObj obj, T const& val) -> void
+constexpr auto fill(InOutObj obj, T const& val) -> void
 {
     if constexpr (InOutObj::rank() == 1) {
         for (auto i{0ULL}; i < obj.extent(0); ++i) { obj(i) = val; }
