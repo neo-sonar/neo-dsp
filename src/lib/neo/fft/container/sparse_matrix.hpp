@@ -72,7 +72,9 @@ sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(
     for (auto rowIdx{0UL}; rowIdx < other.extent(0); ++rowIdx) {
         auto const row = KokkosEx::submdspan(other, rowIdx, Kokkos::full_extent);
         for (auto col{0UL}; col < other.extent(1); ++col) {
-            if (filter(rowIdx, col, row(col))) { ++count; }
+            if (filter(rowIdx, col, row(col))) {
+                ++count;
+            }
         }
     }
 
@@ -101,13 +103,17 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert(index_t
     -> void
 {
     auto idx = _rowIndices[row];
-    while (idx < _rowIndices[row + 1] && _columIndices[idx] < col) { idx++; }
+    while (idx < _rowIndices[row + 1] && _columIndices[idx] < col) {
+        idx++;
+    }
 
     auto const pidx = static_cast<std::ptrdiff_t>(idx);
     _values.insert(std::next(_values.begin(), pidx), value);
     _columIndices.insert(std::next(_columIndices.begin(), pidx), col);
 
-    for (auto i{row + 1}; i <= rows(); ++i) { ++_rowIndices[i]; }
+    for (auto i{row + 1}; i <= rows(); ++i) {
+        ++_rowIndices[i];
+    }
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
@@ -123,7 +129,9 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert_row(
     auto const currentSize = static_cast<std::ptrdiff_t>(rowEnd - rowStart);
     auto const newSize     = [=] {
         auto count = 0L;
-        for (auto i{0UL}; i < values.size(); ++i) { count += static_cast<long>(filter(row, i, values[i])); }
+        for (auto i{0UL}; i < values.size(); ++i) {
+            count += static_cast<long>(filter(row, i, values[i]));
+        }
         return count;
     }();
 
@@ -162,7 +170,9 @@ template<typename T, typename IndexType, typename ValueContainer, typename Index
 auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::operator()(index_type row, index_type col) const -> T
 {
     for (auto i = _rowIndices[row]; i < _rowIndices[row + 1]; i++) {
-        if (_columIndices[i] == col) { return _values[i]; }
+        if (_columIndices[i] == col) {
+            return _values[i];
+        }
     }
     return T{};
 }

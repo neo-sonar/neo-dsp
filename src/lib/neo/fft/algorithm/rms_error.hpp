@@ -13,8 +13,12 @@ namespace neo::fft {
 template<std::floating_point Float>
 auto rms_error(std::span<Float const> original, std::span<Float const> reconstructed) noexcept -> std::optional<Float>
 {
-    if (original.empty()) { return std::nullopt; }
-    if (original.size() != reconstructed.size()) { return std::nullopt; }
+    if (original.empty()) {
+        return std::nullopt;
+    }
+    if (original.size() != reconstructed.size()) {
+        return std::nullopt;
+    }
 
     auto diffSquared = [](Float x, Float y) {
         auto const diff = x - y;
@@ -39,8 +43,12 @@ auto rms_error(
     std::span<std::complex<Float const>> reconstructed
 ) noexcept -> std::optional<Float>
 {
-    if (original.empty()) { return std::nullopt; }
-    if (original.size() != reconstructed.size()) { return std::nullopt; }
+    if (original.empty()) {
+        return std::nullopt;
+    }
+    if (original.size() != reconstructed.size()) {
+        return std::nullopt;
+    }
 
     auto diffSquared = [](std::complex<Float> x, std::complex<Float> y) {
         auto const re = x.real() - y.real();

@@ -6,7 +6,9 @@ namespace neo {
 auto resample(juce::AudioBuffer<float> const& buf, double srcSampleRate, double destSampleRate)
     -> juce::AudioBuffer<float>
 {
-    if (juce::exactlyEqual(srcSampleRate, destSampleRate)) { return buf; }
+    if (juce::exactlyEqual(srcSampleRate, destSampleRate)) {
+        return buf;
+    }
 
     auto const factorReading = srcSampleRate / destSampleRate;
 
@@ -28,7 +30,9 @@ auto loadAndResample(juce::AudioFormatManager& formats, juce::File const& file, 
     -> juce::AudioBuffer<float>
 {
     auto reader = std::unique_ptr<juce::AudioFormatReader>{formats.createReaderFor(file.createInputStream())};
-    if (reader == nullptr) { return {}; }
+    if (reader == nullptr) {
+        return {};
+    }
 
     auto buffer = juce::AudioBuffer<float>{int(reader->numChannels), int(reader->lengthInSamples)};
     if (!reader->read(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), 0, buffer.getNumSamples())) {

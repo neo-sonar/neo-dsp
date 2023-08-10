@@ -11,7 +11,9 @@ template<std::floating_point Float>
 {
     static constexpr auto const constants = [] {
         auto c = std::array<Float, 4>{Float(12194.217), Float(20.598997), Float(107.65265), Float(737.86223)};
-        for (auto& v : c) { v = v * v; }
+        for (auto& v : c) {
+            v = v * v;
+        }
         return c;
     }();
 

@@ -66,7 +66,9 @@ auto PluginProcessor::isBusesLayoutSupported(BusesLayout const& layouts) const -
         return false;
     }
 
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet()) { return false; }
+    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet()) {
+        return false;
+    }
 
     return true;
 }
@@ -109,7 +111,9 @@ auto PluginProcessor::setStateInformation(void const* data, int sizeInBytes) -> 
 {
     juce::ValueTree const tree = juce::ValueTree::readFromData(data, static_cast<size_t>(sizeInBytes));
     jassert(tree.isValid());
-    if (tree.isValid()) { _valueTree.state = tree; }
+    if (tree.isValid()) {
+        _valueTree.state = tree;
+    }
 }
 
 auto PluginProcessor::getState() noexcept -> juce::AudioProcessorValueTreeState& { return _valueTree; }

@@ -28,11 +28,17 @@ template<std::floating_point Float>
 [[nodiscard]] auto load_test_data_file(std::filesystem::path const& path)
     -> std::optional<std::vector<std::complex<Float>>>
 {
-    if (not std::filesystem::exists(path)) { return {}; }
-    if (not std::filesystem::is_regular_file(path)) { return {}; }
+    if (not std::filesystem::exists(path)) {
+        return {};
+    }
+    if (not std::filesystem::is_regular_file(path)) {
+        return {};
+    }
 
     auto* file = std::fopen(path.string().c_str(), "r");
-    if (file == nullptr) { return {}; }
+    if (file == nullptr) {
+        return {};
+    }
 
     auto result = std::vector<std::complex<Float>>{};
     char line[512]{};
@@ -52,10 +58,14 @@ template<std::floating_point Float>
 [[nodiscard]] auto load_test_data(test_path const& paths) -> std::optional<test_data<Float>>
 {
     auto input = load_test_data_file<Float>(paths.input);
-    if (not input) { return {}; }
+    if (not input) {
+        return {};
+    }
 
     auto expected = load_test_data_file<Float>(paths.expected);
-    if (not expected) { return {}; }
+    if (not expected) {
+        return {};
+    }
 
     return test_data<Float>{
         .input    = std::move(*input),

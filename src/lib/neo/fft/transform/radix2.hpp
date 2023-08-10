@@ -206,10 +206,14 @@ struct rfft_radix2_plan
         copy(in, KokkosEx::submdspan(buf, std::tuple{0, in.extent(0)}));
 
         // Fill upper half with conjugate
-        for (auto i{coeffs}; i < _size; ++i) { buf[i] = std::conj(buf[_size - i]); }
+        for (auto i{coeffs}; i < _size; ++i) {
+            buf[i] = std::conj(buf[_size - i]);
+        }
 
         _cfft(buf, direction::backward);
-        for (auto i{0UL}; i < _size; ++i) { out[i] = buf[i].real(); }
+        for (auto i{0UL}; i < _size; ++i) {
+            out[i] = buf[i].real();
+        }
     }
 
     auto operator()(std::span<Float const> in, std::span<std::complex<Float>> out) -> void

@@ -36,11 +36,15 @@ template<in_matrix InMat>
             auto const numSamples = std::min(buffer.extent(1) - idx, blockSize);
 
             std::fill(input.begin(), input.end(), Float(0));
-            for (auto i{0UL}; i < numSamples; ++i) { input[i] = buffer(channel, idx + i); }
+            for (auto i{0UL}; i < numSamples; ++i) {
+                input[i] = buffer(channel, idx + i);
+            }
 
             std::fill(output.begin(), output.end(), Float(0));
             rfft(input, output);
-            for (auto bin{0UL}; bin < numBins; ++bin) { partitions(channel, partition, bin) = output[bin] * scale; }
+            for (auto bin{0UL}; bin < numBins; ++bin) {
+                partitions(channel, partition, bin) = output[bin] * scale;
+            }
         }
     }
 

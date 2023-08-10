@@ -96,7 +96,9 @@ auto powerHistogramImage(
 {
     auto const histogram = powerHistogram(spectogram, weighting);
     auto const maxBin    = std::max_element(histogram.begin(), std::prev(histogram.end()));
-    if (maxBin == histogram.end()) { return {}; }
+    if (maxBin == histogram.end()) {
+        return {};
+    }
 
     auto const binWidth  = 8;
     auto const imgWidth  = static_cast<int>((histogram.size() - 1) * binWidth);

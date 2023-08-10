@@ -26,7 +26,9 @@ namespace detail {
 template<typename T, typename U = T>
 auto allclose_impl(std::span<T const> lhs, std::span<T const> rhs, U tolerance) -> bool
 {
-    if (lhs.size() != rhs.size()) { return false; }
+    if (lhs.size() != rhs.size()) {
+        return false;
+    }
     return std::transform_reduce(
         lhs.begin(),
         lhs.end(),

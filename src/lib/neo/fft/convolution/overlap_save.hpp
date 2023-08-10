@@ -61,7 +61,9 @@ auto overlap_save<Float>::operator()(
     // Copy to FDL
     auto const scale     = 1.0F / static_cast<Float>(_rfft.size());
     auto const numCoeffs = _rfft.size() / 2 + 1;
-    for (auto i{0U}; i < numCoeffs; ++i) { complexBuffer[i] *= scale; }
+    for (auto i{0U}; i < numCoeffs; ++i) {
+        complexBuffer[i] *= scale;
+    }
 
     callback(KokkosEx::submdspan(complexBuffer, std::tuple{0, numCoeffs}));
 

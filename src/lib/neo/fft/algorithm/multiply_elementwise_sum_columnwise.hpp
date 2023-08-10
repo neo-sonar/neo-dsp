@@ -15,7 +15,9 @@ constexpr auto multiply_elementwise_sum_columnwise(InMatL lhs, InMatR rhs, OutVe
     auto const full = Kokkos::full_extent;
 
     auto multiplyRow = [](in_vector auto left, in_vector auto right, out_vector auto output) -> void {
-        for (decltype(left.extent(0)) i{0}; i < left.extent(0); ++i) { output(i) += left(i) * right(i); }
+        for (decltype(left.extent(0)) i{0}; i < left.extent(0); ++i) {
+            output(i) += left(i) * right(i);
+        }
     };
 
     for (auto row{0U}; row <= shift; ++row) {

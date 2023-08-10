@@ -36,14 +36,18 @@ auto stft(juce::AudioBuffer<float> const& buffer, int windowSize)
         auto const numSamples = std::min(buffer.getNumSamples() - idx, windowSize);
 
         std::fill(winBuffer.begin(), winBuffer.end(), 0.0F);
-        for (auto i{0}; i < numSamples; ++i) { winBuffer[size_t(i)] = buffer.getSample(0, idx + i); }
+        for (auto i{0}; i < numSamples; ++i) {
+            winBuffer[size_t(i)] = buffer.getSample(0, idx + i);
+        }
         window.multiplyWithWindowingTable(winBuffer.data(), winBuffer.size());
         std::copy(winBuffer.begin(), winBuffer.end(), input.begin());
 
         std::fill(output.begin(), output.end(), 0.0F);
         fft.perform(input.data(), output.data(), false);
         std::transform(output.begin(), output.end(), output.begin(), [=](auto v) { return v / float(windowSize); });
-        for (auto b{0UL}; b < result.extent(1); ++b) { result(f, b) = output[b]; }
+        for (auto b{0UL}; b < result.extent(1); ++b) {
+            result(f, b) = output[b];
+        }
     }
 
     return result;

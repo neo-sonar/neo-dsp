@@ -54,7 +54,9 @@ auto upols_convolver<Float>::operator()(std::span<Float> block) -> void
         copy(accumulator, inout);
 
         ++_fdlIndex;
-        if (_fdlIndex == fdl.extent(0)) { _fdlIndex = 0; }
+        if (_fdlIndex == fdl.extent(0)) {
+            _fdlIndex = 0;
+        }
     });
 }
 

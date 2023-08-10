@@ -98,7 +98,9 @@ auto add(
         auto const kernel = [](int8x16_t left, int8x16_t right) { return vqaddq_s8(left, right); };
         detail::apply_kernel_neon128<8>(lhs, rhs, out, std::plus{}, kernel);
 #else
-        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::plus{}(lhs[i], rhs[i]); }
+        for (auto i{0U}; i < lhs.size(); ++i) {
+            out[i] = std::plus{}(lhs[i], rhs[i]);
+        }
 #endif
     } else if constexpr (std::same_as<StorageType, std::int16_t>) {
 #if defined(__SSE2__)
@@ -108,10 +110,14 @@ auto add(
         auto const kernel = [](int16x8_t left, int16x8_t right) { return vqaddq_s16(left, right); };
         detail::apply_kernel_neon128<16>(lhs, rhs, out, std::plus{}, kernel);
 #else
-        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::plus{}(lhs[i], rhs[i]); }
+        for (auto i{0U}; i < lhs.size(); ++i) {
+            out[i] = std::plus{}(lhs[i], rhs[i]);
+        }
 #endif
     } else {
-        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::plus{}(lhs[i], rhs[i]); }
+        for (auto i{0U}; i < lhs.size(); ++i) {
+            out[i] = std::plus{}(lhs[i], rhs[i]);
+        }
     }
 }
 
@@ -134,7 +140,9 @@ auto subtract(
         auto const kernel = [](int8x16_t left, int8x16_t right) { return vqsubq_s8(left, right); };
         detail::apply_kernel_neon128<8>(lhs, rhs, out, std::minus{}, kernel);
 #else
-        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
+        for (auto i{0U}; i < lhs.size(); ++i) {
+            out[i] = std::minus{}(lhs[i], rhs[i]);
+        }
 #endif
     } else if constexpr (std::same_as<StorageType, std::int16_t>) {
 #if defined(__SSE2__)
@@ -144,10 +152,14 @@ auto subtract(
         auto const kernel = [](int16x8_t left, int16x8_t right) { return vqsubq_s16(left, right); };
         detail::apply_kernel_neon128<16>(lhs, rhs, out, std::minus{}, kernel);
 #else
-        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
+        for (auto i{0U}; i < lhs.size(); ++i) {
+            out[i] = std::minus{}(lhs[i], rhs[i]);
+        }
 #endif
     } else {
-        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::minus{}(lhs[i], rhs[i]); }
+        for (auto i{0U}; i < lhs.size(); ++i) {
+            out[i] = std::minus{}(lhs[i], rhs[i]);
+        }
     }
 }
 
@@ -170,7 +182,9 @@ auto multiply(
         auto const kernel = [](int16x8_t left, int16x8_t right) { return vqdmulhq_s16(left, right); };
         detail::apply_kernel_neon128<16>(lhs, rhs, out, std::multiplies{}, kernel);
 #else
-        for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::multiplies{}(lhs[i], rhs[i]); }
+        for (auto i{0U}; i < lhs.size(); ++i) {
+            out[i] = std::multiplies{}(lhs[i], rhs[i]);
+        }
 #endif
     } else {
         if constexpr (std::same_as<StorageType, std::int8_t>) {
@@ -190,7 +204,9 @@ auto multiply(
             };
             detail::apply_kernel_sse<8>(lhs, rhs, out, std::multiplies{}, kernel);
 #else
-            for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::multiplies{}(lhs[i], rhs[i]); }
+            for (auto i{0U}; i < lhs.size(); ++i) {
+                out[i] = std::multiplies{}(lhs[i], rhs[i]);
+            }
 #endif
         } else if constexpr (std::same_as<StorageType, std::int16_t>) {
 #if defined(__SSE4_1__)
@@ -213,10 +229,14 @@ auto multiply(
             auto const kernel = [](int16x8_t left, int16x8_t right) { return vqdmulhq_s16(left, right); };
             detail::apply_kernel_neon128<8>(lhs, rhs, out, std::multiplies{}, kernel);
 #else
-            for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::multiplies{}(lhs[i], rhs[i]); }
+            for (auto i{0U}; i < lhs.size(); ++i) {
+                out[i] = std::multiplies{}(lhs[i], rhs[i]);
+            }
 #endif
         } else {
-            for (auto i{0U}; i < lhs.size(); ++i) { out[i] = std::multiplies{}(lhs[i], rhs[i]); }
+            for (auto i{0U}; i < lhs.size(); ++i) {
+                out[i] = std::multiplies{}(lhs[i], rhs[i]);
+            }
         }
     }
 }
