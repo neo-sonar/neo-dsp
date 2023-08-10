@@ -1,10 +1,13 @@
 #pragma once
 
+#include <neo/fft/container/mdspan.hpp>
+
 #include <complex>
 #include <concepts>
 #include <cstdio>
 #include <filesystem>
 #include <optional>
+#include <random>
 #include <vector>
 
 struct test_path
@@ -57,4 +60,34 @@ template<std::floating_point Float>
         .input    = std::move(*input),
         .expected = std::move(*expected),
     };
+}
+
+template<std::floating_point Float>
+[[nodiscard]] auto make_noise_signal(std::size_t length) -> std::vector<Float>
+{
+    auto signal = std::vector<Float>(length, Float(0));
+    auto rng    = std::mt19937{std::random_device{}()};
+    auto dist   = std::uniform_real_distribution<Float>{Float(-1), Float(1)};
+    std::generate(signal.begin(), signal.end(), [&] { return dist(rng); });
+    return signal;
+}
+
+template<std::floating_point Float>
+[[nodiscard]] auto make_identity_impulse(std::size_t blockSize, std::size_t numPartitions)
+    -> KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 2>>
+{
+    auto const windowSize = blockSize * 2;
+    auto const numBins    = windowSize / 2 + 1;
+
+    auto impulse = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 2>>{
+        numPartitions,
+        numBins,
+    };
+
+    for (auto partition{0U}; partition < impulse.extent(0); ++partition) {
+        for (auto bin{0U}; bin < impulse.extent(1); ++bin) {
+            impulse(partition, bin) = std::complex{Float(1), Float(0)};
+        }
+    }
+    return impulse;
 }

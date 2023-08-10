@@ -55,6 +55,7 @@ target_sources(neo_fft_tests
         "neo/fft/math_test.cpp"
         "neo/fft/algorithm/multiply_elementwise_sum_columnwise_test.cpp"
         "neo/fft/container/sparse_matrix_test.cpp"
+        "neo/fft/convolution/sparse_upols_convolver_test.cpp"
         "neo/fft/convolution/upols_convolver_test.cpp"
         "neo/fft/convolution/uniform_partition_test.cpp"
         "neo/fft/fixed_point/fixed_point_test.cpp"

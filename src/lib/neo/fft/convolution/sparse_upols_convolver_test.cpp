@@ -1,4 +1,4 @@
-#include "upols_convolver.hpp"
+#include "sparse_upols_convolver.hpp"
 
 #include <neo/fft/algorithm/allclose.hpp>
 #include <neo/fft/convolution/uniform_partition.hpp>
@@ -10,7 +10,7 @@
 
 #include <span>
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver", "", float)
+TEMPLATE_TEST_CASE("neo/fft/convolution: sparse_upols_convolver", "", float)
 {
     using Float = TestType;
 
@@ -18,7 +18,7 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver", "", float)
     auto const signal     = make_noise_signal<Float>(blockSize * 100UL);
     auto const partitions = make_identity_impulse<Float>(blockSize, 10UL);
 
-    auto convolver = neo::fft::upols_convolver{};
+    auto convolver = neo::fft::sparse_upols_convolver{-144.0F};
     auto output    = signal;
     convolver.filter(partitions);
 
