@@ -54,7 +54,9 @@ private:
     std::vector<FixedPoint> _out;
 };
 
-#if defined(__F16C__)
+// TODO: Should be fc16, but fails on Linux with march=native on workflows
+// #if defined(__F16C__)
+#if defined(__AVX512F__)
 template<std::size_t Size>
 struct float16_mul_bench
 {
