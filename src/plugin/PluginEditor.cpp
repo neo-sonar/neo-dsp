@@ -55,7 +55,9 @@ private:
 auto const toStringArray(auto const& values)
 {
     auto names = juce::StringArray{};
-    for (auto const& value : values) { names.add(value.toString()); }
+    for (auto const& value : values) {
+        names.add(value.toString());
+    }
     return names;
 }
 
@@ -142,7 +144,9 @@ auto PluginEditor::openFile() -> void
     auto const homeDir      = juce::File::getSpecialLocation(juce::File::userMusicDirectory);
     auto const chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles;
     auto const load         = [this](juce::FileChooser const& chooser) {
-        if (chooser.getResults().isEmpty()) { return; }
+        if (chooser.getResults().isEmpty()) {
+            return;
+        }
 
         auto const file     = chooser.getResult();
         auto const filename = file.getFileNameWithoutExtension();
@@ -167,7 +171,9 @@ auto PluginEditor::runBenchmarks() -> void
     auto hasEngineEnabled = [this](auto name) {
         if (auto const* array = _engine.getValue().getArray(); array != nullptr) {
             for (auto const& val : *array) {
-                if (val.toString() == name) { return true; }
+                if (val.toString() == name) {
+                    return true;
+                }
             }
         }
         return false;
@@ -178,9 +184,15 @@ auto PluginEditor::runBenchmarks() -> void
         _signal     = loadAndResample(_formats, _signalFile, 44'100.0);
     }
 
-    if (hasEngineEnabled("juce")) { runJuceConvolverBenchmark(); }
-    if (hasEngineEnabled("dense")) { runDenseConvolverBenchmark(); }
-    if (hasEngineEnabled("sparse")) { runSparseConvolverBenchmark(); }
+    if (hasEngineEnabled("juce")) {
+        runJuceConvolverBenchmark();
+    }
+    if (hasEngineEnabled("dense")) {
+        runDenseConvolverBenchmark();
+    }
+    if (hasEngineEnabled("sparse")) {
+        runSparseConvolverBenchmark();
+    }
 
     // runDynamicRangeTests();
 }
@@ -216,7 +228,9 @@ auto PluginEditor::runWeightingTests() -> void
     auto const weighting = [=, this](std::size_t binIndex) {
         if (_weighting.getValue() == "A-Weighting") {
             auto const frequency = neo::fft::fftfreq<float>(blockSize * 2ULL, binIndex, 44'100.0);
-            if (juce::exactlyEqual(frequency, 0.0F)) { return 0.0F; }
+            if (juce::exactlyEqual(frequency, 0.0F)) {
+                return 0.0F;
+            }
             auto const weight = neo::fft::a_weighting(frequency);
             return weight;
         }
@@ -284,13 +298,14 @@ auto PluginEditor::runJuceConvolverBenchmark() -> void
         {44'100.0, 512, 2}
     };
 
-    auto start  = std::chrono::system_clock::now();
-    auto output = juce::AudioBuffer<float>{_signal.getNumChannels(), _signal.getNumSamples()};
-    auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("jconv", ".wav");
+    auto start = std::chrono::system_clock::now();
+    auto out   = juce::AudioBuffer<float>{_signal.getNumChannels(), _signal.getNumSamples()};
+    auto file  = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("jconv", ".wav");
 
-    processBlocks(proc, _signal, output, 512, 44'100.0);
-    peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-    peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
+    processBlocks(proc, _signal, out, 512, 44'100.0);
+
+    auto output = to_mdarray(out);
+    neo::fft::peak_normalize(output.to_mdspan());
 
     auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -304,11 +319,10 @@ auto PluginEditor::runDenseConvolverBenchmark() -> void
 {
     auto start = std::chrono::system_clock::now();
 
-    auto output = fft::dense_convolve(_signal, _filter);
+    auto output = to_mdarray(fft::dense_convolve(_signal, _filter));
     auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_dense", ".wav");
 
-    peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-    peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
+    neo::fft::peak_normalize(output.to_mdspan());
 
     auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -328,10 +342,9 @@ auto PluginEditor::runSparseConvolverBenchmark() -> void
     auto const filename = "tconv_sparse_" + thresholdText;
     auto const file     = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile(filename, ".wav");
 
-    auto output = fft::sparse_convolve(_signal, _filter, thresholdDB);
+    auto output = to_mdarray(fft::sparse_convolve(_signal, _filter, thresholdDB));
 
-    peak_normalization(std::span{output.getWritePointer(0), size_t(output.getNumSamples())});
-    peak_normalization(std::span{output.getWritePointer(1), size_t(output.getNumSamples())});
+    neo::fft::peak_normalize(output.to_mdspan());
 
     auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -344,12 +357,16 @@ auto PluginEditor::runSparseConvolverBenchmark() -> void
 
 auto PluginEditor::updateImages() -> void
 {
-    if (_spectrum.size() == 0) { return; }
+    if (_spectrum.size() == 0) {
+        return;
+    }
 
     auto const weighting = [this](std::size_t binIndex) {
         if (_weighting.getValue() == "A-Weighting") {
             auto const frequency = neo::fft::fftfreq<float>(1024, binIndex, 44'100.0);
-            if (juce::exactlyEqual(frequency, 0.0F)) { return 0.0F; }
+            if (juce::exactlyEqual(frequency, 0.0F)) {
+                return 0.0F;
+            }
             auto const weight = neo::fft::a_weighting(frequency);
             return weight;
         }
