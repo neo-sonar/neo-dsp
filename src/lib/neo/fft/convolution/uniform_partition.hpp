@@ -9,11 +9,11 @@
 
 namespace neo::fft {
 
-template<std::floating_point Float>
-[[nodiscard]] auto
-uniform_partition(Kokkos::mdspan<Float const, Kokkos::dextents<std::size_t, 2>> buffer, std::size_t blockSize)
-    -> KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 3>>
+template<in_matrix InMat>
+[[nodiscard]] auto uniform_partition(InMat buffer, std::size_t blockSize)
 {
+    using Float = typename InMat::value_type;
+
     auto const windowSize    = blockSize * 2;
     auto const numBins       = windowSize / 2 + 1;
     auto const numChannels   = buffer.extent(0);

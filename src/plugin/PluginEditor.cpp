@@ -65,6 +65,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
 {
     _formats.registerBasicFormats();
 
+    _skip.addListener(this);
     _dynamicRange.addListener(this);
     _weighting.addListener(this);
 
@@ -86,6 +87,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     _propertyPanel.addSection(
         "Sparsity",
         juce::Array<juce::PropertyComponent*>{
+            std::make_unique<juce::SliderPropertyComponent>(_skip, "Skip", 0.0, 16.0, 1.0).release(),
             std::make_unique<juce::SliderPropertyComponent>(_dynamicRange, "Dynamic Range", 10.0, 100.0, 0.5).release(),
             std::make_unique<juce::ChoicePropertyComponent>(_weighting, "Weighting", weightNames, weights).release(),
         }
@@ -189,9 +191,14 @@ auto PluginEditor::runWeightingTests() -> void
     juce_normalization(normalized);
 
     auto const blockSize  = 512ULL;
+    auto const skip       = static_cast<std::size_t>(static_cast<int>(_skip.getValue()));
     auto const impulse    = to_mdarray(normalized);
-    auto const partitions = neo::fft::uniform_partition(impulse.to_mdspan(), blockSize);
-    auto const scale      = [filter = partitions.to_mdspan()] {
+    auto const partitions = neo::fft::uniform_partition(
+        KokkosEx::submdspan(impulse.to_mdspan(), Kokkos::full_extent, std::tuple{blockSize * skip, impulse.extent(1)}),
+        blockSize
+    );
+
+    auto const scale = [filter = partitions.to_mdspan()] {
         auto max = 0.0F;
         for (auto ch{0U}; ch < filter.extent(0); ++ch) {
             for (auto f{0U}; f < filter.extent(1); ++f) {

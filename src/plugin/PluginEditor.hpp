@@ -46,6 +46,7 @@ private:
     juce::AudioBuffer<float> _filter{};
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _spectrum;
 
+    juce::Value _skip{juce::var{0}};
     juce::Value _dynamicRange{juce::var{90.0F}};
     juce::Value _weighting{juce::var{"A-Weighting"}};
     juce::Value _engine{juce::Array<juce::var>{juce::var{"dense"}}};
