@@ -1,5 +1,8 @@
 #pragma once
 
+#include <neo/fft/algorithm/copy.hpp>
+#include <neo/fft/algorithm/fill.hpp>
+#include <neo/fft/algorithm/scale.hpp>
 #include <neo/fft/container/mdspan.hpp>
 #include <neo/fft/math/divide_round_up.hpp>
 #include <neo/fft/transform/rfft.hpp>
@@ -18,7 +21,7 @@ template<in_matrix InMat>
     auto const numBins       = windowSize / 2 + 1;
     auto const numChannels   = buffer.extent(0);
     auto const numPartitions = divide_round_up(buffer.extent(1), blockSize);
-    auto const scale         = Float(1) / static_cast<Float>(windowSize);
+    auto const scaleFactor   = Float(1) / static_cast<Float>(windowSize);
 
     auto partitions = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 3>>{
         numChannels,
@@ -26,28 +29,29 @@ template<in_matrix InMat>
         numBins,
     };
 
-    auto input  = std::vector<Float>(windowSize);
-    auto output = std::vector<std::complex<Float>>(windowSize);
-    auto rfft   = rfft_plan<Float>{ilog2(windowSize)};
+    auto in   = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 1>>{windowSize};
+    auto out  = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 1>>{windowSize};
+    auto rfft = rfft_plan<Float>{ilog2(windowSize)};
 
-    for (auto channel{0UL}; channel < numChannels; ++channel) {
-        for (auto partition{0UL}; partition < numPartitions; ++partition) {
-            auto const idx        = partition * blockSize;
+    auto const input  = in.to_mdspan();
+    auto const output = out.to_mdspan();
+
+    for (auto ch{0UL}; ch < numChannels; ++ch) {
+        for (auto p{0UL}; p < numPartitions; ++p) {
+            fill(input, Float(0));
+            fill(output, std::complex<Float>(0));
+
+            auto const idx        = p * blockSize;
             auto const numSamples = std::min(buffer.extent(1) - idx, blockSize);
+            auto const block      = KokkosEx::submdspan(buffer, ch, std::tuple{idx, idx + numSamples});
+            copy(block, KokkosEx::submdspan(input, std::tuple{0, numSamples}));
 
-            std::fill(input.begin(), input.end(), Float(0));
-            for (auto i{0UL}; i < numSamples; ++i) {
-                input[i] = buffer(channel, idx + i);
-            }
+            rfft(input, output);
 
-            std::fill(output.begin(), output.end(), Float(0));
-            rfft(
-                Kokkos::mdspan{input.data(), Kokkos::extents{input.size()}},
-                Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}}
-            );
-            for (auto bin{0UL}; bin < numBins; ++bin) {
-                partitions(channel, partition, bin) = output[bin] * scale;
-            }
+            auto const coeffs    = KokkosEx::submdspan(output, std::tuple{0, numBins});
+            auto const partition = KokkosEx::submdspan(partitions.to_mdspan(), ch, p, Kokkos::full_extent);
+            copy(coeffs, partition);
+            scale(scaleFactor, partition);
         }
     }
 
