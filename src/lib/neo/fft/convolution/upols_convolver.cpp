@@ -74,9 +74,9 @@ auto upols_convolver::operator()(std::span<float> block) -> void
     auto const blockSize = std::ssize(block);
 
     // Time domain input buffer
-    auto inout     = Kokkos::mdspan<float, Kokkos::dextents<std::size_t, 1>>{block.data(), block.size()};
-    auto leftHalf  = Kokkos::mdspan<float, Kokkos::dextents<std::size_t, 1>>{_window.data(), block.size()};
-    auto rightHalf = Kokkos::mdspan<float, Kokkos::dextents<std::size_t, 1>>{_window.data() + blockSize, block.size()};
+    auto inout     = Kokkos::mdspan{block.data(), Kokkos::extents{block.size()}};
+    auto leftHalf  = Kokkos::mdspan{_window.data(), Kokkos::extents{block.size()}};
+    auto rightHalf = Kokkos::mdspan{_window.data() + blockSize, Kokkos::extents{block.size()}};
     copy(rightHalf, leftHalf);
     copy(inout, rightHalf);
 
@@ -98,9 +98,9 @@ auto upols_convolver::operator()(std::span<float> block) -> void
     std::invoke(*_rfft, std::span{_accumulator.data(), _accumulator.size()}, _irfftBuf);
 
     // Copy blockSize samples to output
-    auto reconstructed = Kokkos::mdspan<float, Kokkos::dextents<std::size_t, 1>>{
+    auto reconstructed = Kokkos::mdspan{
         std::prev(std::next(_irfftBuf.data(), static_cast<std::ptrdiff_t>(_irfftBuf.size())), blockSize),
-        block.size(),
+        Kokkos::extents{block.size()},
     };
     copy(reconstructed, inout);
 }
