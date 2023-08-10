@@ -1,6 +1,7 @@
 #include "PluginEditor.hpp"
 
-#include "neo/fft/container/sparse_matrix.hpp"
+#include <neo/fft/container/sparse_matrix.hpp>
+#include <neo/fft/math/fftfreq.hpp>
 
 #include "dsp/convolution.hpp"
 #include "dsp/normalize.hpp"
@@ -207,7 +208,7 @@ auto PluginEditor::runWeightingTests() -> void
 
     auto const weighting = [=, this](std::size_t binIndex) {
         if (_weighting.getValue() == "A-Weighting") {
-            auto const frequency = neo::fft::frequency_for_bin<float>(blockSize * 2ULL, binIndex, 44'100.0);
+            auto const frequency = neo::fft::fftfreq<float>(blockSize * 2ULL, binIndex, 44'100.0);
             if (juce::exactlyEqual(frequency, 0.0F)) { return 0.0F; }
             auto const weight = neo::fft::a_weighting(frequency);
             return weight;
@@ -340,7 +341,7 @@ auto PluginEditor::updateImages() -> void
 
     auto const weighting = [this](std::size_t binIndex) {
         if (_weighting.getValue() == "A-Weighting") {
-            auto const frequency = neo::fft::frequency_for_bin<float>(1024, binIndex, 44'100.0);
+            auto const frequency = neo::fft::fftfreq<float>(1024, binIndex, 44'100.0);
             if (juce::exactlyEqual(frequency, 0.0F)) { return 0.0F; }
             auto const weight = neo::fft::a_weighting(frequency);
             return weight;

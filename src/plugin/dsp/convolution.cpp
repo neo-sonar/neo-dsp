@@ -2,6 +2,7 @@
 
 #include <neo/fft/math/a_weighting.hpp>
 #include <neo/fft/math/decibel.hpp>
+#include <neo/fft/math/fftfreq.hpp>
 #include <neo/fft/math/next_power_of_two.hpp>
 
 #include "dsp/normalize.hpp"
@@ -75,7 +76,7 @@ auto sparse_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<f
     auto const weights = [K, bins = partitions.extent(2)] {
         auto w = std::vector<float>(bins);
         for (auto i{0U}; i < w.size(); ++i) {
-            auto const frequency = frequency_for_bin<float>(K, i, 44'100.0);
+            auto const frequency = fftfreq<float>(K, i, 44'100.0);
             auto const weight    = frequency > 0.0F ? neo::fft::a_weighting(frequency) : 0.0F;
 
             w[i] = weight;
