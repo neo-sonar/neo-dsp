@@ -2,6 +2,7 @@
 
 #include <neo/fft/algorithm/copy.hpp>
 #include <neo/fft/algorithm/fill.hpp>
+#include <neo/fft/algorithm/scale.hpp>
 #include <neo/fft/container/mdspan.hpp>
 #include <neo/fft/math/ilog2.hpp>
 #include <neo/fft/math/next_power_of_two.hpp>
@@ -45,33 +46,32 @@ auto overlap_save<Float>::operator()(
 {
     assert(block.extent(0) * 2U == _window.extent(0));
 
-    auto const window = _window.to_mdspan();
-
     // Time domain input buffer
-    auto leftHalf  = KokkosEx::submdspan(window, std::tuple{0, _window.extent(0) / 2});
-    auto rightHalf = KokkosEx::submdspan(window, std::tuple{_window.extent(0) / 2, _window.extent(0)});
+    auto const window = _window.to_mdspan();
+    auto leftHalf     = KokkosEx::submdspan(window, std::tuple{0, _window.extent(0) / 2});
+    auto rightHalf    = KokkosEx::submdspan(window, std::tuple{_window.extent(0) / 2, _window.extent(0)});
     copy(rightHalf, leftHalf);
     copy(block, rightHalf);
 
     // 2B-point R2C-FFT
-    auto const complexBuffer = _complexBuffer.to_mdspan();
-    auto const realBuffer    = _realBuffer.to_mdspan();
-    _rfft(window, complexBuffer);
+    auto const complexBuf = _complexBuffer.to_mdspan();
+    auto const realBuf    = _realBuffer.to_mdspan();
+    _rfft(window, complexBuf);
 
     // Copy to FDL
-    auto const scale     = 1.0F / static_cast<Float>(_rfft.size());
     auto const numCoeffs = _rfft.size() / 2 + 1;
-    for (auto i{0U}; i < numCoeffs; ++i) {
-        complexBuffer[i] *= scale;
-    }
+    auto const alpha     = 1.0F / static_cast<Float>(_rfft.size());
+    auto const coeffs    = KokkosEx::submdspan(complexBuf, std::tuple{0, numCoeffs});
+    scale(alpha, coeffs);
 
-    callback(KokkosEx::submdspan(complexBuffer, std::tuple{0, numCoeffs}));
+    // Apply processing
+    callback(coeffs);
 
     // 2B-point C2R-IFFT
-    _rfft(complexBuffer, realBuffer);
+    _rfft(complexBuf, realBuf);
 
     // Copy blockSize samples to output
-    auto out = KokkosEx::submdspan(realBuffer, std::tuple{realBuffer.extent(0) - block.size(), realBuffer.extent(0)});
+    auto out = KokkosEx::submdspan(realBuf, std::tuple{realBuf.extent(0) - block.size(), realBuf.extent(0)});
     copy(out, block);
 }
 
