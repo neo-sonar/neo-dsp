@@ -1,6 +1,6 @@
 project(neo_fft)
 
-add_library(neo_fft)
+add_library(neo_fft INTERFACE)
 add_library(neo::convolution ALIAS neo_fft)
 
 set(neo_fft_Sources
@@ -14,7 +14,6 @@ set(neo_fft_Sources
 
     "neo/fft/convolution.hpp"
     "neo/fft/convolution/overlap_save.hpp"
-    "neo/fft/convolution/sparse_upols_convolver.cpp"
     "neo/fft/convolution/sparse_upols_convolver.hpp"
     "neo/fft/convolution/upols_convolver.hpp"
 
@@ -45,8 +44,8 @@ target_sources(neo_fft PRIVATE ${neo_fft_Sources})
 set_target_properties(neo_fft PROPERTIES UNITY_BUILD ON UNITY_BUILD_MODE GROUP)
 set_source_files_properties(neo_fft ${neo_fft_Sources} PROPERTIES UNITY_GROUP "src")
 
-target_include_directories(neo_fft PUBLIC ${PROJECT_SOURCE_DIR})
-target_link_libraries(neo_fft PUBLIC std::mdspan)
+target_include_directories(neo_fft INTERFACE ${PROJECT_SOURCE_DIR})
+target_link_libraries(neo_fft INTERFACE std::mdspan)
 target_compile_definitions(neo_fft INTERFACE _CRT_SECURE_NO_WARNINGS=1)
 
 add_executable(neo_fft_tests)
