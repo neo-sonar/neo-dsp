@@ -11,6 +11,16 @@
 #include <random>
 #include <vector>
 
+TEMPLATE_TEST_CASE("neo/fft/transform/radix2: make_radix2_twiddles", "", float, double)
+{
+    using Float   = TestType;
+    using Complex = std::complex<Float>;
+
+    auto const array  = neo::fft::make_radix2_twiddles<Complex, 64>();
+    auto const vector = neo::fft::make_radix2_twiddles<Complex>(64);
+    REQUIRE(std::equal(array.begin(), array.end(), vector.begin(), vector.end()));
+}
+
 TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
 {
     using Float = TestType;
@@ -41,14 +51,14 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
 
     {
         auto inout = testCase.input;
-        auto tw    = neo::fft::twiddle_table_radix2<std::complex<Float>>(inout.size());
+        auto tw    = neo::fft::make_radix2_twiddles<std::complex<Float>>(inout.size());
         neo::fft::c2c_radix2(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, tw);
         REQUIRE(neo::fft::allclose(testCase.expected, inout));
     }
 
     {
         auto inout = testCase.input;
-        auto tw    = neo::fft::twiddle_table_radix2<std::complex<Float>>(inout.size());
+        auto tw    = neo::fft::make_radix2_twiddles<std::complex<Float>>(inout.size());
         neo::fft::c2c_radix2_alt(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, tw);
         REQUIRE(neo::fft::allclose(testCase.expected, inout));
     }
@@ -66,7 +76,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: roundtrip(c2c)", "", float, double
     using Float = TestType;
 
     auto size           = GENERATE(8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384);
-    auto const twiddles = neo::fft::twiddle_table_radix2<std::complex<Float>>(static_cast<std::size_t>(size));
+    auto const twiddles = neo::fft::make_radix2_twiddles<std::complex<Float>>(static_cast<std::size_t>(size));
 
     auto buffer = std::vector<std::complex<Float>>(static_cast<std::size_t>(size), std::complex<Float>(0));
     auto rng    = std::mt19937{std::random_device{}()};

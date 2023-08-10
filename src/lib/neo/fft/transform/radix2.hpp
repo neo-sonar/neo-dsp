@@ -19,32 +19,34 @@
 namespace neo::fft {
 
 template<typename Complex>
-auto twiddle_table_radix2(std::size_t size, bool inverse = false) -> std::vector<Complex>
+auto fill_radix2_twiddles(std::span<Complex> table, bool inverse = false) -> void
 {
     using Float = typename Complex::value_type;
 
-    auto const pi   = static_cast<Float>(std::numbers::pi);
-    auto const sign = inverse ? Float(1) : Float(-1);
-    auto table      = std::vector<Complex>(size / 2U, Float(0));
-    for (std::size_t i = 0; i < size / 2U; ++i) {
-        auto const angle = sign * Float(2) * pi * Float(i) / Float(size);
+    auto const tableSize = table.size();
+    auto const fftSize   = tableSize * 2ULL;
+    auto const sign      = inverse ? Float(1) : Float(-1);
+    auto const twoPi     = static_cast<Float>(std::numbers::pi * 2.0);
+
+    for (std::size_t i = 0; i < tableSize; ++i) {
+        auto const angle = sign * twoPi * Float(i) / Float(fftSize);
         table[i]         = std::polar(Float(1), angle);
     }
+}
+
+template<typename Complex>
+auto make_radix2_twiddles(std::size_t size, bool inverse = false) -> std::vector<Complex>
+{
+    auto table = std::vector<Complex>(size / 2U);
+    fill_radix2_twiddles<Complex>(std::span{table}, inverse);
     return table;
 }
 
 template<typename Complex, std::size_t Size>
-auto twiddle_table_radix2(bool inverse = false) -> std::array<Complex, Size / 2>
+auto make_radix2_twiddles(bool inverse = false) -> std::array<Complex, Size / 2>
 {
-    using Float = typename Complex::value_type;
-
-    auto const pi   = static_cast<Float>(std::numbers::pi);
-    auto const sign = inverse ? Float(1) : Float(-1);
-    auto table      = std::array<Complex, Size / 2>{};
-    for (std::size_t i = 0; i < Size / 2; ++i) {
-        auto const angle = sign * Float(2) * pi * Float(i) / Float(Size);
-        table[i]         = std::polar(Float(1), angle);
-    }
+    auto table = std::array<Complex, Size / 2>{};
+    fill_radix2_twiddles<Complex>(std::span{table}, inverse);
     return table;
 }
 
@@ -172,7 +174,7 @@ private:
     std::size_t _len;
     std::size_t _order{ilog2(_len)};
     std::vector<std::size_t> _indexTable{make_bit_reversed_index_table(size_t(_len))};
-    std::vector<Complex> _twiddleTable{twiddle_table_radix2<Complex>(_len)};
+    std::vector<Complex> _twiddleTable{make_radix2_twiddles<Complex>(_len)};
 };
 
 template<typename Float>

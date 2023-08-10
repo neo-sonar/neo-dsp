@@ -14,7 +14,7 @@
 template<typename Float>
 struct cfft
 {
-    explicit cfft(size_t size) : _buf(size, Float(0)), _tw{neo::fft::twiddle_table_radix2<std::complex<Float>>(size)} {}
+    explicit cfft(size_t size) : _buf(size, Float(0)), _tw{neo::fft::make_radix2_twiddles<std::complex<Float>>(size)} {}
 
     auto operator()() -> void
     {
@@ -32,7 +32,7 @@ private:
 template<typename Float, unsigned Size>
 struct cfft_fixed
 {
-    cfft_fixed() : _tw{neo::fft::twiddle_table_radix2<std::complex<Float>, Size>()} {}
+    cfft_fixed() : _tw{neo::fft::make_radix2_twiddles<std::complex<Float>, Size>()} {}
 
     auto operator()() -> void
     {
@@ -52,7 +52,7 @@ struct cfft_alt
 {
     explicit cfft_alt(size_t size)
         : _buf(size, Float(0))
-        , _tw{neo::fft::twiddle_table_radix2<std::complex<Float>>(size)}
+        , _tw{neo::fft::make_radix2_twiddles<std::complex<Float>>(size)}
     {}
 
     auto operator()() -> void
@@ -91,7 +91,7 @@ private:
 struct cfft32x2
 {
     explicit cfft32x2(size_t size) : _buf(size, _mm_set1_ps(0)), _tw(size, _mm_set1_ps(0))
-    // , _tw{neo::fft::twiddle_table_radix2<std::complex<float>>(size)}
+    // , _tw{neo::fft::make_radix2_twiddles<std::complex<float>>(size)}
     {}
 
     auto operator()() -> void
@@ -110,7 +110,7 @@ private:
 struct cfft64x1
 {
     explicit cfft64x1(size_t size) : _buf(size, _mm_set1_pd(0)), _tw(size, _mm_set1_pd(0))
-    // , _tw{neo::fft::twiddle_table_radix2<std::complex<float>>(size)}
+    // , _tw{neo::fft::make_radix2_twiddles<std::complex<float>>(size)}
     {}
 
     auto operator()() -> void
@@ -133,7 +133,7 @@ private:
 struct cfft32x4
 {
     explicit cfft32x4(size_t size) : _buf(size, _mm256_set1_ps(0)), _tw(size, _mm256_set1_ps(0))
-    // , _tw{neo::fft::twiddle_table_radix2<std::complex<float>>(size)}
+    // , _tw{neo::fft::make_radix2_twiddles<std::complex<float>>(size)}
     {}
 
     auto operator()() -> void
@@ -170,7 +170,7 @@ private:
 struct cfft64x2
 {
     explicit cfft64x2(size_t size) : _buf(size, _mm256_set1_pd(0)), _tw(size, _mm256_set1_pd(0))
-    // , _tw{neo::fft::twiddle_table_radix2<std::complex<float>>(size)}
+    // , _tw{neo::fft::make_radix2_twiddles<std::complex<float>>(size)}
     {}
 
     auto operator()() -> void
@@ -192,7 +192,7 @@ private:
 struct cfft32x8
 {
     explicit cfft32x8(size_t size) : _buf(size, _mm512_set1_ps(0)), _tw(size, _mm512_set1_ps(0))
-    // , _tw{neo::fft::twiddle_table_radix2<std::complex<float>>(size)}
+    // , _tw{neo::fft::make_radix2_twiddles<std::complex<float>>(size)}
     {}
 
     auto operator()() -> void
@@ -211,7 +211,7 @@ private:
 struct cfft64x4
 {
     explicit cfft64x4(size_t size) : _buf(size, _mm512_set1_pd(0)), _tw(size, _mm512_set1_pd(0))
-    // , _tw{neo::fft::twiddle_table_radix2<std::complex<float>>(size)}
+    // , _tw{neo::fft::make_radix2_twiddles<std::complex<float>>(size)}
     {}
 
     auto operator()() -> void
