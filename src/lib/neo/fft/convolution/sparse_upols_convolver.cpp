@@ -61,6 +61,10 @@ auto sparse_upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, 
 
 auto sparse_upols_convolver::operator()(std::span<float> block) -> void
 {
+    assert(_fdlIndex < _fdl.extent(0));
+    assert(_fdl.extent(1) > 0);
+    assert(_fdl.extent(0) == _filter.rows());
+    assert(_fdl.extent(1) == _filter.columns());
     assert(block.size() * 2U == _window.size());
 
     auto const blockSize = std::ssize(block);
@@ -76,11 +80,6 @@ auto sparse_upols_convolver::operator()(std::span<float> block) -> void
     for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(_fdlIndex, i) = _rfftBuf[i] / float(_rfft->size()); }
 
     // DFT-spectrum additions
-    assert(_fdl.extent(0) == _filter.rows());
-    assert(_fdl.extent(1) == _filter.columns());
-    assert(_fdl.extent(1) > 0);
-    assert(_fdlIndex < _fdl.extent(0));
-
     std::fill(_accumulator.begin(), _accumulator.end(), 0.0F);
     multiply_elementwise_sum_columnwise(_fdl.to_mdspan(), _filter, std::span{_accumulator}, _fdlIndex);
 
