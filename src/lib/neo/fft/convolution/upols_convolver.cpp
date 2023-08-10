@@ -1,49 +1,13 @@
 #include "upols_convolver.hpp"
 
+#include <neo/fft/algorithm/copy.hpp>
+#include <neo/fft/algorithm/fill.hpp>
+#include <neo/fft/algorithm/shift_rows_left.hpp>
 #include <neo/fft/math/next_power_of_two.hpp>
 
 #include <functional>
 
 namespace neo::fft {
-
-static auto shift_left(Kokkos::mdspan<float, Kokkos::dextents<size_t, 2>> buffer, std::ptrdiff_t shift) -> void
-{
-    for (auto ch{0UL}; ch < buffer.extent(0); ++ch) {
-        auto channel = std::span{std::addressof(buffer(ch, 0)), buffer.extent(1)};
-        std::shift_left(channel.begin(), channel.end(), shift);
-    }
-}
-
-template<typename InOutObj, typename T>
-    requires(InOutObj::rank() == 1 or InOutObj::rank() == 2)
-static auto fill(InOutObj obj, T const& val) -> void
-{
-    if constexpr (InOutObj::rank() == 1) {
-        for (auto i{0ULL}; i < obj.extent(0); ++i) { obj(i) = val; }
-    } else {
-        for (auto i{0ULL}; i < obj.extent(0); ++i) {
-            for (auto j{0ULL}; j < obj.extent(1); ++j) { obj(i, j) = val; }
-        }
-    }
-}
-
-static auto copy(
-    Kokkos::mdspan<float const, Kokkos::dextents<size_t, 2>> src,
-    Kokkos::mdspan<float, Kokkos::dextents<size_t, 2>> dest
-) -> void
-{
-    assert(src.extent(0) == dest.extent(0));
-    assert(src.extent(1) * 2 == dest.extent(1));
-
-    auto const numChannels = src.extent(0);
-    auto const numSamples  = src.extent(1);
-
-    for (auto ch{0UL}; ch < numChannels; ++ch) {
-        auto source      = std::span{std::addressof(src(ch, 0)), numSamples};
-        auto destination = std::span{std::addressof(dest(ch, numSamples)), numSamples};
-        std::copy(source.begin(), source.end(), destination.begin());
-    }
-}
 
 static auto multiply_and_accumulate_row(
     Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<std::size_t, 1>> lhs,
@@ -186,7 +150,7 @@ auto stereo_upols_convolver::operator()(KokkosEx::mdspan<float, Kokkos::dextents
     assert(block.extent(1) * 2U == _window.extent(1));
 
     // Time domain input buffer
-    shift_left(_window, blockSize);
+    shift_rows_left(_window.to_mdspan(), blockSize);
     copy(block, _window);
 
     // 2B-point R2C-FFT
