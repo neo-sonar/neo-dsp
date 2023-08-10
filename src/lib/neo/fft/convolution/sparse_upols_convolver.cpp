@@ -81,7 +81,7 @@ auto sparse_upols_convolver::operator()(std::span<float> block) -> void
     assert(_fdlIndex < _fdl.extent(0));
 
     std::fill(_accumulator.begin(), _accumulator.end(), 0.0F);
-    multiply_elementwise_accumulate_columnwise(_fdl.to_mdspan(), _filter, std::span{_accumulator}, _fdlIndex);
+    multiply_elementwise_sum_columnwise(_fdl.to_mdspan(), _filter, std::span{_accumulator}, _fdlIndex);
 
     // All contents (DFT spectra) in the FDL are shifted up by one slot.
     ++_fdlIndex;
