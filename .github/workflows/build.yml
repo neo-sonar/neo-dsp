@@ -46,7 +46,7 @@ jobs:
           - name: Sanitizers
             os: ubuntu-22.04
             build_type: Debug
-            cmake_flags: '-D CMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-sanitize-recover=all -march=native"'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -march=native"'
             cmake_targets: neo_fft_tests
 
     steps:
