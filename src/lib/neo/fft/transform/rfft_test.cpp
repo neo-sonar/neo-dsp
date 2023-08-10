@@ -5,6 +5,7 @@
 #include <neo/fft/transform/radix2.hpp>
 
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
@@ -50,12 +51,8 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: roundtrip(rfft_plan)", "", float, do
     auto order      = GENERATE(1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
     auto const size = 1UL << static_cast<std::size_t>(order);
 
-    auto signal   = std::vector<Float>(size, Float(0));
-    auto spectrum = std::vector<std::complex<Float>>(size / 2UL + 1UL, Float(0));
-
-    auto rng  = std::mt19937{std::random_device{}()};
-    auto dist = std::uniform_real_distribution<Float>{Float(-1), Float(1)};
-    std::generate(signal.begin(), signal.end(), [&dist, &rng] { return dist(rng); });
+    auto signal         = neo::fft::make_noise_signal<Float>(size, Catch::getSeed());
+    auto spectrum       = std::vector<std::complex<Float>>(size / 2UL + 1UL, Float(0));
     auto const original = signal;
 
     auto rfft = neo::fft::rfft_plan<Float>{static_cast<std::size_t>(order)};
@@ -81,7 +78,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: extract_two_real_dfts", "", float, d
     static constexpr auto n     = 8UL;
     static constexpr auto order = neo::fft::ilog2(n);
 
-    auto rng    = std::mt19937{std::random_device{}()};
+    auto rng    = std::mt19937{Catch::getSeed()};
     auto dist   = std::uniform_real_distribution<Float>{-1, 1};
     auto random = [&dist, &rng] { return dist(rng); };
 

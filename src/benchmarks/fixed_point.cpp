@@ -1,4 +1,5 @@
-#include "neo/fft/fixed_point.hpp"
+#include <neo/fft/fixed_point.hpp>
+#include <neo/fft/testing/testing.hpp>
 
 #include "benchmark.hpp"
 
@@ -11,13 +12,11 @@
 template<typename Float, std::size_t Size>
 struct floating_point_mul_bench
 {
-    explicit floating_point_mul_bench() : _lhs(Size), _rhs(Size), _out(Size)
-    {
-        auto rng  = std::mt19937{std::random_device{}()};
-        auto dist = std::uniform_real_distribution<Float>{Float(-1.0), Float(1.0)};
-        std::generate(_lhs.begin(), _lhs.end(), [&] { return dist(rng); });
-        std::generate(_rhs.begin(), _rhs.end(), [&] { return dist(rng); });
-    }
+    explicit floating_point_mul_bench()
+        : _lhs(neo::fft::make_noise_signal<Float>(Size, std::random_device{}()))
+        , _rhs(neo::fft::make_noise_signal<Float>(Size, std::random_device{}()))
+        , _out(Size)
+    {}
 
     auto operator()() -> void
     {

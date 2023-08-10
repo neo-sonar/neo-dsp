@@ -74,11 +74,11 @@ template<std::floating_point Float>
 }
 
 template<std::floating_point Float>
-[[nodiscard]] auto make_noise_signal(std::size_t length) -> std::vector<Float>
+[[nodiscard]] auto make_noise_signal(std::size_t length, std::uint32_t seed) -> std::vector<Float>
 {
-    auto signal = std::vector<Float>(length, Float(0));
-    auto rng    = std::mt19937{std::random_device{}()};
+    auto rng    = std::mt19937{seed};
     auto dist   = std::uniform_real_distribution<Float>{Float(-1), Float(1)};
+    auto signal = std::vector<Float>(length, Float(0));
     std::generate(signal.begin(), signal.end(), [&] { return dist(rng); });
     return signal;
 }

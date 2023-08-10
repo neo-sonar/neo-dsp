@@ -5,6 +5,7 @@
 #include <neo/fft/testing/testing.hpp>
 
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
@@ -85,7 +86,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: roundtrip(c2c)", "", float, double
     auto const twiddles = neo::fft::make_radix2_twiddles<std::complex<Float>>(static_cast<std::size_t>(size));
 
     auto buffer = std::vector<std::complex<Float>>(static_cast<std::size_t>(size), std::complex<Float>(0));
-    auto rng    = std::mt19937{std::random_device{}()};
+    auto rng    = std::mt19937{Catch::getSeed()};
     auto dist   = std::uniform_real_distribution<Float>{Float(-1.0), Float(1.0)};
     std::generate(buffer.begin(), buffer.end(), [&dist, &rng] { return std::complex<Float>{dist(rng), dist(rng)}; });
 
