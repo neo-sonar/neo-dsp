@@ -1,5 +1,6 @@
 #pragma once
 
+#include <neo/fft/container/mdspan.hpp>
 #include <neo/fft/math/ilog2.hpp>
 #include <neo/fft/math/power.hpp>
 #include <neo/fft/transform/conjugate_view.hpp>
@@ -46,8 +47,8 @@ auto twiddle_table_radix2(bool inverse = false) -> std::array<Complex, Size / 2>
     return table;
 }
 
-template<typename Complex, std::size_t Extent, typename Range>
-auto c2c_radix2(std::span<Complex, Extent> x, Range const& twiddles) -> void
+template<inout_vector InOutVec, typename TwiddleTable>
+auto c2c_radix2(InOutVec x, TwiddleTable const& twiddles) -> void
 {
     // bit-reverse ordering
     auto const len   = x.size();
@@ -81,8 +82,8 @@ auto c2c_radix2(std::span<Complex, Extent> x, Range const& twiddles) -> void
     }
 }
 
-template<typename Complex, std::size_t Extent, typename Range>
-auto c2c_radix2_alt(std::span<Complex, Extent> x, Range const& twiddles) -> void
+template<inout_vector InOutVec, typename TwiddleTable>
+auto c2c_radix2_alt(InOutVec x, TwiddleTable const& twiddles) -> void
 {
     auto const len = x.size();
 

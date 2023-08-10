@@ -1,5 +1,6 @@
 #pragma once
 
+#include <neo/fft/container/mdspan.hpp>
 #include <neo/fft/math/ilog2.hpp>
 
 #include <cstddef>
@@ -19,8 +20,8 @@ namespace neo::fft {
     return table;
 }
 
-template<typename Complex, size_t Extent>
-auto bit_reverse_permutation(std::span<Complex, Extent> x) -> void
+template<inout_vector InOutVec>
+constexpr auto bit_reverse_permutation(InOutVec x) -> void
 {
     // Rearrange the input in bit-reversed order
     std::size_t j = 0;

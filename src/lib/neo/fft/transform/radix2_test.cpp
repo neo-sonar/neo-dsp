@@ -42,14 +42,14 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
     {
         auto inout = testCase.input;
         auto tw    = neo::fft::twiddle_table_radix2<std::complex<Float>>(inout.size());
-        neo::fft::c2c_radix2(std::span{inout}, tw);
+        neo::fft::c2c_radix2(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, tw);
         REQUIRE(neo::fft::allclose(testCase.expected, inout));
     }
 
     {
         auto inout = testCase.input;
         auto tw    = neo::fft::twiddle_table_radix2<std::complex<Float>>(inout.size());
-        neo::fft::c2c_radix2_alt(std::span{inout}, tw);
+        neo::fft::c2c_radix2_alt(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, tw);
         REQUIRE(neo::fft::allclose(testCase.expected, inout));
     }
 
