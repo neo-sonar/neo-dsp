@@ -31,7 +31,11 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
     {
         auto in  = testCase.input;
         auto out = std::vector<std::complex<Float>>(in.size());
-        neo::fft::dft<Float>(in, out);
+
+        auto inVec  = Kokkos::mdspan{in.data(), Kokkos::extents{in.size()}};
+        auto outVec = Kokkos::mdspan{out.data(), Kokkos::extents{out.size()}};
+        neo::fft::dft(inVec, outVec);
+
         REQUIRE(neo::fft::allclose(testCase.expected, out));
     }
 

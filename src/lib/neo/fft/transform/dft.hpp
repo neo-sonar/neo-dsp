@@ -1,24 +1,34 @@
 #pragma once
 
+#include <neo/fft/container/mdspan.hpp>
+
+#include <cassert>
 #include <complex>
-#include <cstddef>
 #include <numbers>
-#include <span>
 
 namespace neo::fft {
 
-template<typename T>
-auto dft(std::span<std::complex<T> const> in, std::span<std::complex<T>> out) -> void
+template<in_vector InVec, out_vector OutVec>
+    requires(std::same_as<typename InVec::value_type, typename OutVec::value_type>)
+auto dft(InVec in, OutVec out) -> void
 {
-    static constexpr auto const pi = static_cast<T>(std::numbers::pi);
+    assert(in.extents() == out.extents());
 
-    auto const N = in.size();
+    using Complex = typename OutVec::value_type;
+    using Float   = typename Complex::value_type;
+
+    static constexpr auto const pi = static_cast<Float>(std::numbers::pi);
+
+    auto const N = in.extent(0);
     for (std::size_t k = 0; k < N; ++k) {
-        auto tmp = std::complex<T>{};
+        auto tmp = Complex{};
         for (std::size_t n = 0; n < N; ++n) {
-            tmp += in[n] * std::polar(T(1), T(-2) * pi * static_cast<T>(n) * static_cast<T>(k) / static_cast<T>(N));
+            using std::polar;
+            auto const input = in(n);
+            auto const w     = std::polar(Float(1), Float(-2) * pi * Float(n) * Float(k) / Float(N));
+            tmp += input * w;
         }
-        out[k] = tmp;
+        out(k) = tmp;
     }
 }
 
