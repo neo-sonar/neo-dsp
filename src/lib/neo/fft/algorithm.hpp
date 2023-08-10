@@ -4,4 +4,3 @@
 #include <neo/fft/algorithm/fill.hpp>
 #include <neo/fft/algorithm/multiply_elementwise_sum_columnwise.hpp>
 #include <neo/fft/algorithm/rms_error.hpp>
-#include <neo/fft/algorithm/shift_rows_left.hpp>
