@@ -71,7 +71,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
 
     {
         auto inout = testCase.input;
-        auto eng   = neo::fft::c2c_radix2_plan<std::complex<Float>>{inout.size()};
+        auto eng   = neo::fft::fft_plan<std::complex<Float>>{inout.size()};
         eng(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, neo::fft::direction::forward);
         REQUIRE(neo::fft::allclose(testCase.expected, inout));
     }
@@ -90,72 +90,10 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: roundtrip(c2c)", "", float, double
     std::generate(buffer.begin(), buffer.end(), [&dist, &rng] { return std::complex<Float>{dist(rng), dist(rng)}; });
 
     auto inout = buffer;
-    auto c2c   = neo::fft::c2c_radix2_plan<std::complex<Float>>{static_cast<std::size_t>(size)};
+    auto c2c   = neo::fft::fft_plan<std::complex<Float>>{static_cast<std::size_t>(size)};
     c2c(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, neo::fft::direction::forward);
     c2c(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, neo::fft::direction::backward);
     std::transform(inout.begin(), inout.end(), inout.begin(), [size](auto c) { return c / static_cast<Float>(size); });
 
     REQUIRE(neo::fft::allclose(buffer, inout));
-}
-
-TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_data(r2c)", "", float, double)
-{
-    using Float = TestType;
-
-    auto paths = GENERATE(
-        neo::fft::test_path{"./test_data/r2c_8_input.csv", "./test_data/r2c_8_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_16_input.csv", "./test_data/r2c_16_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_32_input.csv", "./test_data/r2c_32_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_16_input.csv", "./test_data/r2c_16_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_32_input.csv", "./test_data/r2c_32_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_64_input.csv", "./test_data/r2c_64_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_128_input.csv", "./test_data/r2c_128_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_512_input.csv", "./test_data/r2c_512_output.csv"}
-    );
-
-    auto const tc    = neo::fft::load_test_data<Float>(paths).value();
-    auto const size  = tc.input.size();
-    auto const order = neo::fft::ilog2(size);
-
-    auto input  = std::vector<Float>(size_t(size), Float(0));
-    auto output = std::vector<std::complex<Float>>(size_t(size / 2 + 1), Float(0));
-    std::transform(tc.input.begin(), tc.input.end(), input.begin(), [](auto c) { return c.real(); });
-
-    auto rfft = neo::fft::rfft_radix2_plan<Float>{order};
-    rfft(
-        Kokkos::mdspan{input.data(), Kokkos::extents{input.size()}},
-        Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}}
-    );
-    REQUIRE(neo::fft::allclose(tc.expected, output));
-}
-
-TEMPLATE_TEST_CASE("neo/fft/transform/radix2: roundtrip(r2c)", "", float, double)
-{
-    using Float = TestType;
-
-    auto order      = GENERATE(1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
-    auto const size = 1UL << static_cast<std::size_t>(order);
-
-    auto signal   = std::vector<Float>(size, Float(0));
-    auto spectrum = std::vector<std::complex<Float>>(size / 2UL + 1UL, Float(0));
-
-    auto rng  = std::mt19937{std::random_device{}()};
-    auto dist = std::uniform_real_distribution<Float>{Float(-1), Float(1)};
-    std::generate(signal.begin(), signal.end(), [&dist, &rng] { return dist(rng); });
-    auto const original = signal;
-
-    auto rfft = neo::fft::rfft_radix2_plan<Float>{static_cast<std::size_t>(order)};
-    rfft(
-        Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}},
-        Kokkos::mdspan{spectrum.data(), Kokkos::extents{spectrum.size()}}
-    );
-    rfft(
-        Kokkos::mdspan{spectrum.data(), Kokkos::extents{spectrum.size()}},
-        Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}}
-    );
-
-    auto const scale = Float(1) / static_cast<Float>(size);
-    std::transform(signal.begin(), signal.end(), signal.begin(), [scale](auto c) { return c * scale; });
-
-    REQUIRE(neo::fft::allclose(original, signal));
 }

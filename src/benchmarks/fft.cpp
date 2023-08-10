@@ -84,7 +84,7 @@ struct cfft_plan
 
 private:
     std::vector<std::complex<Float>> _buf;
-    neo::fft::c2c_radix2_plan<std::complex<Float>> _fft;
+    neo::fft::fft_plan<std::complex<Float>> _fft;
 };
 
 #if defined(__amd64__) or defined(_M_AMD64)

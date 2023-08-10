@@ -120,9 +120,9 @@ auto c2c_radix2_alt(InOutVec x, TwiddleTable const& twiddles) -> void
 }
 
 template<typename Complex>
-struct c2c_radix2_plan
+struct fft_plan
 {
-    explicit c2c_radix2_plan(std::size_t len) : _len{len} {}
+    explicit fft_plan(std::size_t len) : _len{len} {}
 
     [[nodiscard]] auto size() const noexcept -> std::size_t { return _len; }
 
@@ -175,66 +175,6 @@ private:
     std::size_t _order{ilog2(_len)};
     std::vector<std::size_t> _indexTable{make_bit_reversed_index_table(size_t(_len))};
     std::vector<Complex> _twiddleTable{make_radix2_twiddles<Complex>(_len)};
-};
-
-template<typename Float>
-struct rfft_radix2_plan
-{
-    explicit rfft_radix2_plan(std::size_t order) : _order{order}, _size{1ULL << order}, _cfft{_size}, _buffer{_size} {}
-
-    [[nodiscard]] auto size() const noexcept -> std::size_t { return _size; }
-
-    template<in_vector InVec, out_vector OutVec>
-        requires(std::same_as<typename InVec::value_type, Float> and std::same_as<typename OutVec::value_type, std::complex<Float>>)
-    auto operator()(InVec in, OutVec out) -> void
-    {
-        auto const buf    = _buffer.to_mdspan();
-        auto const coeffs = _size / 2 + 1;
-
-        copy(in, buf);
-        _cfft(buf, direction::forward);
-        copy(KokkosEx::submdspan(buf, std::tuple{0ULL, coeffs}), KokkosEx::submdspan(out, std::tuple{0ULL, coeffs}));
-    }
-
-    template<in_vector InVec, out_vector OutVec>
-        requires(std::same_as<typename InVec::value_type, std::complex<Float>> and std::same_as<typename OutVec::value_type, Float>)
-    auto operator()(InVec in, OutVec out) -> void
-    {
-        auto const buf    = _buffer.to_mdspan();
-        auto const coeffs = _size / 2 + 1;
-
-        copy(in, KokkosEx::submdspan(buf, std::tuple{0, in.extent(0)}));
-
-        // Fill upper half with conjugate
-        for (auto i{coeffs}; i < _size; ++i) {
-            buf[i] = std::conj(buf[_size - i]);
-        }
-
-        _cfft(buf, direction::backward);
-        for (auto i{0UL}; i < _size; ++i) {
-            out[i] = buf[i].real();
-        }
-    }
-
-    auto operator()(std::span<Float const> in, std::span<std::complex<Float>> out) -> void
-    {
-        auto const input  = Kokkos::mdspan{in.data(), Kokkos::extents{in.size()}};
-        auto const output = Kokkos::mdspan{out.data(), Kokkos::extents{out.size()}};
-        (*this)(input, output);
-    }
-
-    auto operator()(std::span<std::complex<Float> const> in, std::span<Float> out) -> void
-    {
-        auto const input  = Kokkos::mdspan{in.data(), Kokkos::extents{in.size()}};
-        auto const output = Kokkos::mdspan{out.data(), Kokkos::extents{out.size()}};
-        (*this)(input, output);
-    }
-
-private:
-    std::size_t _order;
-    std::size_t _size;
-    c2c_radix2_plan<std::complex<Float>> _cfft;
-    KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 1>> _buffer;
 };
 
 }  // namespace neo::fft

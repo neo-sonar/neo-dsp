@@ -30,7 +30,7 @@ private:
     KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>> _window{_windowSize};
     KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>> _realBuffer{_windowSize};
     KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>> _complexBuffer{_windowSize};
-    rfft_radix2_plan<Float> _rfft{ilog2(_windowSize)};
+    rfft_plan<Float> _rfft{ilog2(_windowSize)};
 };
 
 template<std::floating_point Float>

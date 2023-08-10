@@ -2,7 +2,7 @@
 
 #include <neo/fft/container/mdspan.hpp>
 #include <neo/fft/math/divide_round_up.hpp>
-#include <neo/fft/transform/radix2.hpp>
+#include <neo/fft/transform/rfft.hpp>
 
 #include <complex>
 #include <concepts>
@@ -28,7 +28,7 @@ template<in_matrix InMat>
 
     auto input  = std::vector<Float>(windowSize);
     auto output = std::vector<std::complex<Float>>(windowSize);
-    auto rfft   = rfft_radix2_plan<Float>{ilog2(windowSize)};
+    auto rfft   = rfft_plan<Float>{ilog2(windowSize)};
 
     for (auto channel{0UL}; channel < numChannels; ++channel) {
         for (auto partition{0UL}; partition < numPartitions; ++partition) {
@@ -41,7 +41,10 @@ template<in_matrix InMat>
             }
 
             std::fill(output.begin(), output.end(), Float(0));
-            rfft(input, output);
+            rfft(
+                Kokkos::mdspan{input.data(), Kokkos::extents{input.size()}},
+                Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}}
+            );
             for (auto bin{0UL}; bin < numBins; ++bin) {
                 partitions(channel, partition, bin) = output[bin] * scale;
             }
