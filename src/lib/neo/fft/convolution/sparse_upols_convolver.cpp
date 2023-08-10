@@ -1,5 +1,6 @@
 #include "sparse_upols_convolver.hpp"
 
+#include <neo/fft/algorithm/multiply_elementwise_sum_columnwise.hpp>
 #include <neo/fft/math/a_weighting.hpp>
 #include <neo/fft/math/decibel.hpp>
 #include <neo/fft/math/next_power_of_two.hpp>
