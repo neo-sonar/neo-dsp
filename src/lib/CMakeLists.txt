@@ -13,6 +13,7 @@ set(neo_fft_Sources
     "neo/fft/container/sparse_matrix.hpp"
 
     "neo/fft/convolution.hpp"
+    "neo/fft/convolution/overlap_save.hpp"
     "neo/fft/convolution/sparse_upols_convolver.cpp"
     "neo/fft/convolution/sparse_upols_convolver.hpp"
     "neo/fft/convolution/upols_convolver.cpp"
@@ -55,6 +56,7 @@ target_sources(neo_fft_tests
         "neo/fft/math_test.cpp"
         "neo/fft/algorithm/multiply_elementwise_sum_columnwise_test.cpp"
         "neo/fft/container/sparse_matrix_test.cpp"
+        "neo/fft/convolution/overlap_save_test.cpp"
         "neo/fft/convolution/sparse_upols_convolver_test.cpp"
         "neo/fft/convolution/upols_convolver_test.cpp"
         "neo/fft/convolution/uniform_partition_test.cpp"
