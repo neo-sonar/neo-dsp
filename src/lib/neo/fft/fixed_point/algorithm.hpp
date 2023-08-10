@@ -8,6 +8,7 @@
 #endif
 
 #if defined(__SSE3__)
+    #include <immintrin.h>
     #include <tmmintrin.h>
 #endif
 
