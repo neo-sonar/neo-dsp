@@ -17,10 +17,10 @@ auto upols_convolver::filter(KokkosEx::mdspan<std::complex<float> const, Kokkos:
     _accumulator = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 1>>{filter.extent(1)};
     _filter      = filter;
 
-    _rfft = std::make_unique<rfft_radix2_plan<float>>(ilog2(K));
-    _window.resize(K);
-    _rfftBuf.resize(_window.size());
-    _irfftBuf.resize(_window.size());
+    _rfft     = std::make_unique<rfft_radix2_plan<float>>(ilog2(K));
+    _window   = KokkosEx::mdarray<float, Kokkos::dextents<size_t, 1>>{K};
+    _irfftBuf = KokkosEx::mdarray<float, Kokkos::dextents<size_t, 1>>{K};
+    _rfftBuf  = KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 1>>{K};
 
     _fdlIndex = 0;
 }
@@ -39,10 +39,10 @@ auto upols_convolver::operator()(std::span<float> block) -> void
     copy(inout, rightHalf);
 
     // 2B-point R2C-FFT
-    std::invoke(*_rfft, _window, _rfftBuf);
+    std::invoke(*_rfft, _window.to_mdspan(), _rfftBuf.to_mdspan());
 
     // Copy to FDL
-    for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(_fdlIndex, i) = _rfftBuf[i] / float(_rfft->size()); }
+    for (auto i{0U}; i < _fdl.extent(1); ++i) { _fdl(_fdlIndex, i) = _rfftBuf.to_mdspan()[i] / float(_rfft->size()); }
 
     // DFT-spectrum additions
     fill(_accumulator.to_mdspan(), 0.0F);
@@ -53,13 +53,13 @@ auto upols_convolver::operator()(std::span<float> block) -> void
     if (_fdlIndex == _fdl.extent(0)) { _fdlIndex = 0; }
 
     // 2B-point C2R-IFFT
-    std::invoke(*_rfft, std::span{_accumulator.data(), _accumulator.size()}, _irfftBuf);
+    std::invoke(*_rfft, _accumulator.to_mdspan(), _irfftBuf.to_mdspan());
 
     // Copy blockSize samples to output
-    auto reconstructed = Kokkos::mdspan{
-        std::prev(std::next(_irfftBuf.data(), static_cast<std::ptrdiff_t>(_irfftBuf.size())), blockSize),
-        Kokkos::extents{block.size()},
-    };
+    auto reconstructed = KokkosEx::submdspan(
+        _irfftBuf.to_mdspan(),
+        std::tuple{_irfftBuf.extent(0) - block.size(), _irfftBuf.extent(0)}
+    );
     copy(reconstructed, inout);
 }
 

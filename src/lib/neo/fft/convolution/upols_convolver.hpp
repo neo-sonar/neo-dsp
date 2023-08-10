@@ -19,7 +19,7 @@ struct upols_convolver
     auto operator()(std::span<float> block) -> void;
 
 private:
-    std::vector<float> _window;
+    KokkosEx::mdarray<float, Kokkos::dextents<size_t, 1>> _window;
 
     std::size_t _fdlIndex{0};
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _fdl;
@@ -27,8 +27,8 @@ private:
     KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 1>> _accumulator;
 
     std::unique_ptr<rfft_radix2_plan<float>> _rfft;
-    std::vector<std::complex<float>> _rfftBuf;
-    std::vector<float> _irfftBuf;
+    KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 1>> _rfftBuf;
+    KokkosEx::mdarray<float, Kokkos::dextents<size_t, 1>> _irfftBuf;
 };
 
 }  // namespace neo::fft

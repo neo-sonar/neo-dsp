@@ -106,7 +106,10 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_data(r2c)", "", float, double
     std::transform(tc.input.begin(), tc.input.end(), input.begin(), [](auto c) { return c.real(); });
 
     auto rfft = neo::fft::rfft_radix2_plan<Float>{order};
-    rfft(input, output);
+    rfft(
+        Kokkos::mdspan{input.data(), Kokkos::extents{input.size()}},
+        Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}}
+    );
     REQUIRE(neo::fft::allclose(tc.expected, output));
 }
 
@@ -126,8 +129,14 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: roundtrip(r2c)", "", float, double
     auto const original = signal;
 
     auto rfft = neo::fft::rfft_radix2_plan<Float>{static_cast<std::size_t>(order)};
-    rfft(signal, spectrum);
-    rfft(spectrum, signal);
+    rfft(
+        Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}},
+        Kokkos::mdspan{spectrum.data(), Kokkos::extents{spectrum.size()}}
+    );
+    rfft(
+        Kokkos::mdspan{spectrum.data(), Kokkos::extents{spectrum.size()}},
+        Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}}
+    );
 
     auto const scale = Float(1) / static_cast<Float>(size);
     std::transform(signal.begin(), signal.end(), signal.begin(), [scale](auto c) { return c * scale; });

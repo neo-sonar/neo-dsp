@@ -31,8 +31,14 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: extract_two_real_dfts", "", float, d
 
     auto a_rev = std::array<std::complex<Float>, n / 2 + 1>{};
     auto b_rev = std::array<std::complex<Float>, n / 2 + 1>{};
-    rfft(a, a_rev);
-    rfft(b, b_rev);
+    rfft(
+        Kokkos::mdspan{a.data(), Kokkos::extents{a.size()}},
+        Kokkos::mdspan{a_rev.data(), Kokkos::extents{a_rev.size()}}
+    );
+    rfft(
+        Kokkos::mdspan{b.data(), Kokkos::extents{b.size()}},
+        Kokkos::mdspan{b_rev.data(), Kokkos::extents{b_rev.size()}}
+    );
 
     auto inout = std::array<std::complex<Float>, n>{};
     std::transform(a.begin(), a.end(), b.begin(), inout.begin(), [](auto ra, auto rb) { return std::complex{ra, rb}; });
