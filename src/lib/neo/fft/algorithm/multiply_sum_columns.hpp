@@ -1,5 +1,7 @@
 #pragma once
 
+#include <neo/fft/config.hpp>
+
 #include <neo/fft/container/mdspan.hpp>
 #include <neo/fft/container/sparse_matrix.hpp>
 
@@ -8,9 +10,9 @@ namespace neo::fft {
 template<in_matrix InMatL, in_matrix InMatR, out_vector OutVec>
 constexpr auto multiply_sum_columns(InMatL lhs, InMatR rhs, OutVec out, std::size_t shift) -> void
 {
-    assert(lhs.extents() == rhs.extents());
-    assert(lhs.extent(1) > 0);
-    assert(shift < lhs.extent(0));
+    NEO_FFT_PRECONDITION(lhs.extents() == rhs.extents());
+    NEO_FFT_PRECONDITION(lhs.extent(1) > 0);
+    NEO_FFT_PRECONDITION(shift < lhs.extent(0));
 
     auto const full = Kokkos::full_extent;
 
@@ -39,8 +41,8 @@ auto multiply_sum_columns(
     std::size_t shift = 0
 ) -> void
 {
-    assert(lhs.extent(0) == rhs.rows());
-    assert(lhs.extent(1) == rhs.columns());
+    NEO_FFT_PRECONDITION(lhs.extent(0) == rhs.rows());
+    NEO_FFT_PRECONDITION(lhs.extent(1) == rhs.columns());
 
     auto multiplyRow = [&](auto leftRow, auto rightRow) {
         auto const left   = KokkosEx::submdspan(lhs, leftRow, Kokkos::full_extent);
@@ -72,8 +74,8 @@ auto multiply_sum_columns(
     std::span<T> accumulator
 ) -> void
 {
-    assert(lhs.rows() == rhs.rows());
-    assert(lhs.columns() == rhs.columns());
+    NEO_FFT_PRECONDITION(lhs.rows() == rhs.rows());
+    NEO_FFT_PRECONDITION(lhs.columns() == rhs.columns());
 
     auto const& lrows = lhs.row_container();
     auto const& lcols = lhs.column_container();

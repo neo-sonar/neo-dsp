@@ -1,5 +1,7 @@
 #pragma once
 
+#include <neo/fft/config.hpp>
+
 #include <neo/fft/algorithm/copy.hpp>
 #include <neo/fft/algorithm/fill.hpp>
 #include <neo/fft/algorithm/scale.hpp>
@@ -44,7 +46,7 @@ auto overlap_save<Float>::operator()(
     std::invocable<KokkosEx::mdspan<std::complex<Float>, Kokkos::dextents<size_t, 1>>> auto callback
 ) -> void
 {
-    assert(block.extent(0) * 2U == _window.extent(0));
+    NEO_FFT_PRECONDITION(block.extent(0) * 2U == _window.extent(0));
 
     // Time domain input buffer
     auto const window = _window.to_mdspan();

@@ -1,8 +1,9 @@
 #pragma once
 
+#include <neo/fft/config.hpp>
+
 #include <neo/fft/container/mdspan.hpp>
 
-#include <cassert>
 #include <complex>
 #include <numbers>
 
@@ -12,7 +13,7 @@ template<in_vector InVec, out_vector OutVec>
     requires(std::same_as<typename InVec::value_type, typename OutVec::value_type>)
 auto dft(InVec in, OutVec out) -> void
 {
-    assert(in.extents() == out.extents());
+    NEO_FFT_PRECONDITION(in.extents() == out.extents());
 
     using Complex = typename OutVec::value_type;
     using Float   = typename Complex::value_type;

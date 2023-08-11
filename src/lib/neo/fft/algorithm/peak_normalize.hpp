@@ -1,5 +1,7 @@
 #pragma once
 
+#include <neo/fft/config.hpp>
+
 #include <neo/fft/algorithm/scale.hpp>
 #include <neo/fft/container/mdspan.hpp>
 
@@ -37,8 +39,7 @@ template<in_object InObj>
         }
     }
 
-    assert(not std::equal_to{}(absMax, Float(0)));
-
+    NEO_FFT_PRECONDITION(not std::equal_to{}(absMax, Float(0)));
     return Float(1) / std::abs(absMax);
 }
 

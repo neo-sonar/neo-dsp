@@ -2,7 +2,6 @@
 
 #include <neo/fft/container/mdspan.hpp>
 
-#include <cassert>
 #include <cstddef>
 #include <iterator>
 #include <span>

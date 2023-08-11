@@ -1,11 +1,8 @@
 #pragma once
 
-#include <neo/fft/container/mdspan.hpp>
+#include <neo/fft/config.hpp>
 
-#include <algorithm>
-#include <cassert>
-#include <cstddef>
-#include <utility>
+#include <neo/fft/container/mdspan.hpp>
 
 namespace neo::fft {
 
@@ -13,7 +10,7 @@ template<in_object InObj, out_object OutObj>
     requires(InObj::rank() == OutObj::rank())
 constexpr auto copy(InObj inObj, OutObj outObj) -> void
 {
-    assert(inObj.extents() == outObj.extents());
+    NEO_FFT_PRECONDITION(inObj.extents() == outObj.extents());
 
     if constexpr (InObj::rank() == 1) {
         for (auto i{0ULL}; i < inObj.extent(0); ++i) {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <neo/fft/config.hpp>
+
 #include <neo/fft/algorithm/copy.hpp>
 #include <neo/fft/container/mdspan.hpp>
 #include <neo/fft/math/ilog2.hpp>
@@ -9,7 +11,6 @@
 #include <neo/fft/transform/reorder.hpp>
 
 #include <algorithm>
-#include <cassert>
 #include <complex>
 #include <cstddef>
 #include <numbers>
@@ -131,7 +132,7 @@ struct fft_plan
         requires(std::same_as<typename InOutVec::value_type, Complex>)
     auto operator()(InOutVec x, direction dir) -> void
     {
-        assert(std::cmp_equal(x.size(), _len));
+        NEO_FFT_PRECONDITION(std::cmp_equal(x.size(), _len));
 
         auto run = [this](InOutVec buffer, auto const& twiddles) {
             for (auto stage{0ULL}; stage < _order; ++stage) {

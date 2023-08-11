@@ -1,5 +1,7 @@
 #pragma once
 
+#include <neo/fft/config.hpp>
+
 #include <neo/fft/fixed_point/fixed_point.hpp>
 
 #if defined(__SSE2__)
@@ -16,7 +18,6 @@
     #include <arm_neon.h>
 #endif
 
-#include <cassert>
 #include <functional>
 #include <iterator>
 #include <span>
@@ -89,8 +90,8 @@ auto add(
     std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out
 )
 {
-    assert(lhs.size() == rhs.size());
-    assert(lhs.size() == out.size());
+    NEO_FFT_PRECONDITION(lhs.size() == rhs.size());
+    NEO_FFT_PRECONDITION(lhs.size() == out.size());
 
     if constexpr (std::same_as<StorageType, std::int8_t>) {
 #if defined(__SSE2__)
@@ -131,8 +132,8 @@ auto subtract(
     std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out
 )
 {
-    assert(lhs.size() == rhs.size());
-    assert(lhs.size() == out.size());
+    NEO_FFT_PRECONDITION(lhs.size() == rhs.size());
+    NEO_FFT_PRECONDITION(lhs.size() == out.size());
 
     if constexpr (std::same_as<StorageType, std::int8_t>) {
 #if defined(__SSE2__)
@@ -173,8 +174,8 @@ auto multiply(
     std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out
 )
 {
-    assert(lhs.size() == rhs.size());
-    assert(lhs.size() == out.size());
+    NEO_FFT_PRECONDITION(lhs.size() == rhs.size());
+    NEO_FFT_PRECONDITION(lhs.size() == out.size());
 
     if constexpr (std::same_as<StorageType, std::int16_t> && FractionalBits == 15) {
 #if defined(__SSE3__)
