@@ -12,7 +12,7 @@ template<std::floating_point Float>
 [[nodiscard]] auto generate_hann_window(std::size_t length)
     -> KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 1>>
 {
-    static constexpr auto const twoPi = static_cast<Float>(std::numbers::pi * Float(2));
+    static constexpr auto const twoPi = static_cast<Float>(std::numbers::pi) * Float(2);
 
     auto window = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 1>>{length};
     for (auto i{0ULL}; i < window.extent(0); ++i) {
