@@ -2,7 +2,7 @@
 
 #include <neo/fft/algorithm/copy.hpp>
 #include <neo/fft/algorithm/fill.hpp>
-#include <neo/fft/algorithm/multiply_elementwise_sum_columnwise.hpp>
+#include <neo/fft/algorithm/multiply_sum_columns.hpp>
 #include <neo/fft/container/mdspan.hpp>
 #include <neo/fft/container/sparse_matrix.hpp>
 #include <neo/fft/convolution/overlap_save.hpp>
@@ -49,7 +49,7 @@ auto upols_convolver<Float>::operator()(in_vector auto block) -> void
 
         copy(inout, KokkosEx::submdspan(fdl, _fdlIndex, Kokkos::full_extent));
         fill(accumulator, Float(0));
-        multiply_elementwise_sum_columnwise(fdl, _filter, accumulator, _fdlIndex);
+        multiply_sum_columns(fdl, _filter, accumulator, _fdlIndex);
         copy(accumulator, inout);
 
         ++_fdlIndex;

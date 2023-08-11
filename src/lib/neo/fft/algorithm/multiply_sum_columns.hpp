@@ -6,7 +6,7 @@
 namespace neo::fft {
 
 template<in_matrix InMatL, in_matrix InMatR, out_vector OutVec>
-constexpr auto multiply_elementwise_sum_columnwise(InMatL lhs, InMatR rhs, OutVec out, std::size_t shift) -> void
+constexpr auto multiply_sum_columns(InMatL lhs, InMatR rhs, OutVec out, std::size_t shift) -> void
 {
     assert(lhs.extents() == rhs.extents());
     assert(lhs.extent(1) > 0);
@@ -32,7 +32,7 @@ constexpr auto multiply_elementwise_sum_columnwise(InMatL lhs, InMatR rhs, OutVe
 }
 
 template<typename T, typename U, typename IndexType, typename ValueContainer, typename IndexContainer>
-auto multiply_elementwise_sum_columnwise(
+auto multiply_sum_columns(
     Kokkos::mdspan<T, Kokkos::dextents<std::size_t, 2>> lhs,
     sparse_matrix<U, IndexType, ValueContainer, IndexContainer> const& rhs,
     std::span<U> accumulator,
@@ -66,7 +66,7 @@ auto multiply_elementwise_sum_columnwise(
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
-auto multiply_elementwise_sum_columnwise(
+auto multiply_sum_columns(
     sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& lhs,
     sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& rhs,
     std::span<T> accumulator

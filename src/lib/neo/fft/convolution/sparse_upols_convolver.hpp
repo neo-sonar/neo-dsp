@@ -1,6 +1,6 @@
 #pragma once
 
-#include <neo/fft/algorithm/multiply_elementwise_sum_columnwise.hpp>
+#include <neo/fft/algorithm/multiply_sum_columns.hpp>
 #include <neo/fft/container/mdspan.hpp>
 #include <neo/fft/container/sparse_matrix.hpp>
 #include <neo/fft/convolution/overlap_save.hpp>
@@ -55,7 +55,7 @@ auto sparse_upols_convolver<Float>::operator()(std::span<Float> block) -> void
 
         copy(inout, KokkosEx::submdspan(fdl, _fdlIndex, Kokkos::full_extent));
         fill(accumulator, Float(0));
-        multiply_elementwise_sum_columnwise(fdl, _filter, acc, _fdlIndex);
+        multiply_sum_columns(fdl, _filter, acc, _fdlIndex);
         copy(accumulator, inout);
 
         ++_fdlIndex;

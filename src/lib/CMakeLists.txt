@@ -52,7 +52,7 @@ add_executable(neo_fft_tests)
 target_sources(neo_fft_tests
     PRIVATE
         "neo/fft/math_test.cpp"
-        "neo/fft/algorithm/multiply_elementwise_sum_columnwise_test.cpp"
+        "neo/fft/algorithm/multiply_sum_columns_test.cpp"
         "neo/fft/container/sparse_matrix_test.cpp"
         "neo/fft/convolution/overlap_save_test.cpp"
         "neo/fft/convolution/sparse_upols_convolver_test.cpp"
