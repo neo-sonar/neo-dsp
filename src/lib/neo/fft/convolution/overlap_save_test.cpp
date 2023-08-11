@@ -37,8 +37,7 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: overlap_save", "", float, double)
         Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}},
         Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}}
     );
-    REQUIRE(error.has_value());
-    REQUIRE_THAT(error.value(), Catch::Matchers::WithinAbs(0.0, 0.00001));
+    REQUIRE_THAT(error, Catch::Matchers::WithinAbs(0.0, 0.00001));
 
     for (auto i{0ULL}; i < output.size(); ++i) {
         CAPTURE(i);
