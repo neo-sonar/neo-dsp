@@ -2,6 +2,7 @@
 
 #include <neo/fft/container/mdspan.hpp>
 
+#include <algorithm>
 #include <complex>
 #include <concepts>
 #include <cstdio>
@@ -104,13 +105,6 @@ template<std::floating_point Float>
 }
 
 template<typename T>
-consteval auto float_or_complex_value_type()
-{
-    if constexpr (std::floating_point<T>) {
-        return T{};
-    } else {
-        return typename T::value_type{};
-    }
-}
+using float_or_complex_value_type_t = decltype(std::abs(std::declval<T>()));
 
 }  // namespace neo::fft

@@ -9,7 +9,7 @@
 
 TEMPLATE_TEST_CASE("neo/fft/algorithm: copy(in_vector)", "", float, double, std::complex<float>, std::complex<double>)
 {
-    using Float     = decltype(neo::fft::float_or_complex_value_type<TestType>());
+    using Float     = neo::fft::float_or_complex_value_type_t<TestType>;
     auto const size = GENERATE(as<std::size_t>{}, 1, 2, 33, 128);
 
     SECTION("vector")
