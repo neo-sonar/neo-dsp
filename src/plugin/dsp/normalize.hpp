@@ -7,9 +7,6 @@
 
 namespace neo {
 
-// normalized_sample = sample / sqrt(mean(buffer^2))
-auto rms_normalization(std::span<float> buffer) -> void;
-
 auto juce_normalization(juce::AudioBuffer<float>& buf) -> void;
 
 }  // namespace neo

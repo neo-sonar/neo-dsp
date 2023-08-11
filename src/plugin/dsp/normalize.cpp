@@ -2,37 +2,9 @@
 
 #include <algorithm>
 #include <cmath>
-#include <concepts>
 #include <numeric>
 
 namespace neo {
-
-namespace {
-
-[[nodiscard]] auto rms_normalization_factor(std::span<float const> buf) -> float
-{
-    auto const squared_sum = [](auto sum, auto val) { return sum + (val * val); };
-    auto const sum         = std::accumulate(buf.begin(), buf.end(), 0.0F, squared_sum);
-    auto const mean_square = sum / static_cast<float>(buf.size());
-
-    auto factor = 1.0F;
-    if (mean_square > 0.0F) {
-        factor = 1.0F / std::sqrt(mean_square);
-    }
-    return factor;
-}
-
-}  // namespace
-
-// normalized_sample = sample / sqrt(mean(buffer^2))
-auto rms_normalization(std::span<float> buffer) -> void
-{
-    if (buffer.empty())
-        return;
-    auto const factor = rms_normalization_factor(buffer);
-    auto const mul    = [factor](auto v) { return v * factor; };
-    std::transform(buffer.begin(), buffer.end(), buffer.begin(), mul);
-}
 
 auto juce_normalization(juce::AudioBuffer<float>& buf) -> void
 {
