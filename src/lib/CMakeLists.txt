@@ -62,6 +62,7 @@ target_sources(neo_fft_tests
         "neo/fft/math/fftfreq_test.cpp"
         "neo/fft/transform/radix2_test.cpp"
         "neo/fft/transform/rfft_test.cpp"
+        "neo/fft/transform/stft_test.cpp"
 )
 
 catch_discover_tests(neo_fft_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
