@@ -1,15 +1,18 @@
 #include "overlap_save.hpp"
 
 #include <neo/fft/algorithm/allclose.hpp>
+#include <neo/fft/algorithm/rms_error.hpp>
 #include <neo/fft/convolution/uniform_partition.hpp>
 #include <neo/fft/testing/testing.hpp>
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <span>
+#include <utility>
 
 TEMPLATE_TEST_CASE("neo/fft/convolution: overlap_save", "", float, double)
 {
@@ -29,6 +32,13 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: overlap_save", "", float, double)
         auto block = KokkosEx::submdspan(blocks, std::tuple{i, i + blockSize});
         ols(block, [](auto) {});
     }
+
+    auto const error = neo::fft::rms_error(
+        Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}},
+        Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}}
+    );
+    REQUIRE(error.has_value());
+    REQUIRE_THAT(error.value(), Catch::Matchers::WithinAbs(0.0, 0.00001));
 
     for (auto i{0ULL}; i < output.size(); ++i) {
         CAPTURE(i);

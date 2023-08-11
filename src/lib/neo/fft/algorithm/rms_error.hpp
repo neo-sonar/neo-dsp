@@ -1,71 +1,38 @@
 #pragma once
 
+#include <neo/fft/container/mdspan.hpp>
+
 #include <cmath>
-#include <complex>
 #include <concepts>
-#include <functional>
-#include <numeric>
 #include <optional>
-#include <span>
+#include <type_traits>
 
 namespace neo::fft {
 
-template<std::floating_point Float>
-auto rms_error(std::span<Float const> original, std::span<Float const> reconstructed) noexcept -> std::optional<Float>
+template<in_vector InVec1, in_vector InVec2>
+    requires(std::floating_point<typename InVec1::value_type> and std::floating_point<typename InVec2::value_type>)
+auto rms_error(InVec1 signal, InVec2 reconstructed) noexcept
+    -> std::optional<std::common_type_t<typename InVec1::value_type, typename InVec2::value_type>>
 {
-    if (original.empty()) {
-        return std::nullopt;
-    }
-    if (original.size() != reconstructed.size()) {
-        return std::nullopt;
-    }
+    using Float      = std::common_type_t<typename InVec1::value_type, typename InVec2::value_type>;
+    using index_type = std::common_type_t<typename InVec1::index_type, typename InVec2::index_type>;
 
-    auto diffSquared = [](Float x, Float y) {
-        auto const diff = x - y;
-        return diff * diff;
-    };
-
-    auto sum = std::transform_reduce(
-        original.begin(),
-        original.end(),
-        reconstructed.begin(),
-        Float(0),
-        std::plus{},
-        diffSquared
-    );
-
-    return std::sqrt(sum / static_cast<Float>(original.size()));
-}
-
-template<std::floating_point Float>
-auto rms_error(
-    std::span<std::complex<Float const>> original,
-    std::span<std::complex<Float const>> reconstructed
-) noexcept -> std::optional<Float>
-{
-    if (original.empty()) {
-        return std::nullopt;
-    }
-    if (original.size() != reconstructed.size()) {
+    if (signal.extents() != reconstructed.extents()) {
         return std::nullopt;
     }
 
-    auto diffSquared = [](std::complex<Float> x, std::complex<Float> y) {
-        auto const re = x.real() - y.real();
-        auto const im = x.imag() - y.imag();
-        return (re * re) + (im * im);
-    };
+    if (signal.extent(0) == 0) {
+        return std::nullopt;
+    }
 
-    auto sum = std::transform_reduce(
-        original.begin(),
-        original.end(),
-        reconstructed.begin(),
-        Float(0),
-        std::plus{},
-        diffSquared
-    );
+    auto sum = Float(0);
+    for (index_type i{0}; i < static_cast<index_type>(signal.extent(0)); ++i) {
+        auto const diff    = signal[i] - reconstructed[i];
+        auto const squared = diff * diff;
+        sum += squared;
+    }
 
-    return std::sqrt(sum / static_cast<Float>(original.size()));
+    return std::sqrt(sum / static_cast<Float>(signal.size()));
 }
 
 }  // namespace neo::fft
