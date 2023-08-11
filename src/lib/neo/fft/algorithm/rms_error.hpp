@@ -32,7 +32,7 @@ auto rms_error(InVec1 signal, InVec2 reconstructed) noexcept
         sum += squared;
     }
 
-    return std::sqrt(sum / static_cast<Float>(signal.size()));
+    return std::sqrt(sum / static_cast<Float>(signal.extent(0)));
 }
 
 }  // namespace neo::fft
