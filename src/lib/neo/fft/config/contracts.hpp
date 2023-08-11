@@ -27,7 +27,7 @@ inline constexpr auto current_contracts_check_mode = contracts_check_mode::excep
     do {                                                                                                                \
         if constexpr (::neo::fft::current_contracts_check_mode == ::neo::fft::contracts_check_mode::exception) {        \
             if (!(x)) {                                                                                                 \
-                throw std::runtime_error{"contract violation: " #x};                                                    \
+                throw std::runtime_error{"contract violation: " #x " in: '" __FILE__ "'"};                              \
             }                                                                                                           \
         } else if constexpr (::neo::fft::current_contracts_check_mode == ::neo::fft::contracts_check_mode::assertion) { \
             assert((x));                                                                                                \

@@ -15,3 +15,5 @@
 #else
     #define NEO_FFT_RESTRICT
 #endif
+
+#define NEO_FFT_STRINGIFY(x) #x

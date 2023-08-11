@@ -22,7 +22,7 @@ struct overlap_save
     explicit overlap_save(std::size_t block_size);
 
     auto operator()(
-        in_vector auto block,
+        inout_vector auto block,
         std::invocable<KokkosEx::mdspan<std::complex<Float>, Kokkos::dextents<size_t, 1>>> auto callback
     ) -> void;
 
@@ -42,7 +42,7 @@ overlap_save<Float>::overlap_save(std::size_t block_size) : _blockSize{block_siz
 
 template<std::floating_point Float>
 auto overlap_save<Float>::operator()(
-    in_vector auto block,
+    inout_vector auto block,
     std::invocable<KokkosEx::mdspan<std::complex<Float>, Kokkos::dextents<size_t, 1>>> auto callback
 ) -> void
 {
