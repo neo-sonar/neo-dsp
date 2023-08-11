@@ -61,6 +61,7 @@ target_sources(neo_fft_tests
         "neo/fft/convolution/uniform_partition_test.cpp"
         "neo/fft/fixed_point/fixed_point_test.cpp"
         "neo/fft/math/fftfreq_test.cpp"
+        "neo/fft/testing/testing_test.cpp"
         "neo/fft/transform/radix2_test.cpp"
         "neo/fft/transform/rfft_test.cpp"
         "neo/fft/transform/stft_test.cpp"
