@@ -24,7 +24,6 @@ private:
     auto openFile() -> void;
     auto runBenchmarks() -> void;
     auto runWeightingTests() -> void;
-    auto runDynamicRangeTests() -> void;
     auto runJuceConvolverBenchmark() -> void;
     auto runDenseConvolverBenchmark() -> void;
     auto runDenseStereoConvolverBenchmark() -> void;

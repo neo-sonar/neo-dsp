@@ -154,7 +154,8 @@ auto PluginEditor::openFile() -> void
         _filter     = loadAndResample(_formats, file, 44'100.0);
         _filterFile = file;
 
-        _spectrum = fft::stft(_filter, 1024);
+        auto const filterMatrix = to_mdarray(_filter);
+        _spectrum               = fft::stft(filterMatrix, 1024);
 
         _fileInfo.setText(filename + " (" + juce::String(_filter.getNumSamples()) + ")\n");
         updateImages();
@@ -193,8 +194,6 @@ auto PluginEditor::runBenchmarks() -> void
     if (hasEngineEnabled("sparse")) {
         runSparseConvolverBenchmark();
     }
-
-    // runDynamicRangeTests();
 }
 
 auto PluginEditor::runWeightingTests() -> void
@@ -258,37 +257,6 @@ auto PluginEditor::runWeightingTests() -> void
 
     _fileInfo.moveCaretToEnd(false);
     _fileInfo.insertTextAtCaret(line);
-}
-
-auto PluginEditor::runDynamicRangeTests() -> void
-{
-    auto N          = 1024;
-    auto normalized = _signal;
-    juce_normalization(normalized);
-
-    auto coeffs = neo::fft::stft(normalized, N);
-
-    for (auto frame{0U}; frame < coeffs.extent(0); ++frame) {
-        auto mins = std::array<float, 2>{999.0F, 999.0F};
-        auto maxs = std::array<float, 2>{0.0F, 0.0F};
-
-        for (auto bin{0U}; bin < coeffs.extent(1); ++bin) {
-            auto const coeff = coeffs(frame, bin);
-
-            mins[0] = std::min(mins[0], coeff.real());
-            maxs[0] = std::max(maxs[0], coeff.real());
-
-            mins[1] = std::min(mins[1], coeff.imag());
-            maxs[1] = std::max(maxs[1], coeff.imag());
-        }
-
-        auto const realRange = std::abs(maxs[0] - mins[0]);
-        auto const imagRange = std::abs(maxs[1] - mins[1]);
-        auto const range     = std::max(realRange, imagRange);
-        auto const scale     = 1.0F / range;
-
-        std::printf("frame: %-3u range: %.6f scale: %.6f\n", frame, range, scale);
-    }
 }
 
 auto PluginEditor::runJuceConvolverBenchmark() -> void

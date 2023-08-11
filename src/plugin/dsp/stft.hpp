@@ -7,7 +7,7 @@
 
 namespace neo::fft {
 
-[[nodiscard]] auto stft(juce::AudioBuffer<float> const& buffer, int windowSize)
+[[nodiscard]] auto stft(Kokkos::mdspan<float const, Kokkos::dextents<size_t, 2>> buffer, int windowSize)
     -> KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>>;
 
 }  // namespace neo::fft
