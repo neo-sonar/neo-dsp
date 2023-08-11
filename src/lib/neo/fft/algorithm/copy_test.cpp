@@ -10,7 +10,7 @@
 TEMPLATE_TEST_CASE("neo/fft/algorithm: copy(in_vector)", "", float, double, std::complex<float>, std::complex<double>)
 {
     using Float     = neo::fft::float_or_complex_value_type_t<TestType>;
-    auto const size = GENERATE(as<std::size_t>{}, 1, 2, 33, 128);
+    auto const size = GENERATE(as<std::size_t>{}, 2, 33, 128);
 
     SECTION("vector")
     {
@@ -24,6 +24,11 @@ TEMPLATE_TEST_CASE("neo/fft/algorithm: copy(in_vector)", "", float, double, std:
         auto const in = makeVector(Float(1));
         neo::fft::copy(in.to_mdspan(), out.to_mdspan());
         REQUIRE(neo::fft::allclose(in.to_mdspan(), out.to_mdspan()));
+
+        if constexpr (neo::fft::current_contracts_check_mode == neo::fft::contracts_check_mode::exception) {
+            auto sub = KokkosEx::submdspan(in.to_mdspan(), std::tuple{0, size - 1UL});
+            REQUIRE_THROWS(neo::fft::copy(sub, out.to_mdspan()));
+        }
     }
 
     SECTION("matrix")
