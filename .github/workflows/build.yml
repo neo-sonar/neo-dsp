@@ -40,7 +40,7 @@ jobs:
           - name: Coverage
             os: ubuntu-22.04
             build_type: Debug
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native"'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage"'
             cmake_targets: neo_fft_tests
 
           - name: Sanitizers
