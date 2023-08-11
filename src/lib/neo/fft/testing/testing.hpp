@@ -103,4 +103,14 @@ template<std::floating_point Float>
     return impulse;
 }
 
+template<typename T>
+consteval auto float_or_complex_value_type()
+{
+    if constexpr (std::floating_point<T>) {
+        return T{};
+    } else {
+        return typename T::value_type{};
+    }
+}
+
 }  // namespace neo::fft

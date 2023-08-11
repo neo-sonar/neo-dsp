@@ -1,23 +1,14 @@
 #include "allclose.hpp"
 
 #include <neo/fft/algorithm/fill.hpp>
+#include <neo/fft/testing/testing.hpp>
 
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-template<typename T>
-static constexpr auto floatOrComplexValueType()
-{
-    if constexpr (std::floating_point<T>) {
-        return T{};
-    } else {
-        return typename T::value_type{};
-    }
-}
-
 TEMPLATE_TEST_CASE("neo/fft/algorithm: allclose(in_vector)", "", float, double, std::complex<float>, std::complex<double>)
 {
-    using Float = decltype(floatOrComplexValueType<TestType>());
+    using Float = decltype(neo::fft::float_or_complex_value_type<TestType>());
 
     auto const size       = GENERATE(as<std::size_t>{}, 1, 2, 33, 128);
     auto const makeVector = [size](Float val) {
