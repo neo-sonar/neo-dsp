@@ -1,6 +1,5 @@
 #include "upols_convolver.hpp"
 
-#include <neo/fft/algorithm/allclose.hpp>
 #include <neo/fft/convolution/uniform_partition.hpp>
 #include <neo/fft/testing/testing.hpp>
 

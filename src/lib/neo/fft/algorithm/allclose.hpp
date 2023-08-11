@@ -1,66 +1,39 @@
 #pragma once
 
+#include <neo/fft/container/mdspan.hpp>
+
 #include <algorithm>
 #include <complex>
 #include <concepts>
-#include <functional>
-#include <numeric>
-#include <span>
 
 namespace neo::fft {
 
-[[nodiscard]] auto allclose(std::span<float const> lhs, std::span<float const> rhs, float tolerance = 1e-5F) -> bool;
-
-[[nodiscard]] auto allclose(std::span<double const> lhs, std::span<double const> rhs, double tolerance = 1e-9) -> bool;
-
-[[nodiscard]] auto
-allclose(std::span<std::complex<float> const> lhs, std::span<std::complex<float> const> rhs, float tolerance = 1e-5F)
-    -> bool;
-
-[[nodiscard]] auto
-allclose(std::span<std::complex<double> const> lhs, std::span<std::complex<double> const> rhs, double tolerance = 1e-9)
-    -> bool;
-
-namespace detail {
-
-template<typename T, typename U = T>
-auto allclose_impl(std::span<T const> lhs, std::span<T const> rhs, U tolerance) -> bool
+template<in_vector InVec1, in_vector InVec2>
+[[nodiscard]] auto allclose(InVec1 lhs, InVec2 rhs) -> bool
 {
-    if (lhs.size() != rhs.size()) {
+    using Left  = typename InVec1::value_type;
+    using Right = typename InVec2::value_type;
+    using Float = decltype(std::abs(std::declval<Left>() - std::declval<Right>()));
+    static_assert(std::floating_point<Float>);
+
+    auto const tolerance = [] {
+        if constexpr (std::same_as<Float, float>) {
+            return Float(1e-5);
+        }
+        return Float(1e-9);
+    }();
+
+    if (lhs.extents() != rhs.extents()) {
         return false;
     }
-    return std::transform_reduce(
-        lhs.begin(),
-        lhs.end(),
-        rhs.begin(),
-        true,
-        std::logical_and{},
-        [tolerance](auto l, auto r) { return std::abs(l - r) < tolerance; }
-    );
-}
 
-}  // namespace detail
+    for (auto i{0}; std::cmp_less(i, lhs.extent(0)); ++i) {
+        if (std::abs(lhs[i] - rhs[i]) > tolerance) {
+            return false;
+        }
+    }
 
-inline auto allclose(std::span<float const> lhs, std::span<float const> rhs, float tolerance) -> bool
-{
-    return detail::allclose_impl<float>(lhs, rhs, tolerance);
-}
-
-inline auto allclose(std::span<double const> lhs, std::span<double const> rhs, double tolerance) -> bool
-{
-    return detail::allclose_impl<double>(lhs, rhs, tolerance);
-}
-
-inline auto
-allclose(std::span<std::complex<float> const> lhs, std::span<std::complex<float> const> rhs, float tolerance) -> bool
-{
-    return detail::allclose_impl<std::complex<float>, float>(lhs, rhs, tolerance);
-}
-
-inline auto
-allclose(std::span<std::complex<double> const> lhs, std::span<std::complex<double> const> rhs, double tolerance) -> bool
-{
-    return detail::allclose_impl<std::complex<double>, double>(lhs, rhs, tolerance);
+    return true;
 }
 
 }  // namespace neo::fft

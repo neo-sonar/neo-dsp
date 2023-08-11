@@ -36,12 +36,14 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: test_data(rfft_plan)", "", float, do
     auto output = std::vector<std::complex<Float>>(size_t(size / 2 + 1), Float(0));
     std::transform(tc.input.begin(), tc.input.end(), input.begin(), [](auto c) { return c.real(); });
 
+    auto in  = Kokkos::mdspan{input.data(), Kokkos::extents{input.size()}};
+    auto out = Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}};
+
     auto rfft = neo::fft::rfft_plan<Float>{order};
-    rfft(
-        Kokkos::mdspan{input.data(), Kokkos::extents{input.size()}},
-        Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}}
-    );
-    REQUIRE(neo::fft::allclose(tc.expected, output));
+    rfft(in, out);
+
+    auto const expected = Kokkos::mdspan{tc.expected.data(), Kokkos::extents{tc.expected.size()}};
+    REQUIRE(neo::fft::allclose(expected, out));
 }
 
 TEMPLATE_TEST_CASE("neo/fft/transform/rfft: roundtrip(rfft_plan)", "", float, double)
@@ -68,7 +70,10 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: roundtrip(rfft_plan)", "", float, do
     auto const scale = Float(1) / static_cast<Float>(size);
     std::transform(signal.begin(), signal.end(), signal.begin(), [scale](auto c) { return c * scale; });
 
-    REQUIRE(neo::fft::allclose(original, signal));
+    REQUIRE(neo::fft::allclose(
+        Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}},
+        Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}}
+    ));
 }
 
 TEMPLATE_TEST_CASE("neo/fft/transform/rfft: extract_two_real_dfts", "", float, double)
@@ -109,6 +114,6 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: extract_two_real_dfts", "", float, d
     auto cb = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>>{numCoeffs};
     neo::fft::extract_two_real_dfts(inout.to_mdspan(), ca.to_mdspan(), cb.to_mdspan());
 
-    REQUIRE(neo::fft::allclose(std::span{a_rev.data(), a_rev.size()}, std::span{ca.data(), ca.size()}));
-    REQUIRE(neo::fft::allclose(std::span{b_rev.data(), b_rev.size()}, std::span{cb.data(), cb.size()}));
+    REQUIRE(neo::fft::allclose(a_rev.to_mdspan(), ca.to_mdspan()));
+    REQUIRE(neo::fft::allclose(b_rev.to_mdspan(), cb.to_mdspan()));
 }

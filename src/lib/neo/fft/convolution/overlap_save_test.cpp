@@ -1,6 +1,5 @@
 #include "overlap_save.hpp"
 
-#include <neo/fft/algorithm/allclose.hpp>
 #include <neo/fft/algorithm/rms_error.hpp>
 #include <neo/fft/convolution/uniform_partition.hpp>
 #include <neo/fft/testing/testing.hpp>

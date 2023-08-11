@@ -44,6 +44,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
     );
 
     auto const testCase = neo::fft::load_test_data<Float>(paths).value();
+    auto const expected = Kokkos::mdspan{testCase.expected.data(), Kokkos::extents{testCase.expected.size()}};
 
     {
         auto in  = testCase.input;
@@ -53,28 +54,31 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
         auto outVec = Kokkos::mdspan{out.data(), Kokkos::extents{out.size()}};
         neo::fft::dft(inVec, outVec);
 
-        REQUIRE(neo::fft::allclose(testCase.expected, out));
+        REQUIRE(neo::fft::allclose(expected, outVec));
     }
 
     {
         auto inout = testCase.input;
+        auto io    = Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}};
         auto tw    = neo::fft::make_radix2_twiddles<std::complex<Float>>(inout.size());
-        neo::fft::c2c_radix2(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, tw);
-        REQUIRE(neo::fft::allclose(testCase.expected, inout));
+        neo::fft::c2c_radix2(io, tw);
+        REQUIRE(neo::fft::allclose(expected, io));
     }
 
     {
         auto inout = testCase.input;
+        auto io    = Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}};
         auto tw    = neo::fft::make_radix2_twiddles<std::complex<Float>>(inout.size());
-        neo::fft::c2c_radix2_alt(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, tw);
-        REQUIRE(neo::fft::allclose(testCase.expected, inout));
+        neo::fft::c2c_radix2_alt(io, tw);
+        REQUIRE(neo::fft::allclose(expected, io));
     }
 
     {
         auto inout = testCase.input;
+        auto io    = Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}};
         auto eng   = neo::fft::fft_plan<std::complex<Float>>{inout.size()};
-        eng(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, neo::fft::direction::forward);
-        REQUIRE(neo::fft::allclose(testCase.expected, inout));
+        eng(io, neo::fft::direction::forward);
+        REQUIRE(neo::fft::allclose(expected, io));
     }
 }
 
@@ -82,19 +86,20 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: roundtrip(c2c)", "", float, double
 {
     using Float = TestType;
 
-    auto size           = GENERATE(8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384);
-    auto const twiddles = neo::fft::make_radix2_twiddles<std::complex<Float>>(static_cast<std::size_t>(size));
+    auto const size     = GENERATE(as<size_t>{}, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384);
+    auto const twiddles = neo::fft::make_radix2_twiddles<std::complex<Float>>(size);
 
-    auto buffer = std::vector<std::complex<Float>>(static_cast<std::size_t>(size), std::complex<Float>(0));
+    auto buffer = std::vector<std::complex<Float>>(size, std::complex<Float>(0));
     auto rng    = std::mt19937{Catch::getSeed()};
     auto dist   = std::uniform_real_distribution<Float>{Float(-1.0), Float(1.0)};
     std::generate(buffer.begin(), buffer.end(), [&dist, &rng] { return std::complex<Float>{dist(rng), dist(rng)}; });
 
     auto inout = buffer;
-    auto c2c   = neo::fft::fft_plan<std::complex<Float>>{static_cast<std::size_t>(size)};
-    c2c(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, neo::fft::direction::forward);
-    c2c(Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}}, neo::fft::direction::backward);
+    auto io    = Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}};
+    auto c2c   = neo::fft::fft_plan<std::complex<Float>>{size};
+    c2c(io, neo::fft::direction::forward);
+    c2c(io, neo::fft::direction::backward);
     std::transform(inout.begin(), inout.end(), inout.begin(), [size](auto c) { return c / static_cast<Float>(size); });
 
-    REQUIRE(neo::fft::allclose(buffer, inout));
+    REQUIRE(neo::fft::allclose(Kokkos::mdspan{buffer.data(), Kokkos::extents{buffer.size()}}, io));
 }
