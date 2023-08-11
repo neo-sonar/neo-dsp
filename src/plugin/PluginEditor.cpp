@@ -2,13 +2,13 @@
 
 #include <neo/fft/container/sparse_matrix.hpp>
 #include <neo/fft/math/fftfreq.hpp>
+#include <neo/fft/transform/stft.hpp>
 
 #include "dsp/convolution.hpp"
 #include "dsp/normalize.hpp"
 #include "dsp/render.hpp"
 #include "dsp/resample.hpp"
 #include "dsp/spectogram.hpp"
-#include "dsp/stft.hpp"
 #include "dsp/wav.hpp"
 
 #include <span>
@@ -155,7 +155,7 @@ auto PluginEditor::openFile() -> void
         _filterFile = file;
 
         auto const filterMatrix = to_mdarray(_filter);
-        _spectrum               = fft::stft(filterMatrix, 1024);
+        _spectrum               = fft::stft(filterMatrix.to_mdspan(), 1024);
 
         _fileInfo.setText(filename + " (" + juce::String(_filter.getNumSamples()) + ")\n");
         updateImages();

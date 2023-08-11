@@ -37,8 +37,6 @@ set(PerceptualConvolution_Sources
     dsp/resample.hpp
     dsp/spectogram.cpp
     dsp/spectogram.hpp
-    dsp/stft.cpp
-    dsp/stft.hpp
     dsp/wav.cpp
     dsp/wav.hpp
 )
