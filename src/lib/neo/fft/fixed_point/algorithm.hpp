@@ -72,7 +72,7 @@ inline constexpr auto apply_kernel_neon128
         out[static_cast<size_t>(i)] = scalar_kernel(lhs[static_cast<size_t>(i)], rhs[static_cast<size_t>(i)]);
     }
 
-    for (auto i{remainder}; i < lhs.size(); i += vectorSize) {
+    for (auto i{remainder}; i < std::ssize(lhs.size()); i += vectorSize) {
         auto const left  = load(std::next(lhs.data(), i));
         auto const right = load(std::next(rhs.data(), i));
         store(std::next(out.data(), i), vector_kernel(left, right));
