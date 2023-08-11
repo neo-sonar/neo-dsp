@@ -1,0 +1,20 @@
+#pragma once
+
+#include <neo/fft/container/mdspan.hpp>
+
+#include <utility>
+
+namespace neo::fft {
+
+template<in_vector InVec1, in_vector InVec2, out_vector OutVec>
+auto multiply(InVec1 x, InVec2 y, OutVec out) -> void
+{
+    assert(x.extents() == y.extents());
+    assert(x.extents() == out.extents());
+
+    for (auto i{0}; std::cmp_less(i, x.extent(0)); ++i) {
+        out[i] = x[i] * y[i];
+    }
+}
+
+}  // namespace neo::fft

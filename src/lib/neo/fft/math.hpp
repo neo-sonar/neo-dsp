@@ -7,3 +7,4 @@
 #include <neo/fft/math/ilog2.hpp>
 #include <neo/fft/math/next_power_of_two.hpp>
 #include <neo/fft/math/power.hpp>
+#include <neo/fft/math/windowing.hpp>
