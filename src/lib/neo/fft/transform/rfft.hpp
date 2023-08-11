@@ -53,22 +53,22 @@ private:
     KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 1>> _buffer;
 };
 
-template<typename Float>
-auto extract_two_real_dfts(
-    std::span<std::complex<Float> const> dft,
-    std::span<std::complex<Float>> a,
-    std::span<std::complex<Float>> b
-) -> void
+template<in_vector InVec, out_vector OutVecA, out_vector OutVecB>
+auto extract_two_real_dfts(InVec dft, OutVecA a, OutVecB b) -> void
 {
+    using std::conj;
+    using Complex = typename InVec::value_type;
+    using Float   = typename Complex::value_type;
+
     auto const n = dft.size();
-    auto const i = std::complex{Float(0), Float(-1)};
+    auto const i = Complex{Float(0), Float(-1)};
 
     a[0] = dft[0].real();
     b[0] = dft[0].imag();
 
     for (auto k{1U}; k < n / 2 + 1; ++k) {
-        a[k] = (dft[k] + std::conj(dft[n - k])) * Float(0.5);
-        b[k] = (i * (dft[k] - std::conj(dft[n - k]))) * Float(0.5);
+        a[k] = (dft[k] + conj(dft[n - k])) * Float(0.5);
+        b[k] = (i * (dft[k] - conj(dft[n - k]))) * Float(0.5);
     }
 }
 

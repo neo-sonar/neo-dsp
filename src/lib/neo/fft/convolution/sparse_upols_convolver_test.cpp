@@ -21,11 +21,11 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: sparse_upols_convolver", "", float, dou
 
     auto convolver = neo::fft::sparse_upols_convolver<Float>{};
     auto output    = signal;
-    convolver.filter(partitions, [](auto, auto, auto) { return true; });
+    convolver.filter(partitions.to_mdspan(), [](auto, auto, auto) { return true; });
 
     for (auto i{0U}; i < output.size(); i += blockSize) {
         auto block = std::span{output}.subspan(i, blockSize);
-        convolver(block);
+        convolver(Kokkos::mdspan{block.data(), Kokkos::extents{block.size()}});
     }
 
     // TODO: Loop should go to output.size(), curently fails on index 128 i.e. after one block

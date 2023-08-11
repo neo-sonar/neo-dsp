@@ -18,14 +18,15 @@
 
 namespace neo::fft {
 
-template<typename Complex>
-auto fill_radix2_twiddles(std::span<Complex> table, bool inverse = false) -> void
+template<inout_vector OutVec>
+auto fill_radix2_twiddles(OutVec table, direction dir = direction::forward) -> void
 {
-    using Float = typename Complex::value_type;
+    using Complex = typename OutVec::value_type;
+    using Float   = typename Complex::value_type;
 
     auto const tableSize = table.size();
     auto const fftSize   = tableSize * 2ULL;
-    auto const sign      = inverse ? Float(1) : Float(-1);
+    auto const sign      = dir == direction::forward ? Float(-1) : Float(1);
     auto const twoPi     = static_cast<Float>(std::numbers::pi * 2.0);
 
     for (std::size_t i = 0; i < tableSize; ++i) {
@@ -35,18 +36,18 @@ auto fill_radix2_twiddles(std::span<Complex> table, bool inverse = false) -> voi
 }
 
 template<typename Complex>
-auto make_radix2_twiddles(std::size_t size, bool inverse = false) -> std::vector<Complex>
+auto make_radix2_twiddles(std::size_t size, direction dir = direction::forward) -> std::vector<Complex>
 {
     auto table = std::vector<Complex>(size / 2U);
-    fill_radix2_twiddles<Complex>(std::span{table}, inverse);
+    fill_radix2_twiddles(Kokkos::mdspan{table.data(), Kokkos::extents{table.size()}}, dir);
     return table;
 }
 
 template<typename Complex, std::size_t Size>
-auto make_radix2_twiddles(bool inverse = false) -> std::array<Complex, Size / 2>
+auto make_radix2_twiddles(direction dir = direction::forward) -> std::array<Complex, Size / 2>
 {
     auto table = std::array<Complex, Size / 2>{};
-    fill_radix2_twiddles<Complex>(std::span{table}, inverse);
+    fill_radix2_twiddles(Kokkos::mdspan{table.data(), Kokkos::extents{table.size()}}, dir);
     return table;
 }
 

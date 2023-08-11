@@ -18,10 +18,10 @@ struct sparse_upols_convolver
     sparse_upols_convolver() = default;
 
     auto filter(
-        KokkosEx::mdspan<std::complex<Float> const, Kokkos::dextents<size_t, 2>> filter,
+        in_matrix auto filter,
         std::function<bool(std::size_t, std::size_t, std::complex<Float>)> const& sparsityFilter
     ) -> void;
-    auto operator()(std::span<Float> block) -> void;
+    auto operator()(inout_vector auto block) -> void;
 
 private:
     sparse_matrix<std::complex<Float>> _filter;
@@ -34,7 +34,7 @@ private:
 
 template<std::floating_point Float>
 auto sparse_upols_convolver<Float>::filter(
-    KokkosEx::mdspan<std::complex<Float> const, Kokkos::dextents<size_t, 2>> filter,
+    in_matrix auto filter,
     std::function<bool(std::size_t, std::size_t, std::complex<Float>)> const& sparsityFilter
 ) -> void
 {
@@ -46,9 +46,9 @@ auto sparse_upols_convolver<Float>::filter(
 }
 
 template<std::floating_point Float>
-auto sparse_upols_convolver<Float>::operator()(std::span<Float> block) -> void
+auto sparse_upols_convolver<Float>::operator()(inout_vector auto block) -> void
 {
-    _overlapSave(Kokkos::mdspan{block.data(), Kokkos::extents{block.size()}}, [this](inout_vector auto inout) {
+    _overlapSave(block, [this](inout_vector auto inout) {
         auto const fdl         = _fdl.to_mdspan();
         auto const accumulator = _accumulator.to_mdspan();
         auto const acc         = std::span{accumulator.data_handle(), accumulator.size()};
