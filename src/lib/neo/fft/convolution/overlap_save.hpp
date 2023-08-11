@@ -19,12 +19,13 @@ template<std::floating_point Float>
 struct overlap_save
 {
     overlap_save() = default;
-    explicit overlap_save(std::size_t block_size);
+    overlap_save(std::size_t block_size, std::size_t filter_size);
 
     auto operator()(inout_vector auto block, auto callback) -> void;
 
 private:
-    std::size_t _blockSize{0};
+    std::size_t _blockSize{1};
+    std::size_t _filterSize{1};
     std::size_t _windowSize{_blockSize * 2UL};
 
     KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>> _window{_windowSize};
@@ -34,7 +35,9 @@ private:
 };
 
 template<std::floating_point Float>
-overlap_save<Float>::overlap_save(std::size_t block_size) : _blockSize{block_size}
+overlap_save<Float>::overlap_save(std::size_t block_size, std::size_t filter_size)
+    : _blockSize{block_size}
+    , _filterSize{filter_size}
 {}
 
 template<std::floating_point Float>

@@ -20,7 +20,7 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: overlap_save", "", float, double)
     auto const blockSize = GENERATE(as<std::size_t>{}, 128, 256, 512);
     auto const signal    = neo::fft::generate_noise_signal<Float>(blockSize * 15UL, Catch::getSeed());
 
-    auto ols    = neo::fft::overlap_save<Float>{blockSize};
+    auto ols    = neo::fft::overlap_save<Float>{blockSize, blockSize};
     auto output = signal;
     auto blocks = Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}};
 

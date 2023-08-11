@@ -19,8 +19,8 @@ target_sources(neo_fft_tests
         "neo/fft/convolution/overlap_add_test.cpp"
         "neo/fft/convolution/overlap_save_test.cpp"
         "neo/fft/convolution/sparse_upols_convolver_test.cpp"
-        "neo/fft/convolution/upols_convolver_test.cpp"
         "neo/fft/convolution/uniform_partition_test.cpp"
+        "neo/fft/convolution/uniform_partitioned_convolver_test.cpp"
 
         "neo/fft/fixed_point/fixed_point_test.cpp"
 

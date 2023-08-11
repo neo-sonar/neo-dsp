@@ -32,8 +32,8 @@ struct overlap_add
     auto operator()(inout_vector auto block, auto callback) -> void;
 
 private:
-    size_type _block_size{0};
-    size_type _filter_size{0};
+    size_type _block_size{1};
+    size_type _filter_size{1};
 
     rfft_plan<Float> _rfft{ilog2(next_power_of_two(_block_size + _filter_size - 1UL))};
     KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>> _real_buffer{_rfft.size()};

@@ -5,6 +5,7 @@
 #include <neo/fft/algorithm/multiply_sum_columns.hpp>
 #include <neo/fft/container/mdspan.hpp>
 #include <neo/fft/container/sparse_matrix.hpp>
+#include <neo/fft/convolution/overlap_add.hpp>
 #include <neo/fft/convolution/overlap_save.hpp>
 
 #include <complex>
@@ -13,37 +14,37 @@
 
 namespace neo::fft {
 
-template<std::floating_point Float>
-struct upols_convolver
+template<std::floating_point Float, typename Overlap = overlap_save<Float>>
+struct uniform_partitioned_convolver
 {
-    upols_convolver() = default;
+    uniform_partitioned_convolver() = default;
 
     auto filter(in_matrix auto filter) -> void;
     auto operator()(in_vector auto block) -> void;
 
 private:
+    Overlap _overlap;
+
     KokkosEx::mdspan<std::complex<Float> const, Kokkos::dextents<size_t, 2>> _filter;
     KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>> _accumulator;
     KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 2>> _fdl;
     std::size_t _fdlIndex{0};
-
-    overlap_save<Float> _overlapSave;
 };
 
-template<std::floating_point Float>
-auto upols_convolver<Float>::filter(in_matrix auto filter) -> void
+template<std::floating_point Float, typename Overlap>
+auto uniform_partitioned_convolver<Float, Overlap>::filter(in_matrix auto filter) -> void
 {
-    _overlapSave = overlap_save<Float>{filter.extent(1) - 1};
+    _overlap     = Overlap{filter.extent(1) - 1, filter.extent(1) - 1};
     _fdl         = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 2>>{filter.extents()};
     _accumulator = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>>{filter.extent(1)};
     _filter      = filter;
     _fdlIndex    = 0;
 }
 
-template<std::floating_point Float>
-auto upols_convolver<Float>::operator()(in_vector auto block) -> void
+template<std::floating_point Float, typename Overlap>
+auto uniform_partitioned_convolver<Float, Overlap>::operator()(in_vector auto block) -> void
 {
-    _overlapSave(block, [this](inout_vector auto inout) {
+    _overlap(block, [this](inout_vector auto inout) {
         auto const fdl         = _fdl.to_mdspan();
         auto const accumulator = _accumulator.to_mdspan();
 
@@ -58,5 +59,11 @@ auto upols_convolver<Float>::operator()(in_vector auto block) -> void
         }
     });
 }
+
+template<std::floating_point Float>
+using upols_convolver = uniform_partitioned_convolver<Float, overlap_save<Float>>;
+
+template<std::floating_point Float>
+using upola_convolver = uniform_partitioned_convolver<Float, overlap_add<Float>>;
 
 }  // namespace neo::fft

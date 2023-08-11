@@ -1,4 +1,4 @@
-#include "upols_convolver.hpp"
+#include "uniform_partitioned_convolver.hpp"
 
 #include <neo/fft/convolution/uniform_partition.hpp>
 #include <neo/fft/testing/testing.hpp>
@@ -10,15 +10,13 @@
 
 #include <span>
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver", "", float, double)
+template<std::floating_point Float, typename Convolver>
+[[nodiscard]] static auto test_uniform_partitioned_convolver(auto blockSize)
 {
-    using Float = TestType;
-
-    auto const blockSize  = GENERATE(as<std::size_t>{}, 128, 256, 512);
     auto const signal     = neo::fft::generate_noise_signal<Float>(blockSize * 20UL, Catch::getSeed());
     auto const partitions = neo::fft::generate_identity_impulse<Float>(blockSize, 10UL);
 
-    auto convolver = neo::fft::upols_convolver<Float>{};
+    auto convolver = Convolver{};
     auto output    = signal;
     convolver.filter(partitions.to_mdspan());
 
@@ -32,4 +30,18 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver", "", float, double)
         CAPTURE(i);
         REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(signal[i], 0.00001));
     }
+}
+
+TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver", "", float, double)
+{
+    using Float    = TestType;
+    auto blockSize = GENERATE(as<std::size_t>{}, 128, 256, 512);
+    test_uniform_partitioned_convolver<Float, neo::fft::upols_convolver<Float>>(blockSize);
+}
+
+TEMPLATE_TEST_CASE("neo/fft/convolution: upola_convolver", "", float, double)
+{
+    using Float    = TestType;
+    auto blockSize = GENERATE(as<std::size_t>{}, 128, 256, 512);
+    test_uniform_partitioned_convolver<Float, neo::fft::upola_convolver<Float>>(blockSize);
 }

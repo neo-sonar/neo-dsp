@@ -39,7 +39,7 @@ auto sparse_upols_convolver<Float>::filter(
 ) -> void
 {
     _fdlIndex    = 0;
-    _overlapSave = overlap_save<Float>{filter.extent(1) - 1};
+    _overlapSave = overlap_save<Float>{filter.extent(1) - 1, filter.extent(1) - 1};
     _filter      = sparse_matrix<std::complex<Float>>{filter, sparsityFilter};
     _fdl         = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 2>>{filter.extents()};
     _accumulator = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>>{filter.extent(1)};
