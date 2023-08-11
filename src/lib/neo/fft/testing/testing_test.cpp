@@ -17,7 +17,7 @@ TEMPLATE_TEST_CASE("neo/fft/testing: load_test_data", "", float, double)
     using neo::fft::load_test_data;
 
     REQUIRE_FALSE(load_test_data<Float>({}).has_value());
-    REQUIRE_FALSE(load_test_data<Float>({"./test_data/c2c_8_input.csv"}).has_value());
+    REQUIRE_FALSE(load_test_data<Float>({"./test_data/c2c_8_input.csv", {}}).has_value());
 
     REQUIRE(load_test_data<Float>({"./test_data/c2c_8_input.csv", "./test_data/c2c_8_output.csv"}).has_value());
 }
