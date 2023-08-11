@@ -21,10 +21,7 @@ struct overlap_save
     overlap_save() = default;
     explicit overlap_save(std::size_t block_size);
 
-    auto operator()(
-        inout_vector auto block,
-        std::invocable<KokkosEx::mdspan<std::complex<Float>, Kokkos::dextents<size_t, 1>>> auto callback
-    ) -> void;
+    auto operator()(inout_vector auto block, auto callback) -> void;
 
 private:
     std::size_t _blockSize{0};
@@ -41,10 +38,7 @@ overlap_save<Float>::overlap_save(std::size_t block_size) : _blockSize{block_siz
 {}
 
 template<std::floating_point Float>
-auto overlap_save<Float>::operator()(
-    inout_vector auto block,
-    std::invocable<KokkosEx::mdspan<std::complex<Float>, Kokkos::dextents<size_t, 1>>> auto callback
-) -> void
+auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> void
 {
     NEO_FFT_PRECONDITION(block.extent(0) * 2U == _window.extent(0));
 

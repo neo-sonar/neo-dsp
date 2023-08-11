@@ -29,10 +29,7 @@ struct overlap_add
     [[nodiscard]] auto transform_size() const noexcept -> size_type;
     [[nodiscard]] auto overlaps() const noexcept -> size_type;
 
-    auto operator()(
-        inout_vector auto block,
-        std::invocable<KokkosEx::mdspan<std::complex<Float>, Kokkos::dextents<size_t, 1>>> auto callback
-    ) -> void;
+    auto operator()(inout_vector auto block, auto callback) -> void;
 
 private:
     size_type _block_size{0};
@@ -80,10 +77,7 @@ auto overlap_add<Float>::overlaps() const noexcept -> size_type
 }
 
 template<std::floating_point Float>
-auto overlap_add<Float>::operator()(
-    inout_vector auto block,
-    std::invocable<KokkosEx::mdspan<std::complex<Float>, Kokkos::dextents<size_t, 1>>> auto callback
-) -> void
+auto overlap_add<Float>::operator()(inout_vector auto block, auto callback) -> void
 {
     NEO_FFT_PRECONDITION(_rfft.size() == block.extent(0) * 2U);
 
