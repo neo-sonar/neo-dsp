@@ -3,9 +3,9 @@
 #include <neo/fft/config.hpp>
 
 #include <neo/fft/container/mdspan.hpp>
+#include <neo/fft/math/complex.hpp>
 
 #include <algorithm>
-#include <complex>
 #include <concepts>
 
 namespace neo::fft {

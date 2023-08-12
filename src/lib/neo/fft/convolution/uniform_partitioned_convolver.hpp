@@ -7,10 +7,7 @@
 #include <neo/fft/container/sparse_matrix.hpp>
 #include <neo/fft/convolution/overlap_add.hpp>
 #include <neo/fft/convolution/overlap_save.hpp>
-
-#include <complex>
-#include <functional>
-#include <memory>
+#include <neo/fft/math/complex.hpp>
 
 namespace neo::fft {
 

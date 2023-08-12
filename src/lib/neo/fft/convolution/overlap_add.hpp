@@ -6,12 +6,12 @@
 #include <neo/fft/algorithm/fill.hpp>
 #include <neo/fft/algorithm/scale.hpp>
 #include <neo/fft/container/mdspan.hpp>
+#include <neo/fft/math/complex.hpp>
 #include <neo/fft/math/divide_round_up.hpp>
 #include <neo/fft/math/ilog2.hpp>
 #include <neo/fft/math/next_power_of_two.hpp>
 #include <neo/fft/transform.hpp>
 
-#include <complex>
 #include <functional>
 
 namespace neo::fft {

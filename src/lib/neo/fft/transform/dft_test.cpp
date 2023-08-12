@@ -2,13 +2,12 @@
 
 #include <neo/fft/algorithm/allclose.hpp>
 #include <neo/fft/algorithm/scale.hpp>
+#include <neo/fft/math/complex.hpp>
 #include <neo/fft/testing/testing.hpp>
 
 #include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
-
-#include <complex>
 
 namespace fft = neo::fft;
 

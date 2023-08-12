@@ -1,6 +1,7 @@
 #pragma once
 
-#include <complex>
+#include <neo/fft/math/complex.hpp>
+
 #include <span>
 
 namespace neo::fft {

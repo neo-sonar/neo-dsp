@@ -1,6 +1,7 @@
 #include "rfft.hpp"
 
 #include <neo/fft/algorithm/allclose.hpp>
+#include <neo/fft/math/complex.hpp>
 #include <neo/fft/testing/testing.hpp>
 #include <neo/fft/transform/radix2.hpp>
 
@@ -10,7 +11,6 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include <array>
-#include <complex>
 #include <random>
 
 namespace {

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <neo/fft/container/mdspan.hpp>
+#include <neo/fft/math/complex.hpp>
 
-#include <complex>
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_graphics/juce_graphics.h>
 

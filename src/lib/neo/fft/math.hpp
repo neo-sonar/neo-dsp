@@ -1,6 +1,7 @@
 #pragma once
 
 #include <neo/fft/math/a_weighting.hpp>
+#include <neo/fft/math/complex.hpp>
 #include <neo/fft/math/decibel.hpp>
 #include <neo/fft/math/divide_round_up.hpp>
 #include <neo/fft/math/fftfreq.hpp>
