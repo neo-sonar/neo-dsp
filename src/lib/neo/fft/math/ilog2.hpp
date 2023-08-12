@@ -1,15 +1,18 @@
 #pragma once
 
+#include <neo/fft/config.hpp>
+
 #include <concepts>
-#include <numbers>
 
 namespace neo::fft {
 
-template<std::unsigned_integral Unsigned>
-[[nodiscard]] constexpr auto ilog2(Unsigned num) noexcept -> Unsigned
+template<std::integral Integral>
+[[nodiscard]] constexpr auto ilog2(Integral x) -> Integral
 {
-    auto result = Unsigned{0};
-    for (; num > 1; num >>= 1) {
+    NEO_FFT_PRECONDITION(x > Integral(0));
+
+    auto result = Integral{0};
+    for (; x > Integral(1); x >>= Integral(1)) {
         ++result;
     }
     return result;
