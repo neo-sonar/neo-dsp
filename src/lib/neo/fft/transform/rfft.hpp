@@ -7,12 +7,13 @@
 
 namespace neo::fft {
 
-template<typename Float>
+template<typename Float, typename ComplexPlan = fft_radix2_plan<std::complex<Float>>>
 struct rfft_radix2_plan
 {
-    using real_type    = Float;
-    using complex_type = std::complex<Float>;
-    using size_type    = std::size_t;
+    using complex_plan_type = ComplexPlan;
+    using complex_type      = typename ComplexPlan::complex_type;
+    using size_type         = typename ComplexPlan::size_type;
+    using real_type         = Float;
 
     explicit rfft_radix2_plan(size_type order) : _order{order} {}
 
@@ -21,19 +22,19 @@ struct rfft_radix2_plan
     [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
     template<in_vector InVec, out_vector OutVec>
-        requires(std::same_as<typename InVec::value_type, Float> and std::same_as<typename OutVec::value_type, std::complex<Float>>)
+        requires(std::same_as<typename InVec::value_type, Float> and std::same_as<typename OutVec::value_type, complex_type>)
     auto operator()(InVec in, OutVec out) -> void
     {
         auto const buf    = _buffer.to_mdspan();
         auto const coeffs = _size / 2 + 1;
 
         copy(in, buf);
-        _cfft(buf, direction::forward);
+        _fft(buf, direction::forward);
         copy(KokkosEx::submdspan(buf, std::tuple{0ULL, coeffs}), KokkosEx::submdspan(out, std::tuple{0ULL, coeffs}));
     }
 
     template<in_vector InVec, out_vector OutVec>
-        requires(std::same_as<typename InVec::value_type, std::complex<Float>> and std::same_as<typename OutVec::value_type, Float>)
+        requires(std::same_as<typename InVec::value_type, complex_type> and std::same_as<typename OutVec::value_type, Float>)
     auto operator()(InVec in, OutVec out) -> void
     {
         auto const buf    = _buffer.to_mdspan();
@@ -46,7 +47,7 @@ struct rfft_radix2_plan
             buf[i] = std::conj(buf[_size - i]);
         }
 
-        _cfft(buf, direction::backward);
+        _fft(buf, direction::backward);
         for (auto i{0UL}; i < _size; ++i) {
             out[i] = buf[i].real();
         }
@@ -55,8 +56,8 @@ struct rfft_radix2_plan
 private:
     size_type _order;
     size_type _size{1ULL << _order};
-    fft_radix2_plan<std::complex<Float>> _cfft{_order};
-    KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_type, 1>> _buffer{_size};
+    ComplexPlan _fft{_order};
+    KokkosEx::mdarray<complex_type, Kokkos::dextents<size_type, 1>> _buffer{_size};
 };
 
 template<in_vector InVec, out_vector OutVecA, out_vector OutVecB>
