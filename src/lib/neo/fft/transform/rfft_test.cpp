@@ -13,39 +13,6 @@
 #include <complex>
 #include <random>
 
-TEMPLATE_TEST_CASE("neo/fft/transform/rfft: test_data(rfft_radix2_plan)", "", float, double)
-{
-    using Float = TestType;
-
-    auto paths = GENERATE(
-        neo::fft::test_path{"./test_data/r2c_8_input.csv", "./test_data/r2c_8_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_16_input.csv", "./test_data/r2c_16_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_32_input.csv", "./test_data/r2c_32_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_16_input.csv", "./test_data/r2c_16_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_32_input.csv", "./test_data/r2c_32_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_64_input.csv", "./test_data/r2c_64_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_128_input.csv", "./test_data/r2c_128_output.csv"},
-        neo::fft::test_path{"./test_data/r2c_512_input.csv", "./test_data/r2c_512_output.csv"}
-    );
-
-    auto const tc    = neo::fft::load_test_data<Float>(paths);
-    auto const size  = tc.input.size();
-    auto const order = neo::fft::ilog2(size);
-
-    auto input  = std::vector<Float>(size_t(size), Float(0));
-    auto output = std::vector<std::complex<Float>>(size_t(size / 2 + 1), Float(0));
-    std::transform(tc.input.begin(), tc.input.end(), input.begin(), [](auto c) { return c.real(); });
-
-    auto in  = Kokkos::mdspan{input.data(), Kokkos::extents{input.size()}};
-    auto out = Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}};
-
-    auto rfft = neo::fft::rfft_radix2_plan<Float>{order};
-    rfft(in, out);
-
-    auto const expected = Kokkos::mdspan{tc.expected.data(), Kokkos::extents{tc.expected.size()}};
-    REQUIRE(neo::fft::allclose(expected, out));
-}
-
 namespace {
 
 template<typename Real, typename Kernel>

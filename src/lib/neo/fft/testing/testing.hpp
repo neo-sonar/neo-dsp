@@ -17,45 +17,6 @@ namespace neo::fft {
 template<typename T>
 using float_or_complex_value_type_t = decltype(std::abs(std::declval<T>()));
 
-struct test_path
-{
-    std::filesystem::path input;
-    std::filesystem::path expected;
-};
-
-template<std::floating_point Float>
-struct test_data
-{
-    std::vector<std::complex<Float>> input;
-    std::vector<std::complex<Float>> expected;
-};
-
-template<std::floating_point Float>
-[[nodiscard]] auto load_test_data(test_path const& paths) -> test_data<Float>
-{
-    auto load_file = [](std::filesystem::path const& path) {
-        auto* file = std::fopen(path.string().c_str(), "r");
-
-        auto result = std::vector<std::complex<Float>>{};
-        char line[512]{};
-        while (std::fgets(line, sizeof(line), file)) {
-            auto re = 0.0;
-            auto im = 0.0;
-            std::sscanf(line, "%lf,%lf\n", &re, &im);
-            result.emplace_back(static_cast<Float>(re), static_cast<Float>(im));
-        }
-
-        std::fclose(file);
-
-        return result;
-    };
-
-    return test_data<Float>{
-        .input    = load_file(paths.input),
-        .expected = load_file(paths.expected),
-    };
-}
-
 template<typename FloatOrComplex, typename URNG = std::mt19937>
 [[nodiscard]] auto generate_noise_signal(std::size_t length, typename URNG::result_type seed)
 {
