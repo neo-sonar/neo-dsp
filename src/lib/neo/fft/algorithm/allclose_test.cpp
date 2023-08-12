@@ -10,7 +10,7 @@ TEMPLATE_TEST_CASE("neo/fft/algorithm: allclose(in_vector)", "", float, double, 
 {
     using Float = neo::fft::float_or_complex_value_type_t<TestType>;
 
-    auto const size       = GENERATE(as<std::size_t>{}, 1, 2, 33, 128);
+    auto const size       = GENERATE(as<std::size_t>{}, 2, 33, 128);
     auto const makeVector = [size](Float val) {
         auto vec = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 1>>{size};
         neo::fft::fill(vec.to_mdspan(), val);
@@ -27,4 +27,9 @@ TEMPLATE_TEST_CASE("neo/fft/algorithm: allclose(in_vector)", "", float, double, 
     REQUIRE(neo::fft::allclose(zeros.to_mdspan(), zeros.to_mdspan()));
     REQUIRE(neo::fft::allclose(ones.to_mdspan(), ones.to_mdspan()));
     REQUIRE(neo::fft::allclose(ones.to_mdspan(), almostOnes.to_mdspan(), Float(0.7)));
+
+    if constexpr (neo::fft::current_contracts_check_mode == neo::fft::contracts_check_mode::exception) {
+        auto sub = KokkosEx::submdspan(ones.to_mdspan(), std::tuple{0, size - 1UL});
+        REQUIRE_THROWS(neo::fft::allclose(sub, zeros.to_mdspan()));
+    }
 }

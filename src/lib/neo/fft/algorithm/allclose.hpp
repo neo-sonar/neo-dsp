@@ -1,5 +1,7 @@
 #pragma once
 
+#include <neo/fft/config.hpp>
+
 #include <neo/fft/container/mdspan.hpp>
 
 #include <algorithm>
@@ -11,9 +13,7 @@ namespace neo::fft {
 template<in_object InObj1, in_object InObj2, typename Scalar>
 [[nodiscard]] auto allclose(InObj1 lhs, InObj2 rhs, Scalar tolerance) -> bool
 {
-    if (lhs.extents() != rhs.extents()) {
-        return false;
-    }
+    NEO_FFT_PRECONDITION(lhs.extents() == rhs.extents());
 
     if constexpr (InObj1::rank() == 1) {
         for (auto i{0}; std::cmp_less(i, lhs.extent(0)); ++i) {
