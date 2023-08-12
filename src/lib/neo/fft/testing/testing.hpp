@@ -14,7 +14,7 @@
 
 namespace neo::fft {
 
-template<typename FloatOrComplex, typename URNG = std::mt19937>
+template<float_or_complex FloatOrComplex, typename URNG = std::mt19937>
 [[nodiscard]] auto generate_noise_signal(std::size_t length, typename URNG::result_type seed)
 {
     using Float = real_or_complex_value_t<FloatOrComplex>;
