@@ -25,7 +25,6 @@ private:
     KokkosEx::mdspan<std::complex<Float> const, Kokkos::dextents<size_t, 2>> _filter;
     KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>> _accumulator;
     KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 2>> _fdl;
-    std::size_t _fdlIndex{0};
 };
 
 template<std::floating_point Float, typename Overlap>
@@ -35,7 +34,6 @@ auto uniform_partitioned_convolver<Float, Overlap>::filter(in_matrix auto filter
     _fdl         = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 2>>{filter.extents()};
     _accumulator = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>>{filter.extent(1)};
     _filter      = filter;
-    _fdlIndex    = 0;
 }
 
 template<std::floating_point Float, typename Overlap>
@@ -45,15 +43,11 @@ auto uniform_partitioned_convolver<Float, Overlap>::operator()(in_vector auto bl
         auto const fdl         = _fdl.to_mdspan();
         auto const accumulator = _accumulator.to_mdspan();
 
-        copy(inout, KokkosEx::submdspan(fdl, _fdlIndex, Kokkos::full_extent));
+        shift_rows_up(fdl);
+        copy(inout, KokkosEx::submdspan(fdl, 0, Kokkos::full_extent));
         fill(accumulator, Float(0));
-        multiply_sum_columns(fdl, _filter, accumulator, _fdlIndex);
+        multiply_sum_columns(fdl, _filter, accumulator);
         copy(accumulator, inout);
-
-        ++_fdlIndex;
-        if (_fdlIndex == fdl.extent(0)) {
-            _fdlIndex = 0;
-        }
     });
 }
 

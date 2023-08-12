@@ -93,8 +93,17 @@ auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> 
     _rfft(complex_buf, real_buf);
 
     // Copy blockSize samples to output
-    auto out = KokkosEx::submdspan(real_buf, std::tuple{real_buf.extent(0) - block.size(), real_buf.extent(0)});
+    auto out = KokkosEx::submdspan(real_buf, std::tuple{real_buf.extent(0) / 2, real_buf.extent(0)});
     copy(out, block);
 }
+
+inline constexpr auto shift_rows_up = [](inout_matrix auto matrix) {
+    auto const rows = static_cast<int>(matrix.extent(0));
+    for (auto row{rows - 1}; row > 0; --row) {
+        auto src  = KokkosEx::submdspan(matrix, row - 1, Kokkos::full_extent);
+        auto dest = KokkosEx::submdspan(matrix, row, Kokkos::full_extent);
+        copy(src, dest);
+    }
+};
 
 }  // namespace neo::fft
