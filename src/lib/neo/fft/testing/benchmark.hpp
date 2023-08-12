@@ -16,14 +16,13 @@ auto benchmark_fft(std::string_view name, size_t N, size_t multiplier, Func func
 {
     using microseconds = std::chrono::duration<double, std::micro>;
 
-    auto const size = N * multiplier;
-    auto all_runs   = std::vector<double>{};
+    auto const size     = N * multiplier;
+    auto const num_runs = 500'000ULL;
 
-    func();
-    func();
-    func();
+    auto all_runs = std::vector<double>{};
+    all_runs.reserve(num_runs);
 
-    for (auto i{0}; i < 100'000; ++i) {
+    for (auto i{0}; i < num_runs; ++i) {
         auto start = std::chrono::system_clock::now();
         func();
         auto stop = std::chrono::system_clock::now();
@@ -31,7 +30,7 @@ auto benchmark_fft(std::string_view name, size_t N, size_t multiplier, Func func
         all_runs.push_back(std::chrono::duration_cast<microseconds>(stop - start).count());
     }
 
-    auto const runs   = std::span<double>(all_runs).subspan(1000, all_runs.size() - 1000 * 2);
+    auto const runs   = std::span<double>(all_runs).subspan(5000, all_runs.size() - 5000 * 2);
     auto const dsize  = static_cast<double>(size);
     auto const avg    = std::reduce(runs.begin(), runs.end(), 0.0) / double(runs.size());
     auto const mflops = static_cast<int>(std::lround(5.0 * dsize * std::log2(dsize) / avg));

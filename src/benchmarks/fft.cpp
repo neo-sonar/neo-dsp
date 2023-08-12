@@ -11,32 +11,32 @@
 template<typename Float, typename Kernel>
 struct fft_plan
 {
-    explicit fft_plan(size_t size) : _buf(size, Float(0)), _fft{neo::fft::ilog2(size)} {}
+    explicit fft_plan(size_t size) : _buf(size), _fft{neo::fft::ilog2(size)} {}
 
     auto operator()() -> void
     {
         auto const gen = [i = 0]() mutable { return static_cast<Float>(i++); };
-        auto const buf = Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}};
-        std::generate_n(begin(_buf), size(_buf), gen);
+        auto const buf = _buf.to_mdspan();
+        std::generate_n(_buf.data(), _buf.size(), gen);
         _fft(buf, neo::fft::direction::forward);
-        neo::fft::do_not_optimize(_buf.back());
+        neo::fft::do_not_optimize(buf[0]);
     }
 
 private:
-    std::vector<std::complex<Float>> _buf;
+    KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>> _buf;
     neo::fft::fft_radix2_plan<std::complex<Float>, Kernel> _fft;
 };
 
-template<typename Float, unsigned Size, typename Kernel>
+template<typename Float, typename Kernel, unsigned Size>
 struct fft_static
 {
     fft_static() = default;
 
     auto operator()() -> void
     {
-        auto buffer = _buffer.to_mdspan();
-        // auto const gen = [i = 0]() mutable { return static_cast<Float>(i++); };
-        // std::generate_n(begin(_buffer), size(_buffer), gen);
+        auto const buffer = _buffer.to_mdspan();
+        auto const gen    = [i = 0]() mutable { return static_cast<Float>(i++); };
+        std::generate_n(buffer.data_handle(), buffer.size(), gen);
         neo::fft::fft_radix2(Kernel{}, buffer, _tw);
         neo::fft::do_not_optimize(buffer[0]);
     }
@@ -222,24 +222,24 @@ auto main() -> int
     static constexpr auto N = 1024;
 
     fft::benchmark_fft("fft_plan<complex<float>, v1>(N)", N, 1, fft_plan<float, fft::radix2_kernel_v1>{N});
-    fft::benchmark_fft("fft_plan<complex<float>, v2>(N)", N, 1, fft_plan<float, fft::radix2_kernel_v2>{N});
-    fft::benchmark_fft("fft_plan<complex<float>, v3>(N)", N, 1, fft_plan<float, fft::radix2_kernel_v3>{N});
-    std::printf("\n");
+    // fft::benchmark_fft("fft_plan<complex<float>, v2>(N)", N, 1, fft_plan<float, fft::radix2_kernel_v2>{N});
+    // fft::benchmark_fft("fft_plan<complex<float>, v3>(N)", N, 1, fft_plan<float, fft::radix2_kernel_v3>{N});
+    // std::printf("\n");
 
-    fft::benchmark_fft("fft_static<complex<float>, N, v1>()", N, 1, fft_static<float, N, fft::radix2_kernel_v1>{});
-    fft::benchmark_fft("fft_static<complex<float>, N, v2>()", N, 1, fft_static<float, N, fft::radix2_kernel_v2>{});
-    fft::benchmark_fft("fft_static<complex<float>, N, v3>()", N, 1, fft_static<float, N, fft::radix2_kernel_v3>{});
-    std::printf("\n");
+    // fft::benchmark_fft("fft_static<complex<float>, N, v1>()", N, 1, fft_static<float, fft::radix2_kernel_v1, N>{});
+    // fft::benchmark_fft("fft_static<complex<float>, N, v2>()", N, 1, fft_static<float, fft::radix2_kernel_v2, N>{});
+    // fft::benchmark_fft("fft_static<complex<float>, N, v3>()", N, 1, fft_static<float, fft::radix2_kernel_v3, N>{});
+    // std::printf("\n");
 
     fft::benchmark_fft("fft_plan<complex<double>, v1>(N)", N, 1, fft_plan<double, fft::radix2_kernel_v1>{N});
-    fft::benchmark_fft("fft_plan<complex<double>, v2>(N)", N, 1, fft_plan<double, fft::radix2_kernel_v2>{N});
-    fft::benchmark_fft("fft_plan<complex<double>, v3>(N)", N, 1, fft_plan<double, fft::radix2_kernel_v3>{N});
-    std::printf("\n");
+    // fft::benchmark_fft("fft_plan<complex<double>, v2>(N)", N, 1, fft_plan<double, fft::radix2_kernel_v2>{N});
+    // fft::benchmark_fft("fft_plan<complex<double>, v3>(N)", N, 1, fft_plan<double, fft::radix2_kernel_v3>{N});
+    // std::printf("\n");
 
-    fft::benchmark_fft("fft_static<complex<double>, N, v1>()", N, 1, fft_static<double, N, fft::radix2_kernel_v1>{});
-    fft::benchmark_fft("fft_static<complex<double>, N, v2>()", N, 1, fft_static<double, N, fft::radix2_kernel_v2>{});
-    fft::benchmark_fft("fft_static<complex<double>, N, v3>()", N, 1, fft_static<double, N, fft::radix2_kernel_v3>{});
-    std::printf("\n");
+    // fft::benchmark_fft("fft_static<complex<double>, N, v1>()", N, 1, fft_static<double, fft::radix2_kernel_v1, N>{});
+    // fft::benchmark_fft("fft_static<complex<double>, N, v2>()", N, 1, fft_static<double, fft::radix2_kernel_v2, N>{});
+    // fft::benchmark_fft("fft_static<complex<double>, N, v3>()", N, 1, fft_static<double, fft::radix2_kernel_v3, N>{});
+    // std::printf("\n");
 
     // benchmark_fft("radix2<complex<float>>(N)", 2048, 1, cfft<float>{2048});
     // benchmark_fft("radix2<complex<float>>(N)", 4096, 1, cfft<float>{4096});
