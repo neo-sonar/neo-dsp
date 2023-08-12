@@ -8,76 +8,10 @@
 #include <random>
 #include <vector>
 
-template<typename Float>
-struct cfft
+template<typename Float, typename Kernel>
+struct fft_plan
 {
-    explicit cfft(size_t size) : _buf(size, Float(0)), _tw{neo::fft::make_radix2_twiddles<std::complex<Float>>(size)} {}
-
-    auto operator()() -> void
-    {
-        auto const gen = [i = 0]() mutable { return static_cast<Float>(i++); };
-        std::generate_n(begin(_buf), size(_buf), gen);
-        neo::fft::fft_radix2(
-            neo::fft::radix2_kernel_v1{},
-            Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}},
-            _tw
-        );
-        neo::fft::do_not_optimize(_buf.back());
-    }
-
-private:
-    std::vector<std::complex<Float>> _buf;
-    std::vector<std::complex<Float>> _tw;
-};
-
-template<typename Float, unsigned Size>
-struct cfft_fixed
-{
-    cfft_fixed() = default;
-
-    auto operator()() -> void
-    {
-        auto buffer = _buffer.to_mdspan();
-        // auto const gen = [i = 0]() mutable { return static_cast<Float>(i++); };
-        // std::generate_n(begin(_buffer), size(_buffer), gen);
-        neo::fft::fft_radix2(neo::fft::radix2_kernel_v1{}, buffer, _tw);
-        neo::fft::do_not_optimize(buffer[0]);
-    }
-
-private:
-    KokkosEx::mdarray<std::complex<Float>, Kokkos::extents<size_t, Size>> _buffer{};
-    std::array<std::complex<Float>, Size / 2> _tw{neo::fft::make_radix2_twiddles<std::complex<Float>, Size>()};
-};
-
-template<typename Float>
-struct cfft_alt
-{
-    explicit cfft_alt(size_t size)
-        : _buf(size, Float(0))
-        , _tw{neo::fft::make_radix2_twiddles<std::complex<Float>>(size)}
-    {}
-
-    auto operator()() -> void
-    {
-        auto const gen = [i = 0]() mutable { return static_cast<Float>(i++); };
-        std::generate_n(begin(_buf), size(_buf), gen);
-        neo::fft::fft_radix2(
-            neo::fft::radix2_kernel_v2{},
-            Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}},
-            _tw
-        );
-        neo::fft::do_not_optimize(_buf.back());
-    }
-
-private:
-    std::vector<std::complex<Float>> _buf;
-    std::vector<std::complex<Float>> _tw;
-};
-
-template<typename Float>
-struct cfft_plan
-{
-    explicit cfft_plan(size_t size) : _buf(size, Float(0)), _fft{neo::fft::ilog2(size)} {}
+    explicit fft_plan(size_t size) : _buf(size, Float(0)), _fft{neo::fft::ilog2(size)} {}
 
     auto operator()() -> void
     {
@@ -90,7 +24,26 @@ struct cfft_plan
 
 private:
     std::vector<std::complex<Float>> _buf;
-    neo::fft::fft_radix2_plan<std::complex<Float>> _fft;
+    neo::fft::fft_radix2_plan<std::complex<Float>, Kernel> _fft;
+};
+
+template<typename Float, unsigned Size, typename Kernel>
+struct fft_static
+{
+    fft_static() = default;
+
+    auto operator()() -> void
+    {
+        auto buffer = _buffer.to_mdspan();
+        // auto const gen = [i = 0]() mutable { return static_cast<Float>(i++); };
+        // std::generate_n(begin(_buffer), size(_buffer), gen);
+        neo::fft::fft_radix2(Kernel{}, buffer, _tw);
+        neo::fft::do_not_optimize(buffer[0]);
+    }
+
+private:
+    KokkosEx::mdarray<std::complex<Float>, Kokkos::extents<size_t, Size>> _buffer{};
+    std::array<std::complex<Float>, Size / 2> _tw{neo::fft::make_radix2_twiddles<std::complex<Float>, Size>()};
 };
 
 #if defined(__amd64__) or defined(_M_AMD64)
@@ -265,25 +218,34 @@ private:
 
 auto main() -> int
 {
+    namespace fft           = neo::fft;
     static constexpr auto N = 1024;
 
-    neo::fft::benchmark_fft("cfft<complex<float>>(N)", N, 1, cfft<float>{N});
-    neo::fft::benchmark_fft("cfft_alt<complex<float>>(N)", N, 1, cfft_alt<float>{N});
-    neo::fft::benchmark_fft("cfft_plan<complex<float>>(N)", N, 1, cfft_plan<float>{N});
-    neo::fft::benchmark_fft("cfft_fixed<complex<float>, N>()", N, 1, cfft_fixed<float, N>{});
+    fft::benchmark_fft("fft_plan<complex<float>, v1>(N)", N, 1, fft_plan<float, fft::radix2_kernel_v1>{N});
+    fft::benchmark_fft("fft_plan<complex<float>, v2>(N)", N, 1, fft_plan<float, fft::radix2_kernel_v2>{N});
+    fft::benchmark_fft("fft_plan<complex<float>, v3>(N)", N, 1, fft_plan<float, fft::radix2_kernel_v3>{N});
     std::printf("\n");
 
-    neo::fft::benchmark_fft("cfft<complex<double>>(N)", N, 1, cfft<double>{N});
-    neo::fft::benchmark_fft("cfft_alt<complex<double>>(N)", N, 1, cfft_alt<double>{N});
-    neo::fft::benchmark_fft("cfft_plan<complex<double>>(N)", N, 1, cfft_plan<double>{N});
-    neo::fft::benchmark_fft("cfft_fixed<complex<double>, N>()", N, 1, cfft_fixed<double, N>{});
+    fft::benchmark_fft("fft_static<complex<float>, N, v1>()", N, 1, fft_static<float, N, fft::radix2_kernel_v1>{});
+    fft::benchmark_fft("fft_static<complex<float>, N, v2>()", N, 1, fft_static<float, N, fft::radix2_kernel_v2>{});
+    fft::benchmark_fft("fft_static<complex<float>, N, v3>()", N, 1, fft_static<float, N, fft::radix2_kernel_v3>{});
+    std::printf("\n");
+
+    fft::benchmark_fft("fft_plan<complex<double>, v1>(N)", N, 1, fft_plan<double, fft::radix2_kernel_v1>{N});
+    fft::benchmark_fft("fft_plan<complex<double>, v2>(N)", N, 1, fft_plan<double, fft::radix2_kernel_v2>{N});
+    fft::benchmark_fft("fft_plan<complex<double>, v3>(N)", N, 1, fft_plan<double, fft::radix2_kernel_v3>{N});
+    std::printf("\n");
+
+    fft::benchmark_fft("fft_static<complex<double>, N, v1>()", N, 1, fft_static<double, N, fft::radix2_kernel_v1>{});
+    fft::benchmark_fft("fft_static<complex<double>, N, v2>()", N, 1, fft_static<double, N, fft::radix2_kernel_v2>{});
+    fft::benchmark_fft("fft_static<complex<double>, N, v3>()", N, 1, fft_static<double, N, fft::radix2_kernel_v3>{});
     std::printf("\n");
 
     // benchmark_fft("radix2<complex<float>>(N)", 2048, 1, cfft<float>{2048});
     // benchmark_fft("radix2<complex<float>>(N)", 4096, 1, cfft<float>{4096});
 
-    // // benchmark_fft("radix2<complex<float>, N>()", 2048, 1, cfft_fixed<float, 2048>{});
-    // // benchmark_fft("radix2<complex<float>, N>()", 4096, 1, cfft_fixed<float, 4096>{});
+    // // benchmark_fft("radix2<complex<float>, N>()", 2048, 1, fft_static<float, 2048>{});
+    // // benchmark_fft("radix2<complex<float>, N>()", 4096, 1, fft_static<float, 4096>{});
 
     // #ifdef __AVX__
     //     benchmark_fft("radix2<complex32x4>(N)", 2048, 4, cfft32x4{2048});
