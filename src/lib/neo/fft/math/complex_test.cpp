@@ -96,4 +96,5 @@ TEST_CASE("neo/fft/math: real_or_complex_value_t")
     STATIC_REQUIRE(std::same_as<real_or_complex_value_t<std::complex<float>>, float>);
     STATIC_REQUIRE(std::same_as<real_or_complex_value_t<std::complex<double>>, double>);
     STATIC_REQUIRE(std::same_as<real_or_complex_value_t<std::complex<long double>>, long double>);
+    STATIC_REQUIRE(std::same_as<real_or_complex_value_t<ns::complex>, short>);
 }
