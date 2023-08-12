@@ -4,6 +4,7 @@
 
 #include <neo/fft/algorithm/scale.hpp>
 #include <neo/fft/container/mdspan.hpp>
+#include <neo/fft/math/float_equality.hpp>
 
 #include <algorithm>
 #include <functional>
@@ -39,7 +40,10 @@ template<in_object InObj>
         }
     }
 
-    NEO_FFT_PRECONDITION(not std::equal_to{}(absMax, Float(0)));
+    if (float_equality::exact(absMax, Float(0))) {
+        return Float(1);
+    }
+
     return Float(1) / std::abs(absMax);
 }
 

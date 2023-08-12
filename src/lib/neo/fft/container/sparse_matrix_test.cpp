@@ -1,6 +1,7 @@
 #include "sparse_matrix.hpp"
 
 #include <neo/fft/algorithm/fill.hpp>
+#include <neo/fft/math/float_equality.hpp>
 #include <neo/fft/testing/testing.hpp>
 
 #include <catch2/catch_approx.hpp>
@@ -37,8 +38,8 @@ TEMPLATE_TEST_CASE("neo/fft/container: sparse_matrix", "", float, double, std::c
 
     auto const half = lhs.extent(1) / 2;
     other.insert_row(1, row, [half](auto, auto col, auto) { return col < half; });
-    REQUIRE(std::equal_to{}(other(1, half), Scalar(Float(0))));
-    REQUIRE(std::equal_to{}(other(1, half - 1), Scalar(Float(2))));
+    REQUIRE(neo::fft::float_equality::exact(other(1, half), Scalar(Float(0))));
+    REQUIRE(neo::fft::float_equality::exact(other(1, half - 1), Scalar(Float(2))));
 
     other.insert_row(1, row, [](auto, auto, auto) { return true; });
     REQUIRE(other.value_container().size() == 64);
