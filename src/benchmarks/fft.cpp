@@ -37,7 +37,7 @@ struct fft_static
         auto const buffer = _buffer.to_mdspan();
         auto const gen    = [i = 0]() mutable { return static_cast<Float>(i++); };
         std::generate_n(buffer.data_handle(), buffer.size(), gen);
-        neo::fft::fft_radix2(Kernel{}, buffer, _tw);
+        neo::fft::fft_radix2(Kernel{}, buffer, _tw.to_mdspan());
         neo::fft::do_not_optimize(buffer[0]);
     }
 
@@ -228,10 +228,11 @@ auto main() -> int
     neo::benchmark_fft("fft_plan<complex<float>, v4>(N)", N, 1, fft_plan<float, neo::fft::radix2_kernel_v4>{N});
     // std::printf("\n");
 
-    // neo::benchmark_fft("fft_static<complex<float>, N, v1>()", N, 1, fft_static<float, neo::fft::radix2_kernel_v1,
-    // N>{}); neo::benchmark_fft("fft_static<complex<float>, N, v2>()", N, 1, fft_static<float,
-    // neo::fft::radix2_kernel_v2, N>{}); neo::benchmark_fft("fft_static<complex<float>, N, v3>()", N, 1,
-    // fft_static<float, neo::fft::radix2_kernel_v3, N>{}); std::printf("\n");
+    neo::benchmark_fft("fft_static<complex<float>, N, v1>()", N, 1, fft_static<float, neo::fft::radix2_kernel_v1, N>{});
+    neo::benchmark_fft("fft_static<complex<float>, N, v2>()", N, 1, fft_static<float, neo::fft::radix2_kernel_v2, N>{});
+    neo::benchmark_fft("fft_static<complex<float>, N, v3>()", N, 1, fft_static<float, neo::fft::radix2_kernel_v3, N>{});
+    neo::benchmark_fft("fft_static<complex<float>, N, v4>()", N, 1, fft_static<float, neo::fft::radix2_kernel_v4, N>{});
+    std::printf("\n");
 
     // neo::benchmark_fft("fft_plan<complex<double>, v1>(N)", N, 1, fft_plan<double, neo::fft::radix2_kernel_v1>{N});
     // neo::benchmark_fft("fft_plan<complex<double>, v2>(N)", N, 1, fft_plan<double, neo::fft::radix2_kernel_v2>{N});
