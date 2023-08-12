@@ -30,11 +30,7 @@ template<std::floating_point Float>
 [[nodiscard]] auto load_test_data(test_path const& paths) -> test_data<Float>
 {
     auto load_file = [](std::filesystem::path const& path) {
-        NEO_FFT_PRECONDITION(std::filesystem::exists(path));
-        NEO_FFT_PRECONDITION(std::filesystem::is_regular_file(path));
-
         auto* file = std::fopen(path.string().c_str(), "r");
-        NEO_FFT_PRECONDITION(file != nullptr);
 
         auto result = std::vector<std::complex<Float>>{};
         char line[512]{};

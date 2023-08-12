@@ -124,43 +124,26 @@ auto c2c_radix2_alt(InOutVec x, TwiddleTable const& twiddles) -> void
 template<typename Complex>
 struct fft_radix2_plan
 {
-    explicit fft_radix2_plan(std::size_t len) : _len{len} {}
+    using complex_type = Complex;
 
-    [[nodiscard]] auto size() const noexcept -> std::size_t { return _len; }
+    explicit fft_radix2_plan(std::size_t size) : _size{size} {}
+
+    [[nodiscard]] auto size() const noexcept -> std::size_t { return _size; }
+
+    [[nodiscard]] auto order() const noexcept -> std::size_t { return _order; }
 
     template<inout_vector InOutVec>
         requires(std::same_as<typename InOutVec::value_type, Complex>)
-    auto operator()(InOutVec x, direction dir) -> void
+    auto operator()(InOutVec vec, direction dir) -> void
     {
-        NEO_FFT_PRECONDITION(std::cmp_equal(x.size(), _len));
+        NEO_FFT_PRECONDITION(std::cmp_equal(vec.size(), _size));
 
-        auto run = [this](InOutVec buffer, auto const& twiddles) {
-            for (auto stage{0ULL}; stage < _order; ++stage) {
+        bit_reverse_permutation(vec, _index_table);
 
-                auto const stage_length = power<2ULL>(stage);
-                auto const stride       = power<2ULL>(stage + 1);
-                auto const tw_stride    = power<2ULL>(_order - stage - 1ULL);
-
-                for (auto k{0ULL}; k < _len; k += stride) {
-                    for (auto pair{0ULL}; pair < stage_length; ++pair) {
-                        auto const tw = twiddles[pair * tw_stride];
-
-                        auto const i1 = k + pair;
-                        auto const i2 = k + pair + stage_length;
-
-                        auto const temp = buffer[i1] + tw * buffer[i2];
-                        buffer[i2]      = buffer[i1] - tw * buffer[i2];
-                        buffer[i1]      = temp;
-                    }
-                }
-            }
-        };
-
-        bit_reverse_permutation(x, _indexTable);
         if (dir == direction::forward) {
-            run(x, _twiddleTable);
+            run(vec, _twiddles);
         } else {
-            run(x, conjugate_view<Complex>{_twiddleTable});
+            run(vec, conjugate_view<Complex>{_twiddles});
         }
     }
 
@@ -168,15 +151,41 @@ struct fft_radix2_plan
         requires(std::same_as<typename InVec::value_type, Complex> and std::same_as<typename OutVec::value_type, Complex>)
     auto operator()(InVec in, OutVec out, direction dir) -> void
     {
+        NEO_FFT_PRECONDITION(std::cmp_equal(in.size(), _size));
+        NEO_FFT_PRECONDITION(std::cmp_equal(out.size(), _size));
+
         copy(in, out);
         (*this)(out, dir);
     }
 
 private:
-    std::size_t _len;
-    std::size_t _order{ilog2(_len)};
-    std::vector<std::size_t> _indexTable{make_bit_reversed_index_table(size_t(_len))};
-    std::vector<Complex> _twiddleTable{make_radix2_twiddles<Complex>(_len)};
+    auto run(inout_vector auto vec, auto const& twiddles) const
+    {
+        for (auto stage{0ULL}; stage < _order; ++stage) {
+
+            auto const stage_length = power<2ULL>(stage);
+            auto const stride       = power<2ULL>(stage + 1);
+            auto const tw_stride    = power<2ULL>(_order - stage - 1ULL);
+
+            for (auto k{0ULL}; k < _size; k += stride) {
+                for (auto pair{0ULL}; pair < stage_length; ++pair) {
+                    auto const tw = twiddles[pair * tw_stride];
+
+                    auto const i1 = k + pair;
+                    auto const i2 = k + pair + stage_length;
+
+                    auto const temp = vec[i1] + tw * vec[i2];
+                    vec[i2]         = vec[i1] - tw * vec[i2];
+                    vec[i1]         = temp;
+                }
+            }
+        }
+    }
+
+    std::size_t _size;
+    std::size_t _order{ilog2(_size)};
+    std::vector<std::size_t> _index_table{make_bit_reversed_index_table(_size)};
+    std::vector<Complex> _twiddles{make_radix2_twiddles<Complex>(_size)};
 };
 
 }  // namespace neo::fft
