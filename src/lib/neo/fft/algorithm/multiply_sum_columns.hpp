@@ -1,6 +1,6 @@
 #pragma once
 
-#include <neo/fft/config.hpp>
+#include <neo/config.hpp>
 
 #include <neo/fft/container/mdspan.hpp>
 #include <neo/fft/container/sparse_matrix.hpp>

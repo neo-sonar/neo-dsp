@@ -1,6 +1,6 @@
 #pragma once
 
-#include <neo/fft/config/preprocessor.hpp>
+#include <neo/config/preprocessor.hpp>
 
 #include <cassert>
 #include <exception>

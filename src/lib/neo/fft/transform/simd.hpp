@@ -1,6 +1,6 @@
 #pragma once
 
-#include <neo/fft/config.hpp>
+#include <neo/config.hpp>
 
 #if defined(__amd64__) or defined(_M_AMD64)
     #include <emmintrin.h>

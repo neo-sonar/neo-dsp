@@ -1,6 +1,6 @@
 #pragma once
 
-#include <neo/fft/config.hpp>
+#include <neo/config.hpp>
 
 #include <neo/fft/algorithm/copy.hpp>
 #include <neo/fft/algorithm/fill.hpp>

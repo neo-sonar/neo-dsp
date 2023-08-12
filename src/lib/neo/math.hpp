@@ -1,5 +1,7 @@
 #pragma once
 
+#include <neo/config.hpp>
+
 #include <neo/math/a_weighting.hpp>
 #include <neo/math/complex.hpp>
 #include <neo/math/decibel.hpp>
