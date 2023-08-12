@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <concepts>
 
@@ -11,7 +12,7 @@ template<std::floating_point Float>
     if (gain <= Float(0)) {
         return infinity;
     }
-    return std::max(infinity, Float(20) * std::log10(gain));
+    return (std::max)(infinity, Float(20) * std::log10(gain));
 }
 
 }  // namespace neo::fft
