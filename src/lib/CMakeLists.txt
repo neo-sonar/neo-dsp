@@ -16,8 +16,7 @@ target_sources(neo_fft_tests
 
         "neo/fft/container/sparse_matrix_test.cpp"
 
-        "neo/fft/convolution/overlap_add_test.cpp"
-        "neo/fft/convolution/overlap_save_test.cpp"
+        "neo/fft/convolution/overlap_test.cpp"
         "neo/fft/convolution/sparse_upols_convolver_test.cpp"
         "neo/fft/convolution/uniform_partition_test.cpp"
         "neo/fft/convolution/uniform_partitioned_convolver_test.cpp"

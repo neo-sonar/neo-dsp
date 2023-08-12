@@ -1,3 +1,4 @@
+#include "overlap_add.hpp"
 #include "overlap_save.hpp"
 
 #include <neo/fft/algorithm/rms_error.hpp>
@@ -10,28 +11,30 @@
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include <span>
-#include <utility>
+#include <tuple>
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: overlap_save", "", float, double)
+using namespace neo::fft;
+
+TEMPLATE_PRODUCT_TEST_CASE("neo/fft/convolution:", "", (overlap_add, overlap_save), (float, double))
 {
-    using Float = TestType;
+    using Overlap = TestType;
+    using Float   = typename Overlap::real_type;
 
     auto const blockSize = GENERATE(as<std::size_t>{}, 128, 256, 512);
     auto const signal    = neo::fft::generate_noise_signal<Float>(blockSize * 15UL, Catch::getSeed());
 
-    auto ols = neo::fft::overlap_save<Float>{blockSize, blockSize};
+    auto overlap = Overlap{blockSize, blockSize};
 
-    REQUIRE(ols.block_size() == blockSize);
-    REQUIRE(ols.filter_size() == blockSize);
-    REQUIRE(ols.transform_size() == blockSize * 2UL);
+    REQUIRE(overlap.block_size() == blockSize);
+    REQUIRE(overlap.filter_size() == blockSize);
+    REQUIRE(overlap.transform_size() == blockSize * 2UL);
 
     auto output = signal;
     auto blocks = Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}};
 
     for (auto i{0U}; i < output.size(); i += blockSize) {
         auto block = KokkosEx::submdspan(blocks, std::tuple{i, i + blockSize});
-        ols(block, [](auto) {});
+        overlap(block, [](auto) {});
     }
 
     auto const error = neo::fft::rms_error(
