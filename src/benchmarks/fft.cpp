@@ -69,7 +69,7 @@ private:
 template<typename Float>
 struct cfft_plan
 {
-    explicit cfft_plan(size_t size) : _buf(size, Float(0)), _fft{size} {}
+    explicit cfft_plan(size_t size) : _buf(size, Float(0)), _fft{neo::fft::ilog2(size)} {}
 
     auto operator()() -> void
     {

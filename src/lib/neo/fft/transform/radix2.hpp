@@ -126,7 +126,7 @@ struct fft_radix2_plan
 {
     using complex_type = Complex;
 
-    explicit fft_radix2_plan(std::size_t size) : _size{size} {}
+    explicit fft_radix2_plan(std::size_t order) : _order{order} {}
 
     [[nodiscard]] auto size() const noexcept -> std::size_t { return _size; }
 
@@ -182,8 +182,8 @@ private:
         }
     }
 
-    std::size_t _size;
-    std::size_t _order{ilog2(_size)};
+    std::size_t _order;
+    std::size_t _size{1ULL << _order};
     std::vector<std::size_t> _index_table{make_bit_reversed_index_table(_size)};
     std::vector<Complex> _twiddles{make_radix2_twiddles<Complex>(_size)};
 };

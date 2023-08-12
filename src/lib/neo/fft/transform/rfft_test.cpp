@@ -88,7 +88,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: extract_two_real_dfts", "", float, d
     CAPTURE(numCoeffs);
 
     auto rfft = neo::fft::rfft_radix2_plan<Float>{order};
-    auto fft  = neo::fft::fft_radix2_plan<std::complex<Float>>{size};
+    auto fft  = neo::fft::fft_radix2_plan<std::complex<Float>>{order};
 
     auto rng    = std::mt19937{Catch::getSeed()};
     auto dist   = std::uniform_real_distribution<Float>{Float(-1), Float(1)};
