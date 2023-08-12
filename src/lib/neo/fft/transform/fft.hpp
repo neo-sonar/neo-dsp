@@ -106,7 +106,7 @@ auto fft_radix2_plan<Complex, Kernel>::operator()(InOutVec vec, direction dir) -
     }
 }
 
-inline constexpr auto fft_radix2 = [](auto const& kernel, inout_vector auto x, auto const& twiddles) -> void {
+inline constexpr auto execute_radix2_kernel = [](auto kernel, inout_vector auto x, auto const& twiddles) -> void {
     bit_reverse_permutation(x);
     kernel(x, twiddles);
 };
