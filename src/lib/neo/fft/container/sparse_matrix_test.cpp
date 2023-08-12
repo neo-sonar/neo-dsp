@@ -10,7 +10,7 @@
 TEMPLATE_TEST_CASE("neo/fft/container: sparse_matrix", "", float, double, std::complex<float>, std::complex<double>)
 {
     using Scalar = TestType;
-    using Float  = neo::fft::float_or_complex_value_type_t<Scalar>;
+    using Float  = neo::fft::real_or_complex_value_t<Scalar>;
 
     auto greaterEqualOne = [](auto, auto, auto v) { return std::real(v) >= Float(1); };
     auto greaterEqualTwo = [](auto, auto, auto v) { return std::real(v) >= Float(2); };

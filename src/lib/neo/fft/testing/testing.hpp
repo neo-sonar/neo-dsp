@@ -14,13 +14,10 @@
 
 namespace neo::fft {
 
-template<typename T>
-using float_or_complex_value_type_t = decltype(std::abs(std::declval<T>()));
-
 template<typename FloatOrComplex, typename URNG = std::mt19937>
 [[nodiscard]] auto generate_noise_signal(std::size_t length, typename URNG::result_type seed)
 {
-    using Float = float_or_complex_value_type_t<FloatOrComplex>;
+    using Float = real_or_complex_value_t<FloatOrComplex>;
 
     auto rng    = URNG{seed};
     auto dist   = std::uniform_real_distribution<Float>{Float(-1), Float(1)};

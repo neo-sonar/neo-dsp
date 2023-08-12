@@ -24,6 +24,7 @@ target_sources(neo_fft_tests
         "neo/fft/fixed_point/fixed_point_test.cpp"
 
         "neo/fft/math/a_weighting_test.cpp"
+        "neo/fft/math/complex_test.cpp"
         "neo/fft/math/fftfreq_test.cpp"
         "neo/fft/math/decibel_test.cpp"
         "neo/fft/math/ilog2_test.cpp"

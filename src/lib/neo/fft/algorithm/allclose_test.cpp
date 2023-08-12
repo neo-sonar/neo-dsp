@@ -8,7 +8,7 @@
 
 TEMPLATE_TEST_CASE("neo/fft/algorithm: allclose", "", float, double, std::complex<float>, std::complex<double>)
 {
-    using Float = neo::fft::float_or_complex_value_type_t<TestType>;
+    using Float = neo::fft::real_or_complex_value_t<TestType>;
 
     auto const size = GENERATE(as<std::size_t>{}, 2, 33, 128);
 
