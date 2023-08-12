@@ -1,13 +1,13 @@
 #include "copy.hpp"
 
-#include <neo/fft/algorithm/allclose.hpp>
-#include <neo/fft/algorithm/fill.hpp>
-#include <neo/fft/testing/testing.hpp>
+#include <neo/algorithm/allclose.hpp>
+#include <neo/algorithm/fill.hpp>
+#include <neo/testing/testing.hpp>
 
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-TEMPLATE_TEST_CASE("neo/fft/algorithm: copy", "", float, double, std::complex<float>, std::complex<double>)
+TEMPLATE_TEST_CASE("neo/algorithm: copy", "", float, double, std::complex<float>, std::complex<double>)
 {
     using Float     = neo::fft::real_or_complex_value_t<TestType>;
     auto const size = GENERATE(as<std::size_t>{}, 2, 33, 128);

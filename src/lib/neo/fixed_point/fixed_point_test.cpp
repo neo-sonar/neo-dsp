@@ -23,7 +23,7 @@ static constexpr auto tolerance = [] {
     return 0.0001F;
 }();
 
-TEMPLATE_TEST_CASE("neo/fft/fixed_point: to_float(fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: to_float(fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
 {
     using fixed_point_t = TestType;
 
@@ -36,7 +36,7 @@ TEMPLATE_TEST_CASE("neo/fft/fixed_point: to_float(fixed_point)", "", neo::fft::q
     REQUIRE(approx_equal(to_float(fixed_point_t{0.75F}), 0.75F, tolerance<fixed_point_t>));
 }
 
-TEMPLATE_TEST_CASE("neo/fft/fixed_point: unary_op(fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: unary_op(fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
 {
     using fixed_point_t = TestType;
 
@@ -90,7 +90,7 @@ TEMPLATE_TEST_CASE("neo/fft/fixed_point: unary_op(fixed_point)", "", neo::fft::q
     REQUIRE(unary_op(-0.99F, std::negate()));
 }
 
-TEMPLATE_TEST_CASE("neo/fft/fixed_point: binary_op(fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: binary_op(fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
 {
     using fixed_point_t = TestType;
 
@@ -128,7 +128,7 @@ TEMPLATE_TEST_CASE("neo/fft/fixed_point: binary_op(fixed_point)", "", neo::fft::
     REQUIRE(binary_op(0.49F, 0.5F, std::multiplies()));
 }
 
-TEMPLATE_TEST_CASE("neo/fft/fixed_point: comparison(fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: comparison(fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
 {
     using fixed_point_t = TestType;
 
@@ -175,7 +175,7 @@ TEMPLATE_TEST_CASE("neo/fft/fixed_point: comparison(fixed_point)", "", neo::fft:
     REQUIRE(compare_op(+0.50F, +0.50F, std::greater_equal()));
 }
 
-TEMPLATE_TEST_CASE("neo/fft/fixed_point: add(fixed_point, fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: add(fixed_point, fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
 {
     using fxp_t = TestType;
 
@@ -210,7 +210,7 @@ TEMPLATE_TEST_CASE("neo/fft/fixed_point: add(fixed_point, fixed_point)", "", neo
     }
 }
 
-TEMPLATE_TEST_CASE("neo/fft/fixed_point: subtract(fixed_point, fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: subtract(fixed_point, fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
 {
     using fxp_t = TestType;
 
@@ -245,7 +245,7 @@ TEMPLATE_TEST_CASE("neo/fft/fixed_point: subtract(fixed_point, fixed_point)", ""
     }
 }
 
-TEMPLATE_TEST_CASE("neo/fft/fixed_point: multiply(fixed_point, fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: multiply(fixed_point, fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
 {
     using fxp_t = TestType;
 

@@ -2,7 +2,7 @@
 
 #include <neo/config.hpp>
 
-#include <neo/fft/fixed_point/fixed_point.hpp>
+#include <neo/fixed_point/fixed_point.hpp>
 
 #if defined(__SSE2__)
     #include <emmintrin.h>

@@ -1,8 +1,8 @@
 #pragma once
 
+#include <neo/algorithm/multiply_sum_columns.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/container/sparse_matrix.hpp>
-#include <neo/fft/algorithm/multiply_sum_columns.hpp>
 #include <neo/fft/convolution/overlap_save.hpp>
 #include <neo/math/complex.hpp>
 #include <neo/math/next_power_of_two.hpp>

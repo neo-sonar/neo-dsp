@@ -1,8 +1,8 @@
 #include "radix2.hpp"
 
-#include <neo/fft/algorithm/allclose.hpp>
-#include <neo/fft/algorithm/scale.hpp>
-#include <neo/fft/testing/testing.hpp>
+#include <neo/algorithm/allclose.hpp>
+#include <neo/algorithm/scale.hpp>
+#include <neo/testing/testing.hpp>
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_get_random_seed.hpp>

@@ -1,7 +1,7 @@
-#include <neo/fft/fixed_point.hpp>
+#include <neo/fixed_point.hpp>
 
-#include <neo/fft/testing/benchmark.hpp>
-#include <neo/fft/testing/testing.hpp>
+#include <neo/testing/benchmark.hpp>
+#include <neo/testing/testing.hpp>
 
 #include <cfloat>
 #include <functional>

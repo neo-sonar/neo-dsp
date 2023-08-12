@@ -1,9 +1,9 @@
 #include "overlap_add.hpp"
 #include "overlap_save.hpp"
 
-#include <neo/fft/algorithm/rms_error.hpp>
+#include <neo/algorithm/rms_error.hpp>
 #include <neo/fft/convolution/uniform_partition.hpp>
-#include <neo/fft/testing/testing.hpp>
+#include <neo/testing/testing.hpp>
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_get_random_seed.hpp>

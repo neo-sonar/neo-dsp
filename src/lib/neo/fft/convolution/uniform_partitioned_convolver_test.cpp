@@ -1,7 +1,7 @@
 #include "uniform_partitioned_convolver.hpp"
 
 #include <neo/fft/convolution/uniform_partition.hpp>
-#include <neo/fft/testing/testing.hpp>
+#include <neo/testing/testing.hpp>
 
 #include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_template_test_macros.hpp>

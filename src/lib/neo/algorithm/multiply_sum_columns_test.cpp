@@ -5,7 +5,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
-TEMPLATE_TEST_CASE("neo/fft/algorithm: multiply_sum_columns(sparse_matrix)", "", float, double)
+TEMPLATE_TEST_CASE("neo/algorithm: multiply_sum_columns(sparse_matrix)", "", float, double)
 {
     using Float = TestType;
 
