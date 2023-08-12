@@ -125,14 +125,12 @@ TEMPLATE_PRODUCT_TEST_CASE(
     using Complex = typename Plan::complex_type;
     using Float   = typename Complex::value_type;
 
-    auto const size  = GENERATE(as<size_t>{}, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384);
-    auto const order = fft::ilog2(size);
+    auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17);
 
     auto plan = Plan{order};
-    REQUIRE(plan.size() == size);
     REQUIRE(plan.order() == order);
 
-    auto const original = fft::generate_noise_signal<std::complex<Float>>(size, Catch::getSeed());
+    auto const original = fft::generate_noise_signal<std::complex<Float>>(plan.size(), Catch::getSeed());
     auto const noise    = Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}};
 
     auto copy = original;

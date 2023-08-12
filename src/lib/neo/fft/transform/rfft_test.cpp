@@ -74,7 +74,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     using Plan  = typename TestType::plan_type;
     using Float = typename Plan::real_type;
 
-    auto const order = GENERATE(as<std::size_t>{}, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
+    auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17);
 
     auto rfft = Plan{order};
     REQUIRE(rfft.order() == order);
