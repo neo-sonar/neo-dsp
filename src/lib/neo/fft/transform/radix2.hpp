@@ -37,18 +37,18 @@ auto fill_radix2_twiddles(OutVec table, direction dir = direction::forward) -> v
 }
 
 template<typename Complex>
-auto make_radix2_twiddles(std::size_t size, direction dir = direction::forward) -> std::vector<Complex>
+auto make_radix2_twiddles(std::size_t size, direction dir = direction::forward)
 {
-    auto table = std::vector<Complex>(size / 2U);
-    fill_radix2_twiddles(Kokkos::mdspan{table.data(), Kokkos::extents{table.size()}}, dir);
+    auto table = KokkosEx::mdarray<Complex, Kokkos::dextents<std::size_t, 1>>{size / 2U};
+    fill_radix2_twiddles(table.to_mdspan(), dir);
     return table;
 }
 
 template<typename Complex, std::size_t Size>
-auto make_radix2_twiddles(direction dir = direction::forward) -> std::array<Complex, Size / 2>
+auto make_radix2_twiddles(direction dir = direction::forward)
 {
-    auto table = std::array<Complex, Size / 2>{};
-    fill_radix2_twiddles(Kokkos::mdspan{table.data(), Kokkos::extents{table.size()}}, dir);
+    auto table = KokkosEx::mdarray<Complex, Kokkos::extents<std::size_t, Size / 2>>{};
+    fill_radix2_twiddles(table.to_mdspan(), dir);
     return table;
 }
 
@@ -242,13 +242,12 @@ struct fft_radix2_plan
     {
         NEO_FFT_PRECONDITION(std::cmp_equal(vec.size(), _size));
 
-        auto const twiddles = Kokkos::mdspan{_twiddles.data(), Kokkos::extents{_twiddles.size()}};
         bit_reverse_permutation(vec, _index_table);
 
         if (dir == direction::forward) {
-            Kernel{}(vec, twiddles);
+            Kernel{}(vec, _twiddles.to_mdspan());
         } else {
-            Kernel{}(vec, conjugate_view{twiddles});
+            Kernel{}(vec, conjugate_view{_twiddles.to_mdspan()});
         }
     }
 
@@ -267,7 +266,7 @@ private:
     size_type _order;
     size_type _size{1ULL << _order};
     std::vector<size_type> _index_table{make_bit_reversed_index_table(_size)};
-    std::vector<Complex> _twiddles{make_radix2_twiddles<Complex>(_size)};
+    KokkosEx::mdarray<Complex, Kokkos::dextents<std::size_t, 1>> _twiddles{make_radix2_twiddles<Complex>(_size)};
 };
 
 }  // namespace neo::fft

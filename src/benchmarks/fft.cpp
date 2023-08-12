@@ -43,7 +43,8 @@ struct fft_static
 
 private:
     KokkosEx::mdarray<std::complex<Float>, Kokkos::extents<size_t, Size>> _buffer{};
-    std::array<std::complex<Float>, Size / 2> _tw{neo::fft::make_radix2_twiddles<std::complex<Float>, Size>()};
+    KokkosEx::mdarray<std::complex<Float>, Kokkos::extents<size_t, Size / 2>> _tw{
+        neo::fft::make_radix2_twiddles<std::complex<Float>, Size>()};
 };
 
 #if defined(__amd64__) or defined(_M_AMD64)

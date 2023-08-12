@@ -25,8 +25,8 @@ TEMPLATE_TEST_CASE("neo/fft/transform: make_radix2_twiddles", "", float, double)
 
     for (auto i{0UL}; i < array.size(); ++i) {
         CAPTURE(i);
-        REQUIRE(array[i].real() == Catch::Approx(vector[i].real()));
-        REQUIRE(array[i].imag() == Catch::Approx(vector[i].imag()));
+        REQUIRE(array(i).real() == Catch::Approx(vector(i).real()));
+        REQUIRE(array(i).imag() == Catch::Approx(vector(i).imag()));
     }
 }
 
