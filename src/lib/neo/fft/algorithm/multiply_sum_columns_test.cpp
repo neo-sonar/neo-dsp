@@ -1,6 +1,6 @@
 #include "multiply_sum_columns.hpp"
 
-#include <neo/fft/math/float_equality.hpp>
+#include <neo/math/float_equality.hpp>
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>

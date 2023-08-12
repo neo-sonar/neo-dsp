@@ -4,12 +4,12 @@
 
 #include <neo/fft/algorithm/copy.hpp>
 #include <neo/fft/container/mdspan.hpp>
-#include <neo/fft/math/complex.hpp>
-#include <neo/fft/math/ilog2.hpp>
-#include <neo/fft/math/power.hpp>
 #include <neo/fft/transform/conjugate_view.hpp>
 #include <neo/fft/transform/direction.hpp>
 #include <neo/fft/transform/reorder.hpp>
+#include <neo/math/complex.hpp>
+#include <neo/math/ilog2.hpp>
+#include <neo/math/power.hpp>
 
 #include <algorithm>
 #include <cstddef>

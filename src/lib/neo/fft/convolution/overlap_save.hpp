@@ -6,10 +6,10 @@
 #include <neo/fft/algorithm/fill.hpp>
 #include <neo/fft/algorithm/scale.hpp>
 #include <neo/fft/container/mdspan.hpp>
-#include <neo/fft/math/complex.hpp>
-#include <neo/fft/math/ilog2.hpp>
-#include <neo/fft/math/next_power_of_two.hpp>
 #include <neo/fft/transform.hpp>
+#include <neo/math/complex.hpp>
+#include <neo/math/ilog2.hpp>
+#include <neo/math/next_power_of_two.hpp>
 
 #include <functional>
 

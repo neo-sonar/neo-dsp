@@ -1,7 +1,7 @@
 #pragma once
 
-#include <neo/fft/math/complex.hpp>
 #include <neo/fft/transform/radix2.hpp>
+#include <neo/math/complex.hpp>
 
 namespace neo::fft {
 

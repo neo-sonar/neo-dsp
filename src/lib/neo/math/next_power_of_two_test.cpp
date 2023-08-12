@@ -3,7 +3,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
-TEMPLATE_TEST_CASE("neo/fft/math: next_power_of_two", "", std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t)
+TEMPLATE_TEST_CASE("neo/math: next_power_of_two", "", std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t)
 {
     using UInt = TestType;
 
@@ -15,7 +15,7 @@ TEMPLATE_TEST_CASE("neo/fft/math: next_power_of_two", "", std::uint8_t, std::uin
 }
 
 TEMPLATE_TEST_CASE(
-    "neo/fft/math: detail::next_power_of_two_fallback",
+    "neo/math: detail::next_power_of_two_fallback",
     "",
     std::uint8_t,
     std::uint16_t,

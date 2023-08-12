@@ -1,6 +1,6 @@
 #pragma once
 
-#include <neo/fft/math/complex.hpp>
+#include <neo/math/complex.hpp>
 
 #include <span>
 

@@ -4,7 +4,7 @@
 
 #include <neo/fft/algorithm/scale.hpp>
 #include <neo/fft/container/mdspan.hpp>
-#include <neo/fft/math/float_equality.hpp>
+#include <neo/math/float_equality.hpp>
 
 #include <algorithm>
 #include <functional>

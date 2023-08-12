@@ -5,9 +5,9 @@
 #include <neo/fft/algorithm/multiply.hpp>
 #include <neo/fft/algorithm/scale.hpp>
 #include <neo/fft/container/mdspan.hpp>
-#include <neo/fft/math/divide_round_up.hpp>
-#include <neo/fft/math/windowing.hpp>
 #include <neo/fft/transform/rfft.hpp>
+#include <neo/math/divide_round_up.hpp>
+#include <neo/math/windowing.hpp>
 
 namespace neo::fft {
 

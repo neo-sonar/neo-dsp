@@ -14,7 +14,7 @@ struct complex
 template<>
 inline constexpr auto const neo::fft::is_complex<ns::complex> = true;
 
-TEST_CASE("neo/fft/math: is_complex")
+TEST_CASE("neo/math: is_complex")
 {
     STATIC_REQUIRE(neo::fft::is_complex<std::complex<float>>);
     STATIC_REQUIRE(neo::fft::is_complex<std::complex<double>>);
@@ -38,7 +38,7 @@ TEST_CASE("neo/fft/math: is_complex")
     STATIC_REQUIRE(not neo::fft::is_complex<unsigned long long>);
 }
 
-TEST_CASE("neo/fft/math: complex")
+TEST_CASE("neo/math: complex")
 {
     STATIC_REQUIRE(neo::fft::complex<std::complex<float>>);
     STATIC_REQUIRE(neo::fft::complex<std::complex<double>>);
@@ -62,7 +62,7 @@ TEST_CASE("neo/fft/math: complex")
     STATIC_REQUIRE(not neo::fft::complex<unsigned long long>);
 }
 
-TEST_CASE("neo/fft/math: float_or_complex")
+TEST_CASE("neo/math: float_or_complex")
 {
     STATIC_REQUIRE(neo::fft::float_or_complex<float>);
     STATIC_REQUIRE(neo::fft::float_or_complex<double>);
@@ -85,7 +85,7 @@ TEST_CASE("neo/fft/math: float_or_complex")
     STATIC_REQUIRE(not neo::fft::float_or_complex<unsigned long long>);
 }
 
-TEST_CASE("neo/fft/math: real_or_complex_value_t")
+TEST_CASE("neo/math: real_or_complex_value_t")
 {
     using neo::fft::real_or_complex_value_t;
 

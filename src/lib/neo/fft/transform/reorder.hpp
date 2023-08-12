@@ -1,7 +1,7 @@
 #pragma once
 
 #include <neo/fft/container/mdspan.hpp>
-#include <neo/fft/math/ilog2.hpp>
+#include <neo/math/ilog2.hpp>
 
 #include <cstddef>
 #include <span>

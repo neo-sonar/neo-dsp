@@ -1,8 +1,9 @@
 #include "PluginEditor.hpp"
 
 #include <neo/fft/container/sparse_matrix.hpp>
-#include <neo/fft/math/fftfreq.hpp>
 #include <neo/fft/transform/stft.hpp>
+#include <neo/math/a_weighting.hpp>
+#include <neo/math/fftfreq.hpp>
 
 #include "dsp/convolution.hpp"
 #include "dsp/normalize.hpp"

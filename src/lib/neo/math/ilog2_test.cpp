@@ -5,7 +5,7 @@
 #include <cstdint>
 
 TEMPLATE_TEST_CASE(
-    "neo/fft/math: ilog2",
+    "neo/math: ilog2",
     "",
     std::int8_t,
     std::uint8_t,

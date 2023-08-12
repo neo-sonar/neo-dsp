@@ -23,17 +23,17 @@ target_sources(neo_fft_tests
 
         "neo/fft/fixed_point/fixed_point_test.cpp"
 
-        "neo/fft/math/a_weighting_test.cpp"
-        "neo/fft/math/complex_test.cpp"
-        "neo/fft/math/fftfreq_test.cpp"
-        "neo/fft/math/decibel_test.cpp"
-        "neo/fft/math/ilog2_test.cpp"
-        "neo/fft/math/next_power_of_two_test.cpp"
-
         "neo/fft/transform/dft_test.cpp"
         "neo/fft/transform/radix2_test.cpp"
         "neo/fft/transform/rfft_test.cpp"
         "neo/fft/transform/stft_test.cpp"
+
+        "neo/math/a_weighting_test.cpp"
+        "neo/math/complex_test.cpp"
+        "neo/math/fftfreq_test.cpp"
+        "neo/math/decibel_test.cpp"
+        "neo/math/ilog2_test.cpp"
+        "neo/math/next_power_of_two_test.cpp"
 )
 
 catch_discover_tests(neo_fft_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
