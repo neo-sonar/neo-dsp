@@ -13,6 +13,10 @@
 #include <vector>
 
 namespace neo::fft {
+
+template<typename T>
+using float_or_complex_value_type_t = decltype(std::abs(std::declval<T>()));
+
 struct test_path
 {
     std::filesystem::path input;
@@ -52,13 +56,21 @@ template<std::floating_point Float>
     };
 }
 
-template<std::floating_point Float>
-[[nodiscard]] auto generate_noise_signal(std::size_t length, std::uint32_t seed) -> std::vector<Float>
+template<typename FloatOrComplex>
+[[nodiscard]] auto generate_noise_signal(std::size_t length, std::uint32_t seed)
 {
+    using Float = float_or_complex_value_type_t<FloatOrComplex>;
+
     auto rng    = std::mt19937{seed};
     auto dist   = std::uniform_real_distribution<Float>{Float(-1), Float(1)};
-    auto signal = std::vector<Float>(length, Float(0));
-    std::generate(signal.begin(), signal.end(), [&] { return dist(rng); });
+    auto signal = std::vector<FloatOrComplex>(length);
+
+    if constexpr (std::floating_point<FloatOrComplex>) {
+        std::generate(signal.begin(), signal.end(), [&] { return dist(rng); });
+    } else {
+        std::generate(signal.begin(), signal.end(), [&] { return FloatOrComplex{dist(rng), dist(rng)}; });
+    }
+
     return signal;
 }
 
@@ -81,8 +93,5 @@ template<std::floating_point Float>
     }
     return impulse;
 }
-
-template<typename T>
-using float_or_complex_value_type_t = decltype(std::abs(std::declval<T>()));
 
 }  // namespace neo::fft
