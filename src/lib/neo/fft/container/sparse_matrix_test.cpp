@@ -21,11 +21,13 @@ TEMPLATE_TEST_CASE("neo/fft/container: sparse_matrix", "", float, double, std::c
     auto other = neo::fft::sparse_matrix<Scalar>{lhs.to_mdspan(), greaterEqualOne};
     REQUIRE(other.rows() == lhs.extent(0));
     REQUIRE(other.columns() == lhs.extent(1));
+    REQUIRE(other.size() == lhs.size());
     REQUIRE(other.value_container().size() == lhs.size());
 
     other = neo::fft::sparse_matrix<Scalar>{lhs.to_mdspan(), greaterEqualTwo};
     REQUIRE(other.rows() == lhs.extent(0));
     REQUIRE(other.columns() == lhs.extent(1));
+    REQUIRE(other.size() == lhs.size());
     REQUIRE(other.value_container().size() == 0);
 
     auto rowData = std::vector<Scalar>(lhs.extent(1));
