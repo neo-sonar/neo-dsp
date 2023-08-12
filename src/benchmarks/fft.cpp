@@ -17,7 +17,7 @@ struct cfft
     {
         auto const gen = [i = 0]() mutable { return static_cast<Float>(i++); };
         std::generate_n(begin(_buf), size(_buf), gen);
-        neo::fft::c2c_radix2(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
+        neo::fft::fft_radix2_kernel_v1(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
         neo::fft::do_not_optimize(_buf.back());
     }
 
@@ -36,7 +36,7 @@ struct cfft_fixed
         auto buffer = _buffer.to_mdspan();
         // auto const gen = [i = 0]() mutable { return static_cast<Float>(i++); };
         // std::generate_n(begin(_buffer), size(_buffer), gen);
-        neo::fft::c2c_radix2(buffer, _tw);
+        neo::fft::fft_radix2_kernel_v1(buffer, _tw);
         neo::fft::do_not_optimize(buffer[0]);
     }
 
@@ -57,7 +57,7 @@ struct cfft_alt
     {
         auto const gen = [i = 0]() mutable { return static_cast<Float>(i++); };
         std::generate_n(begin(_buf), size(_buf), gen);
-        neo::fft::c2c_radix2_alt(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
+        neo::fft::fft_radix2_kernel_v2(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
         neo::fft::do_not_optimize(_buf.back());
     }
 
@@ -96,7 +96,7 @@ struct cfft32x2
     {
         auto gen = [i = 0]() mutable { return _mm_set1_ps(static_cast<float>(i++)); };
         std::generate_n(begin(_buf), size(_buf), gen);
-        neo::fft::c2c_radix2(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
+        neo::fft::fft_radix2_kernel_v1(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
         neo::fft::do_not_optimize(_buf.back());
     }
 
@@ -115,7 +115,7 @@ struct cfft64x1
     {
         auto gen = [i = 0]() mutable { return _mm_set1_pd(static_cast<double>(i++)); };
         std::generate_n(begin(_buf), size(_buf), gen);
-        neo::fft::c2c_radix2(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
+        neo::fft::fft_radix2_kernel_v1(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
         neo::fft::do_not_optimize(_buf.back());
     }
 
@@ -138,7 +138,7 @@ struct cfft32x4
     {
         auto gen = [i = 0]() mutable { return _mm256_set1_ps(static_cast<float>(i++)); };
         std::generate_n(begin(_buf), size(_buf), gen);
-        neo::fft::c2c_radix2(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
+        neo::fft::fft_radix2_kernel_v1(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
         neo::fft::do_not_optimize(_buf.back());
     }
 
@@ -156,7 +156,10 @@ struct cfft32x4_fixed
     {
         auto gen = [i = 0]() mutable { return _mm256_set1_ps(static_cast<float>(i++)); };
         std::generate_n(begin(_buf), size(_buf), gen);
-        neo::fft::c2c_radix2(Kokkos::mdspan<neo::fft::complex32x4_t, Kokkos::extents<size_t, Size>>{_buf.data()}, _tw);
+        neo::fft::fft_radix2_kernel_v1(
+            Kokkos::mdspan<neo::fft::complex32x4_t, Kokkos::extents<size_t, Size>>{_buf.data()},
+            _tw
+        );
         neo::fft::do_not_optimize(_buf.back());
     }
 
@@ -175,7 +178,7 @@ struct cfft64x2
     {
         auto gen = [i = 0]() mutable { return _mm256_set1_pd(static_cast<double>(i++)); };
         std::generate_n(begin(_buf), size(_buf), gen);
-        neo::fft::c2c_radix2(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
+        neo::fft::fft_radix2_kernel_v1(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
         neo::fft::do_not_optimize(_buf.back());
     }
 
@@ -197,7 +200,7 @@ struct cfft32x8
     {
         auto gen = [i = 0]() mutable { return _mm512_set1_ps(static_cast<float>(i++)); };
         std::generate_n(begin(_buf), size(_buf), gen);
-        neo::fft::c2c_radix2(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
+        neo::fft::fft_radix2_kernel_v1(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
         neo::fft::do_not_optimize(_buf.back());
     }
 
@@ -216,7 +219,7 @@ struct cfft64x4
     {
         auto gen = [i = 0]() mutable { return _mm512_set1_pd(static_cast<double>(i++)); };
         std::generate_n(begin(_buf), size(_buf), gen);
-        neo::fft::c2c_radix2(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
+        neo::fft::fft_radix2_kernel_v1(Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}}, _tw);
         neo::fft::do_not_optimize(_buf.back());
     }
 

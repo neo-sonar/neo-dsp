@@ -52,9 +52,7 @@ auto make_radix2_twiddles(direction dir = direction::forward) -> std::array<Comp
     return table;
 }
 
-template<inout_vector InOutVec, typename TwiddleTable>
-auto c2c_radix2(InOutVec x, TwiddleTable const& twiddles) -> void
-{
+inline constexpr auto fft_radix2_kernel_v1 = [](inout_vector auto x, auto const& twiddles) -> void {
     // bit-reverse ordering
     auto const len   = x.size();
     auto const order = static_cast<std::int32_t>(ilog2(len));
@@ -85,11 +83,9 @@ auto c2c_radix2(InOutVec x, TwiddleTable const& twiddles) -> void
         stage_length *= 2;
         stride *= 2;
     }
-}
+};
 
-template<inout_vector InOutVec, typename TwiddleTable>
-auto c2c_radix2_alt(InOutVec x, TwiddleTable const& twiddles) -> void
-{
+inline constexpr auto fft_radix2_kernel_v2 = [](inout_vector auto x, auto const& twiddles) -> void {
     auto const len = x.size();
 
     // Rearrange the input in bit-reversed order
@@ -119,7 +115,7 @@ auto c2c_radix2_alt(InOutVec x, TwiddleTable const& twiddles) -> void
 
         stage_size *= 2;
     }
-}
+};
 
 template<typename Complex>
 struct fft_radix2_plan
