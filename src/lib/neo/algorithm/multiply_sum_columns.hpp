@@ -33,16 +33,17 @@ constexpr auto multiply_sum_columns(InMatL lhs, InMatR rhs, OutVec out, std::siz
     }
 }
 
-template<typename T, typename U, typename IndexType, typename ValueContainer, typename IndexContainer>
+template<typename U, typename IndexType, typename ValueContainer, typename IndexContainer>
 auto multiply_sum_columns(
-    Kokkos::mdspan<T, Kokkos::dextents<std::size_t, 2>> lhs,
+    in_matrix auto lhs,
     sparse_matrix<U, IndexType, ValueContainer, IndexContainer> const& rhs,
-    std::span<U> accumulator,
+    inout_vector auto accumulator,
     std::size_t shift = 0
 ) -> void
 {
     NEO_FFT_PRECONDITION(lhs.extent(0) == rhs.rows());
     NEO_FFT_PRECONDITION(lhs.extent(1) == rhs.columns());
+    NEO_FFT_PRECONDITION(lhs.extent(1) == accumulator.extent(0));
 
     auto multiplyRow = [&](auto leftRow, auto rightRow) {
         auto const left   = KokkosEx::submdspan(lhs, leftRow, Kokkos::full_extent);

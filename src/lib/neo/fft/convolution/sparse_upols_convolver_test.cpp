@@ -18,8 +18,8 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: sparse_upols_convolver", "", float, dou
     auto const signal     = neo::generate_noise_signal<Float>(blockSize * 20UL, Catch::getSeed());
     auto const partitions = neo::generate_identity_impulse<Float>(blockSize, 10UL);
 
-    auto convolver = neo::fft::sparse_upols_convolver<Float>{};
     auto output    = signal;
+    auto convolver = neo::fft::sparse_upols_convolver<Float>{};
     convolver.filter(partitions.to_mdspan(), [](auto, auto, auto) { return true; });
 
     for (auto i{0U}; i < output.size(); i += blockSize) {

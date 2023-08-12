@@ -19,11 +19,13 @@ TEMPLATE_TEST_CASE("neo/algorithm: multiply_sum_columns(sparse_matrix)", "", flo
     REQUIRE(rhs.columns() == 32);
 
     auto accumulator = std::vector<Float>(lhs.extent(1));
-    neo::multiply_sum_columns<Float>(lhs.to_mdspan(), rhs, std::span<Float>{accumulator});
+    auto acc         = Kokkos::mdspan{accumulator.data(), Kokkos::extents{accumulator.size()}};
+
+    neo::multiply_sum_columns(lhs.to_mdspan(), rhs, acc);
     REQUIRE(std::all_of(accumulator.begin(), accumulator.end(), isZero));
 
     rhs.insert(0, 0, Float(2));
-    neo::multiply_sum_columns<Float>(lhs.to_mdspan(), rhs, std::span<Float>{accumulator});
+    neo::multiply_sum_columns(lhs.to_mdspan(), rhs, acc);
     REQUIRE(accumulator[0] == Catch::Approx(Float(2)));
     REQUIRE(std::all_of(std::next(accumulator.begin()), accumulator.end(), isZero));
 }
