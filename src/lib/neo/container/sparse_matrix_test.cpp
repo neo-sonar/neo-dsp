@@ -7,7 +7,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
-TEMPLATE_TEST_CASE("neo/container: sparse_matrix", "", float, double, std::complex<float>, std::complex<double>)
+TEMPLATE_TEST_CASE("neo/container: sparse_matrix", "", float, double, long double, std::complex<float>, std::complex<double>, std::complex<long double>)
 {
     using Scalar = TestType;
     using Float  = neo::real_or_complex_value_t<Scalar>;

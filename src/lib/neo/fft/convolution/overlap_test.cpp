@@ -15,7 +15,7 @@
 
 using namespace neo::fft;
 
-TEMPLATE_PRODUCT_TEST_CASE("neo/fft/convolution:", "", (overlap_add, overlap_save), (float, double))
+TEMPLATE_PRODUCT_TEST_CASE("neo/fft/convolution:", "", (overlap_add, overlap_save), (float, double, long double))
 {
     using Overlap = TestType;
     using Float   = typename Overlap::real_type;
@@ -34,17 +34,19 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft/convolution:", "", (overlap_add, overlap_sav
 
     for (auto i{0U}; i < output.size(); i += blockSize) {
         auto block = KokkosEx::submdspan(blocks, std::tuple{i, i + blockSize});
-        overlap(block, [](auto) {});
+        overlap(block, [=](neo::inout_vector auto io) {
+            REQUIRE(io.extent(0) == overlap.transform_size() / 2UL + 1UL);
+        });
     }
 
-    auto const error = neo::rms_error(
-        Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}},
-        Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}}
-    );
+    auto const sig = Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}};
+    auto const out = Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}};
+
+    auto const error = neo::rms_error(sig, out);
     REQUIRE_THAT(error, Catch::Matchers::WithinAbs(0.0, 0.00001));
 
     for (auto i{0ULL}; i < output.size(); ++i) {
         CAPTURE(i);
-        REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(signal[i], 0.00001));
+        REQUIRE_THAT(out[i], Catch::Matchers::WithinAbs(sig[i], 0.00001));
     }
 }

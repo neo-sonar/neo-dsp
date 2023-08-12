@@ -4,7 +4,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-TEMPLATE_TEST_CASE("neo/math: fftfreq", "", float, double)
+TEMPLATE_TEST_CASE("neo/math: fftfreq", "", float, double, long double)
 {
     using Float = TestType;
 

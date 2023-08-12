@@ -3,7 +3,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
-TEMPLATE_TEST_CASE("neo/fft/transform: make_radix2_twiddles", "", float, double)
+TEMPLATE_TEST_CASE("neo/fft/transform: make_radix2_twiddles", "", float, double, long double)
 {
     using Float   = TestType;
     using Complex = std::complex<Float>;

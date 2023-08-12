@@ -32,14 +32,14 @@ template<std::floating_point Float, typename Convolver>
     }
 }
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver", "", float, double)
+TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver", "", float, double, long double)
 {
     using Float    = TestType;
     auto blockSize = GENERATE(as<std::size_t>{}, 128, 256, 512);
     test_uniform_partitioned_convolver<Float, neo::fft::upols_convolver<Float>>(blockSize);
 }
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: upola_convolver", "", float, double)
+TEMPLATE_TEST_CASE("neo/fft/convolution: upola_convolver", "", float, double, long double)
 {
     using Float    = TestType;
     auto blockSize = GENERATE(as<std::size_t>{}, 128, 256, 512);

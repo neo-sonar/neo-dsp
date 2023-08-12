@@ -39,7 +39,12 @@ TEMPLATE_PRODUCT_TEST_CASE(
      (double, radix2_kernel_v1),
      (double, radix2_kernel_v2),
      (double, radix2_kernel_v3),
-     (double, radix2_kernel_v4))
+     (double, radix2_kernel_v4),
+
+     (long double, radix2_kernel_v1),
+     (long double, radix2_kernel_v2),
+     (long double, radix2_kernel_v3),
+     (long double, radix2_kernel_v4))
 )
 {
     using Plan  = typename TestType::plan_type;
@@ -66,7 +71,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     REQUIRE(neo::allclose(Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}}, real));
 }
 
-TEMPLATE_TEST_CASE("neo/fft/transform: extract_two_real_dfts", "", float, double)
+TEMPLATE_TEST_CASE("neo/fft/transform: extract_two_real_dfts", "", float, double, long double)
 {
     using Float = TestType;
 
