@@ -52,83 +52,101 @@ auto make_radix2_twiddles(direction dir = direction::forward) -> std::array<Comp
     return table;
 }
 
-inline constexpr auto radix2_kernel_v1 = [](inout_vector auto x, auto const& twiddles) -> void {
-    auto const size  = x.size();
-    auto const order = static_cast<std::int32_t>(ilog2(size));
+struct radix2_kernel_v1
+{
+    radix2_kernel_v1() = default;
 
-    auto stage_length = 1;
-    auto stride       = 2;
+    auto operator()(inout_vector auto x, auto const& twiddles) const -> void
+    {
+        auto const size  = x.size();
+        auto const order = static_cast<std::int32_t>(ilog2(size));
 
-    for (auto stage = 0; stage < order; ++stage) {
-        auto const tw_stride = power<2>(order - stage - 1);
+        auto stage_length = 1;
+        auto stride       = 2;
 
-        for (auto k = 0; std::cmp_less(k, size); k += stride) {
-            for (auto pair = 0; pair < stage_length; ++pair) {
-                auto const tw = twiddles[static_cast<std::size_t>(pair * tw_stride)];
+        for (auto stage = 0; stage < order; ++stage) {
+            auto const tw_stride = power<2>(order - stage - 1);
 
-                auto const i1 = static_cast<std::size_t>(k + pair);
-                auto const i2 = static_cast<std::size_t>(k + pair + stage_length);
+            for (auto k = 0; std::cmp_less(k, size); k += stride) {
+                for (auto pair = 0; pair < stage_length; ++pair) {
+                    auto const tw = twiddles[static_cast<std::size_t>(pair * tw_stride)];
 
-                auto const temp = x[i1] + tw * x[i2];
-                x[i2]           = x[i1] - tw * x[i2];
-                x[i1]           = temp;
+                    auto const i1 = static_cast<std::size_t>(k + pair);
+                    auto const i2 = static_cast<std::size_t>(k + pair + stage_length);
+
+                    auto const temp = x[i1] + tw * x[i2];
+                    x[i2]           = x[i1] - tw * x[i2];
+                    x[i1]           = temp;
+                }
             }
-        }
 
-        stage_length *= 2;
-        stride *= 2;
+            stage_length *= 2;
+            stride *= 2;
+        }
     }
 };
 
-inline constexpr auto radix2_kernel_v2 = [](inout_vector auto x, auto const& twiddles) -> void {
-    auto const size = x.size();
+struct radix2_kernel_v2
+{
+    radix2_kernel_v2() = default;
 
-    auto stage_size = 2U;
-    while (stage_size <= size) {
-        auto const halfStage = stage_size / 2;
-        auto const k_step    = size / stage_size;
+    auto operator()(inout_vector auto x, auto const& twiddles) const -> void
+    {
+        auto const size = x.size();
 
-        for (auto i{0U}; i < size; i += stage_size) {
-            for (auto k{i}; k < i + halfStage; ++k) {
-                auto const index = k - i;
-                auto const tw    = twiddles[index * k_step];
+        auto stage_size = 2U;
+        while (stage_size <= size) {
+            auto const halfStage = stage_size / 2;
+            auto const k_step    = size / stage_size;
 
-                auto const idx1 = k;
-                auto const idx2 = k + halfStage;
+            for (auto i{0U}; i < size; i += stage_size) {
+                for (auto k{i}; k < i + halfStage; ++k) {
+                    auto const index = k - i;
+                    auto const tw    = twiddles[index * k_step];
 
-                auto const even = x[idx1];
-                auto const odd  = x[idx2];
+                    auto const idx1 = k;
+                    auto const idx2 = k + halfStage;
 
-                auto const tmp = odd * tw;
-                x[idx1]        = even + tmp;
-                x[idx2]        = even - tmp;
+                    auto const even = x[idx1];
+                    auto const odd  = x[idx2];
+
+                    auto const tmp = odd * tw;
+                    x[idx1]        = even + tmp;
+                    x[idx2]        = even - tmp;
+                }
             }
-        }
 
-        stage_size *= 2;
+            stage_size *= 2;
+        }
     }
 };
 
-inline constexpr auto radix2_kernel_v3 = [](inout_vector auto x, auto const& twiddles) -> void {
-    auto const size  = x.size();
-    auto const order = ilog2(size);
+struct radix2_kernel_v3
+{
+    radix2_kernel_v3() = default;
 
-    for (auto stage{0ULL}; stage < order; ++stage) {
+    auto operator()(inout_vector auto x, auto const& twiddles) const -> void
+    {
+        auto const size  = x.size();
+        auto const order = ilog2(size);
 
-        auto const stage_length = power<2ULL>(stage);
-        auto const stride       = power<2ULL>(stage + 1);
-        auto const tw_stride    = power<2ULL>(order - stage - 1ULL);
+        for (auto stage{0ULL}; stage < order; ++stage) {
 
-        for (auto k{0ULL}; k < size; k += stride) {
-            for (auto pair{0ULL}; pair < stage_length; ++pair) {
-                auto const tw = twiddles[pair * tw_stride];
+            auto const stage_length = power<2ULL>(stage);
+            auto const stride       = power<2ULL>(stage + 1);
+            auto const tw_stride    = power<2ULL>(order - stage - 1ULL);
 
-                auto const i1 = k + pair;
-                auto const i2 = k + pair + stage_length;
+            for (auto k{0ULL}; k < size; k += stride) {
+                for (auto pair{0ULL}; pair < stage_length; ++pair) {
+                    auto const tw = twiddles[pair * tw_stride];
 
-                auto const temp = x[i1] + tw * x[i2];
-                x[i2]           = x[i1] - tw * x[i2];
-                x[i1]           = temp;
+                    auto const i1 = k + pair;
+                    auto const i2 = k + pair + stage_length;
+
+                    auto const temp = x[i1] + tw * x[i2];
+                    x[i2]           = x[i1] - tw * x[i2];
+                    x[i1]           = temp;
+                }
             }
         }
     }
@@ -139,7 +157,7 @@ inline constexpr auto fft_radix2 = [](auto const& kernel, inout_vector auto x, a
     kernel(x, twiddles);
 };
 
-template<typename Complex, typename Kernel = decltype(radix2_kernel_v3)>
+template<typename Complex, typename Kernel = radix2_kernel_v3>
 struct fft_radix2_plan
 {
     using complex_type = Complex;
