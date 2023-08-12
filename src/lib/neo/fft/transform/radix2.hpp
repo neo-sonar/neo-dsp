@@ -242,12 +242,13 @@ struct fft_radix2_plan
     {
         NEO_FFT_PRECONDITION(std::cmp_equal(vec.size(), _size));
 
+        auto const twiddles = Kokkos::mdspan{_twiddles.data(), Kokkos::extents{_twiddles.size()}};
         bit_reverse_permutation(vec, _index_table);
 
         if (dir == direction::forward) {
-            Kernel{}(vec, _twiddles);
+            Kernel{}(vec, twiddles);
         } else {
-            Kernel{}(vec, conjugate_view<Complex>{_twiddles});
+            Kernel{}(vec, conjugate_view{twiddles});
         }
     }
 

@@ -1,23 +1,28 @@
 #pragma once
 
+#include <neo/container/mdspan.hpp>
 #include <neo/math/complex.hpp>
 
-#include <span>
+#include <concepts>
 
 namespace neo::fft {
 
-template<typename Complex, std::size_t Extent = std::dynamic_extent>
+template<in_vector InVec>
+    requires(complex<typename InVec::value_type>)
 struct conjugate_view
 {
-    constexpr explicit conjugate_view(std::span<Complex const, Extent> twiddles) noexcept : _twiddles{twiddles} {}
+    using value_type = typename InVec::value_type;
 
-    [[nodiscard]] constexpr auto operator[](std::size_t idx) const noexcept -> Complex
+    constexpr explicit conjugate_view(InVec twiddles) noexcept : _twiddles{twiddles} {}
+
+    [[nodiscard]] constexpr auto operator[](std::integral auto index) const -> value_type
     {
-        return std::conj(_twiddles[idx]);
+        using std::conj;
+        return conj(_twiddles[index]);
     }
 
 private:
-    std::span<Complex const, Extent> _twiddles;
+    InVec _twiddles;
 };
 
 }  // namespace neo::fft
