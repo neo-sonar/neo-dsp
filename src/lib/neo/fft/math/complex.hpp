@@ -17,7 +17,7 @@ template<typename T>
 concept complex = is_complex<T>;
 
 template<typename T>
-concept float_or_complex = std::floating_point<T> or is_complex<T>;
+concept float_or_complex = std::floating_point<T> or complex<T>;
 
 namespace detail {
 
