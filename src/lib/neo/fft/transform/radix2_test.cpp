@@ -62,7 +62,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
         auto inout = testCase.input;
         auto io    = Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}};
         auto tw    = neo::fft::make_radix2_twiddles<std::complex<Float>>(inout.size());
-        neo::fft::fft_radix2_kernel_v1(io, tw);
+        neo::fft::fft_radix2(neo::fft::fft_radix2_kernel_v1, io, tw);
         REQUIRE(neo::fft::allclose(expected, io));
     }
 
@@ -70,7 +70,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
         auto inout = testCase.input;
         auto io    = Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}};
         auto tw    = neo::fft::make_radix2_twiddles<std::complex<Float>>(inout.size());
-        neo::fft::fft_radix2_kernel_v2(io, tw);
+        neo::fft::fft_radix2(neo::fft::fft_radix2_kernel_v2, io, tw);
         REQUIRE(neo::fft::allclose(expected, io));
     }
 

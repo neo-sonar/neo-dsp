@@ -53,10 +53,8 @@ auto make_radix2_twiddles(direction dir = direction::forward) -> std::array<Comp
 }
 
 inline constexpr auto fft_radix2_kernel_v1 = [](inout_vector auto x, auto const& twiddles) -> void {
-    // bit-reverse ordering
     auto const len   = x.size();
     auto const order = static_cast<std::int32_t>(ilog2(len));
-    bit_reverse_permutation(x);
 
     // butterfly computation
     auto stage_length = 1;
@@ -88,9 +86,6 @@ inline constexpr auto fft_radix2_kernel_v1 = [](inout_vector auto x, auto const&
 inline constexpr auto fft_radix2_kernel_v2 = [](inout_vector auto x, auto const& twiddles) -> void {
     auto const len = x.size();
 
-    // Rearrange the input in bit-reversed order
-    bit_reverse_permutation(x);
-
     auto stage_size = 2U;
     while (stage_size <= len) {
         auto const halfStage = stage_size / 2;
@@ -115,6 +110,11 @@ inline constexpr auto fft_radix2_kernel_v2 = [](inout_vector auto x, auto const&
 
         stage_size *= 2;
     }
+};
+
+auto fft_radix2 = [](auto const& kernel, inout_vector auto x, auto const& twiddles) -> void {
+    bit_reverse_permutation(x);
+    kernel(x, twiddles);
 };
 
 template<typename Complex>
