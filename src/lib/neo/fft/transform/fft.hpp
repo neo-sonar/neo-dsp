@@ -15,6 +15,38 @@
 
 namespace neo::fft {
 
+template<typename Plan, inout_vector InOutVec>
+constexpr auto fft(Plan& plan, InOutVec inout) -> void
+{
+    NEO_FFT_PRECONDITION(std::cmp_equal(inout.size(), plan.size()));
+    plan(inout, direction::forward);
+}
+
+template<typename Plan, in_vector InVec, out_vector OutVec>
+constexpr auto fft(Plan& plan, InVec input, OutVec output) -> void
+{
+    NEO_FFT_PRECONDITION(std::cmp_equal(input.size(), plan.size()));
+    NEO_FFT_PRECONDITION(std::cmp_equal(output.size(), plan.size()));
+    copy(input, output);
+    fft(plan, output);
+}
+
+template<typename Plan, inout_vector InOutVec>
+constexpr auto ifft(Plan& plan, InOutVec inout) -> void
+{
+    NEO_FFT_PRECONDITION(std::cmp_equal(inout.size(), plan.size()));
+    plan(inout, direction::backward);
+}
+
+template<typename Plan, in_vector InVec, out_vector OutVec>
+constexpr auto ifft(Plan& plan, InVec input, OutVec output) -> void
+{
+    NEO_FFT_PRECONDITION(std::cmp_equal(input.size(), plan.size()));
+    NEO_FFT_PRECONDITION(std::cmp_equal(output.size(), plan.size()));
+    copy(input, output);
+    ifft(plan, output);
+}
+
 template<typename Complex, typename Kernel = radix2_kernel_v3>
 struct fft_radix2_plan
 {
@@ -29,10 +61,6 @@ struct fft_radix2_plan
     template<inout_vector InOutVec>
         requires(std::same_as<typename InOutVec::value_type, Complex>)
     auto operator()(InOutVec vec, direction dir) -> void;
-
-    template<in_vector InVec, out_vector OutVec>
-        requires(std::same_as<typename InVec::value_type, Complex> and std::same_as<typename OutVec::value_type, Complex>)
-    auto operator()(InVec in, OutVec out, direction dir) -> void;
 
 private:
     size_type _order;
@@ -76,18 +104,6 @@ auto fft_radix2_plan<Complex, Kernel>::operator()(InOutVec vec, direction dir) -
     } else {
         kernel(vec, conjugate_view{_twiddles.to_mdspan()});
     }
-}
-
-template<typename Complex, typename Kernel>
-template<in_vector InVec, out_vector OutVec>
-    requires(std::same_as<typename InVec::value_type, Complex> and std::same_as<typename OutVec::value_type, Complex>)
-auto fft_radix2_plan<Complex, Kernel>::operator()(InVec in, OutVec out, direction dir) -> void
-{
-    NEO_FFT_PRECONDITION(std::cmp_equal(in.size(), _size));
-    NEO_FFT_PRECONDITION(std::cmp_equal(out.size(), _size));
-
-    copy(in, out);
-    (*this)(out, dir);
 }
 
 inline constexpr auto fft_radix2 = [](auto const& kernel, inout_vector auto x, auto const& twiddles) -> void {

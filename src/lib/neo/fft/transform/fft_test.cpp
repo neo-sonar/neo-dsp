@@ -54,16 +54,35 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
     auto plan = Plan{order};
     REQUIRE(plan.order() == order);
+    REQUIRE(plan.size() == 1UL << order);
 
-    auto const original = neo::generate_noise_signal<std::complex<Float>>(plan.size(), Catch::getSeed());
+    auto const original = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
     auto const noise    = Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}};
 
-    auto copy = original;
-    auto io   = Kokkos::mdspan{copy.data(), Kokkos::extents{copy.size()}};
+    SECTION("inplace")
+    {
+        auto copy = original;
+        auto io   = Kokkos::mdspan{copy.data(), Kokkos::extents{copy.size()}};
 
-    plan(io, fft::direction::forward);
-    plan(io, fft::direction::backward);
+        neo::fft::fft(plan, io);
+        neo::fft::ifft(plan, io);
 
-    neo::scale(Float(1) / static_cast<Float>(plan.size()), io);
-    REQUIRE(neo::allclose(noise, io));
+        neo::scale(Float(1) / static_cast<Float>(plan.size()), io);
+        REQUIRE(neo::allclose(noise, io));
+    }
+
+    SECTION("copy")
+    {
+        auto tmpBuf = KokkosEx::mdarray<Complex, Kokkos::dextents<size_t, 1>>{noise.extents()};
+        auto outBuf = KokkosEx::mdarray<Complex, Kokkos::dextents<size_t, 1>>{noise.extents()};
+
+        auto tmp = tmpBuf.to_mdspan();
+        auto out = outBuf.to_mdspan();
+
+        neo::fft::fft(plan, noise, tmp);
+        neo::fft::ifft(plan, tmp, out);
+
+        neo::scale(Float(1) / static_cast<Float>(plan.size()), out);
+        REQUIRE(neo::allclose(noise, out));
+    }
 }
