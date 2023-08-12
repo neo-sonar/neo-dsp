@@ -18,27 +18,53 @@ namespace neo::fft {
 template<std::floating_point Float>
 struct overlap_save
 {
+    using real_type    = Float;
+    using complex_type = std::complex<Float>;
+    using size_type    = std::size_t;
+
     overlap_save() = default;
-    overlap_save(std::size_t block_size, std::size_t filter_size);
+    overlap_save(size_type block_size, size_type filter_size);
+
+    [[nodiscard]] auto block_size() const noexcept -> size_type;
+    [[nodiscard]] auto filter_size() const noexcept -> size_type;
+    [[nodiscard]] auto transform_size() const noexcept -> size_type;
 
     auto operator()(inout_vector auto block, auto callback) -> void;
 
 private:
-    std::size_t _blockSize{1};
-    std::size_t _filterSize{1};
-    std::size_t _windowSize{_blockSize * 2UL};
+    // TODO: Should be zero, but rfft has no default ctor. Calculation with size == 0 would underflow
+    size_type _block_size{1};
+    size_type _filter_size{1};
+    rfft_plan<Float> _rfft{ilog2(next_power_of_two(_block_size + _filter_size - 1UL))};
 
-    KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>> _window{_windowSize};
-    KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>> _realBuffer{_windowSize};
-    KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>> _complexBuffer{_windowSize};
-    rfft_plan<Float> _rfft{ilog2(_windowSize)};
+    KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>> _window{_rfft.size()};
+    KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>> _real_buffer{_rfft.size()};
+    KokkosEx::mdarray<complex_type, Kokkos::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
 };
 
 template<std::floating_point Float>
-overlap_save<Float>::overlap_save(std::size_t block_size, std::size_t filter_size)
-    : _blockSize{block_size}
-    , _filterSize{filter_size}
+overlap_save<Float>::overlap_save(size_type block_size, size_type filter_size)
+    : _block_size{block_size}
+    , _filter_size{filter_size}
 {}
+
+template<std::floating_point Float>
+auto overlap_save<Float>::block_size() const noexcept -> size_type
+{
+    return _block_size;
+}
+
+template<std::floating_point Float>
+auto overlap_save<Float>::filter_size() const noexcept -> size_type
+{
+    return _filter_size;
+}
+
+template<std::floating_point Float>
+auto overlap_save<Float>::transform_size() const noexcept -> size_type
+{
+    return _rfft.size();
+}
 
 template<std::floating_point Float>
 auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> void
@@ -47,30 +73,29 @@ auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> 
 
     // Time domain input buffer
     auto const window = _window.to_mdspan();
-    auto leftHalf     = KokkosEx::submdspan(window, std::tuple{0, _window.extent(0) / 2});
-    auto rightHalf    = KokkosEx::submdspan(window, std::tuple{_window.extent(0) / 2, _window.extent(0)});
-    copy(rightHalf, leftHalf);
-    copy(block, rightHalf);
+    auto left_half    = KokkosEx::submdspan(window, std::tuple{0, _window.extent(0) / 2});
+    auto right_half   = KokkosEx::submdspan(window, std::tuple{_window.extent(0) / 2, _window.extent(0)});
+    copy(right_half, left_half);
+    copy(block, right_half);
 
     // 2B-point R2C-FFT
-    auto const complexBuf = _complexBuffer.to_mdspan();
-    auto const realBuf    = _realBuffer.to_mdspan();
-    _rfft(window, complexBuf);
+    auto const complex_buf = _complex_buffer.to_mdspan();
+    _rfft(window, complex_buf);
 
     // Copy to FDL
-    auto const numCoeffs = _rfft.size() / 2 + 1;
-    auto const alpha     = 1.0F / static_cast<Float>(_rfft.size());
-    auto const coeffs    = KokkosEx::submdspan(complexBuf, std::tuple{0, numCoeffs});
-    scale(alpha, coeffs);
+    auto const num_coeffs = _rfft.size() / 2 + 1;
+    auto const coeffs     = KokkosEx::submdspan(complex_buf, std::tuple{0, num_coeffs});
+    scale(1.0F / static_cast<Float>(_rfft.size()), coeffs);
 
     // Apply processing
     callback(coeffs);
 
     // 2B-point C2R-IFFT
-    _rfft(complexBuf, realBuf);
+    auto const real_buf = _real_buffer.to_mdspan();
+    _rfft(complex_buf, real_buf);
 
     // Copy blockSize samples to output
-    auto out = KokkosEx::submdspan(realBuf, std::tuple{realBuf.extent(0) - block.size(), realBuf.extent(0)});
+    auto out = KokkosEx::submdspan(real_buf, std::tuple{real_buf.extent(0) - block.size(), real_buf.extent(0)});
     copy(out, block);
 }
 

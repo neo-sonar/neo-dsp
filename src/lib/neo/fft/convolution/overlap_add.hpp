@@ -19,7 +19,9 @@ namespace neo::fft {
 template<std::floating_point Float>
 struct overlap_add
 {
-    using size_type = std::size_t;
+    using real_type    = Float;
+    using complex_type = std::complex<Float>;
+    using size_type    = std::size_t;
 
     overlap_add() = default;
     overlap_add(size_type block_size, size_type filter_size);
@@ -32,24 +34,26 @@ struct overlap_add
     auto operator()(inout_vector auto block, auto callback) -> void;
 
 private:
+    // TODO: Should be zero, but rfft has no default ctor. Calculation with size == 0 would underflow
     size_type _block_size{1};
     size_type _filter_size{1};
 
     rfft_plan<Float> _rfft{ilog2(next_power_of_two(_block_size + _filter_size - 1UL))};
     KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>> _real_buffer{_rfft.size()};
-    KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
+    KokkosEx::mdarray<complex_type, Kokkos::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
 
     size_type _overlapIdx{0};
-    KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 2>> _overlaps{
-        divide_round_up(_block_size + _filter_size - 1UL, _block_size),
-        _block_size + _filter_size - 1UL,
-    };
+    KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 2>> _overlaps;
 };
 
 template<std::floating_point Float>
 overlap_add<Float>::overlap_add(size_type block_size, size_type filter_size)
     : _block_size{block_size}
     , _filter_size{filter_size}
+    , _overlaps{
+          divide_round_up(_block_size + _filter_size - 1UL, _block_size),
+          _block_size + _filter_size - 1UL,
+      }
 {}
 
 template<std::floating_point Float>
