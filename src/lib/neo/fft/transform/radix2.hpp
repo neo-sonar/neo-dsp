@@ -152,6 +152,73 @@ struct radix2_kernel_v3
     }
 };
 
+struct radix2_kernel_v4
+{
+    radix2_kernel_v4() = default;
+
+    auto operator()(inout_vector auto x, auto const& twiddles) const -> void
+    {
+        auto const size  = x.size();
+        auto const order = ilog2(size);
+
+        {
+            // stage 0
+            static constexpr auto const stage_length = 1ULL;  // power<2ULL>(0)
+            static constexpr auto const stride       = 2ULL;  // power<2ULL>(0 + 1)
+
+            auto const tw_stride = power<2ULL>(order - 1ULL);
+
+            for (auto k{0ULL}; k < size; k += stride) {
+                for (auto pair{0ULL}; pair < stage_length; ++pair) {
+                    auto const tw = twiddles[pair * tw_stride];
+
+                    auto const i1 = k + pair;
+                    auto const i2 = k + pair + stage_length;
+
+                    auto const temp = x[i1] + tw * x[i2];
+                    x[i2]           = x[i1] - tw * x[i2];
+                    x[i1]           = temp;
+                }
+            }
+        }
+
+        for (auto stage{1ULL}; stage < order; ++stage) {
+
+            auto const stage_length = power<2ULL>(stage);
+            auto const stride       = power<2ULL>(stage + 1);
+            auto const tw_stride    = power<2ULL>(order - stage - 1ULL);
+
+            for (auto k{0ULL}; k < size; k += stride) {
+                for (auto pair{0ULL}; pair < stage_length; pair += 2ULL) {
+                    {
+                        auto const p0 = pair;
+                        auto const tw = twiddles[p0 * tw_stride];
+
+                        auto const i1 = k + p0;
+                        auto const i2 = k + p0 + stage_length;
+
+                        auto const temp = x[i1] + tw * x[i2];
+                        x[i2]           = x[i1] - tw * x[i2];
+                        x[i1]           = temp;
+                    }
+
+                    {
+                        auto const p1 = pair + 1ULL;
+                        auto const tw = twiddles[p1 * tw_stride];
+
+                        auto const i1 = k + p1;
+                        auto const i2 = k + p1 + stage_length;
+
+                        auto const temp = x[i1] + tw * x[i2];
+                        x[i2]           = x[i1] - tw * x[i2];
+                        x[i1]           = temp;
+                    }
+                }
+            }
+        }
+    }
+};
+
 inline constexpr auto fft_radix2 = [](auto const& kernel, inout_vector auto x, auto const& twiddles) -> void {
     bit_reverse_permutation(x);
     kernel(x, twiddles);

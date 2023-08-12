@@ -65,10 +65,12 @@ TEMPLATE_PRODUCT_TEST_CASE(
     ((float, neo::fft::radix2_kernel_v1),
      (float, neo::fft::radix2_kernel_v2),
      (float, neo::fft::radix2_kernel_v3),
+     (float, neo::fft::radix2_kernel_v4),
 
      (double, neo::fft::radix2_kernel_v1),
      (double, neo::fft::radix2_kernel_v2),
-     (double, neo::fft::radix2_kernel_v3))
+     (double, neo::fft::radix2_kernel_v3),
+     (double, neo::fft::radix2_kernel_v4))
 )
 {
     using Plan  = typename TestType::plan_type;
