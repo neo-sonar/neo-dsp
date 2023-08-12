@@ -1,5 +1,7 @@
 #pragma once
 
+#include <neo/fft/config.hpp>
+
 #include <neo/fft/container/mdspan.hpp>
 
 #include <cmath>
@@ -9,22 +11,25 @@
 
 namespace neo::fft {
 
-template<in_vector Signal, in_vector Reconstructed>
-    requires(std::floating_point<typename Signal::value_type> and std::floating_point<typename Reconstructed::value_type>)
-auto rms_error(Signal signal, Reconstructed reconstructed) noexcept
-    -> std::common_type_t<typename Signal::value_type, typename Reconstructed::value_type>
+template<in_vector InVecL, in_vector InVecR>
+auto rms_error(InVecL lhs, InVecR rhs)
 {
-    using Float = std::common_type_t<typename Signal::value_type, typename Reconstructed::value_type>;
-    using Index = std::common_type_t<typename Signal::index_type, typename Reconstructed::index_type>;
+    NEO_FFT_PRECONDITION(lhs.extents() == rhs.extents());
+
+    using LeftReal  = typename InVecL::value_type;
+    using RightReal = typename InVecR::value_type;
+    using Float     = decltype(std::declval<LeftReal>() - std::declval<RightReal>());
+    using Index     = std::common_type_t<typename InVecL::index_type, typename InVecR::index_type>;
 
     auto sum = Float(0);
-    for (Index i{0}; std::cmp_less(i, signal.extent(0)); ++i) {
-        auto const diff    = signal[i] - reconstructed[i];
+    for (Index i{0}; std::cmp_less(i, lhs.extent(0)); ++i) {
+        auto const diff    = lhs[i] - rhs[i];
         auto const squared = diff * diff;
         sum += squared;
     }
 
-    return std::sqrt(sum / static_cast<Float>(signal.extent(0)));
+    using std::sqrt;
+    return sqrt(sum / static_cast<Float>(lhs.extent(0)));
 }
 
 }  // namespace neo::fft
