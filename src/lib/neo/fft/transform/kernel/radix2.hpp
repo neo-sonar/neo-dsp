@@ -116,18 +116,18 @@ struct radix2_kernel_v4
 
     auto operator()(inout_vector auto x, auto const& twiddles) const -> void
     {
-        auto const size  = x.size();
-        auto const order = ilog2(size);
+        auto const size  = static_cast<int>(x.size());
+        auto const order = static_cast<int>(ilog2(size));
 
         {
             // stage 0
-            static constexpr auto const stage_length = 1ULL;  // power<2ULL>(0)
-            static constexpr auto const stride       = 2ULL;  // power<2ULL>(0 + 1)
+            static constexpr auto const stage_length = 1;  // power<2>(0)
+            static constexpr auto const stride       = 2;  // power<2>(0 + 1)
 
-            auto const tw_stride = power<2ULL>(order - 1ULL);
+            auto const tw_stride = power<2>(order - 1);
 
-            for (auto k{0ULL}; k < size; k += stride) {
-                for (auto pair{0ULL}; pair < stage_length; ++pair) {
+            for (auto k{0}; k < size; k += stride) {
+                for (auto pair{0}; pair < stage_length; ++pair) {
                     auto const tw = twiddles[pair * tw_stride];
 
                     auto const i1 = k + pair;
@@ -140,14 +140,14 @@ struct radix2_kernel_v4
             }
         }
 
-        for (auto stage{1ULL}; stage < order; ++stage) {
+        for (auto stage{1}; stage < order; ++stage) {
 
-            auto const stage_length = power<2ULL>(stage);
-            auto const stride       = power<2ULL>(stage + 1);
-            auto const tw_stride    = power<2ULL>(order - stage - 1ULL);
+            auto const stage_length = power<2>(stage);
+            auto const stride       = power<2>(stage + 1);
+            auto const tw_stride    = power<2>(order - stage - 1);
 
-            for (auto k{0ULL}; k < size; k += stride) {
-                for (auto pair{0ULL}; pair < stage_length; pair += 2ULL) {
+            for (auto k{0}; k < size; k += stride) {
+                for (auto pair{0}; pair < stage_length; pair += 2) {
                     {
                         auto const p0 = pair;
                         auto const tw = twiddles[p0 * tw_stride];
@@ -161,7 +161,7 @@ struct radix2_kernel_v4
                     }
 
                     {
-                        auto const p1 = pair + 1ULL;
+                        auto const p1 = pair + 1;
                         auto const tw = twiddles[p1 * tw_stride];
 
                         auto const i1 = k + p1;
