@@ -27,10 +27,6 @@ TEMPLATE_TEST_CASE("neo/fft/container: sparse_matrix", "", float, double)
     REQUIRE(other.value_container().size() == 32);
     REQUIRE(other.column_container().size() == 32);
 
-    other.insert_row(1, std::span{row}, [](auto, auto col, auto) { return col % 2U == 0; });
-    REQUIRE(other.value_container().size() == 48);
-    REQUIRE(other.column_container().size() == 48);
-
     auto const half = lhs.extent(1) / 2;
     other.insert_row(1, std::span{row}, [half](auto, auto col, auto) { return col < half; });
     REQUIRE(std::equal_to{}(other(1, half), Float(0)));
@@ -39,4 +35,8 @@ TEMPLATE_TEST_CASE("neo/fft/container: sparse_matrix", "", float, double)
     other.insert_row(1, std::span{row}, [](auto, auto, auto) { return true; });
     REQUIRE(other.value_container().size() == 64);
     REQUIRE(other.column_container().size() == 64);
+
+    other.insert_row(1, std::span{row}, [](auto, auto col, auto) { return col % 2U == 0; });
+    REQUIRE(other.value_container().size() == 48);
+    REQUIRE(other.column_container().size() == 48);
 }

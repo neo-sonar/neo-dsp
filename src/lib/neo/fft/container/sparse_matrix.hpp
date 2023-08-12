@@ -141,6 +141,9 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert_row(
 
         auto nextRow = std::next(_rowIndices.begin(), static_cast<ptrdiff_t>(row + 1));
         std::transform(nextRow, _rowIndices.end(), nextRow, [delta](auto idx) { return idx - size_t(delta); });
+
+        _values.resize(_values.size() - size_t(delta));
+        _columIndices.resize(_columIndices.size() - size_t(delta));
     } else if (newSize > currentSize) {
         auto const delta = newSize - currentSize;
 
