@@ -12,7 +12,7 @@
 
 namespace fft = neo::fft;
 
-TEMPLATE_TEST_CASE("neo/fft/transform/dft: dft", "", float, double)
+TEMPLATE_TEST_CASE("neo/fft/transform: dft", "", float, double)
 {
     using Float   = TestType;
     using Complex = std::complex<Float>;

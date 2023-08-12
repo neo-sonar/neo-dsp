@@ -24,20 +24,22 @@ struct rfft_radix2_plan_builder
 
 }  // namespace
 
+using namespace neo::fft;
+
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft/transform/radix2: rfft_radix2_plan",
+    "neo/fft/transform:",
     "",
     (rfft_radix2_plan_builder),
 
-    ((float, neo::fft::radix2_kernel_v1),
-     (float, neo::fft::radix2_kernel_v2),
-     (float, neo::fft::radix2_kernel_v3),
-     (float, neo::fft::radix2_kernel_v4),
+    ((float, radix2_kernel_v1),
+     (float, radix2_kernel_v2),
+     (float, radix2_kernel_v3),
+     (float, radix2_kernel_v4),
 
-     (double, neo::fft::radix2_kernel_v1),
-     (double, neo::fft::radix2_kernel_v2),
-     (double, neo::fft::radix2_kernel_v3),
-     (double, neo::fft::radix2_kernel_v4))
+     (double, radix2_kernel_v1),
+     (double, radix2_kernel_v2),
+     (double, radix2_kernel_v3),
+     (double, radix2_kernel_v4))
 )
 {
     using Plan  = typename TestType::plan_type;
@@ -64,7 +66,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     REQUIRE(neo::fft::allclose(Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}}, real));
 }
 
-TEMPLATE_TEST_CASE("neo/fft/transform/rfft: extract_two_real_dfts", "", float, double)
+TEMPLATE_TEST_CASE("neo/fft/transform: extract_two_real_dfts", "", float, double)
 {
     using Float = TestType;
 

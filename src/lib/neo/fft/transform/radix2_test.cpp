@@ -15,7 +15,7 @@
 
 namespace fft = neo::fft;
 
-TEMPLATE_TEST_CASE("neo/fft/transform/radix2: make_radix2_twiddles", "", float, double)
+TEMPLATE_TEST_CASE("neo/fft/transform: make_radix2_twiddles", "", float, double)
 {
     using Float   = TestType;
     using Complex = std::complex<Float>;
@@ -39,20 +39,22 @@ struct fft_radix2_plan_builder
 
 }  // namespace
 
+using namespace neo::fft;
+
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft/transform/radix2: fft_radix2_plan",
+    "neo/fft/transform:",
     "",
     (fft_radix2_plan_builder),
 
-    ((float, neo::fft::radix2_kernel_v1),
-     (float, neo::fft::radix2_kernel_v2),
-     (float, neo::fft::radix2_kernel_v3),
-     (float, neo::fft::radix2_kernel_v4),
+    ((float, radix2_kernel_v1),
+     (float, radix2_kernel_v2),
+     (float, radix2_kernel_v3),
+     (float, radix2_kernel_v4),
 
-     (double, neo::fft::radix2_kernel_v1),
-     (double, neo::fft::radix2_kernel_v2),
-     (double, neo::fft::radix2_kernel_v3),
-     (double, neo::fft::radix2_kernel_v4))
+     (double, radix2_kernel_v1),
+     (double, radix2_kernel_v2),
+     (double, radix2_kernel_v3),
+     (double, radix2_kernel_v4))
 )
 {
     using Plan    = typename TestType::plan_type;
