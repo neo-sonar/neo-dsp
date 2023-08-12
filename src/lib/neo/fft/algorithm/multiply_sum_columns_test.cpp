@@ -12,7 +12,7 @@ TEMPLATE_TEST_CASE("neo/fft/algorithm: multiply_sum_columns(sparse_matrix)", "",
     auto lhs = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 2>>{16, 32};
     std::fill(lhs.data(), std::next(lhs.data(), std::ssize(lhs)), Float(1));
 
-    auto rhs = neo::sparse_matrix<Float>{16, 32};
+    auto rhs = neo::fft::sparse_matrix<Float>{16, 32};
     REQUIRE(rhs.rows() == 16);
     REQUIRE(rhs.columns() == 32);
 

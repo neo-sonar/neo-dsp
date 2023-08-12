@@ -5,9 +5,10 @@
 #include <cstddef>
 #include <iterator>
 #include <span>
+#include <type_traits>
 #include <vector>
 
-namespace neo {
+namespace neo::fft {
 
 template<
     typename T,
@@ -26,8 +27,9 @@ struct sparse_matrix
 
     sparse_matrix(size_type rows, size_type cols) : _rows{rows}, _columns{cols}, _rowIndices(_rows + 1UL, 0) {}
 
-    template<typename U, typename Extents, typename Layout, typename Accessor, typename Filter>
-    sparse_matrix(Kokkos::mdspan<U, Extents, Layout, Accessor> other, Filter filter);
+    template<in_matrix InMat, std::regular_invocable<IndexType, IndexType, T> Filter>
+        requires(std::is_convertible_v<typename InMat::value_type, T>)
+    sparse_matrix(InMat matrix, Filter filter);
 
     [[nodiscard]] auto rows() const noexcept -> size_type { return _rows; }
 
@@ -39,8 +41,9 @@ struct sparse_matrix
 
     auto insert(index_type row, index_type col, T value) -> void;
 
-    template<typename U, std::size_t Extent, typename Filter>
-    auto insert_row(index_type row, std::span<U, Extent> values, Filter filter) -> void;
+    template<in_vector InVec, std::regular_invocable<IndexType, IndexType, T> Filter>
+        requires(std::is_convertible_v<typename InVec::value_type, T>)
+    auto insert_row(index_type row, InVec vec, Filter filter) -> void;
 
     auto value_container() const noexcept -> value_container_type const& { return _values; }
 
@@ -57,20 +60,15 @@ private:
 };
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
-template<typename U, typename Extents, typename Layout, typename Accessor, typename Filter>
-sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(
-    Kokkos::mdspan<U, Extents, Layout, Accessor> other,
-    Filter filter
-)
-    : sparse_matrix{other.extent(0), other.extent(1)}
+template<in_matrix InMat, std::regular_invocable<IndexType, IndexType, T> Filter>
+    requires(std::is_convertible_v<typename InMat::value_type, T>)
+sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(InMat matrix, Filter filter)
+    : sparse_matrix{matrix.extent(0), matrix.extent(1)}
 {
-    static_assert(std::is_convertible_v<U, T>);
-    static_assert(decltype(other)::rank() == 2);
-
     auto count = 0UL;
-    for (auto rowIdx{0UL}; rowIdx < other.extent(0); ++rowIdx) {
-        auto const row = KokkosEx::submdspan(other, rowIdx, Kokkos::full_extent);
-        for (auto col{0UL}; col < other.extent(1); ++col) {
+    for (auto rowIdx{0UL}; rowIdx < matrix.extent(0); ++rowIdx) {
+        auto const row = KokkosEx::submdspan(matrix, rowIdx, Kokkos::full_extent);
+        for (auto col{0UL}; col < matrix.extent(1); ++col) {
             if (filter(rowIdx, col, row(col))) {
                 ++count;
             }
@@ -81,11 +79,11 @@ sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(
     _columIndices.resize(count);
 
     auto idx = 0UL;
-    for (auto rowIdx{0UL}; rowIdx < other.extent(0); ++rowIdx) {
-        auto const row      = KokkosEx::submdspan(other, rowIdx, Kokkos::full_extent);
+    for (auto rowIdx{0UL}; rowIdx < matrix.extent(0); ++rowIdx) {
+        auto const row      = KokkosEx::submdspan(matrix, rowIdx, Kokkos::full_extent);
         _rowIndices[rowIdx] = idx;
 
-        for (auto col{0UL}; col < other.extent(1); ++col) {
+        for (auto col{0UL}; col < matrix.extent(1); ++col) {
             if (auto const& val = row(col); filter(rowIdx, col, val)) {
                 _values[idx]       = val;
                 _columIndices[idx] = col;
@@ -116,13 +114,14 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert(index_t
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
-template<typename U, std::size_t Extent, typename Filter>
-auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert_row(
-    index_type row,
-    std::span<U, Extent> values,
-    Filter filter
-) -> void
+template<in_vector InVec, std::regular_invocable<IndexType, IndexType, T> Filter>
+    requires(std::is_convertible_v<typename InVec::value_type, T>)
+auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert_row(index_type row, InVec vec, Filter filter)
+    -> void
 {
+    static_assert(std::is_pointer_v<typename InVec::data_handle_type>);
+    auto const values = std::span{vec.data_handle(), static_cast<std::size_t>(vec.extent(0))};
+
     auto const rowStart    = _rowIndices[row];
     auto const rowEnd      = _rowIndices[row + 1];
     auto const currentSize = static_cast<std::ptrdiff_t>(rowEnd - rowStart);
@@ -179,4 +178,4 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::operator()(ind
     return T{};
 }
 
-}  // namespace neo
+}  // namespace neo::fft
