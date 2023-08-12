@@ -46,13 +46,37 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: test_data(rfft_radix2_plan)", "", fl
     REQUIRE(neo::fft::allclose(expected, out));
 }
 
-TEMPLATE_TEST_CASE("neo/fft/transform/rfft: roundtrip(rfft_radix2_plan)", "", float, double)
+namespace {
+
+template<typename Real, typename Kernel>
+struct rfft_radix2_plan_builder
 {
-    using Float = TestType;
+    using complex_plan_type = neo::fft::fft_radix2_plan<std::complex<Real>, Kernel>;
+    using plan_type         = neo::fft::rfft_radix2_plan<Real, complex_plan_type>;
+};
+
+}  // namespace
+
+TEMPLATE_PRODUCT_TEST_CASE(
+    "neo/fft/transform/radix2: rfft_radix2_plan",
+    "",
+    (rfft_radix2_plan_builder),
+
+    ((float, neo::fft::radix2_kernel_v1),
+     (float, neo::fft::radix2_kernel_v2),
+     (float, neo::fft::radix2_kernel_v3),
+
+     (double, neo::fft::radix2_kernel_v1),
+     (double, neo::fft::radix2_kernel_v2),
+     (double, neo::fft::radix2_kernel_v3))
+)
+{
+    using Plan  = typename TestType::plan_type;
+    using Float = typename Plan::real_type;
 
     auto const order = GENERATE(as<std::size_t>{}, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
 
-    auto rfft = neo::fft::rfft_radix2_plan<Float>{order};
+    auto rfft = Plan{order};
     REQUIRE(rfft.order() == order);
     REQUIRE(rfft.size() == 1UL << order);
 

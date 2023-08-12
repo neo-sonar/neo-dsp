@@ -98,21 +98,30 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
     }
 }
 
+namespace {
+template<typename Real, typename Kernel>
+struct fft_radix2_plan_builder
+{
+    using plan_type = neo::fft::fft_radix2_plan<std::complex<Real>, Kernel>;
+};
+
+}  // namespace
+
 TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft/transform/radix2: fft_radix2_plan",
     "",
-    (fft::fft_radix2_plan),
+    (fft_radix2_plan_builder),
 
-    ((std::complex<float>, fft::radix2_kernel_v1),
-     (std::complex<float>, fft::radix2_kernel_v2),
-     (std::complex<float>, fft::radix2_kernel_v3),
+    ((float, neo::fft::radix2_kernel_v1),
+     (float, neo::fft::radix2_kernel_v2),
+     (float, neo::fft::radix2_kernel_v3),
 
-     (std::complex<double>, fft::radix2_kernel_v1),
-     (std::complex<double>, fft::radix2_kernel_v2),
-     (std::complex<double>, fft::radix2_kernel_v3))
+     (double, neo::fft::radix2_kernel_v1),
+     (double, neo::fft::radix2_kernel_v2),
+     (double, neo::fft::radix2_kernel_v3))
 )
 {
-    using Plan    = TestType;
+    using Plan    = typename TestType::plan_type;
     using Complex = typename Plan::complex_type;
     using Float   = typename Complex::value_type;
 
