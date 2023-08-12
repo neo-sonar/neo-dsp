@@ -4,7 +4,7 @@
 
 #include <juce_dsp/juce_dsp.h>
 
-namespace neo::fft {
+namespace neo {
 
 auto powerSpectrumImage(
     Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> frames,
@@ -124,4 +124,4 @@ auto powerHistogramImage(
     return img;
 }
 
-}  // namespace neo::fft
+}  // namespace neo

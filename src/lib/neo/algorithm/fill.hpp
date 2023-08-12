@@ -2,7 +2,7 @@
 
 #include <neo/container/mdspan.hpp>
 
-namespace neo::fft {
+namespace neo {
 
 template<inout_object InOutObj, typename T>
 constexpr auto fill(InOutObj obj, T const& val) -> void
@@ -20,4 +20,4 @@ constexpr auto fill(InOutObj obj, T const& val) -> void
     }
 }
 
-}  // namespace neo::fft
+}  // namespace neo

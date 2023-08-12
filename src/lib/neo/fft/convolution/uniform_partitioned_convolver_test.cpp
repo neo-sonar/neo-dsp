@@ -13,8 +13,8 @@
 template<std::floating_point Float, typename Convolver>
 [[nodiscard]] static auto test_uniform_partitioned_convolver(auto blockSize)
 {
-    auto const signal     = neo::fft::generate_noise_signal<Float>(blockSize * 20UL, Catch::getSeed());
-    auto const partitions = neo::fft::generate_identity_impulse<Float>(blockSize, 10UL);
+    auto const signal     = neo::generate_noise_signal<Float>(blockSize * 20UL, Catch::getSeed());
+    auto const partitions = neo::generate_identity_impulse<Float>(blockSize, 10UL);
 
     auto convolver = Convolver{};
     auto output    = signal;

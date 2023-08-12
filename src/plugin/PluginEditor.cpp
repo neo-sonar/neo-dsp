@@ -156,7 +156,7 @@ auto PluginEditor::openFile() -> void
         _filterFile = file;
 
         auto const filterMatrix = to_mdarray(_filter);
-        _spectrum               = fft::stft(filterMatrix.to_mdspan(), 1024);
+        _spectrum               = neo::fft::stft(filterMatrix.to_mdspan(), 1024);
 
         _fileInfo.setText(filename + " (" + juce::String(_filter.getNumSamples()) + ")\n");
         updateImages();
@@ -227,11 +227,11 @@ auto PluginEditor::runWeightingTests() -> void
 
     auto const weighting = [=, this](std::size_t binIndex) {
         if (_weighting.getValue() == "A-Weighting") {
-            auto const frequency = neo::fft::fftfreq<float>(blockSize * 2ULL, binIndex, 44'100.0);
+            auto const frequency = neo::fftfreq<float>(blockSize * 2ULL, binIndex, 44'100.0);
             if (juce::exactlyEqual(frequency, 0.0F)) {
                 return 0.0F;
             }
-            auto const weight = neo::fft::a_weighting(frequency);
+            auto const weight = neo::a_weighting(frequency);
             return weight;
         }
         return 0.0F;
@@ -274,7 +274,7 @@ auto PluginEditor::runJuceConvolverBenchmark() -> void
     processBlocks(proc, _signal, out, 512, 44'100.0);
 
     auto output = to_mdarray(out);
-    neo::fft::peak_normalize(output.to_mdspan());
+    neo::peak_normalize(output.to_mdspan());
 
     auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -288,10 +288,10 @@ auto PluginEditor::runDenseConvolverBenchmark() -> void
 {
     auto start = std::chrono::system_clock::now();
 
-    auto output = to_mdarray(fft::dense_convolve(_signal, _filter));
+    auto output = to_mdarray(neo::dense_convolve(_signal, _filter));
     auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_dense", ".wav");
 
-    neo::fft::peak_normalize(output.to_mdspan());
+    neo::peak_normalize(output.to_mdspan());
 
     auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -311,9 +311,9 @@ auto PluginEditor::runSparseConvolverBenchmark() -> void
     auto const filename = "tconv_sparse_" + thresholdText;
     auto const file     = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile(filename, ".wav");
 
-    auto output = to_mdarray(fft::sparse_convolve(_signal, _filter, thresholdDB));
+    auto output = to_mdarray(neo::sparse_convolve(_signal, _filter, thresholdDB));
 
-    neo::fft::peak_normalize(output.to_mdspan());
+    neo::peak_normalize(output.to_mdspan());
 
     auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -332,18 +332,18 @@ auto PluginEditor::updateImages() -> void
 
     auto const weighting = [this](std::size_t binIndex) {
         if (_weighting.getValue() == "A-Weighting") {
-            auto const frequency = neo::fft::fftfreq<float>(1024, binIndex, 44'100.0);
+            auto const frequency = neo::fftfreq<float>(1024, binIndex, 44'100.0);
             if (juce::exactlyEqual(frequency, 0.0F)) {
                 return 0.0F;
             }
-            auto const weight = neo::fft::a_weighting(frequency);
+            auto const weight = neo::a_weighting(frequency);
             return weight;
         }
         return 0.0F;
     };
 
-    auto spectogramImage = fft::powerSpectrumImage(_spectrum, weighting, -static_cast<float>(_dynamicRange.getValue()));
-    auto histogramImage  = fft::powerHistogramImage(_spectrum, weighting);
+    auto spectogramImage = neo::powerSpectrumImage(_spectrum, weighting, -static_cast<float>(_dynamicRange.getValue()));
+    auto histogramImage  = neo::powerHistogramImage(_spectrum, weighting);
 
     _spectogramImage.setImage(spectogramImage);
     _histogramImage.setImage(histogramImage);

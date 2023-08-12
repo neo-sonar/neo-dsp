@@ -66,7 +66,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     auto plan = Plan{order};
     REQUIRE(plan.order() == order);
 
-    auto const original = fft::generate_noise_signal<std::complex<Float>>(plan.size(), Catch::getSeed());
+    auto const original = neo::generate_noise_signal<std::complex<Float>>(plan.size(), Catch::getSeed());
     auto const noise    = Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}};
 
     auto copy = original;
@@ -75,6 +75,6 @@ TEMPLATE_PRODUCT_TEST_CASE(
     plan(io, fft::direction::forward);
     plan(io, fft::direction::backward);
 
-    fft::scale(Float(1) / static_cast<Float>(plan.size()), io);
-    REQUIRE(fft::allclose(noise, io));
+    neo::scale(Float(1) / static_cast<Float>(plan.size()), io);
+    REQUIRE(neo::allclose(noise, io));
 }

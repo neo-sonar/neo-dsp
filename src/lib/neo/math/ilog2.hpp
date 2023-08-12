@@ -4,7 +4,7 @@
 
 #include <concepts>
 
-namespace neo::fft {
+namespace neo {
 
 template<std::integral Integral>
 [[nodiscard]] constexpr auto ilog2(Integral x) -> Integral
@@ -18,4 +18,4 @@ template<std::integral Integral>
     return result;
 }
 
-}  // namespace neo::fft
+}  // namespace neo

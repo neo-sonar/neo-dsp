@@ -4,7 +4,7 @@
 
 #include <utility>
 
-namespace neo::fft {
+namespace neo {
 
 template<typename Scalar, inout_object InOutObj>
 constexpr auto scale(Scalar alpha, InOutObj obj) -> void
@@ -24,4 +24,4 @@ constexpr auto scale(Scalar alpha, InOutObj obj) -> void
     }
 }
 
-}  // namespace neo::fft
+}  // namespace neo

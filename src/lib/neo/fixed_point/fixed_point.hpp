@@ -6,7 +6,7 @@
 #include <limits>
 #include <type_traits>
 
-namespace neo::fft {
+namespace neo {
 
 namespace detail {
 
@@ -122,4 +122,4 @@ template<int IntegerBits, int FractionalBits, typename StorageType>
 using q7_t  = fixed_point<0, 7, std::int8_t>;
 using q15_t = fixed_point<0, 15, std::int16_t>;
 
-}  // namespace neo::fft
+}  // namespace neo

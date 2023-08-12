@@ -13,8 +13,8 @@ template<typename Float, std::size_t Size>
 struct floating_point_mul_bench
 {
     explicit floating_point_mul_bench()
-        : _lhs(neo::fft::generate_noise_signal<Float>(Size, std::random_device{}()))
-        , _rhs(neo::fft::generate_noise_signal<Float>(Size, std::random_device{}()))
+        : _lhs(neo::generate_noise_signal<Float>(Size, std::random_device{}()))
+        , _rhs(neo::generate_noise_signal<Float>(Size, std::random_device{}()))
         , _out(Size)
     {}
 
@@ -45,7 +45,7 @@ struct fixed_point_mul_bench
         auto const left   = std::span{std::as_const(_lhs)};
         auto const right  = std::span{std::as_const(_rhs)};
         auto const output = std::span{_out};
-        neo::fft::multiply(left, right, output);
+        neo::multiply(left, right, output);
     }
 
 private:
@@ -95,34 +95,34 @@ private:
 
 auto main() -> int
 {
-    using neo::fft::q15_t;
-    using neo::fft::q7_t;
+    using neo::q15_t;
+    using neo::q7_t;
 
-    neo::fft::timeit("mul(q7_t[32768], q7_t[32768]):       ", 1, 32768, fixed_point_mul_bench<q7_t, 32768U>{});
-    neo::fft::timeit("mul(q7_t[131072], q7_t[131072]):     ", 1, 131072, fixed_point_mul_bench<q7_t, 131072U>{});
-    neo::fft::timeit("mul(q7_t[262144], q7_t[262144]):     ", 1, 262144, fixed_point_mul_bench<q7_t, 262144U>{});
+    neo::timeit("mul(q7_t[32768], q7_t[32768]):       ", 1, 32768, fixed_point_mul_bench<q7_t, 32768U>{});
+    neo::timeit("mul(q7_t[131072], q7_t[131072]):     ", 1, 131072, fixed_point_mul_bench<q7_t, 131072U>{});
+    neo::timeit("mul(q7_t[262144], q7_t[262144]):     ", 1, 262144, fixed_point_mul_bench<q7_t, 262144U>{});
     std::printf("\n");
 
-    neo::fft::timeit("mul(q15_t[32768], q15_t[32768]):     ", 2, 32768, fixed_point_mul_bench<q15_t, 32768U>{});
-    neo::fft::timeit("mul(q15_t[131072], q15_t[131072]):   ", 2, 131072, fixed_point_mul_bench<q15_t, 131072U>{});
-    neo::fft::timeit("mul(q15_t[262144], q15_t[262144]):   ", 2, 262144, fixed_point_mul_bench<q15_t, 262144U>{});
+    neo::timeit("mul(q15_t[32768], q15_t[32768]):     ", 2, 32768, fixed_point_mul_bench<q15_t, 32768U>{});
+    neo::timeit("mul(q15_t[131072], q15_t[131072]):   ", 2, 131072, fixed_point_mul_bench<q15_t, 131072U>{});
+    neo::timeit("mul(q15_t[262144], q15_t[262144]):   ", 2, 262144, fixed_point_mul_bench<q15_t, 262144U>{});
     std::printf("\n");
 
 #if defined(__F16C__)
-    neo::fft::timeit("mul(f16f32[32768], f16f32[32768]):   ", 2, 32768, float16_mul_bench<32768U>{});
-    neo::fft::timeit("mul(f16f32[131072], f16f32[131072]): ", 2, 131072, float16_mul_bench<131072U>{});
-    neo::fft::timeit("mul(f16f32[262144], f16f32[262144]): ", 2, 262144, float16_mul_bench<262144U>{});
+    neo::timeit("mul(f16f32[32768], f16f32[32768]):   ", 2, 32768, float16_mul_bench<32768U>{});
+    neo::timeit("mul(f16f32[131072], f16f32[131072]): ", 2, 131072, float16_mul_bench<131072U>{});
+    neo::timeit("mul(f16f32[262144], f16f32[262144]): ", 2, 262144, float16_mul_bench<262144U>{});
     std::printf("\n");
 #endif
 
-    neo::fft::timeit("mul(float[32768], float[32768]):     ", 4, 32768, floating_point_mul_bench<float, 32768U>{});
-    neo::fft::timeit("mul(float[131072], float[131072]):   ", 4, 131072, floating_point_mul_bench<float, 131072U>{});
-    neo::fft::timeit("mul(float[262144], float[262144]):   ", 4, 262144, floating_point_mul_bench<float, 262144U>{});
+    neo::timeit("mul(float[32768], float[32768]):     ", 4, 32768, floating_point_mul_bench<float, 32768U>{});
+    neo::timeit("mul(float[131072], float[131072]):   ", 4, 131072, floating_point_mul_bench<float, 131072U>{});
+    neo::timeit("mul(float[262144], float[262144]):   ", 4, 262144, floating_point_mul_bench<float, 262144U>{});
     std::printf("\n");
 
-    neo::fft::timeit("mul(double[32768], double[32768]):   ", 8, 32768, floating_point_mul_bench<double, 32768U>{});
-    neo::fft::timeit("mul(double[131072], double[131072]): ", 8, 131072, floating_point_mul_bench<double, 131072U>{});
-    neo::fft::timeit("mul(double[262144], double[262144]): ", 8, 262144, floating_point_mul_bench<double, 262144U>{});
+    neo::timeit("mul(double[32768], double[32768]):   ", 8, 32768, floating_point_mul_bench<double, 32768U>{});
+    neo::timeit("mul(double[131072], double[131072]): ", 8, 131072, floating_point_mul_bench<double, 131072U>{});
+    neo::timeit("mul(double[262144], double[262144]): ", 8, 262144, floating_point_mul_bench<double, 262144U>{});
     std::printf("\n");
 
     return EXIT_SUCCESS;

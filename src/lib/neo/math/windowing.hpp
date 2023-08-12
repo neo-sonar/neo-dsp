@@ -6,7 +6,7 @@
 #include <concepts>
 #include <numbers>
 
-namespace neo::fft {
+namespace neo {
 
 template<std::floating_point Float>
 [[nodiscard]] auto generate_hann_window(std::size_t length)
@@ -21,4 +21,4 @@ template<std::floating_point Float>
     }
     return window;
 }
-}  // namespace neo::fft
+}  // namespace neo

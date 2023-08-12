@@ -4,7 +4,7 @@
 #include <concepts>
 #include <functional>
 
-namespace neo::fft::float_equality {
+namespace neo::float_equality {
 
 template<typename FloatOrComplex>
 [[nodiscard]] auto exact(FloatOrComplex x, FloatOrComplex y) -> bool
@@ -18,4 +18,4 @@ template<typename FloatOrComplex>
     }
 }
 
-}  // namespace neo::fft::float_equality
+}  // namespace neo::float_equality

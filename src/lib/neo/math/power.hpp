@@ -1,6 +1,6 @@
 #pragma once
 
-namespace neo::fft {
+namespace neo {
 
 template<typename T>
 [[nodiscard]] constexpr auto power(T base, T exponent) -> T
@@ -18,4 +18,4 @@ template<auto Base>
     return power(Base, exponent);
 }
 
-}  // namespace neo::fft
+}  // namespace neo

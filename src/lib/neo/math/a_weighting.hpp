@@ -4,7 +4,7 @@
 #include <cmath>
 #include <concepts>
 
-namespace neo::fft {
+namespace neo {
 
 template<std::floating_point Float>
 [[nodiscard]] auto a_weighting(Float frequency) noexcept -> Float
@@ -30,4 +30,4 @@ template<std::floating_point Float>
     // clang-format on
 }
 
-}  // namespace neo::fft
+}  // namespace neo

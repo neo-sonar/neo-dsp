@@ -5,7 +5,7 @@
 #include <neo/container/mdspan.hpp>
 #include <neo/container/sparse_matrix.hpp>
 
-namespace neo::fft {
+namespace neo {
 
 template<in_matrix InMatL, in_matrix InMatR, out_vector OutVec>
 constexpr auto multiply_sum_columns(InMatL lhs, InMatR rhs, OutVec out, std::size_t shift) -> void
@@ -113,4 +113,4 @@ auto multiply_sum_columns(
     }
 }
 
-}  // namespace neo::fft
+}  // namespace neo

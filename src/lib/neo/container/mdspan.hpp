@@ -22,7 +22,7 @@
 
 namespace KokkosEx = Kokkos::Experimental;
 
-namespace neo::fft {
+namespace neo {
 
 template<typename T>
 inline constexpr auto const is_mdspan = false;
@@ -81,4 +81,4 @@ concept inout_object =                                                          
     && std::same_as<std::remove_const_t<typename T::element_type>, typename T::element_type>  //
     && T::is_always_unique();                                                                 //
 
-}  // namespace neo::fft
+}  // namespace neo

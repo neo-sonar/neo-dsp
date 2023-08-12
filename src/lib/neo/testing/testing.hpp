@@ -12,7 +12,7 @@
 #include <random>
 #include <vector>
 
-namespace neo::fft {
+namespace neo {
 
 template<float_or_complex FloatOrComplex, typename URNG = std::mt19937>
 [[nodiscard]] auto generate_noise_signal(std::size_t length, typename URNG::result_type seed)
@@ -52,4 +52,4 @@ template<std::floating_point Float>
     return impulse;
 }
 
-}  // namespace neo::fft
+}  // namespace neo

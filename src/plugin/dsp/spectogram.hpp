@@ -6,7 +6,7 @@
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_graphics/juce_graphics.h>
 
-namespace neo::fft {
+namespace neo {
 
 [[nodiscard]] auto powerSpectrumImage(
     Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> frames,
@@ -24,4 +24,4 @@ namespace neo::fft {
     std::function<float(std::size_t)> const& weighting
 ) -> juce::Image;
 
-}  // namespace neo::fft
+}  // namespace neo

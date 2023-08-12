@@ -51,7 +51,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     REQUIRE(rfft.order() == order);
     REQUIRE(rfft.size() == 1UL << order);
 
-    auto signal         = neo::fft::generate_noise_signal<Float>(rfft.size(), Catch::getSeed());
+    auto signal         = neo::generate_noise_signal<Float>(rfft.size(), Catch::getSeed());
     auto spectrum       = std::vector<std::complex<Float>>(rfft.size() / 2UL + 1UL, Float(0));
     auto const original = signal;
 
@@ -63,7 +63,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     auto const scale = Float(1) / static_cast<Float>(rfft.size());
     std::transform(signal.begin(), signal.end(), signal.begin(), [scale](auto c) { return c * scale; });
 
-    REQUIRE(neo::fft::allclose(Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}}, real));
+    REQUIRE(neo::allclose(Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}}, real));
 }
 
 TEMPLATE_TEST_CASE("neo/fft/transform: extract_two_real_dfts", "", float, double)
@@ -109,6 +109,6 @@ TEMPLATE_TEST_CASE("neo/fft/transform: extract_two_real_dfts", "", float, double
     auto cb = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>>{numCoeffs};
     neo::fft::extract_two_real_dfts(inout.to_mdspan(), ca.to_mdspan(), cb.to_mdspan());
 
-    REQUIRE(neo::fft::allclose(a_rev.to_mdspan(), ca.to_mdspan()));
-    REQUIRE(neo::fft::allclose(b_rev.to_mdspan(), cb.to_mdspan()));
+    REQUIRE(neo::allclose(a_rev.to_mdspan(), ca.to_mdspan()));
+    REQUIRE(neo::allclose(b_rev.to_mdspan(), cb.to_mdspan()));
 }

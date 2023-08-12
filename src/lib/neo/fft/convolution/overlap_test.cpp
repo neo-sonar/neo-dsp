@@ -21,7 +21,7 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft/convolution:", "", (overlap_add, overlap_sav
     using Float   = typename Overlap::real_type;
 
     auto const blockSize = GENERATE(as<std::size_t>{}, 128, 256, 512);
-    auto const signal    = neo::fft::generate_noise_signal<Float>(blockSize * 15UL, Catch::getSeed());
+    auto const signal    = neo::generate_noise_signal<Float>(blockSize * 15UL, Catch::getSeed());
 
     auto overlap = Overlap{blockSize, blockSize};
 
@@ -37,7 +37,7 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft/convolution:", "", (overlap_add, overlap_sav
         overlap(block, [](auto) {});
     }
 
-    auto const error = neo::fft::rms_error(
+    auto const error = neo::rms_error(
         Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}},
         Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}}
     );

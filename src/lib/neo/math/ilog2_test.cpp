@@ -19,31 +19,31 @@ TEMPLATE_TEST_CASE(
 {
     using Int = TestType;
 
-    STATIC_REQUIRE(std::same_as<decltype(neo::fft::ilog2(std::declval<Int>())), Int>);
+    STATIC_REQUIRE(std::same_as<decltype(neo::ilog2(std::declval<Int>())), Int>);
 
-    REQUIRE(neo::fft::ilog2(Int(1)) == Int(0));
-    REQUIRE(neo::fft::ilog2(Int(2)) == Int(1));
-    REQUIRE(neo::fft::ilog2(Int(4)) == Int(2));
-    REQUIRE(neo::fft::ilog2(Int(8)) == Int(3));
-    REQUIRE(neo::fft::ilog2(Int(16)) == Int(4));
-    REQUIRE(neo::fft::ilog2(Int(32)) == Int(5));
-    REQUIRE(neo::fft::ilog2(Int(64)) == Int(6));
+    REQUIRE(neo::ilog2(Int(1)) == Int(0));
+    REQUIRE(neo::ilog2(Int(2)) == Int(1));
+    REQUIRE(neo::ilog2(Int(4)) == Int(2));
+    REQUIRE(neo::ilog2(Int(8)) == Int(3));
+    REQUIRE(neo::ilog2(Int(16)) == Int(4));
+    REQUIRE(neo::ilog2(Int(32)) == Int(5));
+    REQUIRE(neo::ilog2(Int(64)) == Int(6));
 
     if constexpr (sizeof(Int) > 1) {
-        REQUIRE(neo::fft::ilog2(Int(128)) == Int(7));
-        REQUIRE(neo::fft::ilog2(Int(256)) == Int(8));
-        REQUIRE(neo::fft::ilog2(Int(512)) == Int(9));
-        REQUIRE(neo::fft::ilog2(Int(1024)) == Int(10));
-        REQUIRE(neo::fft::ilog2(Int(2048)) == Int(11));
-        REQUIRE(neo::fft::ilog2(Int(4096)) == Int(12));
-        REQUIRE(neo::fft::ilog2(Int(8192)) == Int(13));
+        REQUIRE(neo::ilog2(Int(128)) == Int(7));
+        REQUIRE(neo::ilog2(Int(256)) == Int(8));
+        REQUIRE(neo::ilog2(Int(512)) == Int(9));
+        REQUIRE(neo::ilog2(Int(1024)) == Int(10));
+        REQUIRE(neo::ilog2(Int(2048)) == Int(11));
+        REQUIRE(neo::ilog2(Int(4096)) == Int(12));
+        REQUIRE(neo::ilog2(Int(8192)) == Int(13));
     }
 
-    if constexpr (neo::fft::current_contracts_check_mode == neo::fft::contracts_check_mode::exception) {
-        REQUIRE_THROWS(neo::fft::ilog2(Int(0)));
+    if constexpr (neo::current_contracts_check_mode == neo::contracts_check_mode::exception) {
+        REQUIRE_THROWS(neo::ilog2(Int(0)));
 
         if constexpr (std::signed_integral<Int>) {
-            REQUIRE_THROWS(neo::fft::ilog2(Int(-1)));
+            REQUIRE_THROWS(neo::ilog2(Int(-1)));
         }
     }
 }

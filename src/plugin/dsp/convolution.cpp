@@ -9,13 +9,13 @@
 #include "dsp/resample.hpp"
 #include "neo/fft/convolution/uniform_partition.hpp"
 
-namespace neo::fft {
+namespace neo {
 
 static auto uniform_partition(juce::AudioBuffer<float> const& buffer, int blockSize)
     -> KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 3>>
 {
     auto matrix = to_mdarray(buffer);
-    return uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
+    return neo::fft::uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
 }
 
 auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)
@@ -28,7 +28,7 @@ auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<fl
     auto partitions = uniform_partition(filter, blockSize);
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
-        auto convolver     = upols_convolver<float>{};
+        auto convolver     = neo::fft::upols_convolver<float>{};
         auto const channel = static_cast<size_t>(ch);
         auto const full    = Kokkos::full_extent;
         convolver.filter(KokkosEx::submdspan(partitions.to_mdspan(), channel, full, full));
@@ -71,13 +71,13 @@ auto sparse_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<f
     auto block      = std::vector<float>(size_t(blockSize));
     auto partitions = uniform_partition(filter, blockSize);
 
-    auto const K = next_power_of_two((partitions.extent(2) - 1U) * 2U);
+    auto const K = neo::next_power_of_two((partitions.extent(2) - 1U) * 2U);
 
     auto const weights = [K, bins = partitions.extent(2)] {
         auto w = std::vector<float>(bins);
         for (auto i{0U}; i < w.size(); ++i) {
-            auto const frequency = fftfreq<float>(K, i, 44'100.0);
-            auto const weight    = frequency > 0.0F ? neo::fft::a_weighting(frequency) : 0.0F;
+            auto const frequency = neo::fftfreq<float>(K, i, 44'100.0);
+            auto const weight    = frequency > 0.0F ? neo::a_weighting(frequency) : 0.0F;
 
             w[i] = weight;
         }
@@ -85,7 +85,7 @@ auto sparse_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<f
     }();
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
-        auto convolver               = sparse_upols_convolver<float>{};
+        auto convolver               = neo::fft::sparse_upols_convolver<float>{};
         auto const channel           = static_cast<size_t>(ch);
         auto const full              = Kokkos::full_extent;
         auto const channelPartitions = KokkosEx::submdspan(partitions.to_mdspan(), channel, full, full);
@@ -116,4 +116,4 @@ auto sparse_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<f
     return output;
 }
 
-}  // namespace neo::fft
+}  // namespace neo

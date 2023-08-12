@@ -3,7 +3,7 @@
 #include <bit>
 #include <concepts>
 
-namespace neo::fft {
+namespace neo {
 
 namespace detail {
 
@@ -31,4 +31,4 @@ template<std::unsigned_integral Integral>
 #endif
 }
 
-}  // namespace neo::fft
+}  // namespace neo

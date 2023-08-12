@@ -10,7 +10,7 @@
 #include <functional>
 #include <limits>
 
-namespace neo::fft {
+namespace neo {
 
 template<in_object InObj>
     requires(std::floating_point<typename InObj::value_type>)
@@ -54,4 +54,4 @@ auto peak_normalize(InOutObj obj) -> void
     scale(peak_normalization_factor(obj), obj);
 }
 
-}  // namespace neo::fft
+}  // namespace neo

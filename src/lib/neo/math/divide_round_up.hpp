@@ -2,7 +2,7 @@
 
 #include <concepts>
 
-namespace neo::fft {
+namespace neo {
 
 template<std::integral T>
 [[nodiscard]] constexpr auto divide_round_up(T x, T y) noexcept -> T
@@ -10,4 +10,4 @@ template<std::integral T>
     return (x + y - 1) / y;
 }
 
-}  // namespace neo::fft
+}  // namespace neo

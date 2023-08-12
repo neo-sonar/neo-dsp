@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <type_traits>
 
-namespace neo::fft {
+namespace neo {
 
 template<typename T>
 inline constexpr auto const is_complex = false;
@@ -37,4 +37,4 @@ consteval auto real_or_complex_value()
 template<typename RealOrComplex>
 using real_or_complex_value_t = decltype(detail::real_or_complex_value<RealOrComplex>());
 
-}  // namespace neo::fft
+}  // namespace neo

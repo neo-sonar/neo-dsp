@@ -5,7 +5,7 @@
 #include <array>
 #include <cstdint>
 
-namespace neo::fft {
+namespace neo {
 
 struct complex_q15_t
 {
@@ -50,4 +50,4 @@ private:
     std::array<q15_t, 2> _data{};
 };
 
-}  // namespace neo::fft
+}  // namespace neo

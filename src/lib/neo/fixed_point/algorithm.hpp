@@ -22,7 +22,7 @@
 #include <iterator>
 #include <span>
 
-namespace neo::fft {
+namespace neo {
 
 namespace detail {
 #if defined(__SSE2__)
@@ -244,4 +244,4 @@ auto multiply(
     }
 }
 
-}  // namespace neo::fft
+}  // namespace neo

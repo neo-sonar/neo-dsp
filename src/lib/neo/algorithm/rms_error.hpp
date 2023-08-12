@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace neo::fft {
+namespace neo {
 
 template<in_vector InVecL, in_vector InVecR>
 auto rms_error(InVecL lhs, InVecR rhs)
@@ -32,4 +32,4 @@ auto rms_error(InVecL lhs, InVecR rhs)
     return sqrt(sum / static_cast<Float>(lhs.extent(0)));
 }
 
-}  // namespace neo::fft
+}  // namespace neo

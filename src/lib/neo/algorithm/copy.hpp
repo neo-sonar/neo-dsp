@@ -4,7 +4,7 @@
 
 #include <neo/container/mdspan.hpp>
 
-namespace neo::fft {
+namespace neo {
 
 template<in_object InObj, out_object OutObj>
     requires(InObj::rank() == OutObj::rank())
@@ -25,4 +25,4 @@ constexpr auto copy(InObj inObj, OutObj outObj) -> void
     }
 }
 
-}  // namespace neo::fft
+}  // namespace neo

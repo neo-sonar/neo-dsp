@@ -9,7 +9,7 @@
 #include <string_view>
 #include <vector>
 
-namespace neo::fft {
+namespace neo {
 
 template<typename Func>
 auto benchmark_fft(std::string_view name, size_t N, size_t multiplier, Func func)
@@ -79,4 +79,4 @@ auto timeit(std::string_view name, size_t sizeOfT, size_t N, Func func)
     std::printf("%-32s avg: %.1fus - GB/sec: %.2f - N/usec: %d\n", name.data(), avg, megaBytesPerSec, itemsPerSec);
 }
 
-}  // namespace neo::fft
+}  // namespace neo

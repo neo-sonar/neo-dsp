@@ -9,8 +9,6 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-namespace fft = neo::fft;
-
 TEMPLATE_TEST_CASE("neo/fft/transform: dft", "", float, double)
 {
     using Float   = TestType;
@@ -18,7 +16,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform: dft", "", float, double)
 
     auto const size = GENERATE(as<std::size_t>{}, 4, 16, 21);
 
-    auto const original = fft::generate_noise_signal<Complex>(size, Catch::getSeed());
+    auto const original = neo::generate_noise_signal<Complex>(size, Catch::getSeed());
 
     auto inBuf  = original;
     auto outBuf = KokkosEx::mdarray<Complex, Kokkos::dextents<size_t, 1>>{inBuf.size()};
@@ -26,9 +24,9 @@ TEMPLATE_TEST_CASE("neo/fft/transform: dft", "", float, double)
     auto const in  = Kokkos::mdspan{inBuf.data(), Kokkos::extents{inBuf.size()}};
     auto const out = Kokkos::mdspan{outBuf.data(), Kokkos::extents{outBuf.size()}};
 
-    neo::fft::dft(in, out, fft::direction::forward);
-    neo::fft::dft(out, in, fft::direction::backward);
+    neo::fft::dft(in, out, neo::fft::direction::forward);
+    neo::fft::dft(out, in, neo::fft::direction::backward);
 
-    fft::scale(Float(1) / static_cast<Float>(size), in);
-    REQUIRE(fft::allclose(Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}}, in));
+    neo::scale(Float(1) / static_cast<Float>(size), in);
+    REQUIRE(neo::allclose(Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}}, in));
 }

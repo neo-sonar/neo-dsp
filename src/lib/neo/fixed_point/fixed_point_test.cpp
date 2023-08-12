@@ -17,13 +17,13 @@
 
 template<typename T>
 static constexpr auto tolerance = [] {
-    if constexpr (std::same_as<T, neo::fft::q7_t>) {
+    if constexpr (std::same_as<T, neo::q7_t>) {
         return 0.01F;
     }
     return 0.0001F;
 }();
 
-TEMPLATE_TEST_CASE("neo/fixed_point: to_float(fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: to_float(fixed_point)", "", neo::q7_t, neo::q15_t)
 {
     using fixed_point_t = TestType;
 
@@ -36,7 +36,7 @@ TEMPLATE_TEST_CASE("neo/fixed_point: to_float(fixed_point)", "", neo::fft::q7_t,
     REQUIRE(approx_equal(to_float(fixed_point_t{0.75F}), 0.75F, tolerance<fixed_point_t>));
 }
 
-TEMPLATE_TEST_CASE("neo/fixed_point: unary_op(fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: unary_op(fixed_point)", "", neo::q7_t, neo::q15_t)
 {
     using fixed_point_t = TestType;
 
@@ -90,7 +90,7 @@ TEMPLATE_TEST_CASE("neo/fixed_point: unary_op(fixed_point)", "", neo::fft::q7_t,
     REQUIRE(unary_op(-0.99F, std::negate()));
 }
 
-TEMPLATE_TEST_CASE("neo/fixed_point: binary_op(fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: binary_op(fixed_point)", "", neo::q7_t, neo::q15_t)
 {
     using fixed_point_t = TestType;
 
@@ -128,7 +128,7 @@ TEMPLATE_TEST_CASE("neo/fixed_point: binary_op(fixed_point)", "", neo::fft::q7_t
     REQUIRE(binary_op(0.49F, 0.5F, std::multiplies()));
 }
 
-TEMPLATE_TEST_CASE("neo/fixed_point: comparison(fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: comparison(fixed_point)", "", neo::q7_t, neo::q15_t)
 {
     using fixed_point_t = TestType;
 
@@ -175,7 +175,7 @@ TEMPLATE_TEST_CASE("neo/fixed_point: comparison(fixed_point)", "", neo::fft::q7_
     REQUIRE(compare_op(+0.50F, +0.50F, std::greater_equal()));
 }
 
-TEMPLATE_TEST_CASE("neo/fixed_point: add(fixed_point, fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: add(fixed_point, fixed_point)", "", neo::q7_t, neo::q15_t)
 {
     using fxp_t = TestType;
 
@@ -184,7 +184,7 @@ TEMPLATE_TEST_CASE("neo/fixed_point: add(fixed_point, fixed_point)", "", neo::ff
         auto lhs = std::vector<fxp_t>();
         auto rhs = std::vector<fxp_t>();
         auto out = std::vector<fxp_t>();
-        neo::fft::add(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
+        neo::add(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
     }
 
     {
@@ -192,7 +192,7 @@ TEMPLATE_TEST_CASE("neo/fixed_point: add(fixed_point, fixed_point)", "", neo::ff
         auto lhs = std::vector<fxp_t>{fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}};
         auto rhs = std::vector<fxp_t>{fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}};
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
-        neo::fft::add(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
+        neo::add(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.5F + 0.25F, tolerance<TestType>); };
         REQUIRE(std::all_of(out.begin(), out.end(), eq));
@@ -203,14 +203,14 @@ TEMPLATE_TEST_CASE("neo/fixed_point: add(fixed_point, fixed_point)", "", neo::ff
         auto lhs = std::vector<fxp_t>(1029, fxp_t{0.125F});
         auto rhs = std::vector<fxp_t>(1029, fxp_t{0.25F});
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
-        neo::fft::add(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
+        neo::add(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.125F + 0.25F, tolerance<TestType>); };
         REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 }
 
-TEMPLATE_TEST_CASE("neo/fixed_point: subtract(fixed_point, fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: subtract(fixed_point, fixed_point)", "", neo::q7_t, neo::q15_t)
 {
     using fxp_t = TestType;
 
@@ -219,7 +219,7 @@ TEMPLATE_TEST_CASE("neo/fixed_point: subtract(fixed_point, fixed_point)", "", ne
         auto lhs = std::vector<fxp_t>();
         auto rhs = std::vector<fxp_t>();
         auto out = std::vector<fxp_t>();
-        neo::fft::subtract(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
+        neo::subtract(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
     }
 
     {
@@ -227,7 +227,7 @@ TEMPLATE_TEST_CASE("neo/fixed_point: subtract(fixed_point, fixed_point)", "", ne
         auto lhs = std::vector<fxp_t>{fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}};
         auto rhs = std::vector<fxp_t>{fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}};
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
-        neo::fft::subtract(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
+        neo::subtract(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.5F - 0.25F, tolerance<TestType>); };
         REQUIRE(std::all_of(out.begin(), out.end(), eq));
@@ -238,14 +238,14 @@ TEMPLATE_TEST_CASE("neo/fixed_point: subtract(fixed_point, fixed_point)", "", ne
         auto lhs = std::vector<fxp_t>(1029, fxp_t{0.125F});
         auto rhs = std::vector<fxp_t>(1029, fxp_t{0.25F});
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
-        neo::fft::subtract(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
+        neo::subtract(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.125F - 0.25F, tolerance<TestType>); };
         REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 }
 
-TEMPLATE_TEST_CASE("neo/fixed_point: multiply(fixed_point, fixed_point)", "", neo::fft::q7_t, neo::fft::q15_t)
+TEMPLATE_TEST_CASE("neo/fixed_point: multiply(fixed_point, fixed_point)", "", neo::q7_t, neo::q15_t)
 {
     using fxp_t = TestType;
 
@@ -254,7 +254,7 @@ TEMPLATE_TEST_CASE("neo/fixed_point: multiply(fixed_point, fixed_point)", "", ne
         auto lhs = std::vector<fxp_t>();
         auto rhs = std::vector<fxp_t>();
         auto out = std::vector<fxp_t>();
-        neo::fft::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
+        neo::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
     }
 
     {
@@ -262,7 +262,7 @@ TEMPLATE_TEST_CASE("neo/fixed_point: multiply(fixed_point, fixed_point)", "", ne
         auto lhs = std::vector<fxp_t>{fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}};
         auto rhs = std::vector<fxp_t>{fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}};
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
-        neo::fft::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
+        neo::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.5F * 0.25F, tolerance<TestType>); };
         REQUIRE(std::all_of(out.begin(), out.end(), eq));
@@ -273,7 +273,7 @@ TEMPLATE_TEST_CASE("neo/fixed_point: multiply(fixed_point, fixed_point)", "", ne
         auto lhs = std::vector<fxp_t>(1029, fxp_t{0.125F});
         auto rhs = std::vector<fxp_t>(1029, fxp_t{0.25F});
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
-        neo::fft::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
+        neo::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
 
         auto eq = [=](auto fxp) { return approx_equal(to_float(fxp), 0.125F * 0.25F, tolerance<TestType>); };
         REQUIRE(std::all_of(out.begin(), out.end(), eq));

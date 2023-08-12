@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <concepts>
 
-namespace neo::fft {
+namespace neo {
 
 template<in_object InObj1, in_object InObj2, typename Scalar>
 [[nodiscard]] auto allclose(InObj1 lhs, InObj2 rhs, Scalar tolerance) -> bool
@@ -52,4 +52,4 @@ template<in_object InObj1, in_object InObj2>
     return allclose(lhs, rhs, tolerance);
 }
 
-}  // namespace neo::fft
+}  // namespace neo

@@ -7,11 +7,11 @@ TEMPLATE_TEST_CASE("neo/math: next_power_of_two", "", std::uint8_t, std::uint16_
 {
     using UInt = TestType;
 
-    REQUIRE(neo::fft::next_power_of_two(UInt(1)) == UInt(1));
-    REQUIRE(neo::fft::next_power_of_two(UInt(2)) == UInt(2));
-    REQUIRE(neo::fft::next_power_of_two(UInt(3)) == UInt(4));
-    REQUIRE(neo::fft::next_power_of_two(UInt(4)) == UInt(4));
-    REQUIRE(neo::fft::next_power_of_two(UInt(100)) == UInt(128));
+    REQUIRE(neo::next_power_of_two(UInt(1)) == UInt(1));
+    REQUIRE(neo::next_power_of_two(UInt(2)) == UInt(2));
+    REQUIRE(neo::next_power_of_two(UInt(3)) == UInt(4));
+    REQUIRE(neo::next_power_of_two(UInt(4)) == UInt(4));
+    REQUIRE(neo::next_power_of_two(UInt(100)) == UInt(128));
 }
 
 TEMPLATE_TEST_CASE(
@@ -25,9 +25,9 @@ TEMPLATE_TEST_CASE(
 {
     using UInt = TestType;
 
-    REQUIRE(neo::fft::detail::next_power_of_two_fallback(UInt(1)) == UInt(1));
-    REQUIRE(neo::fft::detail::next_power_of_two_fallback(UInt(2)) == UInt(2));
-    REQUIRE(neo::fft::detail::next_power_of_two_fallback(UInt(3)) == UInt(4));
-    REQUIRE(neo::fft::detail::next_power_of_two_fallback(UInt(4)) == UInt(4));
-    REQUIRE(neo::fft::detail::next_power_of_two_fallback(UInt(100)) == UInt(128));
+    REQUIRE(neo::detail::next_power_of_two_fallback(UInt(1)) == UInt(1));
+    REQUIRE(neo::detail::next_power_of_two_fallback(UInt(2)) == UInt(2));
+    REQUIRE(neo::detail::next_power_of_two_fallback(UInt(3)) == UInt(4));
+    REQUIRE(neo::detail::next_power_of_two_fallback(UInt(4)) == UInt(4));
+    REQUIRE(neo::detail::next_power_of_two_fallback(UInt(100)) == UInt(128));
 }

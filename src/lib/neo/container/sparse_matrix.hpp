@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace neo::fft {
+namespace neo {
 
 template<
     typename T,
@@ -219,4 +219,4 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::row_container(
     return _rowIndices;
 }
 
-}  // namespace neo::fft
+}  // namespace neo
