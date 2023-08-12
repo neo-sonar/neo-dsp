@@ -1,7 +1,7 @@
 #include "rfft.hpp"
 
 #include <neo/algorithm/allclose.hpp>
-#include <neo/fft/transform/radix2.hpp>
+#include <neo/fft/transform/fft.hpp>
 #include <neo/math/complex.hpp>
 #include <neo/testing/testing.hpp>
 

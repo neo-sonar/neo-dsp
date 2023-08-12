@@ -22,9 +22,10 @@ target_sources(neo_fft_tests
         "neo/fft/convolution/uniform_partitioned_convolver_test.cpp"
 
         "neo/fft/transform/dft_test.cpp"
-        "neo/fft/transform/radix2_test.cpp"
+        "neo/fft/transform/fft_test.cpp"
         "neo/fft/transform/rfft_test.cpp"
         "neo/fft/transform/stft_test.cpp"
+        "neo/fft/transform/twiddle_test.cpp"
 
         "neo/fixed_point/fixed_point_test.cpp"
 

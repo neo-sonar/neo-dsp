@@ -1,4 +1,4 @@
-#include "radix2.hpp"
+#include "fft.hpp"
 
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/scale.hpp>
@@ -13,31 +13,15 @@
 #include <random>
 #include <vector>
 
-namespace fft = neo::fft;
-
-TEMPLATE_TEST_CASE("neo/fft/transform: make_radix2_twiddles", "", float, double)
-{
-    using Float   = TestType;
-    using Complex = std::complex<Float>;
-
-    auto const array  = fft::make_radix2_twiddles<Complex, 64>();
-    auto const vector = fft::make_radix2_twiddles<Complex>(64);
-
-    for (auto i{0UL}; i < array.size(); ++i) {
-        CAPTURE(i);
-        REQUIRE(array(i).real() == Catch::Approx(vector(i).real()));
-        REQUIRE(array(i).imag() == Catch::Approx(vector(i).imag()));
-    }
-}
-
 namespace {
 template<typename Real, typename Kernel>
 struct fft_radix2_plan_builder
 {
     using plan_type = neo::fft::fft_radix2_plan<std::complex<Real>, Kernel>;
 };
-
 }  // namespace
+
+namespace fft = neo::fft;
 
 using namespace neo::fft;
 
