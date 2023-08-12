@@ -1,6 +1,6 @@
 #pragma once
 
-#include <neo/fft/container/mdspan.hpp>
+#include <neo/container/mdspan.hpp>
 
 #include <cstddef>
 #include <iterator>

@@ -2,7 +2,7 @@
 
 #include <neo/config.hpp>
 
-#include <neo/fft/container/mdspan.hpp>
+#include <neo/container/mdspan.hpp>
 #include <neo/fft/transform/direction.hpp>
 #include <neo/math/complex.hpp>
 

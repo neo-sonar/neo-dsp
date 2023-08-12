@@ -2,8 +2,8 @@
 
 #include <neo/config.hpp>
 
-#include <neo/fft/container/mdspan.hpp>
-#include <neo/fft/container/sparse_matrix.hpp>
+#include <neo/container/mdspan.hpp>
+#include <neo/container/sparse_matrix.hpp>
 
 namespace neo::fft {
 

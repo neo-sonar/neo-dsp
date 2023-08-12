@@ -10,11 +10,12 @@ target_compile_definitions(neo_fft INTERFACE _CRT_SECURE_NO_WARNINGS=1)
 add_executable(neo_fft_tests)
 target_sources(neo_fft_tests
     PRIVATE
+        "neo/container/sparse_matrix_test.cpp"
+
         "neo/fft/algorithm/allclose_test.cpp"
         "neo/fft/algorithm/copy_test.cpp"
         "neo/fft/algorithm/multiply_sum_columns_test.cpp"
 
-        "neo/fft/container/sparse_matrix_test.cpp"
 
         "neo/fft/convolution/overlap_test.cpp"
         "neo/fft/convolution/sparse_upols_convolver_test.cpp"

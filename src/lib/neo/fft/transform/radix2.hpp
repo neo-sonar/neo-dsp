@@ -2,8 +2,8 @@
 
 #include <neo/config.hpp>
 
+#include <neo/container/mdspan.hpp>
 #include <neo/fft/algorithm/copy.hpp>
-#include <neo/fft/container/mdspan.hpp>
 #include <neo/fft/transform/conjugate_view.hpp>
 #include <neo/fft/transform/direction.hpp>
 #include <neo/fft/transform/reorder.hpp>

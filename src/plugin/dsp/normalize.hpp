@@ -1,7 +1,7 @@
 #pragma once
 
+#include <neo/container/mdspan.hpp>
 #include <neo/fft/algorithm/peak_normalize.hpp>
-#include <neo/fft/container/mdspan.hpp>
 
 #include <juce_audio_basics/juce_audio_basics.h>
 
