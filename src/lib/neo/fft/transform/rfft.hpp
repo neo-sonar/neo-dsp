@@ -10,9 +10,15 @@ namespace neo::fft {
 template<typename Float>
 struct rfft_radix2_plan
 {
-    explicit rfft_radix2_plan(std::size_t order) : _order{order} {}
+    using real_type    = Float;
+    using complex_type = std::complex<Float>;
+    using size_type    = std::size_t;
 
-    [[nodiscard]] auto size() const noexcept -> std::size_t { return _size; }
+    explicit rfft_radix2_plan(size_type order) : _order{order} {}
+
+    [[nodiscard]] auto size() const noexcept -> size_type { return _size; }
+
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
     template<in_vector InVec, out_vector OutVec>
         requires(std::same_as<typename InVec::value_type, Float> and std::same_as<typename OutVec::value_type, std::complex<Float>>)
@@ -47,10 +53,10 @@ struct rfft_radix2_plan
     }
 
 private:
-    std::size_t _order;
-    std::size_t _size{1ULL << _order};
+    size_type _order;
+    size_type _size{1ULL << _order};
     fft_radix2_plan<std::complex<Float>> _cfft{_order};
-    KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 1>> _buffer{_size};
+    KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_type, 1>> _buffer{_size};
 };
 
 template<in_vector InVec, out_vector OutVecA, out_vector OutVecB>

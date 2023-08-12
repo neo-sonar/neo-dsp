@@ -50,30 +50,25 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: roundtrip(rfft_radix2_plan)", "", fl
 {
     using Float = TestType;
 
-    auto order      = GENERATE(1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
-    auto const size = 1UL << static_cast<std::size_t>(order);
+    auto const order = GENERATE(as<std::size_t>{}, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
 
-    auto signal         = neo::fft::generate_noise_signal<Float>(size, Catch::getSeed());
-    auto spectrum       = std::vector<std::complex<Float>>(size / 2UL + 1UL, Float(0));
+    auto rfft = neo::fft::rfft_radix2_plan<Float>{order};
+    REQUIRE(rfft.order() == order);
+    REQUIRE(rfft.size() == 1UL << order);
+
+    auto signal         = neo::fft::generate_noise_signal<Float>(rfft.size(), Catch::getSeed());
+    auto spectrum       = std::vector<std::complex<Float>>(rfft.size() / 2UL + 1UL, Float(0));
     auto const original = signal;
 
-    auto rfft = neo::fft::rfft_radix2_plan<Float>{static_cast<std::size_t>(order)};
-    rfft(
-        Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}},
-        Kokkos::mdspan{spectrum.data(), Kokkos::extents{spectrum.size()}}
-    );
-    rfft(
-        Kokkos::mdspan{spectrum.data(), Kokkos::extents{spectrum.size()}},
-        Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}}
-    );
+    auto const real    = Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}};
+    auto const complex = Kokkos::mdspan{spectrum.data(), Kokkos::extents{spectrum.size()}};
+    rfft(real, complex);
+    rfft(complex, real);
 
-    auto const scale = Float(1) / static_cast<Float>(size);
+    auto const scale = Float(1) / static_cast<Float>(rfft.size());
     std::transform(signal.begin(), signal.end(), signal.begin(), [scale](auto c) { return c * scale; });
 
-    REQUIRE(neo::fft::allclose(
-        Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}},
-        Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}}
-    ));
+    REQUIRE(neo::fft::allclose(Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}}, real));
 }
 
 TEMPLATE_TEST_CASE("neo/fft/transform/rfft: extract_two_real_dfts", "", float, double)
@@ -87,8 +82,13 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: extract_two_real_dfts", "", float, d
     CAPTURE(size);
     CAPTURE(numCoeffs);
 
+    auto fft = neo::fft::fft_radix2_plan<std::complex<Float>>{order};
+    REQUIRE(fft.size() == size);
+    REQUIRE(fft.order() == order);
+
     auto rfft = neo::fft::rfft_radix2_plan<Float>{order};
-    auto fft  = neo::fft::fft_radix2_plan<std::complex<Float>>{order};
+    REQUIRE(rfft.size() == size);
+    REQUIRE(rfft.order() == order);
 
     auto rng    = std::mt19937{Catch::getSeed()};
     auto dist   = std::uniform_real_distribution<Float>{Float(-1), Float(1)};
