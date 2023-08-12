@@ -67,14 +67,14 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
             auto io    = Kokkos::mdspan{inout.data(), Kokkos::extents{inout.size()}};
 
             auto tw = neo::fft::make_radix2_twiddles<Complex>(inout.size());
-            neo::fft::fft_radix2(neo::fft::fft_radix2_kernel_v1, io, tw);
+            neo::fft::fft_radix2(kernel, io, tw);
 
             return neo::fft::allclose(expected, io);
         };
 
-        REQUIRE(test(neo::fft::fft_radix2_kernel_v1));
-        REQUIRE(test(neo::fft::fft_radix2_kernel_v2));
-        REQUIRE(test(neo::fft::fft_radix2_kernel_v3));
+        REQUIRE(test(neo::fft::radix2_kernel_v1));
+        REQUIRE(test(neo::fft::radix2_kernel_v2));
+        REQUIRE(test(neo::fft::radix2_kernel_v3));
     }
 
     SECTION("plan")
@@ -90,9 +90,9 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
             return neo::fft::allclose(expected, io);
         };
 
-        REQUIRE(test(neo::fft::fft_radix2_kernel_v1));
-        REQUIRE(test(neo::fft::fft_radix2_kernel_v2));
-        REQUIRE(test(neo::fft::fft_radix2_kernel_v3));
+        REQUIRE(test(neo::fft::radix2_kernel_v1));
+        REQUIRE(test(neo::fft::radix2_kernel_v2));
+        REQUIRE(test(neo::fft::radix2_kernel_v3));
     }
 }
 
@@ -123,7 +123,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: roundtrip(fft_radix2_plan)", "", f
         return true;
     };
 
-    REQUIRE(test(neo::fft::fft_radix2_kernel_v1));
-    REQUIRE(test(neo::fft::fft_radix2_kernel_v2));
-    REQUIRE(test(neo::fft::fft_radix2_kernel_v3));
+    REQUIRE(test(neo::fft::radix2_kernel_v1));
+    REQUIRE(test(neo::fft::radix2_kernel_v2));
+    REQUIRE(test(neo::fft::radix2_kernel_v3));
 }

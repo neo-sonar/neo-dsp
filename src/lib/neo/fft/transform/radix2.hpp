@@ -52,7 +52,7 @@ auto make_radix2_twiddles(direction dir = direction::forward) -> std::array<Comp
     return table;
 }
 
-inline constexpr auto fft_radix2_kernel_v1 = [](inout_vector auto x, auto const& twiddles) -> void {
+inline constexpr auto radix2_kernel_v1 = [](inout_vector auto x, auto const& twiddles) -> void {
     auto const size  = x.size();
     auto const order = static_cast<std::int32_t>(ilog2(size));
 
@@ -80,7 +80,7 @@ inline constexpr auto fft_radix2_kernel_v1 = [](inout_vector auto x, auto const&
     }
 };
 
-inline constexpr auto fft_radix2_kernel_v2 = [](inout_vector auto x, auto const& twiddles) -> void {
+inline constexpr auto radix2_kernel_v2 = [](inout_vector auto x, auto const& twiddles) -> void {
     auto const size = x.size();
 
     auto stage_size = 2U;
@@ -109,7 +109,7 @@ inline constexpr auto fft_radix2_kernel_v2 = [](inout_vector auto x, auto const&
     }
 };
 
-inline constexpr auto fft_radix2_kernel_v3 = [](inout_vector auto x, auto const& twiddles) -> void {
+inline constexpr auto radix2_kernel_v3 = [](inout_vector auto x, auto const& twiddles) -> void {
     auto const size  = x.size();
     auto const order = ilog2(size);
 
@@ -134,12 +134,12 @@ inline constexpr auto fft_radix2_kernel_v3 = [](inout_vector auto x, auto const&
     }
 };
 
-auto fft_radix2 = [](auto const& kernel, inout_vector auto x, auto const& twiddles) -> void {
+inline constexpr auto fft_radix2 = [](auto const& kernel, inout_vector auto x, auto const& twiddles) -> void {
     bit_reverse_permutation(x);
     kernel(x, twiddles);
 };
 
-template<typename Complex, typename Kernel = decltype(fft_radix2_kernel_v3)>
+template<typename Complex, typename Kernel = decltype(radix2_kernel_v3)>
 struct fft_radix2_plan
 {
     using complex_type = Complex;
