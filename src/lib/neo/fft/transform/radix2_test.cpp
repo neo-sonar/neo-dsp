@@ -43,7 +43,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/radix2: test_path(c2c)", "", double)
         neo::fft::test_path{"./test_data/c2c_512_input.csv", "./test_data/c2c_512_output.csv"}
     );
 
-    auto const testCase = neo::fft::load_test_data<Float>(paths).value();
+    auto const testCase = neo::fft::load_test_data<Float>(paths);
     auto const expected = Kokkos::mdspan{testCase.expected.data(), Kokkos::extents{testCase.expected.size()}};
 
     {

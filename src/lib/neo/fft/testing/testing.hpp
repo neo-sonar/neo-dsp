@@ -1,5 +1,7 @@
 #pragma once
 
+#include <neo/fft/config.hpp>
+
 #include <neo/fft/container/mdspan.hpp>
 
 #include <algorithm>
@@ -7,7 +9,6 @@
 #include <concepts>
 #include <cstdio>
 #include <filesystem>
-#include <optional>
 #include <random>
 #include <vector>
 
@@ -26,51 +27,32 @@ struct test_data
 };
 
 template<std::floating_point Float>
-[[nodiscard]] auto load_test_data_file(std::filesystem::path const& path)
-    -> std::optional<std::vector<std::complex<Float>>>
+[[nodiscard]] auto load_test_data(test_path const& paths) -> test_data<Float>
 {
-    if (not std::filesystem::exists(path)) {
-        return {};
-    }
-    if (not std::filesystem::is_regular_file(path)) {
-        return {};
-    }
+    auto load_file = [](std::filesystem::path const& path) {
+        NEO_FFT_PRECONDITION(std::filesystem::exists(path));
+        NEO_FFT_PRECONDITION(std::filesystem::is_regular_file(path));
 
-    auto* file = std::fopen(path.string().c_str(), "r");
-    if (file == nullptr) {
-        return {};
-    }
+        auto* file = std::fopen(path.string().c_str(), "r");
+        NEO_FFT_PRECONDITION(file != nullptr);
 
-    auto result = std::vector<std::complex<Float>>{};
-    char line[512]{};
-    while (std::fgets(line, sizeof(line), file)) {
-        auto re = 0.0;
-        auto im = 0.0;
-        std::sscanf(line, "%lf,%lf\n", &re, &im);
-        result.emplace_back(static_cast<Float>(re), static_cast<Float>(im));
-    }
+        auto result = std::vector<std::complex<Float>>{};
+        char line[512]{};
+        while (std::fgets(line, sizeof(line), file)) {
+            auto re = 0.0;
+            auto im = 0.0;
+            std::sscanf(line, "%lf,%lf\n", &re, &im);
+            result.emplace_back(static_cast<Float>(re), static_cast<Float>(im));
+        }
 
-    std::fclose(file);
+        std::fclose(file);
 
-    return result;
-}
-
-template<std::floating_point Float>
-[[nodiscard]] auto load_test_data(test_path const& paths) -> std::optional<test_data<Float>>
-{
-    auto input = load_test_data_file<Float>(paths.input);
-    if (not input) {
-        return {};
-    }
-
-    auto expected = load_test_data_file<Float>(paths.expected);
-    if (not expected) {
-        return {};
-    }
+        return result;
+    };
 
     return test_data<Float>{
-        .input    = std::move(*input),
-        .expected = std::move(*expected),
+        .input    = load_file(paths.input),
+        .expected = load_file(paths.expected),
     };
 }
 

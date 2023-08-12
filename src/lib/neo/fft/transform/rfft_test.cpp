@@ -28,7 +28,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: test_data(rfft_radix2_plan)", "", fl
         neo::fft::test_path{"./test_data/r2c_512_input.csv", "./test_data/r2c_512_output.csv"}
     );
 
-    auto const tc    = neo::fft::load_test_data<Float>(paths).value();
+    auto const tc    = neo::fft::load_test_data<Float>(paths);
     auto const size  = tc.input.size();
     auto const order = neo::fft::ilog2(size);
 
