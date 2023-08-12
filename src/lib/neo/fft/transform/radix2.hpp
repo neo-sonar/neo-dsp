@@ -53,19 +53,16 @@ auto make_radix2_twiddles(direction dir = direction::forward) -> std::array<Comp
 }
 
 inline constexpr auto fft_radix2_kernel_v1 = [](inout_vector auto x, auto const& twiddles) -> void {
-    auto const len   = x.size();
-    auto const order = static_cast<std::int32_t>(ilog2(len));
+    auto const size  = x.size();
+    auto const order = static_cast<std::int32_t>(ilog2(size));
 
-    // butterfly computation
     auto stage_length = 1;
     auto stride       = 2;
-    for (auto stage = 0; stage < order; ++stage) {
 
-        // auto const stage_length = power<2>(stage);
-        // auto const stride    = power<2>(stage + 1);
+    for (auto stage = 0; stage < order; ++stage) {
         auto const tw_stride = power<2>(order - stage - 1);
 
-        for (auto k = 0; std::cmp_less(k, len); k += stride) {
+        for (auto k = 0; std::cmp_less(k, size); k += stride) {
             for (auto pair = 0; pair < stage_length; ++pair) {
                 auto const tw = twiddles[static_cast<std::size_t>(pair * tw_stride)];
 
@@ -84,14 +81,14 @@ inline constexpr auto fft_radix2_kernel_v1 = [](inout_vector auto x, auto const&
 };
 
 inline constexpr auto fft_radix2_kernel_v2 = [](inout_vector auto x, auto const& twiddles) -> void {
-    auto const len = x.size();
+    auto const size = x.size();
 
     auto stage_size = 2U;
-    while (stage_size <= len) {
+    while (stage_size <= size) {
         auto const halfStage = stage_size / 2;
-        auto const k_step    = len / stage_size;
+        auto const k_step    = size / stage_size;
 
-        for (auto i{0U}; i < len; i += stage_size) {
+        for (auto i{0U}; i < size; i += stage_size) {
             for (auto k{i}; k < i + halfStage; ++k) {
                 auto const index = k - i;
                 auto const tw    = twiddles[index * k_step];
@@ -112,12 +109,37 @@ inline constexpr auto fft_radix2_kernel_v2 = [](inout_vector auto x, auto const&
     }
 };
 
+inline constexpr auto fft_radix2_kernel_v3 = [](inout_vector auto x, auto const& twiddles) -> void {
+    auto const size  = x.size();
+    auto const order = ilog2(size);
+
+    for (auto stage{0ULL}; stage < order; ++stage) {
+
+        auto const stage_length = power<2ULL>(stage);
+        auto const stride       = power<2ULL>(stage + 1);
+        auto const tw_stride    = power<2ULL>(order - stage - 1ULL);
+
+        for (auto k{0ULL}; k < size; k += stride) {
+            for (auto pair{0ULL}; pair < stage_length; ++pair) {
+                auto const tw = twiddles[pair * tw_stride];
+
+                auto const i1 = k + pair;
+                auto const i2 = k + pair + stage_length;
+
+                auto const temp = x[i1] + tw * x[i2];
+                x[i2]           = x[i1] - tw * x[i2];
+                x[i1]           = temp;
+            }
+        }
+    }
+};
+
 auto fft_radix2 = [](auto const& kernel, inout_vector auto x, auto const& twiddles) -> void {
     bit_reverse_permutation(x);
     kernel(x, twiddles);
 };
 
-template<typename Complex>
+template<typename Complex, typename Kernel = decltype(fft_radix2_kernel_v3)>
 struct fft_radix2_plan
 {
     using complex_type = Complex;
@@ -138,9 +160,9 @@ struct fft_radix2_plan
         bit_reverse_permutation(vec, _index_table);
 
         if (dir == direction::forward) {
-            run(vec, _twiddles);
+            Kernel{}(vec, _twiddles);
         } else {
-            run(vec, conjugate_view<Complex>{_twiddles});
+            Kernel{}(vec, conjugate_view<Complex>{_twiddles});
         }
     }
 
@@ -156,29 +178,6 @@ struct fft_radix2_plan
     }
 
 private:
-    auto run(inout_vector auto vec, auto const& twiddles) const
-    {
-        for (auto stage{0ULL}; stage < _order; ++stage) {
-
-            auto const stage_length = power<2ULL>(stage);
-            auto const stride       = power<2ULL>(stage + 1);
-            auto const tw_stride    = power<2ULL>(_order - stage - 1ULL);
-
-            for (auto k{0ULL}; k < _size; k += stride) {
-                for (auto pair{0ULL}; pair < stage_length; ++pair) {
-                    auto const tw = twiddles[pair * tw_stride];
-
-                    auto const i1 = k + pair;
-                    auto const i2 = k + pair + stage_length;
-
-                    auto const temp = vec[i1] + tw * vec[i2];
-                    vec[i2]         = vec[i1] - tw * vec[i2];
-                    vec[i1]         = temp;
-                }
-            }
-        }
-    }
-
     size_type _order;
     size_type _size{1ULL << _order};
     std::vector<size_type> _index_table{make_bit_reversed_index_table(_size)};
