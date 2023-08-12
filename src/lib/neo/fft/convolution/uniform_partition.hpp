@@ -31,7 +31,7 @@ template<in_matrix InMat>
 
     auto in   = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 1>>{windowSize};
     auto out  = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 1>>{windowSize};
-    auto rfft = rfft_plan<Float>{ilog2(windowSize)};
+    auto rfft = rfft_radix2_plan<Float>{ilog2(windowSize)};
 
     auto const input  = in.to_mdspan();
     auto const output = out.to_mdspan();

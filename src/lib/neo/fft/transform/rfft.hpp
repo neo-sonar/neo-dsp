@@ -8,9 +8,9 @@
 namespace neo::fft {
 
 template<typename Float>
-struct rfft_plan
+struct rfft_radix2_plan
 {
-    explicit rfft_plan(std::size_t order) : _order{order}, _size{1ULL << order}, _cfft{_size}, _buffer{_size} {}
+    explicit rfft_radix2_plan(std::size_t order) : _order{order}, _size{1ULL << order}, _cfft{_size}, _buffer{_size} {}
 
     [[nodiscard]] auto size() const noexcept -> std::size_t { return _size; }
 
@@ -49,7 +49,7 @@ struct rfft_plan
 private:
     std::size_t _order;
     std::size_t _size;
-    fft_plan<std::complex<Float>> _cfft;
+    fft_radix2_plan<std::complex<Float>> _cfft;
     KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 1>> _buffer;
 };
 

@@ -13,7 +13,7 @@
 #include <complex>
 #include <random>
 
-TEMPLATE_TEST_CASE("neo/fft/transform/rfft: test_data(rfft_plan)", "", float, double)
+TEMPLATE_TEST_CASE("neo/fft/transform/rfft: test_data(rfft_radix2_plan)", "", float, double)
 {
     using Float = TestType;
 
@@ -39,14 +39,14 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: test_data(rfft_plan)", "", float, do
     auto in  = Kokkos::mdspan{input.data(), Kokkos::extents{input.size()}};
     auto out = Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}};
 
-    auto rfft = neo::fft::rfft_plan<Float>{order};
+    auto rfft = neo::fft::rfft_radix2_plan<Float>{order};
     rfft(in, out);
 
     auto const expected = Kokkos::mdspan{tc.expected.data(), Kokkos::extents{tc.expected.size()}};
     REQUIRE(neo::fft::allclose(expected, out));
 }
 
-TEMPLATE_TEST_CASE("neo/fft/transform/rfft: roundtrip(rfft_plan)", "", float, double)
+TEMPLATE_TEST_CASE("neo/fft/transform/rfft: roundtrip(rfft_radix2_plan)", "", float, double)
 {
     using Float = TestType;
 
@@ -57,7 +57,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: roundtrip(rfft_plan)", "", float, do
     auto spectrum       = std::vector<std::complex<Float>>(size / 2UL + 1UL, Float(0));
     auto const original = signal;
 
-    auto rfft = neo::fft::rfft_plan<Float>{static_cast<std::size_t>(order)};
+    auto rfft = neo::fft::rfft_radix2_plan<Float>{static_cast<std::size_t>(order)};
     rfft(
         Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}},
         Kokkos::mdspan{spectrum.data(), Kokkos::extents{spectrum.size()}}
@@ -87,8 +87,8 @@ TEMPLATE_TEST_CASE("neo/fft/transform/rfft: extract_two_real_dfts", "", float, d
     CAPTURE(size);
     CAPTURE(numCoeffs);
 
-    auto rfft = neo::fft::rfft_plan<Float>{order};
-    auto fft  = neo::fft::fft_plan<std::complex<Float>>{size};
+    auto rfft = neo::fft::rfft_radix2_plan<Float>{order};
+    auto fft  = neo::fft::fft_radix2_plan<std::complex<Float>>{size};
 
     auto rng    = std::mt19937{Catch::getSeed()};
     auto dist   = std::uniform_real_distribution<Float>{Float(-1), Float(1)};

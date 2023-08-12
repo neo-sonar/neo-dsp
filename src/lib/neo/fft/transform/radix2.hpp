@@ -122,9 +122,9 @@ auto c2c_radix2_alt(InOutVec x, TwiddleTable const& twiddles) -> void
 }
 
 template<typename Complex>
-struct fft_plan
+struct fft_radix2_plan
 {
-    explicit fft_plan(std::size_t len) : _len{len} {}
+    explicit fft_radix2_plan(std::size_t len) : _len{len} {}
 
     [[nodiscard]] auto size() const noexcept -> std::size_t { return _len; }
 

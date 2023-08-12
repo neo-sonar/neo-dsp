@@ -17,7 +17,7 @@ template<in_matrix InMat>
 {
     using Float = typename InMat::value_type;
 
-    auto fft       = rfft_plan<Float>{ilog2(static_cast<size_t>(windowSize))};
+    auto fft       = rfft_radix2_plan<Float>{ilog2(static_cast<size_t>(windowSize))};
     auto fftInput  = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 1>>{fft.size()};
     auto fftOutput = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 1>>{fft.size()};
     auto hann      = generate_hann_window<Float>(static_cast<size_t>(windowSize));
