@@ -23,7 +23,7 @@ struct uniform_partitioned_convolver
     auto operator()(in_vector auto block) -> void;
 
 private:
-    Overlap _overlap;
+    Overlap _overlap{1, 1};
 
     KokkosEx::mdspan<std::complex<Float> const, Kokkos::dextents<size_t, 2>> _filter;
     KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>> _accumulator;

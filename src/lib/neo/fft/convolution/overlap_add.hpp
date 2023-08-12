@@ -23,7 +23,6 @@ struct overlap_add
     using complex_type = std::complex<Float>;
     using size_type    = std::size_t;
 
-    overlap_add() = default;
     overlap_add(size_type block_size, size_type filter_size);
 
     [[nodiscard]] auto block_size() const noexcept -> size_type;
@@ -34,9 +33,8 @@ struct overlap_add
     auto operator()(inout_vector auto block, auto callback) -> void;
 
 private:
-    // TODO: Should be zero, but rfft has no default ctor. Calculation with size == 0 would underflow
-    size_type _block_size{1};
-    size_type _filter_size{1};
+    size_type _block_size;
+    size_type _filter_size;
 
     rfft_radix2_plan<Float> _rfft{ilog2(next_power_of_two(_block_size + _filter_size - 1UL))};
     KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>> _real_buffer{_rfft.size()};

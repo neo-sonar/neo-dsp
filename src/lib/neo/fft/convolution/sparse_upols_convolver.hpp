@@ -29,7 +29,7 @@ private:
     KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 2>> _fdl;
     std::size_t _fdlIndex{0};
 
-    overlap_save<Float> _overlapSave;
+    overlap_save<Float> _overlapSave{1, 1};
 };
 
 template<std::floating_point Float>
