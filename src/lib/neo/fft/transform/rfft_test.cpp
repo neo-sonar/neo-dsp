@@ -1,6 +1,7 @@
 #include "rfft.hpp"
 
 #include <neo/algorithm/allclose.hpp>
+#include <neo/algorithm/scale.hpp>
 #include <neo/fft/transform/fft.hpp>
 #include <neo/math/complex.hpp>
 #include <neo/testing/testing.hpp>
@@ -60,14 +61,12 @@ TEMPLATE_PRODUCT_TEST_CASE(
     auto spectrum       = std::vector<std::complex<Float>>(rfft.size() / 2UL + 1UL, Float(0));
     auto const original = signal;
 
-    auto const real    = Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}};
+    auto const real    = signal.to_mdspan();
     auto const complex = Kokkos::mdspan{spectrum.data(), Kokkos::extents{spectrum.size()}};
     rfft(real, complex);
     rfft(complex, real);
 
-    auto const scale = Float(1) / static_cast<Float>(rfft.size());
-    std::transform(signal.begin(), signal.end(), signal.begin(), [scale](auto c) { return c * scale; });
-
+    neo::scale(Float(1) / static_cast<Float>(rfft.size()), real);
     REQUIRE(neo::allclose(Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}}, real));
 }
 

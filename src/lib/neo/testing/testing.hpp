@@ -2,6 +2,7 @@
 
 #include <neo/config.hpp>
 
+#include <neo/algorithm/fill.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/math/complex.hpp>
 
@@ -21,34 +22,24 @@ template<float_or_complex FloatOrComplex, typename URNG = std::mt19937>
 
     auto rng    = URNG{seed};
     auto dist   = std::uniform_real_distribution<Float>{Float(-1), Float(1)};
-    auto signal = std::vector<FloatOrComplex>(length);
+    auto signal = KokkosEx::mdarray<FloatOrComplex, Kokkos::dextents<size_t, 1>>{length};
 
     if constexpr (std::floating_point<FloatOrComplex>) {
-        std::generate(signal.begin(), signal.end(), [&] { return dist(rng); });
+        std::generate_n(signal.data(), signal.size(), [&] { return dist(rng); });
     } else {
-        std::generate(signal.begin(), signal.end(), [&] { return FloatOrComplex{dist(rng), dist(rng)}; });
+        std::generate_n(signal.data(), signal.size(), [&] { return FloatOrComplex{dist(rng), dist(rng)}; });
     }
 
     return signal;
 }
 
 template<std::floating_point Float>
-[[nodiscard]] auto generate_identity_impulse(std::size_t blockSize, std::size_t numPartitions)
+[[nodiscard]] auto generate_identity_impulse(std::size_t block_size, std::size_t num_subfilter)
     -> KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 2>>
 {
-    auto const windowSize = blockSize * 2;
-    auto const numBins    = windowSize / 2 + 1;
-
-    auto impulse = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 2>>{
-        numPartitions,
-        numBins,
-    };
-
-    for (auto partition{0U}; partition < impulse.extent(0); ++partition) {
-        for (auto bin{0U}; bin < impulse.extent(1); ++bin) {
-            impulse(partition, bin) = std::complex{Float(1), Float(0)};
-        }
-    }
+    auto const num_bins = block_size + 1;
+    auto impulse = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 2>>{num_subfilter, num_bins};
+    fill(impulse.to_mdspan(), std::complex{Float(1), Float(0)});
     return impulse;
 }
 

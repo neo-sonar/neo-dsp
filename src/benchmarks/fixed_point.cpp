@@ -20,13 +20,13 @@ struct floating_point_mul_bench
 
     auto operator()() -> void
     {
-        std::transform(_lhs.begin(), _lhs.end(), _rhs.begin(), _out.begin(), std::multiplies{});
+        std::transform(_lhs.data(), _lhs.data() + _lhs.size(), _rhs.data(), _out.data(), std::multiplies{});
     }
 
 private:
-    std::vector<Float> _lhs;
-    std::vector<Float> _rhs;
-    std::vector<Float> _out;
+    KokkosEx::mdarray<Float, Kokkos::extents<size_t, Size>> _lhs;
+    KokkosEx::mdarray<Float, Kokkos::extents<size_t, Size>> _rhs;
+    KokkosEx::mdarray<Float, Kokkos::extents<size_t, Size>> _out;
 };
 
 template<typename FixedPoint, std::size_t Size>

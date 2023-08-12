@@ -56,19 +56,18 @@ TEMPLATE_PRODUCT_TEST_CASE(
     REQUIRE(plan.order() == order);
     REQUIRE(plan.size() == 1UL << order);
 
-    auto const original = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
-    auto const noise    = Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}};
+    auto const noise = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
 
     SECTION("inplace")
     {
-        auto copy = original;
-        auto io   = Kokkos::mdspan{copy.data(), Kokkos::extents{copy.size()}};
+        auto copy = noise;
+        auto io   = copy.to_mdspan();
 
         neo::fft::fft(plan, io);
         neo::fft::ifft(plan, io);
 
         neo::scale(Float(1) / static_cast<Float>(plan.size()), io);
-        REQUIRE(neo::allclose(noise, io));
+        REQUIRE(neo::allclose(noise.to_mdspan(), io));
     }
 
     SECTION("copy")
@@ -79,10 +78,10 @@ TEMPLATE_PRODUCT_TEST_CASE(
         auto tmp = tmpBuf.to_mdspan();
         auto out = outBuf.to_mdspan();
 
-        neo::fft::fft(plan, noise, tmp);
+        neo::fft::fft(plan, noise.to_mdspan(), tmp);
         neo::fft::ifft(plan, tmp, out);
 
         neo::scale(Float(1) / static_cast<Float>(plan.size()), out);
-        REQUIRE(neo::allclose(noise, out));
+        REQUIRE(neo::allclose(noise.to_mdspan(), out));
     }
 }

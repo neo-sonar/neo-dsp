@@ -39,8 +39,8 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft/convolution:", "", (overlap_add, overlap_sav
         });
     }
 
-    auto const sig = Kokkos::mdspan{signal.data(), Kokkos::extents{signal.size()}};
-    auto const out = Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}};
+    auto const sig = signal.to_mdspan();
+    auto const out = output.to_mdspan();
 
     auto const error = neo::rms_error(sig, out);
     REQUIRE_THAT(error, Catch::Matchers::WithinAbs(0.0, 0.00001));

@@ -21,12 +21,12 @@ TEMPLATE_TEST_CASE("neo/fft/transform: dft", "", float, double, long double)
     auto inBuf  = original;
     auto outBuf = KokkosEx::mdarray<Complex, Kokkos::dextents<size_t, 1>>{inBuf.size()};
 
-    auto const in  = Kokkos::mdspan{inBuf.data(), Kokkos::extents{inBuf.size()}};
-    auto const out = Kokkos::mdspan{outBuf.data(), Kokkos::extents{outBuf.size()}};
+    auto const in  = inBuf.to_mdspan();
+    auto const out = outBuf.to_mdspan();
 
     neo::fft::dft(in, out, neo::fft::direction::forward);
     neo::fft::dft(out, in, neo::fft::direction::backward);
 
     neo::scale(Float(1) / static_cast<Float>(size), in);
-    REQUIRE(neo::allclose(Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}}, in));
+    REQUIRE(neo::allclose(original.to_mdspan(), in));
 }
