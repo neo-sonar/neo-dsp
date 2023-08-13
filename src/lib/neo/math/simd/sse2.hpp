@@ -31,9 +31,11 @@ NEO_ALWAYS_INLINE auto cmul(__m128d a, __m128d b) noexcept -> __m128d
 
 struct float32x4
 {
+    using value_type    = float;
     using register_type = __m128;
 
-    static constexpr auto const alignment = sizeof(register_type);
+    static constexpr auto const alignment  = sizeof(register_type);
+    static constexpr auto const batch_size = std::size_t(4);
 
     float32x4() = default;
 
@@ -43,7 +45,7 @@ struct float32x4
 
     [[nodiscard]] static auto broadcast(float val) noexcept -> float32x4 { return _mm_set1_ps(val); }
 
-    auto store_unaligned(float* output) noexcept -> void { return _mm_storeu_ps(output, _val); }
+    auto store_unaligned(float* output) const noexcept -> void { return _mm_storeu_ps(output, _val); }
 
 private:
     register_type _val;
@@ -51,9 +53,11 @@ private:
 
 struct float64x2
 {
+    using value_type    = double;
     using register_type = __m128d;
 
-    static constexpr auto const alignment = sizeof(register_type);
+    static constexpr auto const alignment  = sizeof(register_type);
+    static constexpr auto const batch_size = std::size_t(2);
 
     float64x2() = default;
 
@@ -61,9 +65,9 @@ struct float64x2
 
     [[nodiscard]] NEO_ALWAYS_INLINE operator register_type() const { return _val; }
 
-    [[nodiscard]] static auto broadcast(float val) noexcept -> float64x2 { return _mm_set1_pd(val); }
+    [[nodiscard]] static auto broadcast(double val) noexcept -> float64x2 { return _mm_set1_pd(val); }
 
-    auto store_unaligned(double* output) noexcept -> void { return _mm_storeu_pd(output, _val); }
+    auto store_unaligned(double* output) const noexcept -> void { return _mm_storeu_pd(output, _val); }
 
 private:
     register_type _val;

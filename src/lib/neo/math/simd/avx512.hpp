@@ -70,9 +70,11 @@ NEO_ALWAYS_INLINE auto cmul(__m512d a, __m512d b) noexcept -> __m512d
 
 struct float32x16
 {
+    using value_type    = float;
     using register_type = __m512;
 
-    static constexpr auto const alignment = sizeof(register_type);
+    static constexpr auto const alignment  = sizeof(register_type);
+    static constexpr auto const batch_size = std::size_t(16);
 
     float32x16() = default;
 
@@ -80,21 +82,31 @@ struct float32x16
 
     [[nodiscard]] operator register_type() const { return _val; }
 
+    [[nodiscard]] static auto broadcast(float val) noexcept -> float32x16 { return _mm512_set1_ps(val); }
+
+    auto store_unaligned(float* output) const noexcept -> void { return _mm512_storeu_ps(output, _val); }
+
 private:
     register_type _val;
 };
 
 struct float64x8
 {
+    using value_type    = double;
     using register_type = __m512d;
 
-    static constexpr auto const alignment = sizeof(register_type);
+    static constexpr auto const alignment  = sizeof(register_type);
+    static constexpr auto const batch_size = std::size_t(8);
 
     float64x8() = default;
 
     float64x8(register_type val) : _val{val} {}
 
     [[nodiscard]] operator register_type() const { return _val; }
+
+    [[nodiscard]] static auto broadcast(double val) noexcept -> float64x8 { return _mm512_set1_pd(val); }
+
+    auto store_unaligned(double* output) const noexcept -> void { return _mm512_storeu_pd(output, _val); }
 
 private:
     register_type _val;
