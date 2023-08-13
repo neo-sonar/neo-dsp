@@ -1,6 +1,6 @@
 #pragma once
 
-#include <neo/fixed_point/fixed_point.hpp>
+#include <neo/math/fixed_point/fixed_point.hpp>
 
 #include <array>
 #include <cstdint>

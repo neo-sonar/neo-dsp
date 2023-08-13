@@ -3,15 +3,15 @@
 #include <neo/config.hpp>
 
 #if defined(NEO_FFT_HAS_SSE2)
-    #include <neo/fft/transform/simd/sse2.hpp>
+    #include <neo/math/simd/sse2.hpp>
 #endif
 
 #if defined(NEO_FFT_HAS_AVX)
-    #include <neo/fft/transform/simd/avx.hpp>
+    #include <neo/math/simd/avx.hpp>
 #endif
 
 #if defined(NEO_FFT_HAS_AVX512F)
-    #include <neo/fft/transform/simd/avx512.hpp>
+    #include <neo/math/simd/avx512.hpp>
 #endif
 
 namespace neo::fft {

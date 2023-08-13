@@ -27,11 +27,10 @@ target_sources(neo_fft_tests
         "neo/fft/transform/stft_test.cpp"
         "neo/fft/transform/twiddle_test.cpp"
 
-        "neo/fixed_point/fixed_point_test.cpp"
-
         "neo/math/a_weighting_test.cpp"
         "neo/math/complex_test.cpp"
         "neo/math/fftfreq_test.cpp"
+        "neo/math/fixed_point_test.cpp"
         "neo/math/decibel_test.cpp"
         "neo/math/ilog2_test.cpp"
         "neo/math/next_power_of_two_test.cpp"
