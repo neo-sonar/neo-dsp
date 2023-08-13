@@ -9,6 +9,19 @@
 namespace neo {
 
 template<std::floating_point Float>
+struct rectangular_window
+{
+    using real_type = Float;
+
+    rectangular_window() noexcept = default;
+
+    [[nodiscard]] auto operator()(std::integral auto /*index*/, std::integral auto /*size*/) const noexcept -> Float
+    {
+        return Float(1.0);
+    }
+};
+
+template<std::floating_point Float>
 struct hann_window
 {
     using real_type = Float;
