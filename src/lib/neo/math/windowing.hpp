@@ -11,31 +11,30 @@ namespace neo {
 template<std::floating_point Float>
 struct hann_window
 {
-    explicit hann_window(std::integral auto size) noexcept : _size{size} {}
+    using real_type = Float;
 
-    [[nodiscard]] auto operator()(std::integral auto index) const noexcept -> Float
+    hann_window() noexcept = default;
+
+    [[nodiscard]] auto operator()(std::integral auto index, std::integral auto size) const noexcept -> Float
     {
-        auto const n     = static_cast<Float>(_size);
+        auto const n     = static_cast<Float>(size);
         auto const twoPi = static_cast<Float>(std::numbers::pi) * Float(2);
         return Float(0.5) * (Float(1) - std::cos(twoPi * static_cast<Float>(index) / (n - Float(1))));
     }
-
-private:
-    std::size_t _size;
 };
 
 auto fill_window(inout_vector auto vec, auto window)
 {
     for (auto i{0}; std::cmp_less(i, vec.extent(0)); ++i) {
-        vec(i) = window(i);
+        vec(i) = window(i, vec.extent(0));
     }
 }
 
-template<std::floating_point Float>
+template<std::floating_point Float, typename Window = hann_window<Float>>
 [[nodiscard]] auto generate_window(std::size_t length) -> KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 1>>
 {
     auto buffer = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 1>>{length};
-    fill_window(buffer.to_mdspan(), hann_window<Float>{length});
+    fill_window(buffer.to_mdspan(), Window{});
     return buffer;
 }
 
