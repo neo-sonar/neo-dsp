@@ -14,53 +14,53 @@
     #include <neo/math/simd/avx512.hpp>
 #endif
 
-namespace neo::fft {
+namespace neo::simd {
 
-template<typename ValueType>
-struct alignas(sizeof(ValueType::data)) simd_complex
+template<typename FloatRegister>
+struct alignas(FloatRegister::alignment) complex
 {
-    simd_complex() noexcept = default;
+    complex() noexcept = default;
 
-    simd_complex(decltype(ValueType::data) data) noexcept : _register{data} {}
+    complex(auto data) noexcept : _register{data} {}
 
-    NEO_ALWAYS_INLINE friend auto operator+(simd_complex lhs, simd_complex rhs) noexcept -> simd_complex
+    NEO_ALWAYS_INLINE friend auto operator+(complex lhs, complex rhs) noexcept -> complex
     {
-        return simd_complex{cadd(lhs._register.data, rhs._register.data)};
+        return complex{cadd(lhs._register, rhs._register)};
     }
 
-    NEO_ALWAYS_INLINE friend auto operator-(simd_complex lhs, simd_complex rhs) noexcept -> simd_complex
+    NEO_ALWAYS_INLINE friend auto operator-(complex lhs, complex rhs) noexcept -> complex
     {
-        return simd_complex{csub(lhs._register.data, rhs._register.data)};
+        return complex{csub(lhs._register, rhs._register)};
     }
 
-    NEO_ALWAYS_INLINE friend auto operator*(simd_complex lhs, simd_complex rhs) noexcept -> simd_complex
+    NEO_ALWAYS_INLINE friend auto operator*(complex lhs, complex rhs) noexcept -> complex
     {
-        return simd_complex{cmul(lhs._register.data, rhs._register.data)};
+        return complex{cmul(lhs._register, rhs._register)};
     }
 
 private:
-    ValueType _register;
+    FloatRegister _register;
 };
 
 #if defined(NEO_HAS_SSE2)
 
-using complex32x2_t = simd_complex<float32x4_t>;
-using complex64x1_t = simd_complex<float64x2_t>;
+using complex32x2_t = complex<float32x4_t>;
+using complex64x1_t = complex<float64x2_t>;
 
 #endif
 
 #if defined(NEO_HAS_AVX)
 
-using complex32x4_t = simd_complex<float32x8_t>;
-using complex64x2_t = simd_complex<float64x4_t>;
+using complex32x4_t = complex<float32x8_t>;
+using complex64x2_t = complex<float64x4_t>;
 
 #endif
 
 #if defined(NEO_HAS_AVX512F)
 
-using complex32x8_t = simd_complex<float32x16_t>;
-using complex64x4_t = simd_complex<float64x8_t>;
+using complex32x8_t = complex<float32x16_t>;
+using complex64x4_t = complex<float64x8_t>;
 
 #endif
 
-}  // namespace neo::fft
+}  // namespace neo::simd

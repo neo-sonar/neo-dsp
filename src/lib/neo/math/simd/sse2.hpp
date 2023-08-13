@@ -5,7 +5,7 @@
 #include <emmintrin.h>
 #include <smmintrin.h>  // SSE4
 
-namespace neo::fft {
+namespace neo::simd {
 
 NEO_ALWAYS_INLINE auto cadd(__m128 a, __m128 b) noexcept -> __m128 { return _mm_add_ps(a, b); }
 
@@ -31,20 +31,34 @@ NEO_ALWAYS_INLINE auto cmul(__m128d a, __m128d b) noexcept -> __m128d
 
 struct float32x4_t
 {
+    using register_type = __m128;
+
+    static constexpr auto const alignment = sizeof(register_type);
+
     float32x4_t() = default;
 
-    float32x4_t(__m128 d) : data{d} {}
+    float32x4_t(register_type val) : _val{val} {}
 
-    __m128 data;
+    [[nodiscard]] operator register_type() const { return _val; }
+
+private:
+    register_type _val;
 };
 
 struct float64x2_t
 {
+    using register_type = __m128d;
+
+    static constexpr auto const alignment = sizeof(register_type);
+
     float64x2_t() = default;
 
-    float64x2_t(__m128d d) : data{d} {}
+    float64x2_t(register_type val) : _val{val} {}
 
-    __m128d data;
+    [[nodiscard]] operator register_type() const { return _val; }
+
+private:
+    register_type _val;
 };
 
-}  // namespace neo::fft
+}  // namespace neo::simd

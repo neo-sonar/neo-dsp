@@ -4,7 +4,7 @@
 
 #include <immintrin.h>  // AVX-512F
 
-namespace neo::fft {
+namespace neo::simd {
 
 NEO_ALWAYS_INLINE auto cadd(__m512 a, __m512 b) noexcept -> __m512 { return _mm512_add_ps(a, b); }
 
@@ -70,20 +70,34 @@ NEO_ALWAYS_INLINE auto cmul(__m512d a, __m512d b) noexcept -> __m512d
 
 struct float32x16_t
 {
+    using register_type = __m512;
+
+    static constexpr auto const alignment = sizeof(register_type);
+
     float32x16_t() = default;
 
-    float32x16_t(__m512 d) : data{d} {}
+    float32x16_t(register_type val) : _val{val} {}
 
-    __m512 data;
+    [[nodiscard]] operator register_type() const { return _val; }
+
+private:
+    register_type _val;
 };
 
 struct float64x8_t
 {
+    using register_type = __m512d;
+
+    static constexpr auto const alignment = sizeof(register_type);
+
     float64x8_t() = default;
 
-    float64x8_t(__m512d d) : data{d} {}
+    float64x8_t(register_type val) : _val{val} {}
 
-    __m512d data;
+    [[nodiscard]] operator register_type() const { return _val; }
+
+private:
+    register_type _val;
 };
 
-}  // namespace neo::fft
+}  // namespace neo::simd

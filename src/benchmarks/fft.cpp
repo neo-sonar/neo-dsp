@@ -69,8 +69,8 @@ struct cfft32x2
     }
 
 private:
-    std::vector<neo::fft::complex32x2_t> _buf;
-    std::vector<neo::fft::complex32x2_t> _tw;
+    std::vector<neo::simd::complex32x2_t> _buf;
+    std::vector<neo::simd::complex32x2_t> _tw;
 };
 
 struct cfft64x1
@@ -92,8 +92,8 @@ struct cfft64x1
     }
 
 private:
-    std::vector<neo::fft::complex64x1_t> _buf;
-    std::vector<neo::fft::complex64x1_t> _tw;
+    std::vector<neo::simd::complex64x1_t> _buf;
+    std::vector<neo::simd::complex64x1_t> _tw;
 };
 
 #endif
@@ -119,8 +119,8 @@ struct cfft32x4
     }
 
 private:
-    std::vector<neo::fft::complex32x4_t> _buf;
-    std::vector<neo::fft::complex32x4_t> _tw;
+    std::vector<neo::simd::complex32x4_t> _buf;
+    std::vector<neo::simd::complex32x4_t> _tw;
 };
 
 template<size_t Size>
@@ -134,15 +134,15 @@ struct cfft32x4_fixed
         std::generate_n(begin(_buf), size(_buf), gen);
         neo::fft::execute_radix2_kernel(
             neo::fft::radix2_kernel_v1{},
-            Kokkos::mdspan<neo::fft::complex32x4_t, Kokkos::extents<size_t, Size>>{_buf.data()},
+            Kokkos::mdspan<neo::simd::complex32x4_t, Kokkos::extents<size_t, Size>>{_buf.data()},
             _tw
         );
         neo::do_not_optimize(_buf.back());
     }
 
 private:
-    std::array<neo::fft::complex32x4_t, Size> _buf;
-    std::array<neo::fft::complex32x4_t, Size / 2> _tw;
+    std::array<neo::simd::complex32x4_t, Size> _buf;
+    std::array<neo::simd::complex32x4_t, Size / 2> _tw;
 };
 
 struct cfft64x2
@@ -164,8 +164,8 @@ struct cfft64x2
     }
 
 private:
-    std::vector<neo::fft::complex64x2_t> _buf;
-    std::vector<neo::fft::complex64x2_t> _tw;
+    std::vector<neo::simd::complex64x2_t> _buf;
+    std::vector<neo::simd::complex64x2_t> _tw;
 };
 #endif
 
@@ -190,8 +190,8 @@ struct cfft32x8
     }
 
 private:
-    std::vector<neo::fft::complex32x8_t> _buf;
-    std::vector<neo::fft::complex32x8_t> _tw;
+    std::vector<neo::simd::complex32x8_t> _buf;
+    std::vector<neo::simd::complex32x8_t> _tw;
 };
 
 struct cfft64x4
@@ -213,8 +213,8 @@ struct cfft64x4
     }
 
 private:
-    std::vector<neo::fft::complex64x4_t> _buf;
-    std::vector<neo::fft::complex64x4_t> _tw;
+    std::vector<neo::simd::complex64x4_t> _buf;
+    std::vector<neo::simd::complex64x4_t> _tw;
 };
 
 #endif

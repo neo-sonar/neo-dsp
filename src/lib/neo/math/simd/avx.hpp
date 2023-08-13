@@ -4,7 +4,7 @@
 
 #include <xmmintrin.h>  // AVX
 
-namespace neo::fft {
+namespace neo::simd {
 
 NEO_ALWAYS_INLINE auto cadd(__m256 a, __m256 b) noexcept -> __m256 { return _mm256_add_ps(a, b); }
 
@@ -30,20 +30,34 @@ NEO_ALWAYS_INLINE auto cmul(__m256d a, __m256d b) noexcept -> __m256d
 
 struct float32x8_t
 {
+    using register_type = __m256;
+
+    static constexpr auto const alignment = sizeof(register_type);
+
     float32x8_t() = default;
 
-    float32x8_t(__m256 d) : data{d} {}
+    float32x8_t(register_type val) : _val{val} {}
 
-    __m256 data;
+    [[nodiscard]] operator register_type() const { return _val; }
+
+private:
+    register_type _val;
 };
 
 struct float64x4_t
 {
+    using register_type = __m256d;
+
+    static constexpr auto const alignment = sizeof(register_type);
+
     float64x4_t() = default;
 
-    float64x4_t(__m256d d) : data{d} {}
+    float64x4_t(register_type val) : _val{val} {}
 
-    __m256d data;
+    [[nodiscard]] operator register_type() const { return _val; }
+
+private:
+    register_type _val;
 };
 
-}  // namespace neo::fft
+}  // namespace neo::simd
