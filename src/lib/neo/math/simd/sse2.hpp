@@ -37,9 +37,16 @@ struct float32x4_t
 
     float32x4_t() = default;
 
-    float32x4_t(register_type val) : _val{val} {}
+    NEO_ALWAYS_INLINE float32x4_t(register_type val) : _val{val} {}
 
-    [[nodiscard]] operator register_type() const { return _val; }
+    [[nodiscard]] NEO_ALWAYS_INLINE operator register_type() const { return _val; }
+
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(float val) noexcept -> float32x4_t
+    {
+        return _mm_set1_ps(val);
+    }
+
+    auto store_unaligned(float* output) noexcept -> void { return _mm_storeu_ps(output, _val); }
 
 private:
     register_type _val;
@@ -53,9 +60,16 @@ struct float64x2_t
 
     float64x2_t() = default;
 
-    float64x2_t(register_type val) : _val{val} {}
+    NEO_ALWAYS_INLINE float64x2_t(register_type val) : _val{val} {}
 
-    [[nodiscard]] operator register_type() const { return _val; }
+    [[nodiscard]] NEO_ALWAYS_INLINE operator register_type() const { return _val; }
+
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(float val) noexcept -> float64x2_t
+    {
+        return _mm_set1_pd(val);
+    }
+
+    auto store_unaligned(double* output) noexcept -> void { return _mm_storeu_pd(output, _val); }
 
 private:
     register_type _val;
