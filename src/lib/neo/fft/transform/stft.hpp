@@ -20,7 +20,7 @@ template<in_matrix InMat>
     auto fft       = rfft_radix2_plan<Float>{ilog2(static_cast<size_t>(windowSize))};
     auto fftInput  = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 1>>{fft.size()};
     auto fftOutput = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 1>>{fft.size()};
-    auto hann      = generate_hann_window<Float>(static_cast<size_t>(windowSize));
+    auto hann      = generate_window<Float>(static_cast<size_t>(windowSize));
 
     auto const totalNumSamples = static_cast<int>(buffer.extent(1));
     auto const numBins         = static_cast<std::size_t>(windowSize / 2 + 1);
