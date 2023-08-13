@@ -13,7 +13,7 @@
 namespace neo {
 
 template<in_object InObj>
-    requires(std::floating_point<typename InObj::value_type>)
+    requires std::floating_point<typename InObj::value_type>
 [[nodiscard]] auto peak_normalization_factor(InObj obj)
 {
     using Float = typename InObj::value_type;

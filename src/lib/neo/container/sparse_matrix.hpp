@@ -26,16 +26,16 @@ struct sparse_matrix
     sparse_matrix() = default;
     sparse_matrix(size_type rows, size_type cols);
 
-    template<in_matrix InMat, std::regular_invocable<IndexType, IndexType, T> Filter>
-        requires(std::is_convertible_v<typename InMat::value_type, T>)
+    template<in_matrix InMat, std::predicate<IndexType, IndexType, T> Filter>
+        requires std::is_convertible_v<typename InMat::value_type, T>
     sparse_matrix(InMat matrix, Filter filter);
 
     [[nodiscard]] auto rows() const noexcept -> size_type;
     [[nodiscard]] auto columns() const noexcept -> size_type;
     [[nodiscard]] auto size() const noexcept -> size_type;
 
-    template<in_vector InVec, std::regular_invocable<IndexType, IndexType, T> Filter>
-        requires(std::is_convertible_v<typename InVec::value_type, T>)
+    template<in_vector InVec, std::predicate<IndexType, IndexType, T> Filter>
+        requires std::is_convertible_v<typename InVec::value_type, T>
     auto insert_row(index_type row, InVec vec, Filter filter) -> void;
 
     auto insert(index_type row, index_type col, T value) -> void;
@@ -62,8 +62,8 @@ sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(size_
 {}
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
-template<in_matrix InMat, std::regular_invocable<IndexType, IndexType, T> Filter>
-    requires(std::is_convertible_v<typename InMat::value_type, T>)
+template<in_matrix InMat, std::predicate<IndexType, IndexType, T> Filter>
+    requires std::is_convertible_v<typename InMat::value_type, T>
 sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(InMat matrix, Filter filter)
     : sparse_matrix{matrix.extent(0), matrix.extent(1)}
 {
@@ -116,8 +116,8 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::size() const n
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
-template<in_vector InVec, std::regular_invocable<IndexType, IndexType, T> Filter>
-    requires(std::is_convertible_v<typename InVec::value_type, T>)
+template<in_vector InVec, std::predicate<IndexType, IndexType, T> Filter>
+    requires std::is_convertible_v<typename InVec::value_type, T>
 auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert_row(index_type row, InVec vec, Filter filter)
     -> void
 {

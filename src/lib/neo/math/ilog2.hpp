@@ -6,13 +6,13 @@
 
 namespace neo {
 
-template<std::integral Integral>
-[[nodiscard]] constexpr auto ilog2(Integral x) -> Integral
+template<std::integral Int>
+[[nodiscard]] constexpr auto ilog2(Int x) -> Int
 {
-    NEO_FFT_PRECONDITION(x > Integral(0));
+    NEO_FFT_PRECONDITION(x > Int(0));
 
-    auto result = Integral{0};
-    for (; x > Integral(1); x >>= Integral(1)) {
+    auto result = Int{0};
+    for (; x > Int(1); x >>= Int(1)) {
         ++result;
     }
     return result;

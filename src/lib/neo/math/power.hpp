@@ -15,7 +15,7 @@ template<std::integral T>
 }
 
 template<auto Base>
-    requires(std::integral<decltype(Base)>)
+    requires std::integral<decltype(Base)>
 [[nodiscard]] constexpr auto power(decltype(Base) exponent) -> decltype(Base)
 {
     using Int = decltype(Base);

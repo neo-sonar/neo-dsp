@@ -7,8 +7,8 @@ namespace neo {
 
 namespace detail {
 
-template<std::unsigned_integral Integral>
-[[nodiscard]] constexpr auto next_power_of_two_fallback(Integral x) noexcept -> Integral
+template<std::unsigned_integral UInt>
+[[nodiscard]] constexpr auto next_power_of_two_fallback(UInt x) noexcept -> UInt
 {
     --x;
     x |= (x >> 1);
@@ -21,8 +21,8 @@ template<std::unsigned_integral Integral>
 
 }  // namespace detail
 
-template<std::unsigned_integral Integral>
-[[nodiscard]] constexpr auto next_power_of_two(Integral x) noexcept -> Integral
+template<std::unsigned_integral UInt>
+[[nodiscard]] constexpr auto next_power_of_two(UInt x) noexcept -> UInt
 {
 #if defined(__cpp_lib_int_pow2)
     return std::bit_ceil(x);

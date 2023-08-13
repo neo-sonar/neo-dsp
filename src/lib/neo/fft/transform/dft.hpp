@@ -11,7 +11,7 @@
 namespace neo::fft {
 
 template<in_vector InVec, out_vector OutVec>
-    requires(std::same_as<typename InVec::value_type, typename OutVec::value_type>)
+    requires std::same_as<typename InVec::value_type, typename OutVec::value_type>
 auto dft(InVec in, OutVec out, direction dir = direction::forward) -> void
 {
     using Complex = typename OutVec::value_type;

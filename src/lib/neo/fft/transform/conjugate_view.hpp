@@ -8,7 +8,7 @@
 namespace neo::fft {
 
 template<in_vector InVec>
-    requires(complex<typename InVec::value_type>)
+    requires complex<typename InVec::value_type>
 struct conjugate_view
 {
     using value_type = typename InVec::value_type;

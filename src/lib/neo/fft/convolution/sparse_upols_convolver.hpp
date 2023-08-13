@@ -20,8 +20,8 @@ struct sparse_upols_convolver
 
     sparse_upols_convolver() = default;
 
-    template<std::regular_invocable<std::size_t, std::size_t, complex_type> SparsityFilter>
-    auto filter(in_matrix auto filter, SparsityFilter sparsity) -> void;
+    template<std::predicate<std::size_t, std::size_t, complex_type> Sparsity>
+    auto filter(in_matrix auto filter, Sparsity sparsity) -> void;
     auto operator()(inout_vector auto block) -> void;
 
 private:
@@ -29,23 +29,23 @@ private:
     KokkosEx::mdarray<complex_type, Kokkos::dextents<size_type, 1>> _accumulator;
     KokkosEx::mdarray<complex_type, Kokkos::dextents<size_type, 2>> _fdl;
 
-    overlap_save<Float> _overlapSave{1, 1};
+    overlap_save<Float> _overlap{1, 1};
 };
 
 template<std::floating_point Float>
-template<std::regular_invocable<std::size_t, std::size_t, std::complex<Float>> SparsityFilter>
-auto sparse_upols_convolver<Float>::filter(in_matrix auto filter, SparsityFilter sparsity) -> void
+template<std::predicate<std::size_t, std::size_t, std::complex<Float>> Sparsity>
+auto sparse_upols_convolver<Float>::filter(in_matrix auto filter, Sparsity sparsity) -> void
 {
     _filter      = sparse_matrix<complex_type>{filter, sparsity};
+    _overlap     = overlap_save<Float>{filter.extent(1) - 1, filter.extent(1) - 1};
     _fdl         = KokkosEx::mdarray<complex_type, Kokkos::dextents<size_type, 2>>{filter.extents()};
     _accumulator = KokkosEx::mdarray<complex_type, Kokkos::dextents<size_type, 1>>{filter.extent(1)};
-    _overlapSave = overlap_save<Float>{filter.extent(1) - 1, filter.extent(1) - 1};
 }
 
 template<std::floating_point Float>
 auto sparse_upols_convolver<Float>::operator()(inout_vector auto block) -> void
 {
-    _overlapSave(block, [this](inout_vector auto inout) {
+    _overlap(block, [this](inout_vector auto inout) {
         auto const fdl         = _fdl.to_mdspan();
         auto const accumulator = _accumulator.to_mdspan();
 

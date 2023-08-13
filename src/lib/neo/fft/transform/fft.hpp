@@ -59,7 +59,7 @@ struct fft_radix2_plan
     [[nodiscard]] auto size() const noexcept -> size_type;
 
     template<inout_vector InOutVec>
-        requires(std::same_as<typename InOutVec::value_type, Complex>)
+        requires std::same_as<typename InOutVec::value_type, Complex>
     auto operator()(InOutVec vec, direction dir) -> void;
 
 private:
@@ -92,7 +92,7 @@ auto fft_radix2_plan<Complex, Kernel>::order() const noexcept -> size_type
 
 template<typename Complex, typename Kernel>
 template<inout_vector InOutVec>
-    requires(std::same_as<typename InOutVec::value_type, Complex>)
+    requires std::same_as<typename InOutVec::value_type, Complex>
 auto fft_radix2_plan<Complex, Kernel>::operator()(InOutVec vec, direction dir) -> void
 {
     NEO_FFT_PRECONDITION(std::cmp_equal(vec.size(), _size));
