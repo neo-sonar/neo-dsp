@@ -6,6 +6,45 @@
 
 #include <array>
 
+#if defined(NEO_HAS_SIMD_SSE2)
+
+TEST_CASE("neo/math: simd::cmul(sse3)")
+{
+    using Complex = neo::simd::complex32x2;
+
+    auto test = [](auto op) {
+        auto const lhs_vals = std::array{
+            std::complex{1.0F, 2.0F},
+            std::complex{5.0F, 6.0F}
+        };
+
+        auto const rhs_vals = std::array{
+            std::complex{3.0F, 4.0F},
+            std::complex{7.0F, 8.0F}
+        };
+
+        auto const lhs     = Complex::load_unaligned(lhs_vals.data());
+        auto const rhs     = Complex::load_unaligned(rhs_vals.data());
+        auto const product = op(lhs, rhs);
+
+        auto output = std::array<std::complex<float>, Complex::size>{};
+        product.store_unaligned(output.data());
+
+        REQUIRE(output[0].real() == Catch::Approx(-5.0));
+        REQUIRE(output[0].imag() == Catch::Approx(10.0));
+
+        REQUIRE(output[1].real() == Catch::Approx(-13.0));
+        REQUIRE(output[1].imag() == Catch::Approx(82.0));
+    };
+
+    test([](auto lhs, auto rhs) { return lhs * rhs; });
+    test([](auto lhs, auto rhs) { return Complex{neo::simd::cmul(lhs, rhs)}; });
+    // TODO Add cmul for sse2
+    // test([](auto lhs, auto rhs) { return Complex{neo::simd::detail::cmul_sse2(lhs, rhs)}; });
+}
+
+#endif
+
 template<typename Batch>
 static auto test_float_batch()
 {
@@ -53,9 +92,6 @@ static auto test_complex_batch()
 
     test(std::plus{}, ones, twos, threes);
     test(std::minus{}, ones, twos, -ones);
-
-    // auto const identity = std::complex{Float(1), Float(0)};
-    // test(std::multiplies{}, threes, identity, threes);
 }
 
 #if defined(NEO_HAS_SIMD_SSE2)
