@@ -42,32 +42,40 @@ using complex_types = std::tuple<
 
 TEMPLATE_LIST_TEST_CASE("neo/math: arithmetic", "", complex_types)
 {
-    auto test = [](auto op, auto expected) -> void {
-        using Complex    = TestType;
-        using FloatBatch = typename Complex::batch_type;
-        using Float      = typename FloatBatch::value_type;
+    using Complex    = TestType;
+    using FloatBatch = typename Complex::batch_type;
+    using Float      = typename FloatBatch::value_type;
 
-        static constexpr auto const size = FloatBatch::batch_size;
+    auto test = [](auto op, auto left_val, auto right_val, auto expected) -> void {
+        static constexpr auto const size = Complex::batch_size;
 
-        auto left = std::array<std::complex<Float>, Complex::batch_size>{};
-        std::fill(left.begin(), left.end(), std::complex{Float(1), Float(1)});
+        auto left = std::array<std::complex<Float>, size>{};
+        std::fill(left.begin(), left.end(), left_val);
 
-        auto right = std::array<std::complex<Float>, Complex::batch_size>{};
-        std::fill(right.begin(), right.end(), std::complex{Float(2), Float(2)});
+        auto right = std::array<std::complex<Float>, size>{};
+        std::fill(right.begin(), right.end(), right_val);
 
         auto lhs    = Complex::load_unaligned(left.data());
         auto rhs    = Complex::load_unaligned(right.data());
         auto result = op(lhs, rhs);
 
-        auto output = std::array<Float, size>{};
+        auto output = std::array<std::complex<Float>, size>{};
         result.store_unaligned(output.data());
         for (auto val : output) {
-            REQUIRE(val == Catch::Approx(expected));
+            REQUIRE(val.real() == Catch::Approx(expected.real()));
+            REQUIRE(val.imag() == Catch::Approx(expected.imag()));
         }
     };
 
-    test(std::plus{}, 3.0);
-    test(std::minus{}, -1.0);
+    auto const ones   = std::complex{Float(1), Float(1)};
+    auto const twos   = std::complex{Float(2), Float(2)};
+    auto const threes = std::complex{Float(3), Float(3)};
+
+    test(std::plus{}, ones, twos, threes);
+    test(std::minus{}, ones, twos, -ones);
+
+    // auto const identity = std::complex{Float(1), Float(0)};
+    // test(std::multiplies{}, threes, identity, threes);
 }
 
 #endif

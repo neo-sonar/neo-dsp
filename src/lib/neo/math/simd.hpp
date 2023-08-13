@@ -37,12 +37,17 @@ struct alignas(FloatBatch::alignment) complex
 
     template<neo::complex Complex>
         requires std::same_as<typename Complex::value_type, real_scalar_type>
-    [[nodiscard]] static auto load_unaligned(Complex const* val) noexcept -> complex
+    [[nodiscard]] static auto load_unaligned(Complex const* val) -> complex
     {
         return batch_type::load_unaligned(reinterpret_cast<real_scalar_type const*>(val));
     }
 
-    auto store_unaligned(real_scalar_type* output) const noexcept -> void { return _batch.store_unaligned(output); }
+    template<neo::complex Complex>
+        requires std::same_as<typename Complex::value_type, real_scalar_type>
+    auto store_unaligned(Complex* output) const -> void
+    {
+        return _batch.store_unaligned(reinterpret_cast<real_scalar_type*>(output));
+    }
 
     NEO_ALWAYS_INLINE friend auto operator+(complex lhs, complex rhs) noexcept -> complex
     {
