@@ -10,14 +10,14 @@ namespace detail {
 
 NEO_ALWAYS_INLINE auto moveldup_ps_sse2(__m128 a) -> __m128
 {
-    auto const x = _mm_shuffle_ps(a, a, _MM_SHUFFLE(0, 0, 0, 0));
-    return _mm_shuffle_ps(x, x, _MM_SHUFFLE(0, 0, 0, 0));
+    auto const x = _mm_shuffle_ps(a, a, _MM_SHUFFLE(0, 0, 2, 2));
+    return _mm_shuffle_ps(x, x, _MM_SHUFFLE(0, 0, 2, 2));
 }
 
 NEO_ALWAYS_INLINE auto movehdup_ps_sse2(__m128 a) -> __m128
 {
-    auto const x = _mm_shuffle_ps(a, a, _MM_SHUFFLE(1, 1, 1, 1));
-    return _mm_shuffle_ps(x, x, _MM_SHUFFLE(1, 1, 1, 1));
+    auto const x = _mm_shuffle_ps(a, a, _MM_SHUFFLE(1, 1, 3, 3));
+    return _mm_shuffle_ps(x, x, _MM_SHUFFLE(1, 1, 3, 3));
 }
 
 NEO_ALWAYS_INLINE auto addsub_sse2(__m128 lhs, __m128 rhs) -> __m128
