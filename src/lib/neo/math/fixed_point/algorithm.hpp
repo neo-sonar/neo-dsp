@@ -90,8 +90,8 @@ auto add(
     std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out
 )
 {
-    NEO_FFT_PRECONDITION(lhs.size() == rhs.size());
-    NEO_FFT_PRECONDITION(lhs.size() == out.size());
+    NEO_EXPECTS(lhs.size() == rhs.size());
+    NEO_EXPECTS(lhs.size() == out.size());
 
     if constexpr (std::same_as<StorageType, std::int8_t>) {
 #if defined(__SSE2__)
@@ -132,8 +132,8 @@ auto subtract(
     std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out
 )
 {
-    NEO_FFT_PRECONDITION(lhs.size() == rhs.size());
-    NEO_FFT_PRECONDITION(lhs.size() == out.size());
+    NEO_EXPECTS(lhs.size() == rhs.size());
+    NEO_EXPECTS(lhs.size() == out.size());
 
     if constexpr (std::same_as<StorageType, std::int8_t>) {
 #if defined(__SSE2__)
@@ -174,8 +174,8 @@ auto multiply(
     std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out
 )
 {
-    NEO_FFT_PRECONDITION(lhs.size() == rhs.size());
-    NEO_FFT_PRECONDITION(lhs.size() == out.size());
+    NEO_EXPECTS(lhs.size() == rhs.size());
+    NEO_EXPECTS(lhs.size() == out.size());
 
     if constexpr (std::same_as<StorageType, std::int16_t> && FractionalBits == 15) {
 #if defined(__SSE3__)

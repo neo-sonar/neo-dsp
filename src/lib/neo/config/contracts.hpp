@@ -23,7 +23,7 @@ inline constexpr auto current_contracts_check_mode = contracts_check_mode::excep
 
 }  // namespace neo
 
-#define NEO_FFT_PRECONDITION(x)                                                                                        \
+#define NEO_EXPECTS(x)                                                                                                 \
     do {                                                                                                               \
         if constexpr (::neo::current_contracts_check_mode == ::neo::contracts_check_mode::exception) {                 \
             if (!(x)) {                                                                                                \

@@ -67,7 +67,7 @@ auto overlap_save<Float>::transform_size() const noexcept -> size_type
 template<std::floating_point Float>
 auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> void
 {
-    NEO_FFT_PRECONDITION(block.extent(0) * 2U == _window.extent(0));
+    NEO_EXPECTS(block.extent(0) * 2U == _window.extent(0));
 
     // Time domain input buffer
     auto const window = _window.to_mdspan();

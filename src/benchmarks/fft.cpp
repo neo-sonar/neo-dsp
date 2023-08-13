@@ -20,7 +20,7 @@ struct fft_plan
         auto const buf = _buf.to_mdspan();
         std::generate_n(_buf.data(), _buf.size(), gen);
         _fft(buf, neo::fft::direction::forward);
-        neo::fft::do_not_optimize(buf[0]);
+        neo::do_not_optimize(buf[0]);
     }
 
 private:
@@ -39,7 +39,7 @@ struct fft_static
         auto const gen    = [i = 0]() mutable { return static_cast<Float>(i++); };
         std::generate_n(buffer.data_handle(), buffer.size(), gen);
         neo::fft::execute_radix2_kernel(Kernel{}, buffer, _tw.to_mdspan());
-        neo::fft::do_not_optimize(buffer[0]);
+        neo::do_not_optimize(buffer[0]);
     }
 
 private:
@@ -48,7 +48,7 @@ private:
         neo::fft::make_radix2_twiddles<std::complex<Float>, Size>()};
 };
 
-#if defined(NEO_FFT_HAS_SSE2)
+#if defined(NEO_HAS_SSE2)
 
 struct cfft32x2
 {
@@ -65,7 +65,7 @@ struct cfft32x2
             Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}},
             _tw
         );
-        neo::fft::do_not_optimize(_buf.back());
+        neo::do_not_optimize(_buf.back());
     }
 
 private:
@@ -88,7 +88,7 @@ struct cfft64x1
             Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}},
             _tw
         );
-        neo::fft::do_not_optimize(_buf.back());
+        neo::do_not_optimize(_buf.back());
     }
 
 private:
@@ -98,7 +98,7 @@ private:
 
 #endif
 
-#if defined(NEO_FFT_HAS_AVX)
+#if defined(NEO_HAS_AVX)
 
 struct cfft32x4
 {
@@ -115,7 +115,7 @@ struct cfft32x4
             Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}},
             _tw
         );
-        neo::fft::do_not_optimize(_buf.back());
+        neo::do_not_optimize(_buf.back());
     }
 
 private:
@@ -137,7 +137,7 @@ struct cfft32x4_fixed
             Kokkos::mdspan<neo::fft::complex32x4_t, Kokkos::extents<size_t, Size>>{_buf.data()},
             _tw
         );
-        neo::fft::do_not_optimize(_buf.back());
+        neo::do_not_optimize(_buf.back());
     }
 
 private:
@@ -160,7 +160,7 @@ struct cfft64x2
             Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}},
             _tw
         );
-        neo::fft::do_not_optimize(_buf.back());
+        neo::do_not_optimize(_buf.back());
     }
 
 private:
@@ -169,7 +169,7 @@ private:
 };
 #endif
 
-#if defined(NEO_FFT_HAS_AVX512F)
+#if defined(NEO_HAS_AVX512F)
 
 struct cfft32x8
 {
@@ -186,7 +186,7 @@ struct cfft32x8
             Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}},
             _tw
         );
-        neo::fft::do_not_optimize(_buf.back());
+        neo::do_not_optimize(_buf.back());
     }
 
 private:
@@ -209,7 +209,7 @@ struct cfft64x4
             Kokkos::mdspan{_buf.data(), Kokkos::extents{_buf.size()}},
             _tw
         );
-        neo::fft::do_not_optimize(_buf.back());
+        neo::do_not_optimize(_buf.back());
     }
 
 private:
@@ -252,7 +252,7 @@ auto main() -> int
     // // benchmark_fft("radix2<complex<float>, N>()", 2048, 1, fft_static<float, 2048>{});
     // // benchmark_fft("radix2<complex<float>, N>()", 4096, 1, fft_static<float, 4096>{});
 
-    // #if defined(NEO_FFT_HAS_AVX)
+    // #if defined(NEO_HAS_AVX)
     //     benchmark_fft("radix2<complex32x4>(N)", 2048, 4, cfft32x4{2048});
     //     benchmark_fft("radix2<complex32x4>(N)", 4096, 4, cfft32x4{4096});
     //     benchmark_fft("radix2<complex32x4>(N)", 8192, 4, cfft32x4{8192});

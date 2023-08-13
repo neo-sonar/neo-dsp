@@ -12,8 +12,8 @@ namespace neo {
 template<in_matrix InMatL, in_matrix InMatR, out_vector OutVec>
 constexpr auto multiply_sum_columns(InMatL lhs, InMatR rhs, OutVec out) -> void
 {
-    NEO_FFT_PRECONDITION(lhs.extents() == rhs.extents());
-    NEO_FFT_PRECONDITION(lhs.extent(1) > 0);
+    NEO_EXPECTS(lhs.extents() == rhs.extents());
+    NEO_EXPECTS(lhs.extent(1) > 0);
 
     for (auto row{0}; std::cmp_less(row, lhs.extent(0)); ++row) {
         auto const left  = KokkosEx::submdspan(lhs, row, Kokkos::full_extent);
@@ -31,9 +31,9 @@ auto multiply_sum_columns(
     inout_vector auto accumulator
 ) -> void
 {
-    NEO_FFT_PRECONDITION(lhs.extent(0) == rhs.rows());
-    NEO_FFT_PRECONDITION(lhs.extent(1) == rhs.columns());
-    NEO_FFT_PRECONDITION(lhs.extent(1) == accumulator.extent(0));
+    NEO_EXPECTS(lhs.extent(0) == rhs.rows());
+    NEO_EXPECTS(lhs.extent(1) == rhs.columns());
+    NEO_EXPECTS(lhs.extent(1) == accumulator.extent(0));
 
     for (auto row{0UL}; row < rhs.rows(); ++row) {
         auto const left   = KokkosEx::submdspan(lhs, row, Kokkos::full_extent);
@@ -55,8 +55,8 @@ auto multiply_sum_columns(
     std::span<T> accumulator
 ) -> void
 {
-    NEO_FFT_PRECONDITION(lhs.rows() == rhs.rows());
-    NEO_FFT_PRECONDITION(lhs.columns() == rhs.columns());
+    NEO_EXPECTS(lhs.rows() == rhs.rows());
+    NEO_EXPECTS(lhs.columns() == rhs.columns());
 
     auto const& lrows = lhs.row_container();
     auto const& lcols = lhs.column_container();

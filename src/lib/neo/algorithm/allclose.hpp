@@ -13,7 +13,7 @@ namespace neo {
 template<in_object InObj1, in_object InObj2, typename Scalar>
 [[nodiscard]] auto allclose(InObj1 lhs, InObj2 rhs, Scalar tolerance) -> bool
 {
-    NEO_FFT_PRECONDITION(lhs.extents() == rhs.extents());
+    NEO_EXPECTS(lhs.extents() == rhs.extents());
 
     if constexpr (InObj1::rank() == 1) {
         for (auto i{0}; std::cmp_less(i, lhs.extent(0)); ++i) {

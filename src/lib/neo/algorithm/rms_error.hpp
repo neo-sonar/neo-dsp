@@ -14,7 +14,7 @@ namespace neo {
 template<in_vector InVecL, in_vector InVecR>
 auto rms_error(InVecL lhs, InVecR rhs)
 {
-    NEO_FFT_PRECONDITION(lhs.extents() == rhs.extents());
+    NEO_EXPECTS(lhs.extents() == rhs.extents());
 
     using LeftReal  = typename InVecL::value_type;
     using RightReal = typename InVecR::value_type;

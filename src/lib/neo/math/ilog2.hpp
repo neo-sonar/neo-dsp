@@ -9,7 +9,7 @@ namespace neo {
 template<std::integral Int>
 [[nodiscard]] constexpr auto ilog2(Int x) -> Int
 {
-    NEO_FFT_PRECONDITION(x > Int(0));
+    NEO_EXPECTS(x > Int(0));
 
     auto result = Int{0};
     for (; x > Int(1); x >>= Int(1)) {
