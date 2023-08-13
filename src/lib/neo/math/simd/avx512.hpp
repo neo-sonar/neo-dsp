@@ -2,7 +2,7 @@
 
 #include <neo/config.hpp>
 
-#include <immintrin.h>  // AVX-512F
+#include <immintrin.h>
 
 namespace neo::simd {
 
