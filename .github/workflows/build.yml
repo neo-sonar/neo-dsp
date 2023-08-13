@@ -34,13 +34,13 @@ jobs:
           - name: Windows
             os: windows-latest
             build_type: Release
-            cmake_flags: ""
+            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native"'
             cmake_targets: all
 
           - name: Coverage
             os: ubuntu-22.04
             build_type: Debug
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native"'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -mavx"'
             cmake_targets: neo_fft_tests
 
           - name: Sanitizers
