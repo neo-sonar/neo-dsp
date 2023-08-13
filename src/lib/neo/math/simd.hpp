@@ -4,6 +4,10 @@
 
 #include <neo/math/complex.hpp>
 
+#if defined(NEO_HAS_SIMD_NEON)
+    #include <neo/math/simd/neon.hpp>
+#endif
+
 #if defined(NEO_HAS_SIMD_SSE2)
     #include <neo/math/simd/sse2.hpp>
 #endif

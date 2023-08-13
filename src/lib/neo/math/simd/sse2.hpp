@@ -2,7 +2,14 @@
 
 #include <neo/config.hpp>
 
+#include <cstddef>
+#include <cstdint>
+#include <iterator>
+
+#include <emmintrin.h>
 #include <immintrin.h>
+#include <smmintrin.h>
+#include <tmmintrin.h>
 
 namespace neo::simd {
 
@@ -109,6 +116,23 @@ struct float64x2
 
 private:
     register_type _val;
+};
+
+template<int ValueSizeBits>
+inline constexpr auto apply_kernel_sse
+    = [](auto const& lhs, auto const& rhs, auto const& out, auto scalar_kernel, auto vector_kernel) {
+    static constexpr auto vectorSize = static_cast<ptrdiff_t>(128 / ValueSizeBits);
+    auto const remainder             = static_cast<ptrdiff_t>(lhs.size()) % vectorSize;
+
+    for (auto i{0}; i < remainder; ++i) {
+        out[static_cast<size_t>(i)] = scalar_kernel(lhs[static_cast<size_t>(i)], rhs[static_cast<size_t>(i)]);
+    }
+
+    for (auto i{remainder}; i < std::ssize(lhs); i += vectorSize) {
+        auto const left  = _mm_loadu_si128(reinterpret_cast<__m128i const*>(std::next(lhs.data(), i)));
+        auto const right = _mm_loadu_si128(reinterpret_cast<__m128i const*>(std::next(rhs.data(), i)));
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(std::next(out.data(), i)), vector_kernel(left, right));
+    }
 };
 
 }  // namespace neo::simd
