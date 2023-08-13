@@ -33,8 +33,8 @@ struct float32x8
     using value_type    = float;
     using register_type = __m256;
 
-    static constexpr auto const alignment  = sizeof(register_type);
-    static constexpr auto const batch_size = std::size_t(8);
+    static constexpr auto const alignment = sizeof(register_type);
+    static constexpr auto const size      = std::size_t(8);
 
     float32x8() = default;
 
@@ -57,8 +57,8 @@ struct float64x4
     using value_type    = double;
     using register_type = __m256d;
 
-    static constexpr auto const alignment  = sizeof(register_type);
-    static constexpr auto const batch_size = std::size_t(4);
+    static constexpr auto const alignment = sizeof(register_type);
+    static constexpr auto const size      = std::size_t(4);
 
     float64x4() = default;
 

@@ -47,7 +47,7 @@ TEMPLATE_LIST_TEST_CASE("neo/math: arithmetic", "", complex_types)
     using Float      = typename FloatBatch::value_type;
 
     auto test = [](auto op, auto left_val, auto right_val, auto expected) -> void {
-        static constexpr auto const size = Complex::batch_size;
+        static constexpr auto const size = Complex::size;
 
         auto left = std::array<std::complex<Float>, size>{};
         std::fill(left.begin(), left.end(), left_val);

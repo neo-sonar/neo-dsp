@@ -25,7 +25,7 @@ struct alignas(FloatBatch::alignment) complex
     using register_type    = typename FloatBatch::register_type;
     using real_scalar_type = typename FloatBatch::value_type;
 
-    static constexpr auto const batch_size = FloatBatch::batch_size / 2U;
+    static constexpr auto const size = FloatBatch::size / 2U;
 
     complex() noexcept = default;
 
