@@ -6,7 +6,7 @@
 
 #include <array>
 
-#if defined(NEO_HAS_SSE2)
+#if defined(NEO_HAS_SIMD_SSE2)
 
 TEST_CASE("neo/math: simd::float32x4")
 {
@@ -29,11 +29,11 @@ TEST_CASE("neo/math: simd::float64x2")
 }
 
 using complex_types = std::tuple<
-    #if defined(NEO_HAS_AVX512F)
+    #if defined(NEO_HAS_SIMD_AVX512F)
     neo::simd::complex32x8,
     neo::simd::complex64x4,
     #endif
-    #if defined(NEO_HAS_AVX)
+    #if defined(NEO_HAS_SIMD_AVX)
     neo::simd::complex32x4,
     neo::simd::complex64x2,
     #endif

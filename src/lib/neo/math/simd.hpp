@@ -2,15 +2,15 @@
 
 #include <neo/config.hpp>
 
-#if defined(NEO_HAS_SSE2)
+#if defined(NEO_HAS_SIMD_SSE2)
     #include <neo/math/simd/sse2.hpp>
 #endif
 
-#if defined(NEO_HAS_AVX)
+#if defined(NEO_HAS_SIMD_AVX)
     #include <neo/math/simd/avx.hpp>
 #endif
 
-#if defined(NEO_HAS_AVX512F)
+#if defined(NEO_HAS_SIMD_AVX512F)
     #include <neo/math/simd/avx512.hpp>
 #endif
 
@@ -53,21 +53,21 @@ private:
     FloatBatch _batch;
 };
 
-#if defined(NEO_HAS_SSE2)
+#if defined(NEO_HAS_SIMD_SSE2)
 
 using complex32x2 = complex<float32x4>;
 using complex64x1 = complex<float64x2>;
 
 #endif
 
-#if defined(NEO_HAS_AVX)
+#if defined(NEO_HAS_SIMD_AVX)
 
 using complex32x4 = complex<float32x8>;
 using complex64x2 = complex<float64x4>;
 
 #endif
 
-#if defined(NEO_HAS_AVX512F)
+#if defined(NEO_HAS_SIMD_AVX512F)
 
 using complex32x8 = complex<float32x16>;
 using complex64x4 = complex<float64x8>;

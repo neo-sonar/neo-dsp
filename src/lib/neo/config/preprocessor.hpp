@@ -18,14 +18,22 @@
     #define NEO_RESTRICT
 #endif
 
-#if defined(__amd64__) or defined(_M_AMD64)
-    #define NEO_HAS_SSE2 1
+#if defined(__ARM_NEON__)
+    #define NEO_HAS_SIMD_NEON 1
+#endif
+
+#if defined(__SSE2__)
+    #define NEO_HAS_SIMD_SSE2 1
+#endif
+
+#if defined(__SSE3__)
+    #define NEO_HAS_SIMD_SSE3 1
 #endif
 
 #if defined(__AVX__)
-    #define NEO_HAS_AVX 1
+    #define NEO_HAS_SIMD_AVX 1
 #endif
 
 #if defined(__AVX512F__)
-    #define NEO_HAS_AVX512F 1
+    #define NEO_HAS_SIMD_AVX512F 1
 #endif

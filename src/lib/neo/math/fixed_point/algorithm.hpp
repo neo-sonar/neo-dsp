@@ -4,17 +4,17 @@
 
 #include <neo/math/fixed_point/fixed_point.hpp>
 
-#if defined(__SSE2__)
+#if defined(NEO_HAS_SIMD_SSE2)
     #include <emmintrin.h>
     #include <smmintrin.h>
 #endif
 
-#if defined(__SSE3__)
+#if defined(NEO_HAS_SIMD_SSE3)
     #include <immintrin.h>
     #include <tmmintrin.h>
 #endif
 
-#if defined(__ARM_NEON__)
+#if defined(NEO_HAS_SIMD_NEON)
     #include <arm_neon.h>
 #endif
 
@@ -25,7 +25,7 @@
 namespace neo {
 
 namespace detail {
-#if defined(__SSE2__)
+#if defined(NEO_HAS_SIMD_SSE2)
 template<int ValueSizeBits>
 inline constexpr auto apply_kernel_sse
     = [](auto const& lhs, auto const& rhs, auto const& out, auto scalar_kernel, auto vector_kernel) {
@@ -44,7 +44,7 @@ inline constexpr auto apply_kernel_sse
 };
 #endif
 
-#if defined(__ARM_NEON__)
+#if defined(NEO_HAS_SIMD_NEON)
 template<int ValueSizeBits>
 inline constexpr auto apply_kernel_neon128
     = [](auto const& lhs, auto const& rhs, auto const& out, auto scalar_kernel, auto vector_kernel) {
@@ -94,10 +94,10 @@ auto add(
     NEO_EXPECTS(lhs.size() == out.size());
 
     if constexpr (std::same_as<StorageType, std::int8_t>) {
-#if defined(__SSE2__)
+#if defined(NEO_HAS_SIMD_SSE2)
         auto const kernel = [](auto left, auto right) { return _mm_adds_epi8(left, right); };
         detail::apply_kernel_sse<8>(lhs, rhs, out, std::plus{}, kernel);
-#elif defined(__ARM_NEON__)
+#elif defined(NEO_HAS_SIMD_NEON)
         auto const kernel = [](int8x16_t left, int8x16_t right) { return vqaddq_s8(left, right); };
         detail::apply_kernel_neon128<8>(lhs, rhs, out, std::plus{}, kernel);
 #else
@@ -106,10 +106,10 @@ auto add(
         }
 #endif
     } else if constexpr (std::same_as<StorageType, std::int16_t>) {
-#if defined(__SSE2__)
+#if defined(NEO_HAS_SIMD_SSE2)
         auto const kernel = [](auto left, auto right) { return _mm_adds_epi16(left, right); };
         detail::apply_kernel_sse<16>(lhs, rhs, out, std::plus{}, kernel);
-#elif defined(__ARM_NEON__)
+#elif defined(NEO_HAS_SIMD_NEON)
         auto const kernel = [](int16x8_t left, int16x8_t right) { return vqaddq_s16(left, right); };
         detail::apply_kernel_neon128<16>(lhs, rhs, out, std::plus{}, kernel);
 #else
@@ -136,10 +136,10 @@ auto subtract(
     NEO_EXPECTS(lhs.size() == out.size());
 
     if constexpr (std::same_as<StorageType, std::int8_t>) {
-#if defined(__SSE2__)
+#if defined(NEO_HAS_SIMD_SSE2)
         auto const kernel = [](auto left, auto right) { return _mm_subs_epi8(left, right); };
         detail::apply_kernel_sse<8>(lhs, rhs, out, std::minus{}, kernel);
-#elif defined(__ARM_NEON__)
+#elif defined(NEO_HAS_SIMD_NEON)
         auto const kernel = [](int8x16_t left, int8x16_t right) { return vqsubq_s8(left, right); };
         detail::apply_kernel_neon128<8>(lhs, rhs, out, std::minus{}, kernel);
 #else
@@ -148,10 +148,10 @@ auto subtract(
         }
 #endif
     } else if constexpr (std::same_as<StorageType, std::int16_t>) {
-#if defined(__SSE2__)
+#if defined(NEO_HAS_SIMD_SSE2)
         auto const kernel = [](auto left, auto right) { return _mm_subs_epi16(left, right); };
         detail::apply_kernel_sse<16>(lhs, rhs, out, std::minus{}, kernel);
-#elif defined(__ARM_NEON__)
+#elif defined(NEO_HAS_SIMD_NEON)
         auto const kernel = [](int16x8_t left, int16x8_t right) { return vqsubq_s16(left, right); };
         detail::apply_kernel_neon128<16>(lhs, rhs, out, std::minus{}, kernel);
 #else
@@ -178,10 +178,10 @@ auto multiply(
     NEO_EXPECTS(lhs.size() == out.size());
 
     if constexpr (std::same_as<StorageType, std::int16_t> && FractionalBits == 15) {
-#if defined(__SSE3__)
+#if defined(NEO_HAS_SIMD_SSE3)
         auto const kernel = [](__m128i left, __m128i right) -> __m128i { return _mm_mulhrs_epi16(left, right); };
         detail::apply_kernel_sse<16>(lhs, rhs, out, std::multiplies{}, kernel);
-#elif defined(__ARM_NEON__)
+#elif defined(NEO_HAS_SIMD_NEON)
         auto const kernel = [](int16x8_t left, int16x8_t right) { return vqdmulhq_s16(left, right); };
         detail::apply_kernel_neon128<16>(lhs, rhs, out, std::multiplies{}, kernel);
 #else
@@ -228,7 +228,7 @@ auto multiply(
             };
 
             detail::apply_kernel_sse<16>(lhs, rhs, out, std::multiplies{}, kernel);
-#elif defined(__ARM_NEON__)
+#elif defined(NEO_HAS_SIMD_NEON)
             auto const kernel = [](int16x8_t left, int16x8_t right) { return vqdmulhq_s16(left, right); };
             detail::apply_kernel_neon128<8>(lhs, rhs, out, std::multiplies{}, kernel);
 #else
