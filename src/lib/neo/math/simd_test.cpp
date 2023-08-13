@@ -6,7 +6,7 @@
 
 #include <array>
 
-#if defined(NEO_HAS_SIMD_SSE2)
+#if defined(NEO_HAS_SIMD_SSE3)
 
 TEST_CASE("neo/math: simd::cmul(sse3)")
 {
@@ -38,8 +38,8 @@ TEST_CASE("neo/math: simd::cmul(sse3)")
     };
 
     test([](auto lhs, auto rhs) { return lhs * rhs; });
+    test([](auto lhs, auto rhs) { return Complex{neo::simd::cmul(lhs, rhs)}; });
     // TODO Add cmul for sse2
-    // test([](auto lhs, auto rhs) { return Complex{neo::simd::cmul(lhs, rhs)}; });
     // test([](auto lhs, auto rhs) { return Complex{neo::simd::detail::cmul_sse2(lhs, rhs)}; });
 }
 
