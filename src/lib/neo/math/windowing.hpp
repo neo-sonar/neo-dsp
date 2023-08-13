@@ -17,9 +17,24 @@ struct hann_window
 
     [[nodiscard]] auto operator()(std::integral auto index, std::integral auto size) const noexcept -> Float
     {
-        auto const n     = static_cast<Float>(size);
+        auto const n     = static_cast<Float>(size - 1);
         auto const twoPi = static_cast<Float>(std::numbers::pi) * Float(2);
-        return Float(0.5) * (Float(1) - std::cos(twoPi * static_cast<Float>(index) / (n - Float(1))));
+        return Float(0.5) * (Float(1) - std::cos(twoPi * static_cast<Float>(index) / n));
+    }
+};
+
+template<std::floating_point Float>
+struct hamming_window
+{
+    using real_type = Float;
+
+    hamming_window() noexcept = default;
+
+    [[nodiscard]] auto operator()(std::integral auto index, std::integral auto size) const noexcept -> Float
+    {
+        auto const n     = static_cast<Float>(size - 1);
+        auto const twoPi = static_cast<Float>(std::numbers::pi) * Float(2);
+        return Float(0.54) - Float(0.46) * std::cos(twoPi * static_cast<Float>(index) / n);
     }
 };
 
