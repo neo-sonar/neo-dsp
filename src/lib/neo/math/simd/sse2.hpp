@@ -39,13 +39,15 @@ struct float32x4
 
     float32x4() = default;
 
-    NEO_ALWAYS_INLINE float32x4(register_type val) : _val{val} {}
+    NEO_ALWAYS_INLINE float32x4(register_type val) noexcept : _val{val} {}
 
     [[nodiscard]] NEO_ALWAYS_INLINE operator register_type() const { return _val; }
 
-    [[nodiscard]] static auto broadcast(float val) noexcept -> float32x4 { return _mm_set1_ps(val); }
+    [[nodiscard]] static auto broadcast(float val) -> float32x4 { return _mm_set1_ps(val); }
 
-    auto store_unaligned(float* output) const noexcept -> void { return _mm_storeu_ps(output, _val); }
+    [[nodiscard]] static auto load_unaligned(float const* input) -> float32x4 { return _mm_loadu_ps(input); }
+
+    auto store_unaligned(float* output) const -> void { return _mm_storeu_ps(output, _val); }
 
 private:
     register_type _val;
@@ -61,13 +63,15 @@ struct float64x2
 
     float64x2() = default;
 
-    NEO_ALWAYS_INLINE float64x2(register_type val) : _val{val} {}
+    NEO_ALWAYS_INLINE float64x2(register_type val) noexcept : _val{val} {}
 
     [[nodiscard]] NEO_ALWAYS_INLINE operator register_type() const { return _val; }
 
-    [[nodiscard]] static auto broadcast(double val) noexcept -> float64x2 { return _mm_set1_pd(val); }
+    [[nodiscard]] static auto broadcast(double val) -> float64x2 { return _mm_set1_pd(val); }
 
-    auto store_unaligned(double* output) const noexcept -> void { return _mm_storeu_pd(output, _val); }
+    [[nodiscard]] static auto load_unaligned(double const* input) -> float64x2 { return _mm_loadu_pd(input); }
+
+    auto store_unaligned(double* output) const -> void { return _mm_storeu_pd(output, _val); }
 
 private:
     register_type _val;

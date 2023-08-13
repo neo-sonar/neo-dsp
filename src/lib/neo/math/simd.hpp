@@ -2,6 +2,8 @@
 
 #include <neo/config.hpp>
 
+#include <neo/math/complex.hpp>
+
 #if defined(NEO_HAS_SIMD_SSE2)
     #include <neo/math/simd/sse2.hpp>
 #endif
@@ -19,8 +21,9 @@ namespace neo::simd {
 template<typename FloatBatch>
 struct alignas(FloatBatch::alignment) complex
 {
-    using batch_type    = FloatBatch;
-    using register_type = typename FloatBatch::register_type;
+    using batch_type       = FloatBatch;
+    using register_type    = typename FloatBatch::register_type;
+    using real_scalar_type = typename FloatBatch::value_type;
 
     static constexpr auto const batch_size = FloatBatch::batch_size / 2U;
 
@@ -32,7 +35,14 @@ struct alignas(FloatBatch::alignment) complex
 
     [[nodiscard]] NEO_ALWAYS_INLINE operator register_type() const { return static_cast<register_type>(_batch); }
 
-    auto store_unaligned(auto* output) const noexcept -> void { return _batch.store_unaligned(output); }
+    template<neo::complex Complex>
+        requires std::same_as<typename Complex::value_type, real_scalar_type>
+    [[nodiscard]] static auto load_unaligned(Complex const* val) noexcept -> complex
+    {
+        return batch_type::load_unaligned(reinterpret_cast<real_scalar_type const*>(val));
+    }
+
+    auto store_unaligned(real_scalar_type* output) const noexcept -> void { return _batch.store_unaligned(output); }
 
     NEO_ALWAYS_INLINE friend auto operator+(complex lhs, complex rhs) noexcept -> complex
     {

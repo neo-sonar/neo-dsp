@@ -49,8 +49,14 @@ TEMPLATE_LIST_TEST_CASE("neo/math: arithmetic", "", complex_types)
 
         static constexpr auto const size = FloatBatch::batch_size;
 
-        auto lhs    = Complex(FloatBatch::broadcast(Float(1)));
-        auto rhs    = Complex(FloatBatch::broadcast(Float(2)));
+        auto left = std::array<std::complex<Float>, Complex::batch_size>{};
+        std::fill(left.begin(), left.end(), std::complex{Float(1), Float(1)});
+
+        auto right = std::array<std::complex<Float>, Complex::batch_size>{};
+        std::fill(right.begin(), right.end(), std::complex{Float(2), Float(2)});
+
+        auto lhs    = Complex::load_unaligned(left.data());
+        auto rhs    = Complex::load_unaligned(right.data());
         auto result = op(lhs, rhs);
 
         auto output = std::array<Float, size>{};
