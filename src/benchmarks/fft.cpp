@@ -47,7 +47,8 @@ private:
         neo::fft::make_radix2_twiddles<std::complex<Float>, Size>()};
 };
 
-#if defined(__amd64__) or defined(_M_AMD64)
+#if defined(NEO_FFT_HAS_SSE2)
+
 struct cfft32x2
 {
     explicit cfft32x2(size_t size) : _buf(size, _mm_set1_ps(0)), _tw(size, _mm_set1_ps(0))
@@ -96,7 +97,7 @@ private:
 
 #endif
 
-#ifdef __AVX__
+#if defined(NEO_FFT_HAS_AVX)
 
 struct cfft32x4
 {
@@ -167,7 +168,7 @@ private:
 };
 #endif
 
-#ifdef __AVX512F__
+#if defined(NEO_FFT_HAS_AVX512F)
 
 struct cfft32x8
 {
@@ -250,7 +251,7 @@ auto main() -> int
     // // benchmark_fft("radix2<complex<float>, N>()", 2048, 1, fft_static<float, 2048>{});
     // // benchmark_fft("radix2<complex<float>, N>()", 4096, 1, fft_static<float, 4096>{});
 
-    // #ifdef __AVX__
+    // #if defined(NEO_FFT_HAS_AVX)
     //     benchmark_fft("radix2<complex32x4>(N)", 2048, 4, cfft32x4{2048});
     //     benchmark_fft("radix2<complex32x4>(N)", 4096, 4, cfft32x4{4096});
     //     benchmark_fft("radix2<complex32x4>(N)", 8192, 4, cfft32x4{8192});

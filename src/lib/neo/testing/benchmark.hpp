@@ -1,5 +1,7 @@
 #pragma once
 
+#include <neo/config.hpp>
+
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -80,3 +82,19 @@ auto timeit(std::string_view name, size_t sizeOfT, size_t N, Func func)
 }
 
 }  // namespace neo
+
+namespace neo::fft {
+
+template<typename T>
+NEO_FFT_ALWAYS_INLINE auto do_not_optimize(T& value) -> void
+{
+#if defined(__clang__)
+    asm volatile("" : "+r,m"(value) : : "memory");
+#elif defined(__GNUC__)
+    asm volatile("" : "+m,r"(value) : : "memory");
+#else
+    (void)(value);
+#endif
+}
+
+}  // namespace neo::fft
