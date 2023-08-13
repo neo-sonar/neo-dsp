@@ -29,22 +29,19 @@ NEO_ALWAYS_INLINE auto cmul(__m128d a, __m128d b) noexcept -> __m128d
     return _mm_addsub_pd(_mm_mul_pd(real, real), _mm_mul_pd(imag, imag));
 }
 
-struct float32x4_t
+struct float32x4
 {
     using register_type = __m128;
 
     static constexpr auto const alignment = sizeof(register_type);
 
-    float32x4_t() = default;
+    float32x4() = default;
 
-    NEO_ALWAYS_INLINE float32x4_t(register_type val) : _val{val} {}
+    NEO_ALWAYS_INLINE float32x4(register_type val) : _val{val} {}
 
     [[nodiscard]] NEO_ALWAYS_INLINE operator register_type() const { return _val; }
 
-    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(float val) noexcept -> float32x4_t
-    {
-        return _mm_set1_ps(val);
-    }
+    [[nodiscard]] static auto broadcast(float val) noexcept -> float32x4 { return _mm_set1_ps(val); }
 
     auto store_unaligned(float* output) noexcept -> void { return _mm_storeu_ps(output, _val); }
 
@@ -52,22 +49,19 @@ private:
     register_type _val;
 };
 
-struct float64x2_t
+struct float64x2
 {
     using register_type = __m128d;
 
     static constexpr auto const alignment = sizeof(register_type);
 
-    float64x2_t() = default;
+    float64x2() = default;
 
-    NEO_ALWAYS_INLINE float64x2_t(register_type val) : _val{val} {}
+    NEO_ALWAYS_INLINE float64x2(register_type val) : _val{val} {}
 
     [[nodiscard]] NEO_ALWAYS_INLINE operator register_type() const { return _val; }
 
-    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(float val) noexcept -> float64x2_t
-    {
-        return _mm_set1_pd(val);
-    }
+    [[nodiscard]] static auto broadcast(float val) noexcept -> float64x2 { return _mm_set1_pd(val); }
 
     auto store_unaligned(double* output) noexcept -> void { return _mm_storeu_pd(output, _val); }
 

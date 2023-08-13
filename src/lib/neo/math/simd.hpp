@@ -44,22 +44,22 @@ private:
 
 #if defined(NEO_HAS_SSE2)
 
-using complex32x2_t = complex<float32x4_t>;
-using complex64x1_t = complex<float64x2_t>;
+using complex32x2 = complex<float32x4>;
+using complex64x1 = complex<float64x2>;
 
 #endif
 
 #if defined(NEO_HAS_AVX)
 
-using complex32x4_t = complex<float32x8_t>;
-using complex64x2_t = complex<float64x4_t>;
+using complex32x4 = complex<float32x8>;
+using complex64x2 = complex<float64x4>;
 
 #endif
 
 #if defined(NEO_HAS_AVX512F)
 
-using complex32x8_t = complex<float32x16_t>;
-using complex64x4_t = complex<float64x8_t>;
+using complex32x8 = complex<float32x16>;
+using complex64x4 = complex<float64x8>;
 
 #endif
 

@@ -68,15 +68,15 @@ NEO_ALWAYS_INLINE auto cmul(__m512d a, __m512d b) noexcept -> __m512d
     return result;
 }
 
-struct float32x16_t
+struct float32x16
 {
     using register_type = __m512;
 
     static constexpr auto const alignment = sizeof(register_type);
 
-    float32x16_t() = default;
+    float32x16() = default;
 
-    float32x16_t(register_type val) : _val{val} {}
+    float32x16(register_type val) : _val{val} {}
 
     [[nodiscard]] operator register_type() const { return _val; }
 
@@ -84,15 +84,15 @@ private:
     register_type _val;
 };
 
-struct float64x8_t
+struct float64x8
 {
     using register_type = __m512d;
 
     static constexpr auto const alignment = sizeof(register_type);
 
-    float64x8_t() = default;
+    float64x8() = default;
 
-    float64x8_t(register_type val) : _val{val} {}
+    float64x8(register_type val) : _val{val} {}
 
     [[nodiscard]] operator register_type() const { return _val; }
 

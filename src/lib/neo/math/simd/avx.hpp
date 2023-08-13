@@ -28,15 +28,15 @@ NEO_ALWAYS_INLINE auto cmul(__m256d a, __m256d b) noexcept -> __m256d
     return _mm256_addsub_pd(_mm256_mul_pd(real, real), _mm256_mul_pd(imag, imag));
 }
 
-struct float32x8_t
+struct float32x8
 {
     using register_type = __m256;
 
     static constexpr auto const alignment = sizeof(register_type);
 
-    float32x8_t() = default;
+    float32x8() = default;
 
-    float32x8_t(register_type val) : _val{val} {}
+    float32x8(register_type val) : _val{val} {}
 
     [[nodiscard]] operator register_type() const { return _val; }
 
@@ -44,15 +44,15 @@ private:
     register_type _val;
 };
 
-struct float64x4_t
+struct float64x4
 {
     using register_type = __m256d;
 
     static constexpr auto const alignment = sizeof(register_type);
 
-    float64x4_t() = default;
+    float64x4() = default;
 
-    float64x4_t(register_type val) : _val{val} {}
+    float64x4(register_type val) : _val{val} {}
 
     [[nodiscard]] operator register_type() const { return _val; }
 
