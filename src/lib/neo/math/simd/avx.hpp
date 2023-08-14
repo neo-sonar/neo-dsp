@@ -4,7 +4,9 @@
 
 #include <immintrin.h>
 
+#define __STDC_WANT_IEC_60559_TYPES_EXT__ 1
 #include <array>
+#include <cfloat>
 
 namespace neo::simd {
 
