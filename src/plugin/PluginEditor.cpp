@@ -206,7 +206,7 @@ auto PluginEditor::runWeightingTests() -> void
     auto const skip       = static_cast<std::size_t>(static_cast<int>(_skip.getValue()));
     auto const impulse    = to_mdarray(normalized);
     auto const partitions = neo::fft::uniform_partition(
-        KokkosEx::submdspan(impulse.to_mdspan(), Kokkos::full_extent, std::tuple{blockSize * skip, impulse.extent(1)}),
+        stdex::submdspan(impulse.to_mdspan(), stdex::full_extent, std::tuple{blockSize * skip, impulse.extent(1)}),
         blockSize
     );
 

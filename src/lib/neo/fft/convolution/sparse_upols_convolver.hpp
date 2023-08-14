@@ -26,8 +26,8 @@ struct sparse_upols_convolver
 
 private:
     sparse_matrix<complex_type> _filter;
-    KokkosEx::mdarray<complex_type, Kokkos::dextents<size_type, 1>> _accumulator;
-    KokkosEx::mdarray<complex_type, Kokkos::dextents<size_type, 2>> _fdl;
+    stdex::mdarray<complex_type, stdex::dextents<size_type, 1>> _accumulator;
+    stdex::mdarray<complex_type, stdex::dextents<size_type, 2>> _fdl;
 
     overlap_save<Float> _overlap{1, 1};
 };
@@ -38,8 +38,8 @@ auto sparse_upols_convolver<Float>::filter(in_matrix auto filter, Sparsity spars
 {
     _filter      = sparse_matrix<complex_type>{filter, sparsity};
     _overlap     = overlap_save<Float>{filter.extent(1) - 1, filter.extent(1) - 1};
-    _fdl         = KokkosEx::mdarray<complex_type, Kokkos::dextents<size_type, 2>>{filter.extents()};
-    _accumulator = KokkosEx::mdarray<complex_type, Kokkos::dextents<size_type, 1>>{filter.extent(1)};
+    _fdl         = stdex::mdarray<complex_type, stdex::dextents<size_type, 2>>{filter.extents()};
+    _accumulator = stdex::mdarray<complex_type, stdex::dextents<size_type, 1>>{filter.extent(1)};
 }
 
 template<std::floating_point Float>
@@ -50,7 +50,7 @@ auto sparse_upols_convolver<Float>::operator()(inout_vector auto block) -> void
         auto const accumulator = _accumulator.to_mdspan();
 
         shift_rows_up(fdl);
-        copy(inout, KokkosEx::submdspan(fdl, 0, Kokkos::full_extent));
+        copy(inout, stdex::submdspan(fdl, 0, stdex::full_extent));
         fill(accumulator, Float(0));
         multiply_sum_columns(fdl, _filter, accumulator);
         copy(accumulator, inout);

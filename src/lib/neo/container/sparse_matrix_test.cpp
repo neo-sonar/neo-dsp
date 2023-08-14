@@ -15,7 +15,7 @@ TEMPLATE_TEST_CASE("neo/container: sparse_matrix", "", float, double, long doubl
     auto greaterEqualOne = [](auto, auto, auto v) { return std::real(v) >= Float(1); };
     auto greaterEqualTwo = [](auto, auto, auto v) { return std::real(v) >= Float(2); };
 
-    auto lhs = KokkosEx::mdarray<Scalar, Kokkos::dextents<std::size_t, 2>>{16, 32};
+    auto lhs = stdex::mdarray<Scalar, stdex::dextents<std::size_t, 2>>{16, 32};
     neo::fill(lhs.to_mdspan(), Scalar(Float(1)));
 
     auto other = neo::sparse_matrix<Scalar>{lhs.to_mdspan(), greaterEqualOne};
@@ -31,7 +31,7 @@ TEMPLATE_TEST_CASE("neo/container: sparse_matrix", "", float, double, long doubl
     REQUIRE(other.value_container().size() == 0);
 
     auto rowData = std::vector<Scalar>(lhs.extent(1));
-    auto row     = Kokkos::mdspan{rowData.data(), Kokkos::extents{rowData.size()}};
+    auto row     = stdex::mdspan{rowData.data(), stdex::extents{rowData.size()}};
     neo::fill(row, Scalar(Float(2)));
 
     other.insert_row(0, row, [](auto, auto, auto) { return true; });

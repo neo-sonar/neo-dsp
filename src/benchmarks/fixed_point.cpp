@@ -24,9 +24,9 @@ struct floating_point_mul_bench
     }
 
 private:
-    KokkosEx::mdarray<Float, Kokkos::extents<size_t, Size>> _lhs;
-    KokkosEx::mdarray<Float, Kokkos::extents<size_t, Size>> _rhs;
-    KokkosEx::mdarray<Float, Kokkos::extents<size_t, Size>> _out;
+    stdex::mdarray<Float, stdex::extents<size_t, Size>> _lhs;
+    stdex::mdarray<Float, stdex::extents<size_t, Size>> _rhs;
+    stdex::mdarray<Float, stdex::extents<size_t, Size>> _out;
 };
 
 template<typename FixedPoint, std::size_t Size>

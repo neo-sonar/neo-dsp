@@ -21,7 +21,7 @@ template<std::floating_point Float, typename Convolver>
     convolver.filter(partitions.to_mdspan());
 
     for (auto i{0U}; i < output.size(); i += blockSize) {
-        auto block = KokkosEx::submdspan(output.to_mdspan(), std::tuple{i, i + blockSize});
+        auto block = stdex::submdspan(output.to_mdspan(), std::tuple{i, i + blockSize});
         convolver(block);
     }
 

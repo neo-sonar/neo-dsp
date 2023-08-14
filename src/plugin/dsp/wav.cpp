@@ -6,7 +6,7 @@ namespace neo {
 
 auto writeToWavFile(
     juce::File const& file,
-    Kokkos::mdspan<float, Kokkos::dextents<size_t, 2>> buffer,
+    stdex::mdspan<float, stdex::dextents<size_t, 2>> buffer,
     double sampleRate,
     int bitsPerSample
 ) -> void

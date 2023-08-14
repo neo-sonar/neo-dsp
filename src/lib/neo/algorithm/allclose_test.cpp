@@ -15,7 +15,7 @@ TEMPLATE_TEST_CASE("neo/algorithm: allclose", "", float, double, long double, st
     SECTION("vector")
     {
         auto const makeVector = [size](Float val) {
-            auto vec = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 1>>{size};
+            auto vec = stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>{size};
             neo::fill(vec.to_mdspan(), val);
             return vec;
         };
@@ -32,7 +32,7 @@ TEMPLATE_TEST_CASE("neo/algorithm: allclose", "", float, double, long double, st
         REQUIRE(neo::allclose(ones.to_mdspan(), almostOnes.to_mdspan(), Float(0.7)));
 
         if constexpr (neo::current_contracts_check_mode == neo::contracts_check_mode::exception) {
-            auto sub = KokkosEx::submdspan(ones.to_mdspan(), std::tuple{0, size - 1UL});
+            auto sub = stdex::submdspan(ones.to_mdspan(), std::tuple{0, size - 1UL});
             REQUIRE_THROWS(neo::allclose(sub, zeros.to_mdspan()));
         }
     }
@@ -40,7 +40,7 @@ TEMPLATE_TEST_CASE("neo/algorithm: allclose", "", float, double, long double, st
     SECTION("matrix")
     {
         auto const makeMatrix = [size](Float val) {
-            auto vec = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 2>>{size, size * 2UL};
+            auto vec = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{size, size * 2UL};
             neo::fill(vec.to_mdspan(), val);
             return vec;
         };
@@ -57,7 +57,7 @@ TEMPLATE_TEST_CASE("neo/algorithm: allclose", "", float, double, long double, st
         REQUIRE(neo::allclose(ones.to_mdspan(), almostOnes.to_mdspan(), Float(0.7)));
 
         if constexpr (neo::current_contracts_check_mode == neo::contracts_check_mode::exception) {
-            auto sub = KokkosEx::submdspan(ones.to_mdspan(), std::tuple{0, size - 1UL}, Kokkos::full_extent);
+            auto sub = stdex::submdspan(ones.to_mdspan(), std::tuple{0, size - 1UL}, stdex::full_extent);
             REQUIRE_THROWS(neo::allclose(sub, zeros.to_mdspan()));
         }
     }

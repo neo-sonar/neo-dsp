@@ -11,7 +11,7 @@ TEMPLATE_TEST_CASE("neo/algorithm: multiply_sum_columns(sparse_matrix)", "", flo
 
     auto isZero = [](auto x) { return neo::float_equality::exact(x, Float(0)); };
 
-    auto lhs = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 2>>{16, 32};
+    auto lhs = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{16, 32};
     std::fill(lhs.data(), std::next(lhs.data(), std::ssize(lhs)), Float(1));
 
     auto rhs = neo::sparse_matrix<Float>{16, 32};
@@ -19,7 +19,7 @@ TEMPLATE_TEST_CASE("neo/algorithm: multiply_sum_columns(sparse_matrix)", "", flo
     REQUIRE(rhs.columns() == 32);
 
     auto accumulator = std::vector<Float>(lhs.extent(1));
-    auto acc         = Kokkos::mdspan{accumulator.data(), Kokkos::extents{accumulator.size()}};
+    auto acc         = stdex::mdspan{accumulator.data(), stdex::extents{accumulator.size()}};
 
     neo::multiply_sum_columns(lhs.to_mdspan(), rhs, acc);
     REQUIRE(std::all_of(accumulator.begin(), accumulator.end(), isZero));

@@ -43,7 +43,7 @@ private:
     juce::File _filterFile{};
     juce::AudioBuffer<float> _signal{};
     juce::AudioBuffer<float> _filter{};
-    KokkosEx::mdarray<std::complex<float>, Kokkos::dextents<size_t, 2>> _spectrum;
+    stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 2>> _spectrum;
 
     juce::Value _skip{juce::var{0}};
     juce::Value _dynamicRange{juce::var{90.0F}};

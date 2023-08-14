@@ -45,9 +45,9 @@ auto loadAndResample(juce::AudioFormatManager& formats, juce::File const& file, 
     return buffer;
 }
 
-auto to_mdarray(juce::AudioBuffer<float> const& buffer) -> KokkosEx::mdarray<float, Kokkos::dextents<std::size_t, 2>>
+auto to_mdarray(juce::AudioBuffer<float> const& buffer) -> stdex::mdarray<float, stdex::dextents<std::size_t, 2>>
 {
-    auto result = KokkosEx::mdarray<float, Kokkos::dextents<std::size_t, 2>>{
+    auto result = stdex::mdarray<float, stdex::dextents<std::size_t, 2>>{
         static_cast<std::size_t>(buffer.getNumChannels()),
         static_cast<std::size_t>(buffer.getNumSamples()),
     };

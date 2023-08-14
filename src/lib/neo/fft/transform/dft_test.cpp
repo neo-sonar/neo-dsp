@@ -19,7 +19,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform: dft", "", float, double, long double)
     auto const original = neo::generate_noise_signal<Complex>(size, Catch::getSeed());
 
     auto inBuf  = original;
-    auto outBuf = KokkosEx::mdarray<Complex, Kokkos::dextents<size_t, 1>>{inBuf.size()};
+    auto outBuf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{inBuf.size()};
 
     auto const in  = inBuf.to_mdspan();
     auto const out = outBuf.to_mdspan();

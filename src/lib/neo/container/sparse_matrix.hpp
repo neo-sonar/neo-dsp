@@ -69,7 +69,7 @@ sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(InMat
 {
     auto count = 0UL;
     for (auto rowIdx{0UL}; rowIdx < matrix.extent(0); ++rowIdx) {
-        auto const row = KokkosEx::submdspan(matrix, rowIdx, Kokkos::full_extent);
+        auto const row = stdex::submdspan(matrix, rowIdx, stdex::full_extent);
         for (auto col{0UL}; col < matrix.extent(1); ++col) {
             if (filter(rowIdx, col, row(col))) {
                 ++count;
@@ -82,7 +82,7 @@ sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(InMat
 
     auto idx = 0UL;
     for (auto rowIdx{0UL}; rowIdx < matrix.extent(0); ++rowIdx) {
-        auto const row      = KokkosEx::submdspan(matrix, rowIdx, Kokkos::full_extent);
+        auto const row      = stdex::submdspan(matrix, rowIdx, stdex::full_extent);
         _rowIndices[rowIdx] = idx;
 
         for (auto col{0UL}; col < matrix.extent(1); ++col) {

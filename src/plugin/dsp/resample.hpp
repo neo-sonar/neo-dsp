@@ -13,6 +13,6 @@ auto resample(juce::AudioBuffer<float> const& buf, double srcSampleRate, double 
     -> juce::AudioBuffer<float>;
 
 [[nodiscard]] auto to_mdarray(juce::AudioBuffer<float> const& buffer)
-    -> KokkosEx::mdarray<float, Kokkos::dextents<std::size_t, 2>>;
+    -> stdex::mdarray<float, stdex::dextents<std::size_t, 2>>;
 
 }  // namespace neo

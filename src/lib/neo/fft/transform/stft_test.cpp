@@ -9,7 +9,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform: stft", "", float, double, long double)
 
     SECTION("no remainder")
     {
-        auto signal = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 2>>{1, 2048};
+        auto signal = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{1, 2048};
         auto frames = neo::fft::stft(signal.to_mdspan(), 256);
         REQUIRE(frames.extent(0) == 8);
         REQUIRE(frames.extent(1) == 129);
@@ -17,7 +17,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform: stft", "", float, double, long double)
 
     SECTION("with remainder")
     {
-        auto signal = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 2>>{1, 2040};
+        auto signal = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{1, 2040};
         auto frames = neo::fft::stft(signal.to_mdspan(), 256);
         REQUIRE(frames.extent(0) == 8);
         REQUIRE(frames.extent(1) == 129);

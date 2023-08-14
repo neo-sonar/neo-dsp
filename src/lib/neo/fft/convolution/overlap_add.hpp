@@ -37,11 +37,11 @@ private:
     size_type _filter_size;
 
     rfft_radix2_plan<Float> _rfft{ilog2(next_power_of_two(_block_size + _filter_size - 1UL))};
-    KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>> _real_buffer{_rfft.size()};
-    KokkosEx::mdarray<complex_type, Kokkos::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
+    stdex::mdarray<Float, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
+    stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
 
     size_type _overlapIdx{0};
-    KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 2>> _overlaps;
+    stdex::mdarray<Float, stdex::dextents<size_t, 2>> _overlaps;
 };
 
 template<std::floating_point Float>
@@ -87,12 +87,12 @@ auto overlap_add<Float>::operator()(inout_vector auto block, auto callback) -> v
     auto const complex_buffer = _complex_buffer.to_mdspan();
 
     fill(real_buffer, Float(0));
-    copy(block, KokkosEx::submdspan(real_buffer, std::tuple{0, block.extent(1)}));
+    copy(block, stdex::submdspan(real_buffer, std::tuple{0, block.extent(1)}));
 
     _rfft(real_buffer, complex_buffer);
 
     auto const alpha  = 1.0F / static_cast<Float>(_rfft.size());
-    auto const coeffs = KokkosEx::submdspan(complex_buffer, std::tuple{0, _rfft.size() / 2 + 1});
+    auto const coeffs = stdex::submdspan(complex_buffer, std::tuple{0, _rfft.size() / 2 + 1});
     scale(alpha, coeffs);
 
     callback(coeffs);
@@ -100,10 +100,10 @@ auto overlap_add<Float>::operator()(inout_vector auto block, auto callback) -> v
     _rfft(complex_buffer, real_buffer);
 
     copy(
-        KokkosEx::submdspan(real_buffer, std::tuple{0, _overlaps.extent(1)}),
-        KokkosEx::submdspan(_overlaps.to_mdspan(), _overlapIdx, Kokkos::full_extent)
+        stdex::submdspan(real_buffer, std::tuple{0, _overlaps.extent(1)}),
+        stdex::submdspan(_overlaps.to_mdspan(), _overlapIdx, stdex::full_extent)
     );
-    copy(KokkosEx::submdspan(real_buffer, std::tuple{0, block.extent(0)}), block);
+    copy(stdex::submdspan(real_buffer, std::tuple{0, block.extent(0)}), block);
 
     ++_overlapIdx;
     if (_overlapIdx == _overlaps.extent(0)) {

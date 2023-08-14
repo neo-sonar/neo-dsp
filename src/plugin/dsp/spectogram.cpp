@@ -7,7 +7,7 @@
 namespace neo {
 
 auto powerSpectrumImage(
-    Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> frames,
+    stdex::mdspan<std::complex<float> const, stdex::dextents<size_t, 2>> frames,
     std::function<float(std::size_t)> const& weighting,
     float threshold
 ) -> juce::Image
@@ -54,7 +54,7 @@ auto powerSpectrumImage(
 }
 
 auto powerHistogram(
-    Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> spectogram,
+    stdex::mdspan<std::complex<float> const, stdex::dextents<size_t, 2>> spectogram,
     std::function<float(std::size_t)> const& weighting
 ) -> std::vector<int>
 {
@@ -89,7 +89,7 @@ auto powerHistogram(
 }
 
 auto powerHistogramImage(
-    Kokkos::mdspan<std::complex<float> const, Kokkos::dextents<size_t, 2>> spectogram,
+    stdex::mdspan<std::complex<float> const, stdex::dextents<size_t, 2>> spectogram,
     std::function<float(std::size_t)> const& weighting
 ) -> juce::Image
 {

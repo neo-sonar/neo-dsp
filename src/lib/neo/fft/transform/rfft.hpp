@@ -28,7 +28,7 @@ struct rfft_radix2_plan
 
         copy(in, buf);
         _fft(buf, direction::forward);
-        copy(KokkosEx::submdspan(buf, std::tuple{0ULL, coeffs}), KokkosEx::submdspan(out, std::tuple{0ULL, coeffs}));
+        copy(stdex::submdspan(buf, std::tuple{0ULL, coeffs}), stdex::submdspan(out, std::tuple{0ULL, coeffs}));
     }
 
     template<in_vector InVec, out_vector OutVec>
@@ -38,7 +38,7 @@ struct rfft_radix2_plan
         auto const buf    = _buffer.to_mdspan();
         auto const coeffs = _size / 2 + 1;
 
-        copy(in, KokkosEx::submdspan(buf, std::tuple{0, in.extent(0)}));
+        copy(in, stdex::submdspan(buf, std::tuple{0, in.extent(0)}));
 
         // Fill upper half with conjugate
         for (auto i{coeffs}; i < _size; ++i) {
@@ -55,7 +55,7 @@ private:
     size_type _order;
     size_type _size{1ULL << _order};
     ComplexPlan _fft{_order};
-    KokkosEx::mdarray<complex_type, Kokkos::dextents<size_type, 1>> _buffer{_size};
+    stdex::mdarray<complex_type, stdex::dextents<size_type, 1>> _buffer{_size};
 };
 
 template<in_vector InVec, out_vector OutVecA, out_vector OutVecB>

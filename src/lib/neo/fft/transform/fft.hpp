@@ -67,7 +67,7 @@ private:
     size_type _size{1ULL << _order};
     direction _default_direction;
     std::vector<size_type> _index_table{make_bit_reversed_index_table(_size)};
-    KokkosEx::mdarray<Complex, Kokkos::dextents<size_type, 1>> _twiddles{
+    stdex::mdarray<Complex, stdex::dextents<size_type, 1>> _twiddles{
         make_radix2_twiddles<Complex>(_size, _default_direction),
     };
 };

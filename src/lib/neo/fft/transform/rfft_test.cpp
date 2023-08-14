@@ -62,12 +62,12 @@ TEMPLATE_PRODUCT_TEST_CASE(
     auto const original = signal;
 
     auto const real    = signal.to_mdspan();
-    auto const complex = Kokkos::mdspan{spectrum.data(), Kokkos::extents{spectrum.size()}};
+    auto const complex = stdex::mdspan{spectrum.data(), stdex::extents{spectrum.size()}};
     rfft(real, complex);
     rfft(complex, real);
 
     neo::scale(Float(1) / static_cast<Float>(rfft.size()), real);
-    REQUIRE(neo::allclose(Kokkos::mdspan{original.data(), Kokkos::extents{original.size()}}, real));
+    REQUIRE(neo::allclose(stdex::mdspan{original.data(), stdex::extents{original.size()}}, real));
 }
 
 TEMPLATE_TEST_CASE("neo/fft/transform: extract_two_real_dfts", "", float, double, long double)
@@ -93,24 +93,24 @@ TEMPLATE_TEST_CASE("neo/fft/transform: extract_two_real_dfts", "", float, double
     auto dist   = std::uniform_real_distribution<Float>{Float(-1), Float(1)};
     auto random = [&dist, &rng] { return dist(rng); };
 
-    auto a = KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>>{size};
-    auto b = KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>>{size};
+    auto a = stdex::mdarray<Float, stdex::dextents<size_t, 1>>{size};
+    auto b = stdex::mdarray<Float, stdex::dextents<size_t, 1>>{size};
     std::generate(a.data(), a.data() + a.size(), random);
     std::generate(b.data(), b.data() + b.size(), random);
 
-    auto a_rev = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>>{numCoeffs};
-    auto b_rev = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>>{numCoeffs};
+    auto a_rev = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>>{numCoeffs};
+    auto b_rev = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>>{numCoeffs};
     rfft(a.to_mdspan(), a_rev.to_mdspan());
     rfft(b.to_mdspan(), b_rev.to_mdspan());
 
-    auto inout = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>>{size};
+    auto inout = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>>{size};
     auto merge = [](Float ra, Float rb) { return std::complex{ra, rb}; };
     std::transform(a.data(), a.data() + a.size(), b.data(), inout.data(), merge);
 
     fft(inout.to_mdspan(), neo::fft::direction::forward);
 
-    auto ca = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>>{numCoeffs};
-    auto cb = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<size_t, 1>>{numCoeffs};
+    auto ca = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>>{numCoeffs};
+    auto cb = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>>{numCoeffs};
     neo::fft::extract_two_real_dfts(inout.to_mdspan(), ca.to_mdspan(), cb.to_mdspan());
 
     REQUIRE(neo::allclose(a_rev.to_mdspan(), ca.to_mdspan()));

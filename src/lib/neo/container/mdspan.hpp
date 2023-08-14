@@ -20,7 +20,14 @@
 #include <concepts>
 #include <type_traits>
 
-namespace KokkosEx = Kokkos::Experimental;
+namespace stdex {
+using Kokkos::dextents;
+using Kokkos::extents;
+using Kokkos::full_extent;
+using Kokkos::mdspan;
+using Kokkos::Experimental::mdarray;
+using Kokkos::Experimental::submdspan;
+}  // namespace stdex
 
 namespace neo {
 
@@ -28,7 +35,7 @@ template<typename T>
 inline constexpr auto const is_mdspan = false;
 
 template<typename T, typename Extents, typename Layout, typename Accessor>
-inline constexpr auto const is_mdspan<Kokkos::mdspan<T, Extents, Layout, Accessor>> = true;
+inline constexpr auto const is_mdspan<stdex::mdspan<T, Extents, Layout, Accessor>> = true;
 
 template<typename T>
 concept in_vector = is_mdspan<T> && T::rank() == 1;

@@ -30,10 +30,10 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft/convolution:", "", (overlap_add, overlap_sav
     REQUIRE(overlap.transform_size() == blockSize * 2UL);
 
     auto output = signal;
-    auto blocks = Kokkos::mdspan{output.data(), Kokkos::extents{output.size()}};
+    auto blocks = stdex::mdspan{output.data(), stdex::extents{output.size()}};
 
     for (auto i{0U}; i < output.size(); i += blockSize) {
-        auto block = KokkosEx::submdspan(blocks, std::tuple{i, i + blockSize});
+        auto block = stdex::submdspan(blocks, std::tuple{i, i + blockSize});
         overlap(block, [=](neo::inout_vector auto io) {
             REQUIRE(io.extent(0) == overlap.transform_size() / 2UL + 1UL);
         });

@@ -72,8 +72,8 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
     SECTION("copy")
     {
-        auto tmpBuf = KokkosEx::mdarray<Complex, Kokkos::dextents<size_t, 1>>{noise.extents()};
-        auto outBuf = KokkosEx::mdarray<Complex, Kokkos::dextents<size_t, 1>>{noise.extents()};
+        auto tmpBuf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
+        auto outBuf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
 
         auto tmp = tmpBuf.to_mdspan();
         auto out = outBuf.to_mdspan();

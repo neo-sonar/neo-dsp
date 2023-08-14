@@ -15,7 +15,7 @@ TEMPLATE_TEST_CASE("neo/algorithm: copy", "", float, double, long double, std::c
     SECTION("vector")
     {
         auto const makeVector = [size](Float val) {
-            auto vec = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 1>>{size};
+            auto vec = stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>{size};
             neo::fill(vec.to_mdspan(), val);
             return vec;
         };
@@ -26,7 +26,7 @@ TEMPLATE_TEST_CASE("neo/algorithm: copy", "", float, double, long double, std::c
         REQUIRE(neo::allclose(in.to_mdspan(), out.to_mdspan()));
 
         if constexpr (neo::current_contracts_check_mode == neo::contracts_check_mode::exception) {
-            auto sub = KokkosEx::submdspan(in.to_mdspan(), std::tuple{0, size - 1UL});
+            auto sub = stdex::submdspan(in.to_mdspan(), std::tuple{0, size - 1UL});
             REQUIRE_THROWS(neo::copy(sub, out.to_mdspan()));
         }
     }
@@ -34,7 +34,7 @@ TEMPLATE_TEST_CASE("neo/algorithm: copy", "", float, double, long double, std::c
     SECTION("matrix")
     {
         auto const makeMatrix = [size](Float val) {
-            auto vec = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 2>>{size, size};
+            auto vec = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{size, size};
             neo::fill(vec.to_mdspan(), val);
             return vec;
         };

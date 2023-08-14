@@ -35,9 +35,9 @@ private:
     size_type _filter_size;
     rfft_radix2_plan<Float> _rfft{ilog2(next_power_of_two(_block_size + _filter_size - 1UL))};
 
-    KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>> _window{_rfft.size()};
-    KokkosEx::mdarray<Float, Kokkos::dextents<size_t, 1>> _real_buffer{_rfft.size()};
-    KokkosEx::mdarray<complex_type, Kokkos::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
+    stdex::mdarray<Float, stdex::dextents<size_t, 1>> _window{_rfft.size()};
+    stdex::mdarray<Float, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
+    stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
 };
 
 template<std::floating_point Float>
@@ -71,8 +71,8 @@ auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> 
 
     // Time domain input buffer
     auto const window = _window.to_mdspan();
-    auto left_half    = KokkosEx::submdspan(window, std::tuple{0, _window.extent(0) / 2});
-    auto right_half   = KokkosEx::submdspan(window, std::tuple{_window.extent(0) / 2, _window.extent(0)});
+    auto left_half    = stdex::submdspan(window, std::tuple{0, _window.extent(0) / 2});
+    auto right_half   = stdex::submdspan(window, std::tuple{_window.extent(0) / 2, _window.extent(0)});
     copy(right_half, left_half);
     copy(block, right_half);
 
@@ -82,7 +82,7 @@ auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> 
 
     // Copy to FDL
     auto const num_coeffs = _rfft.size() / 2 + 1;
-    auto const coeffs     = KokkosEx::submdspan(complex_buf, std::tuple{0, num_coeffs});
+    auto const coeffs     = stdex::submdspan(complex_buf, std::tuple{0, num_coeffs});
     scale(1.0F / static_cast<Float>(_rfft.size()), coeffs);
 
     // Apply processing
@@ -93,15 +93,15 @@ auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> 
     _rfft(complex_buf, real_buf);
 
     // Copy blockSize samples to output
-    auto out = KokkosEx::submdspan(real_buf, std::tuple{real_buf.extent(0) / 2, real_buf.extent(0)});
+    auto out = stdex::submdspan(real_buf, std::tuple{real_buf.extent(0) / 2, real_buf.extent(0)});
     copy(out, block);
 }
 
 inline constexpr auto shift_rows_up = [](inout_matrix auto matrix) {
     auto const rows = static_cast<int>(matrix.extent(0));
     for (auto row{rows - 1}; row > 0; --row) {
-        auto src  = KokkosEx::submdspan(matrix, row - 1, Kokkos::full_extent);
-        auto dest = KokkosEx::submdspan(matrix, row, Kokkos::full_extent);
+        auto src  = stdex::submdspan(matrix, row - 1, stdex::full_extent);
+        auto dest = stdex::submdspan(matrix, row, stdex::full_extent);
         copy(src, dest);
     }
 };

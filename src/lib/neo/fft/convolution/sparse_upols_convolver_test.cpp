@@ -23,7 +23,7 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: sparse_upols_convolver", "", float, dou
     convolver.filter(partitions.to_mdspan(), [](auto, auto, auto) { return true; });
 
     for (auto i{0U}; i < output.size(); i += blockSize) {
-        auto block = KokkosEx::submdspan(output.to_mdspan(), std::tuple{i, i + blockSize});
+        auto block = stdex::submdspan(output.to_mdspan(), std::tuple{i, i + blockSize});
         convolver(block);
     }
 

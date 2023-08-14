@@ -23,14 +23,14 @@ template<in_matrix InMat>
     auto const numPartitions = divide_round_up(buffer.extent(1), blockSize);
     auto const scaleFactor   = Float(1) / static_cast<Float>(windowSize);
 
-    auto partitions = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 3>>{
+    auto partitions = stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 3>>{
         numChannels,
         numPartitions,
         numBins,
     };
 
-    auto in   = KokkosEx::mdarray<Float, Kokkos::dextents<std::size_t, 1>>{windowSize};
-    auto out  = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 1>>{windowSize};
+    auto in   = stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>{windowSize};
+    auto out  = stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>>{windowSize};
     auto rfft = rfft_radix2_plan<Float>{ilog2(windowSize)};
 
     auto const input  = in.to_mdspan();
@@ -43,13 +43,13 @@ template<in_matrix InMat>
 
             auto const idx        = p * blockSize;
             auto const numSamples = std::min(buffer.extent(1) - idx, blockSize);
-            auto const block      = KokkosEx::submdspan(buffer, ch, std::tuple{idx, idx + numSamples});
-            copy(block, KokkosEx::submdspan(input, std::tuple{0, numSamples}));
+            auto const block      = stdex::submdspan(buffer, ch, std::tuple{idx, idx + numSamples});
+            copy(block, stdex::submdspan(input, std::tuple{0, numSamples}));
 
             rfft(input, output);
 
-            auto const coeffs    = KokkosEx::submdspan(output, std::tuple{0, numBins});
-            auto const partition = KokkosEx::submdspan(partitions.to_mdspan(), ch, p, Kokkos::full_extent);
+            auto const coeffs    = stdex::submdspan(output, std::tuple{0, numBins});
+            auto const partition = stdex::submdspan(partitions.to_mdspan(), ch, p, stdex::full_extent);
             copy(coeffs, partition);
             scale(scaleFactor, partition);
         }

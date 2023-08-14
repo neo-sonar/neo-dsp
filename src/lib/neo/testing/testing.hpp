@@ -22,7 +22,7 @@ template<float_or_complex FloatOrComplex, typename URNG = std::mt19937>
 
     auto rng    = URNG{seed};
     auto dist   = std::uniform_real_distribution<Float>{Float(-1), Float(1)};
-    auto signal = KokkosEx::mdarray<FloatOrComplex, Kokkos::dextents<size_t, 1>>{length};
+    auto signal = stdex::mdarray<FloatOrComplex, stdex::dextents<size_t, 1>>{length};
 
     if constexpr (std::floating_point<FloatOrComplex>) {
         std::generate_n(signal.data(), signal.size(), [&] { return dist(rng); });
@@ -35,10 +35,10 @@ template<float_or_complex FloatOrComplex, typename URNG = std::mt19937>
 
 template<std::floating_point Float>
 [[nodiscard]] auto generate_identity_impulse(std::size_t block_size, std::size_t num_subfilter)
-    -> KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 2>>
+    -> stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 2>>
 {
     auto const num_bins = block_size + 1;
-    auto impulse = KokkosEx::mdarray<std::complex<Float>, Kokkos::dextents<std::size_t, 2>>{num_subfilter, num_bins};
+    auto impulse        = stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 2>>{num_subfilter, num_bins};
     fill(impulse.to_mdspan(), std::complex{Float(1), Float(0)});
     return impulse;
 }

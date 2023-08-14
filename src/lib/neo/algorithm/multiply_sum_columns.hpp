@@ -16,8 +16,8 @@ constexpr auto multiply_sum_columns(InMatL lhs, InMatR rhs, OutVec out) -> void
     NEO_EXPECTS(lhs.extent(1) > 0);
 
     for (auto row{0}; std::cmp_less(row, lhs.extent(0)); ++row) {
-        auto const left  = KokkosEx::submdspan(lhs, row, Kokkos::full_extent);
-        auto const right = KokkosEx::submdspan(rhs, row, Kokkos::full_extent);
+        auto const left  = stdex::submdspan(lhs, row, stdex::full_extent);
+        auto const right = stdex::submdspan(rhs, row, stdex::full_extent);
         for (decltype(left.extent(0)) i{0}; i < left.extent(0); ++i) {
             out[i] += left[i] * right[i];
         }
@@ -36,7 +36,7 @@ auto multiply_sum_columns(
     NEO_EXPECTS(lhs.extent(1) == accumulator.extent(0));
 
     for (auto row{0UL}; row < rhs.rows(); ++row) {
-        auto const left   = KokkosEx::submdspan(lhs, row, Kokkos::full_extent);
+        auto const left   = stdex::submdspan(lhs, row, stdex::full_extent);
         auto const& rrows = rhs.row_container();
         auto const& rcols = rhs.column_container();
         auto const& rvals = rhs.value_container();
