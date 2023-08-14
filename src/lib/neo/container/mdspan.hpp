@@ -24,6 +24,9 @@ namespace stdex {
 using Kokkos::dextents;
 using Kokkos::extents;
 using Kokkos::full_extent;
+using Kokkos::layout_left;
+using Kokkos::layout_right;
+using Kokkos::layout_stride;
 using Kokkos::mdspan;
 using Kokkos::Experimental::mdarray;
 using Kokkos::Experimental::submdspan;
