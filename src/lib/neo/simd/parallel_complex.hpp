@@ -4,7 +4,7 @@
 
 #include <neo/math/complex.hpp>
 
-namespace neo::simd {
+namespace neo {
 
 template<typename FloatBatch>
 struct alignas(FloatBatch::alignment) parallel_complex
@@ -54,7 +54,7 @@ private:
     FloatBatch _imag;
 };
 
-}  // namespace neo::simd
+}  // namespace neo
 
 template<typename FloatBatch>
-inline constexpr auto const neo::is_complex<neo::simd::parallel_complex<FloatBatch>> = true;
+inline constexpr auto const neo::is_complex<neo::parallel_complex<FloatBatch>> = true;

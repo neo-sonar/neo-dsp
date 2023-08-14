@@ -4,7 +4,7 @@
 
 #include <immintrin.h>
 
-namespace neo::simd {
+namespace neo {
 
 NEO_ALWAYS_INLINE auto cadd(__m512 a, __m512 b) noexcept -> __m512 { return _mm512_add_ps(a, b); }
 
@@ -146,4 +146,4 @@ private:
     register_type _val;
 };
 
-}  // namespace neo::simd
+}  // namespace neo

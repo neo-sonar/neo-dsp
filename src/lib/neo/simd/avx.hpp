@@ -8,7 +8,7 @@
 #include <array>
 #include <cfloat>
 
-namespace neo::simd {
+namespace neo {
 
 NEO_ALWAYS_INLINE auto cadd(__m256 a, __m256 b) noexcept -> __m256 { return _mm256_add_ps(a, b); }
 
@@ -241,4 +241,4 @@ private:
     register_type _val;
 };
 
-}  // namespace neo::simd
+}  // namespace neo

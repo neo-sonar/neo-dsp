@@ -69,8 +69,8 @@ struct cfft32x2
     }
 
 private:
-    std::vector<neo::simd::icomplex64x2> _buf;
-    std::vector<neo::simd::icomplex64x2> _tw;
+    std::vector<neo::icomplex64x2> _buf;
+    std::vector<neo::icomplex64x2> _tw;
 };
 
 struct cfft64x1
@@ -92,8 +92,8 @@ struct cfft64x1
     }
 
 private:
-    std::vector<neo::simd::icomplex128x1> _buf;
-    std::vector<neo::simd::icomplex128x1> _tw;
+    std::vector<neo::icomplex128x1> _buf;
+    std::vector<neo::icomplex128x1> _tw;
 };
 
 #endif
@@ -119,8 +119,8 @@ struct cfft32x4
     }
 
 private:
-    std::vector<neo::simd::icomplex64x4> _buf;
-    std::vector<neo::simd::icomplex64x4> _tw;
+    std::vector<neo::icomplex64x4> _buf;
+    std::vector<neo::icomplex64x4> _tw;
 };
 
 template<size_t Size>
@@ -134,15 +134,15 @@ struct cfft32x4_fixed
         std::generate_n(begin(_buf), size(_buf), gen);
         neo::fft::execute_radix2_kernel(
             neo::fft::radix2_kernel_v1{},
-            stdex::mdspan<neo::simd::icomplex64x4, stdex::extents<size_t, Size>>{_buf.data()},
+            stdex::mdspan<neo::icomplex64x4, stdex::extents<size_t, Size>>{_buf.data()},
             _tw
         );
         neo::do_not_optimize(_buf.back());
     }
 
 private:
-    std::array<neo::simd::icomplex64x4, Size> _buf;
-    std::array<neo::simd::icomplex64x4, Size / 2> _tw;
+    std::array<neo::icomplex64x4, Size> _buf;
+    std::array<neo::icomplex64x4, Size / 2> _tw;
 };
 
 struct cfft64x2
@@ -164,8 +164,8 @@ struct cfft64x2
     }
 
 private:
-    std::vector<neo::simd::icomplex128x2> _buf;
-    std::vector<neo::simd::icomplex128x2> _tw;
+    std::vector<neo::icomplex128x2> _buf;
+    std::vector<neo::icomplex128x2> _tw;
 };
 #endif
 
@@ -190,8 +190,8 @@ struct cfft32x8
     }
 
 private:
-    std::vector<neo::simd::icomplex64x8> _buf;
-    std::vector<neo::simd::icomplex64x8> _tw;
+    std::vector<neo::icomplex64x8> _buf;
+    std::vector<neo::icomplex64x8> _tw;
 };
 
 struct cfft64x4
@@ -213,8 +213,8 @@ struct cfft64x4
     }
 
 private:
-    std::vector<neo::simd::icomplex128x4> _buf;
-    std::vector<neo::simd::icomplex128x4> _tw;
+    std::vector<neo::icomplex128x4> _buf;
+    std::vector<neo::icomplex128x4> _tw;
 };
 
 #endif

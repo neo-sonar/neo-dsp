@@ -21,7 +21,7 @@
 #include <neo/simd/interleave_complex.hpp>
 #include <neo/simd/parallel_complex.hpp>
 
-namespace neo::simd {
+namespace neo {
 
 #if defined(NEO_HAS_SIMD_SSE2)
 using icomplex64x2  = interleave_complex<float32x4>;
@@ -51,4 +51,4 @@ using pcomplex64x16 = parallel_complex<float32x16>;
 using pcomplex128x8 = parallel_complex<float64x8>;
 #endif
 
-}  // namespace neo::simd
+}  // namespace neo

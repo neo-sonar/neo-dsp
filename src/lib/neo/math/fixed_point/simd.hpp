@@ -16,7 +16,7 @@
     #include <neo/simd/neon.hpp>
 #endif
 
-namespace neo::simd {
+namespace neo {
 
 #if defined(NEO_HAS_SIMD_SSE2)
 
@@ -294,4 +294,4 @@ private:
 
 #endif
 
-}  // namespace neo::simd
+}  // namespace neo

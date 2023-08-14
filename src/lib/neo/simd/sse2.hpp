@@ -11,7 +11,7 @@
 #include <smmintrin.h>
 #include <tmmintrin.h>
 
-namespace neo::simd {
+namespace neo {
 
 namespace detail {
 
@@ -148,6 +148,8 @@ private:
     register_type _reg;
 };
 
+namespace simd {
+
 template<typename ScalarType>
 inline constexpr auto apply_kernel = [](auto lhs, auto rhs, auto out, auto scalar_kernel, auto vector_kernel) {
     static constexpr auto valueSizeBits = sizeof(ScalarType) * 8UL;
@@ -165,4 +167,6 @@ inline constexpr auto apply_kernel = [](auto lhs, auto rhs, auto out, auto scala
     }
 };
 
-}  // namespace neo::simd
+}
+
+}  // namespace neo

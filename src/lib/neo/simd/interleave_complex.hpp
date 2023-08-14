@@ -6,7 +6,7 @@
 
 #include <concepts>
 
-namespace neo::simd {
+namespace neo {
 
 template<typename FloatBatch>
 struct alignas(FloatBatch::alignment) interleave_complex
@@ -67,7 +67,7 @@ private:
     FloatBatch _batch;
 };
 
-}  // namespace neo::simd
+}  // namespace neo
 
 template<typename FloatBatch>
-inline constexpr auto const neo::is_complex<neo::simd::interleave_complex<FloatBatch>> = true;
+inline constexpr auto const neo::is_complex<neo::interleave_complex<FloatBatch>> = true;
