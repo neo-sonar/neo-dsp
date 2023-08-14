@@ -104,66 +104,57 @@ auto multiply(
 
     if constexpr (std::same_as<StorageType, std::int16_t> && FractionalBits == 15) {
 #if defined(NEO_HAS_SIMD_SSE3)
-        auto const kernel = [](__m128i left, __m128i right) -> __m128i { return _mm_mulhrs_epi16(left, right); };
+        simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, [](__m128i left, __m128i right) {
+            return _mm_mulhrs_epi16(left, right);
+        });
+        return;
+#endif
+    }
+
+    if constexpr (std::same_as<StorageType, std::int8_t>) {
+#if defined(__SSE4_1__)
+        auto const kernel = [](__m128i left, __m128i right) -> __m128i {
+            auto const lowLeft    = _mm_cvtepi8_epi16(left);
+            auto const lowRight   = _mm_cvtepi8_epi16(right);
+            auto const lowProduct = _mm_mullo_epi16(lowLeft, lowRight);
+            auto const lowShifted = _mm_srli_epi16(lowProduct, FractionalBits);
+
+            auto const highLeft    = _mm_cvtepi8_epi16(_mm_srli_si128(left, 8));
+            auto const highRight   = _mm_cvtepi8_epi16(_mm_srli_si128(right, 8));
+            auto const highProduct = _mm_mullo_epi16(highLeft, highRight);
+            auto const highShifted = _mm_srli_epi16(highProduct, FractionalBits);
+
+            return _mm_packs_epi16(lowShifted, highShifted);
+        };
         simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, kernel);
+        return;
+#endif
+    } else if constexpr (std::same_as<StorageType, std::int16_t>) {
+#if defined(__SSE4_1__)
+        auto const kernel = [](__m128i left, __m128i right) -> __m128i {
+            auto const lowLeft    = _mm_cvtepi16_epi32(left);
+            auto const lowRight   = _mm_cvtepi16_epi32(right);
+            auto const lowProduct = _mm_mullo_epi32(lowLeft, lowRight);
+            auto const lowShifted = _mm_srli_epi32(lowProduct, FractionalBits);
+
+            auto const highLeft    = _mm_cvtepi16_epi32(_mm_srli_si128(left, 8));
+            auto const highRight   = _mm_cvtepi16_epi32(_mm_srli_si128(right, 8));
+            auto const highProduct = _mm_mullo_epi32(highLeft, highRight);
+            auto const highShifted = _mm_srli_epi32(highProduct, FractionalBits);
+
+            return _mm_packs_epi32(lowShifted, highShifted);
+        };
+
+        simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, kernel);
+        return;
 #elif defined(NEO_HAS_SIMD_NEON)
         simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, detail::mul_kernel_s16);
-#else
-        for (auto i{0U}; i < lhs.size(); ++i) {
-            out[i] = std::multiplies{}(lhs[i], rhs[i]);
-        }
+        return;
 #endif
-    } else {
-        if constexpr (std::same_as<StorageType, std::int8_t>) {
-#if defined(__SSE4_1__)
-            auto const kernel = [](__m128i left, __m128i right) -> __m128i {
-                auto const lowLeft    = _mm_cvtepi8_epi16(left);
-                auto const lowRight   = _mm_cvtepi8_epi16(right);
-                auto const lowProduct = _mm_mullo_epi16(lowLeft, lowRight);
-                auto const lowShifted = _mm_srli_epi16(lowProduct, FractionalBits);
+    }
 
-                auto const highLeft    = _mm_cvtepi8_epi16(_mm_srli_si128(left, 8));
-                auto const highRight   = _mm_cvtepi8_epi16(_mm_srli_si128(right, 8));
-                auto const highProduct = _mm_mullo_epi16(highLeft, highRight);
-                auto const highShifted = _mm_srli_epi16(highProduct, FractionalBits);
-
-                return _mm_packs_epi16(lowShifted, highShifted);
-            };
-            simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, kernel);
-#else
-            for (auto i{0U}; i < lhs.size(); ++i) {
-                out[i] = std::multiplies{}(lhs[i], rhs[i]);
-            }
-#endif
-        } else if constexpr (std::same_as<StorageType, std::int16_t>) {
-#if defined(__SSE4_1__)
-            auto const kernel = [](__m128i left, __m128i right) -> __m128i {
-                auto const lowLeft    = _mm_cvtepi16_epi32(left);
-                auto const lowRight   = _mm_cvtepi16_epi32(right);
-                auto const lowProduct = _mm_mullo_epi32(lowLeft, lowRight);
-                auto const lowShifted = _mm_srli_epi32(lowProduct, FractionalBits);
-
-                auto const highLeft    = _mm_cvtepi16_epi32(_mm_srli_si128(left, 8));
-                auto const highRight   = _mm_cvtepi16_epi32(_mm_srli_si128(right, 8));
-                auto const highProduct = _mm_mullo_epi32(highLeft, highRight);
-                auto const highShifted = _mm_srli_epi32(highProduct, FractionalBits);
-
-                return _mm_packs_epi32(lowShifted, highShifted);
-            };
-
-            simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, kernel);
-#elif defined(NEO_HAS_SIMD_NEON)
-            simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, detail::mul_kernel_s16);
-#else
-            for (auto i{0U}; i < lhs.size(); ++i) {
-                out[i] = std::multiplies{}(lhs[i], rhs[i]);
-            }
-#endif
-        } else {
-            for (auto i{0U}; i < lhs.size(); ++i) {
-                out[i] = std::multiplies{}(lhs[i], rhs[i]);
-            }
-        }
+    for (auto i{0U}; i < lhs.size(); ++i) {
+        out[i] = std::multiplies{}(lhs[i], rhs[i]);
     }
 }
 
