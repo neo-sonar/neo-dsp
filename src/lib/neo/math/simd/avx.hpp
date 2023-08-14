@@ -32,7 +32,7 @@ NEO_ALWAYS_INLINE auto cmul(__m256d a, __m256d b) noexcept -> __m256d
     return _mm256_addsub_pd(_mm256_mul_pd(real, real), _mm256_mul_pd(imag, imag));
 }
 
-#if defined(NEO_HAS_SIMD_F16C)
+#if defined(NEO_HAS_SIMD_F16C) && defined(FLT16_MIN)
 struct alignas(32) float16x8
 {
     using value_type    = _Float16;
