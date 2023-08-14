@@ -1,5 +1,6 @@
 #pragma once
 
+#include <neo/algorithm/all_of.hpp>
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/copy.hpp>
 #include <neo/algorithm/fill.hpp>

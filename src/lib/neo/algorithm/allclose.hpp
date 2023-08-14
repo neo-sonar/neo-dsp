@@ -2,6 +2,7 @@
 
 #include <neo/config.hpp>
 
+#include <neo/algorithm/all_of.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/math/complex.hpp>
 
@@ -13,25 +14,9 @@ namespace neo {
 template<in_object InObj1, in_object InObj2, typename Scalar>
 [[nodiscard]] auto allclose(InObj1 lhs, InObj2 rhs, Scalar tolerance) -> bool
 {
-    NEO_EXPECTS(lhs.extents() == rhs.extents());
-
-    if constexpr (InObj1::rank() == 1) {
-        for (auto i{0}; std::cmp_less(i, lhs.extent(0)); ++i) {
-            if (std::abs(lhs[i] - rhs[i]) > tolerance) {
-                return false;
-            }
-        }
-    } else {
-        for (auto i{0}; std::cmp_less(i, lhs.extent(0)); ++i) {
-            for (auto j{0}; std::cmp_less(j, lhs.extent(1)); ++j) {
-                if (std::abs(lhs(i, j) - rhs(i, j)) > tolerance) {
-                    return false;
-                }
-            }
-        }
-    }
-
-    return true;
+    return neo::all_of(lhs, rhs, [tolerance](auto const& left, auto const& right) -> bool {
+        return std::abs(left - right) <= tolerance;
+    });
 }
 
 template<in_object InObj1, in_object InObj2>
