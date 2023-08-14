@@ -49,3 +49,10 @@
 #if defined(__AVX512BW__)
     #define NEO_HAS_SIMD_AVX512BW 1
 #endif
+
+namespace neo {
+
+template<typename>
+inline constexpr auto const always_false = false;
+
+}  // namespace neo

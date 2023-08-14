@@ -1,5 +1,7 @@
 #pragma once
 
+#include <neo/config.hpp>
+
 #include <neo/math/complex.hpp>
 #include <neo/math/fixed_point/fixed_point.hpp>
 
@@ -8,50 +10,72 @@
 
 namespace neo {
 
-struct complex_q15
+template<typename FixedPoint>
+struct fixed_point_complex
 {
     using value_type = q15;
 
-    constexpr complex_q15() = default;
+    constexpr fixed_point_complex() = default;
 
-    constexpr complex_q15(q15 re, q15 im = q15{}) noexcept : _data{re, im} {}
+    constexpr fixed_point_complex(FixedPoint re, FixedPoint im = FixedPoint{}) noexcept : _data{re, im} {}
 
-    [[nodiscard]] constexpr auto real() const noexcept -> q15 { return _data[0]; }
+    [[nodiscard]] constexpr auto real() const noexcept -> FixedPoint { return _data[0]; }
 
-    [[nodiscard]] constexpr auto imag() const noexcept -> q15 { return _data[1]; }
+    [[nodiscard]] constexpr auto imag() const noexcept -> FixedPoint { return _data[1]; }
 
-    constexpr auto real(q15 re) noexcept -> void { _data[0] = re; }
+    constexpr auto real(FixedPoint re) noexcept -> void { _data[0] = re; }
 
-    constexpr auto imag(q15 im) noexcept -> void { _data[1] = im; }
+    constexpr auto imag(FixedPoint im) noexcept -> void { _data[1] = im; }
 
-    friend constexpr auto operator+(complex_q15 lhs, complex_q15 rhs) -> complex_q15
+    friend constexpr auto operator+(fixed_point_complex lhs, fixed_point_complex rhs) -> fixed_point_complex
     {
-        return complex_q15{lhs.real() + rhs.real(), lhs.imag() + rhs.imag()};
+        return fixed_point_complex{
+            lhs.real() + rhs.real(),
+            lhs.imag() + rhs.imag(),
+        };
     }
 
-    friend constexpr auto operator-(complex_q15 lhs, complex_q15 rhs) -> complex_q15
+    friend constexpr auto operator-(fixed_point_complex lhs, fixed_point_complex rhs) -> fixed_point_complex
     {
-        return complex_q15{lhs.real() - rhs.real(), lhs.imag() - rhs.imag()};
+        return fixed_point_complex{
+            lhs.real() - rhs.real(),
+            lhs.imag() - rhs.imag(),
+        };
     }
 
-    friend constexpr auto operator*(complex_q15 lhs, complex_q15 rhs) -> complex_q15
+    friend constexpr auto operator*(fixed_point_complex lhs, fixed_point_complex rhs) -> fixed_point_complex
     {
-        auto const a = lhs.real().value();
-        auto const b = lhs.imag().value();
-        auto const c = rhs.real().value();
-        auto const d = lhs.imag().value();
+        using Int = typename FixedPoint::storage_type;
 
-        return complex_q15{
-            {underlying_value, static_cast<std::int16_t>(((a * c) >> 17) - ((b * d) >> 17))},
-            {underlying_value, static_cast<std::int16_t>(((a * d) >> 17) + ((b * c) >> 17))},
+        auto const shift = [] {
+            if constexpr (sizeof(Int) == 2) {
+                return 17;
+            } else if constexpr (sizeof(Int) == 4) {
+                return 33;
+            } else {
+                static_assert(always_false<Int>);
+            }
+        }();
+
+        auto const lre = lhs.real().value();
+        auto const lim = lhs.imag().value();
+        auto const rre = rhs.real().value();
+        auto const rim = lhs.imag().value();
+
+        return fixed_point_complex{
+            FixedPoint{underlying_value, static_cast<Int>(((lre * rre) >> shift) - ((lim * rim) >> shift))},
+            FixedPoint{underlying_value, static_cast<Int>(((lre * rim) >> shift) + ((lim * rre) >> shift))},
         };
     }
 
 private:
-    std::array<q15, 2> _data{};
+    std::array<FixedPoint, 2> _data{};
 };
 
-template<>
-inline constexpr auto const is_complex<complex_q15> = true;
+using complex_q7  = fixed_point_complex<q7>;
+using complex_q15 = fixed_point_complex<q15>;
+
+template<typename FixedPoint>
+inline constexpr auto const is_complex<fixed_point_complex<FixedPoint>> = true;
 
 }  // namespace neo

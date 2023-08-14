@@ -278,6 +278,29 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: multiply(fixed_point, fixed_point)", "
     }
 }
 
+TEST_CASE("neo/math/fixed_point: complex_q7")
+{
+    STATIC_REQUIRE(neo::complex<neo::complex_q7>);
+    STATIC_REQUIRE(neo::is_complex<neo::complex_q7>);
+
+    auto const lhs = neo::complex_q7{
+        neo::q7{neo::underlying_value, 14},
+        neo::q7{neo::underlying_value, 42}
+    };
+    auto const rhs = neo::complex_q7{
+        neo::q7{neo::underlying_value, 10},
+        neo::q7{neo::underlying_value, 20}
+    };
+
+    auto const sum = lhs + rhs;
+    REQUIRE(static_cast<int>(sum.real().value()) == 24);
+    REQUIRE(static_cast<int>(sum.imag().value()) == 62);
+
+    auto const diff = lhs - rhs;
+    REQUIRE(static_cast<int>(diff.real().value()) == 4);
+    REQUIRE(static_cast<int>(diff.imag().value()) == 22);
+}
+
 TEST_CASE("neo/math/fixed_point: complex_q15")
 {
     STATIC_REQUIRE(neo::complex<neo::complex_q15>);
