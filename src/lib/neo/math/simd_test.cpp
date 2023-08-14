@@ -12,8 +12,8 @@
 
 TEST_CASE("neo/math: simd::cmul(sse3)")
 {
-    using Complex  = neo::simd::complex32x2;
-    using Register = neo::simd::complex32x2::register_type;
+    using Complex  = neo::simd::icomplex32x2;
+    using Register = neo::simd::icomplex32x2::register_type;
 
     auto test = [](auto op) {
         auto const lhs_vals = std::array{
@@ -192,7 +192,7 @@ TEMPLATE_TEST_CASE("neo/math: float_batch", "", neo::simd::float32x4, neo::simd:
     test_float_batch<TestType>();
 }
 
-TEMPLATE_TEST_CASE("neo/math: complex_batch", "", neo::simd::complex32x2, neo::simd::complex64x1)
+TEMPLATE_TEST_CASE("neo/math: complex_batch", "", neo::simd::icomplex32x2, neo::simd::icomplex64x1)
 {
     test_complex_batch<TestType>();
 }
@@ -219,7 +219,7 @@ TEMPLATE_TEST_CASE("neo/math: float_batch", "", neo::simd::float32x8, neo::simd:
     test_float_batch<TestType>();
 }
 
-TEMPLATE_TEST_CASE("neo/math: complex_batch", "", neo::simd::complex32x4, neo::simd::complex64x2)
+TEMPLATE_TEST_CASE("neo/math: complex_batch", "", neo::simd::icomplex32x4, neo::simd::icomplex64x2)
 {
     test_complex_batch<TestType>();
 }
@@ -246,7 +246,7 @@ TEMPLATE_TEST_CASE("neo/math: float_batch", "", neo::simd::float32x16, neo::simd
     test_float_batch<TestType>();
 }
 
-TEMPLATE_TEST_CASE("neo/math: complex_batch", "", neo::simd::complex32x8, neo::simd::complex64x4)
+TEMPLATE_TEST_CASE("neo/math: complex_batch", "", neo::simd::icomplex32x8, neo::simd::icomplex64x4)
 {
     test_complex_batch<TestType>();
 }
