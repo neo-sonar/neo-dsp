@@ -103,6 +103,11 @@ jobs:
         with:
           key: perceptual-convolution-build-${{ matrix.name }}
 
+      - name: Print native arch flags (GCC)
+        if: contains(matrix.name, 'Coverage')
+        shell: bash
+        run: gcc -march=native -E -v - </dev/null 2>&1 | grep cc1
+
       - name: CMake configure
         shell: bash
         run: cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_flags }}
