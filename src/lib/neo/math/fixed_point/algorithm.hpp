@@ -53,30 +53,17 @@ auto apply_fixed_point_kernel(
     NEO_EXPECTS(lhs.size() == rhs.size());
     NEO_EXPECTS(lhs.size() == out.size());
 
+#if defined(NEO_HAS_SIMD_SSE2) || defined(NEO_HAS_SIMD_NEON)
     if constexpr (std::same_as<StorageType, std::int8_t>) {
-#if defined(NEO_HAS_SIMD_SSE2)
-        simd::apply_kernel_sse<8>(lhs, rhs, out, scalar_kernel, vector_kernel_s8);
-#elif defined(NEO_HAS_SIMD_NEON)
-        simd::apply_kernel_neon128<8>(lhs, rhs, out, scalar_kernel, vector_kernel_s8);
-#else
-        for (auto i{0U}; i < lhs.size(); ++i) {
-            out[i] = scalar_kernel(lhs[i], rhs[i]);
-        }
-#endif
+        simd::apply_kernel<StorageType>(lhs, rhs, out, scalar_kernel, vector_kernel_s8);
+        return;
     } else if constexpr (std::same_as<StorageType, std::int16_t>) {
-#if defined(NEO_HAS_SIMD_SSE2)
-        simd::apply_kernel_sse<16>(lhs, rhs, out, scalar_kernel, vector_kernel_s16);
-#elif defined(NEO_HAS_SIMD_NEON)
-        simd::apply_kernel_neon128<16>(lhs, rhs, out, scalar_kernel, vector_kernel_s16);
-#else
-        for (auto i{0U}; i < lhs.size(); ++i) {
-            out[i] = scalar_kernel(lhs[i], rhs[i]);
-        }
+        simd::apply_kernel<StorageType>(lhs, rhs, out, scalar_kernel, vector_kernel_s16);
+    }
 #endif
-    } else {
-        for (auto i{0U}; i < lhs.size(); ++i) {
-            out[i] = scalar_kernel(lhs[i], rhs[i]);
-        }
+
+    for (auto i{0U}; i < lhs.size(); ++i) {
+        out[i] = scalar_kernel(lhs[i], rhs[i]);
     }
 }
 
@@ -118,9 +105,9 @@ auto multiply(
     if constexpr (std::same_as<StorageType, std::int16_t> && FractionalBits == 15) {
 #if defined(NEO_HAS_SIMD_SSE3)
         auto const kernel = [](__m128i left, __m128i right) -> __m128i { return _mm_mulhrs_epi16(left, right); };
-        simd::apply_kernel_sse<16>(lhs, rhs, out, std::multiplies{}, kernel);
+        simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, kernel);
 #elif defined(NEO_HAS_SIMD_NEON)
-        simd::apply_kernel_neon128<16>(lhs, rhs, out, std::multiplies{}, detail::mul_kernel_s16);
+        simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, detail::mul_kernel_s16);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) {
             out[i] = std::multiplies{}(lhs[i], rhs[i]);
@@ -142,7 +129,7 @@ auto multiply(
 
                 return _mm_packs_epi16(lowShifted, highShifted);
             };
-            simd::apply_kernel_sse<8>(lhs, rhs, out, std::multiplies{}, kernel);
+            simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, kernel);
 #else
             for (auto i{0U}; i < lhs.size(); ++i) {
                 out[i] = std::multiplies{}(lhs[i], rhs[i]);
@@ -164,9 +151,9 @@ auto multiply(
                 return _mm_packs_epi32(lowShifted, highShifted);
             };
 
-            simd::apply_kernel_sse<16>(lhs, rhs, out, std::multiplies{}, kernel);
+            simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, kernel);
 #elif defined(NEO_HAS_SIMD_NEON)
-            simd::apply_kernel_neon128<16>(lhs, rhs, out, std::multiplies{}, detail::mul_kernel_s16);
+            simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, detail::mul_kernel_s16);
 #else
             for (auto i{0U}; i < lhs.size(); ++i) {
                 out[i] = std::multiplies{}(lhs[i], rhs[i]);

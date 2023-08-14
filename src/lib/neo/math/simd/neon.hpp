@@ -8,28 +8,29 @@
 
 namespace neo::simd {
 
-template<int ValueSizeBits>
-inline constexpr auto apply_kernel_neon128
-    = [](auto const& lhs, auto const& rhs, auto const& out, auto scalar_kernel, auto vector_kernel) {
+template<typename ScalarType>
+inline constexpr auto apply_kernel = [](auto lhs, auto rhs, auto out, auto scalar_kernel, auto vector_kernel) {
+    static constexpr auto valueSizeBits = sizeof(ScalarType) * 8UL;
+
     auto load = [](auto* ptr) {
-        if constexpr (ValueSizeBits == 8) {
+        if constexpr (valueSizeBits == 8) {
             return vld1q_s8(reinterpret_cast<std::int8_t const*>(ptr));
         } else {
-            static_assert(ValueSizeBits == 16);
+            static_assert(valueSizeBits == 16);
             return vld1q_s16(reinterpret_cast<std::int16_t const*>(ptr));
         }
     };
 
     auto store = [](auto* ptr, auto val) {
-        if constexpr (ValueSizeBits == 8) {
+        if constexpr (valueSizeBits == 8) {
             return vst1q_s8(reinterpret_cast<std::int8_t*>(ptr), val);
         } else {
-            static_assert(ValueSizeBits == 16);
+            static_assert(valueSizeBits == 16);
             return vst1q_s16(reinterpret_cast<std::int16_t*>(ptr), val);
         }
     };
 
-    static constexpr auto vectorSize = static_cast<std::ptrdiff_t>(128 / ValueSizeBits);
+    static constexpr auto vectorSize = static_cast<std::ptrdiff_t>(128 / valueSizeBits);
     auto const remainder             = static_cast<std::ptrdiff_t>(lhs.size()) % vectorSize;
 
     for (auto i{0}; i < remainder; ++i) {

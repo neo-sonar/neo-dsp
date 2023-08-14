@@ -118,11 +118,11 @@ private:
     register_type _val;
 };
 
-template<int ValueSizeBits>
-inline constexpr auto apply_kernel_sse
-    = [](auto const& lhs, auto const& rhs, auto const& out, auto scalar_kernel, auto vector_kernel) {
-    static constexpr auto vectorSize = static_cast<ptrdiff_t>(128 / ValueSizeBits);
-    auto const remainder             = static_cast<ptrdiff_t>(lhs.size()) % vectorSize;
+template<typename ScalarType>
+inline constexpr auto apply_kernel = [](auto lhs, auto rhs, auto out, auto scalar_kernel, auto vector_kernel) {
+    static constexpr auto valueSizeBits = sizeof(ScalarType) * 8UL;
+    static constexpr auto vectorSize    = static_cast<ptrdiff_t>(128 / valueSizeBits);
+    auto const remainder                = static_cast<ptrdiff_t>(lhs.size()) % vectorSize;
 
     for (auto i{0}; i < remainder; ++i) {
         out[static_cast<size_t>(i)] = scalar_kernel(lhs[static_cast<size_t>(i)], rhs[static_cast<size_t>(i)]);
