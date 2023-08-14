@@ -277,3 +277,30 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: multiply(fixed_point, fixed_point)", "
         REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 }
+
+TEST_CASE("neo/math/fixed_point: complex_q15")
+{
+    STATIC_REQUIRE(neo::complex<neo::complex_q15>);
+    STATIC_REQUIRE(neo::is_complex<neo::complex_q15>);
+
+    auto const lhs = neo::complex_q15{
+        neo::q15_t{neo::underlying_value, 1430},
+        neo::q15_t{neo::underlying_value,  420}
+    };
+    auto const rhs = neo::complex_q15{
+        neo::q15_t{neo::underlying_value, 1000},
+        neo::q15_t{neo::underlying_value,  100}
+    };
+
+    auto const sum = lhs + rhs;
+    REQUIRE(sum.real().value() == 2430);
+    REQUIRE(sum.imag().value() == 520);
+
+    auto const diff = lhs - rhs;
+    REQUIRE(diff.real().value() == 430);
+    REQUIRE(diff.imag().value() == 320);
+
+    auto const product = lhs * rhs;
+    REQUIRE(product.real().value() == 9);
+    REQUIRE(product.imag().value() == 7);
+}
