@@ -10,12 +10,12 @@ namespace neo {
 
 namespace detail {
 
-template<typename StorageType>
-constexpr auto saturate(std::int32_t x) -> StorageType
+template<typename IntType>
+constexpr auto saturate(std::int32_t x) -> IntType
 {
-    auto const min_v = static_cast<std::int32_t>(std::numeric_limits<StorageType>::min());
-    auto const max_v = static_cast<std::int32_t>(std::numeric_limits<StorageType>::max());
-    return static_cast<StorageType>(std::clamp(x, min_v, max_v));
+    auto const min_v = static_cast<std::int32_t>(std::numeric_limits<IntType>::min());
+    auto const max_v = static_cast<std::int32_t>(std::numeric_limits<IntType>::max());
+    return static_cast<IntType>(std::clamp(x, min_v, max_v));
 }
 
 }  // namespace detail
@@ -27,10 +27,10 @@ struct underlying_value_t
 
 inline constexpr auto underlying_value = underlying_value_t{};
 
-template<int IntegerBits, int FractionalBits, typename StorageType>
+template<std::signed_integral IntType, int IntegerBits, int FractionalBits>
 struct fixed_point
 {
-    using storage_type = StorageType;
+    using storage_type = IntType;
 
     static constexpr auto const integer_bits    = IntegerBits;
     static constexpr auto const fractional_bits = FractionalBits;
@@ -58,12 +58,12 @@ struct fixed_point
 
     [[nodiscard]] constexpr auto operator-() const -> fixed_point
     {
-        auto const min_v = std::numeric_limits<StorageType>::min();
-        auto const max_v = std::numeric_limits<StorageType>::max();
+        auto const min_v = std::numeric_limits<IntType>::min();
+        auto const max_v = std::numeric_limits<IntType>::max();
 
         return fixed_point{
             underlying_value,
-            value() == min_v ? max_v : static_cast<StorageType>(-value()),
+            value() == min_v ? max_v : static_cast<IntType>(-value()),
         };
     }
 
@@ -71,7 +71,7 @@ struct fixed_point
     {
         return {
             underlying_value,
-            detail::saturate<StorageType>(lhs.value() + rhs.value()),
+            detail::saturate<IntType>(lhs.value() + rhs.value()),
         };
     }
 
@@ -79,7 +79,7 @@ struct fixed_point
     {
         return {
             underlying_value,
-            detail::saturate<StorageType>(lhs.value() - rhs.value()),
+            detail::saturate<IntType>(lhs.value() - rhs.value()),
         };
     }
 
@@ -87,7 +87,7 @@ struct fixed_point
     {
         return {
             underlying_value,
-            detail::saturate<StorageType>((lhs.value() * rhs.value()) >> fractional_bits),
+            detail::saturate<IntType>((lhs.value() * rhs.value()) >> fractional_bits),
         };
     }
 
@@ -104,22 +104,22 @@ struct fixed_point
     friend constexpr auto operator>=(fixed_point lhs, fixed_point rhs) -> bool { return lhs.value() >= rhs.value(); }
 
 private:
-    StorageType _value;
+    IntType _value;
 };
 
-template<int IntegerBits, int FractionalBits, typename StorageType>
-[[nodiscard]] constexpr auto to_float(fixed_point<IntegerBits, FractionalBits, StorageType> val) noexcept -> float
+template<std::signed_integral IntType, int IntegerBits, int FractionalBits>
+[[nodiscard]] constexpr auto to_float(fixed_point<IntType, IntegerBits, FractionalBits> val) noexcept -> float
 {
     return static_cast<float>(val);
 }
 
-template<int IntegerBits, int FractionalBits, typename StorageType>
-[[nodiscard]] constexpr auto to_double(fixed_point<IntegerBits, FractionalBits, StorageType> val) noexcept -> double
+template<std::signed_integral IntType, int IntegerBits, int FractionalBits>
+[[nodiscard]] constexpr auto to_double(fixed_point<IntType, IntegerBits, FractionalBits> val) noexcept -> double
 {
     return static_cast<double>(val);
 }
 
-using q7  = fixed_point<0, 7, std::int8_t>;
-using q15 = fixed_point<0, 15, std::int16_t>;
+using q7  = fixed_point<std::int8_t, 0, 7>;
+using q15 = fixed_point<std::int16_t, 0, 15>;
 
 }  // namespace neo
