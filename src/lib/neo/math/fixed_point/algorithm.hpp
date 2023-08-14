@@ -157,3 +157,99 @@ auto multiply(
 }
 
 }  // namespace neo
+
+#if defined(NEO_HAS_SIMD_SSE2)
+
+namespace neo::simd {
+
+struct alignas(16) q7x16
+{
+    using value_type    = neo::q7_t;
+    using register_type = __m128i;
+
+    static constexpr auto const alignment = alignof(register_type);
+    static constexpr auto const size      = sizeof(register_type) / sizeof(value_type);
+
+    q7x16() = default;
+
+    NEO_ALWAYS_INLINE q7x16(register_type reg) noexcept : _reg{reg} {}
+
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
+
+    [[nodiscard]] static auto broadcast(value_type val) -> q7x16 { return _mm_set1_epi8(val.value()); }
+
+    [[nodiscard]] static auto load_unaligned(value_type const* input) -> q7x16
+    {
+        auto const* integer = reinterpret_cast<value_type::storage_type const*>(input);
+        auto const* ptr     = reinterpret_cast<register_type const*>(integer);
+        return _mm_loadu_si128(ptr);
+    }
+
+    auto store_unaligned(value_type* output) const -> void
+    {
+        auto* integer = reinterpret_cast<value_type::storage_type*>(output);
+        auto* ptr     = reinterpret_cast<register_type*>(integer);
+        return _mm_storeu_si128(ptr, _reg);
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator+(q7x16 lhs, q7x16 rhs) -> q7x16
+    {
+        return _mm_adds_epi8(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator-(q7x16 lhs, q7x16 rhs) -> q7x16
+    {
+        return _mm_subs_epi8(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+private:
+    register_type _reg;
+};
+
+struct alignas(16) q15x8
+{
+    using value_type    = neo::q15_t;
+    using register_type = __m128i;
+
+    static constexpr auto const alignment = alignof(register_type);
+    static constexpr auto const size      = sizeof(register_type) / sizeof(value_type);
+
+    q15x8() = default;
+
+    NEO_ALWAYS_INLINE q15x8(register_type reg) noexcept : _reg{reg} {}
+
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
+
+    [[nodiscard]] static auto broadcast(value_type val) -> q15x8 { return _mm_set1_epi16(val.value()); }
+
+    [[nodiscard]] static auto load_unaligned(value_type const* input) -> q15x8
+    {
+        auto const* integer = reinterpret_cast<value_type::storage_type const*>(input);
+        auto const* ptr     = reinterpret_cast<register_type const*>(integer);
+        return _mm_loadu_si128(ptr);
+    }
+
+    auto store_unaligned(value_type* output) const -> void
+    {
+        auto* integer = reinterpret_cast<value_type::storage_type*>(output);
+        auto* ptr     = reinterpret_cast<register_type*>(integer);
+        return _mm_storeu_si128(ptr, _reg);
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator+(q15x8 lhs, q15x8 rhs) -> q15x8
+    {
+        return _mm_adds_epi16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator-(q15x8 lhs, q15x8 rhs) -> q15x8
+    {
+        return _mm_subs_epi16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+private:
+    register_type _reg;
+};
+
+}  // namespace neo::simd
+
+#endif

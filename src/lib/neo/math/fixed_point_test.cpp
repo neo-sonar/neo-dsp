@@ -304,3 +304,55 @@ TEST_CASE("neo/math/fixed_point: complex_q15")
     REQUIRE(product.real().value() == 9);
     REQUIRE(product.imag().value() == 7);
 }
+
+#if defined(NEO_HAS_SIMD_SSE2)
+
+TEST_CASE("neo/math/fixed_point: simd::q7x16")
+{
+    using Batch = neo::simd::q7x16;
+
+    STATIC_REQUIRE(Batch::size == 16);
+    STATIC_REQUIRE(Batch::alignment == 16);
+
+    auto lhs = std::array<neo::q7_t, Batch::size>{};
+    auto rhs = std::array<neo::q7_t, Batch::size>{};
+    auto sum = std::array<neo::q7_t, Batch::size>{};
+
+    std::fill(lhs.begin(), lhs.end(), neo::q7_t{neo::underlying_value, 50});
+    std::fill(rhs.begin(), rhs.end(), neo::q7_t{neo::underlying_value, 50});
+
+    auto l = Batch::load_unaligned(lhs.data());
+    auto r = Batch::load_unaligned(rhs.data());
+    auto s = l + r;
+    s.store_unaligned(sum.data());
+
+    for (auto val : sum) {
+        REQUIRE(val.value() == Batch::value_type::storage_type(100));
+    }
+}
+
+TEST_CASE("neo/math/fixed_point: simd::q15x8")
+{
+    using Batch = neo::simd::q15x8;
+
+    STATIC_REQUIRE(Batch::size == 8);
+    STATIC_REQUIRE(Batch::alignment == 16);
+
+    auto lhs = std::array<neo::q15_t, Batch::size>{};
+    auto rhs = std::array<neo::q15_t, Batch::size>{};
+    auto sum = std::array<neo::q15_t, Batch::size>{};
+
+    std::fill(lhs.begin(), lhs.end(), neo::q15_t{neo::underlying_value, 1000});
+    std::fill(rhs.begin(), rhs.end(), neo::q15_t{neo::underlying_value, 1000});
+
+    auto l = Batch::load_unaligned(lhs.data());
+    auto r = Batch::load_unaligned(rhs.data());
+    auto s = l + r;
+    s.store_unaligned(sum.data());
+
+    for (auto val : sum) {
+        REQUIRE(val.value() == Batch::value_type::storage_type(2000));
+    }
+}
+
+#endif
