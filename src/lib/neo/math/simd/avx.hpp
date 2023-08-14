@@ -4,6 +4,8 @@
 
 #include <immintrin.h>
 
+#include <array>
+
 namespace neo::simd {
 
 NEO_ALWAYS_INLINE auto cadd(__m256 a, __m256 b) noexcept -> __m256 { return _mm256_add_ps(a, b); }
@@ -28,12 +30,13 @@ NEO_ALWAYS_INLINE auto cmul(__m256d a, __m256d b) noexcept -> __m256d
     return _mm256_addsub_pd(_mm256_mul_pd(real, real), _mm256_mul_pd(imag, imag));
 }
 
+#if defined(NEO_HAS_SIMD_F16C)
 struct alignas(32) float16x8
 {
     using value_type    = _Float16;
     using register_type = __m128i;
 
-    static constexpr auto const alignment = sizeof(register_type);
+    static constexpr auto const alignment = std::size_t(32);
     static constexpr auto const size      = std::size_t(8);
 
     float16x8() = default;
@@ -44,7 +47,10 @@ struct alignas(32) float16x8
 
     [[nodiscard]] static auto broadcast(value_type val) -> float16x8
     {
-        return _mm_set1_epi16(std::bit_cast<std::int16_t>(val));
+        auto values = std::array<_Float16, size>{};
+        std::fill(values.begin(), values.end(), val);
+        return load_unaligned(values.data());
+        // return _mm_set1_epi16(std::bit_cast<std::int16_t>(val));
     }
 
     [[nodiscard]] static auto load_unaligned(value_type const* input) -> float16x8
@@ -83,6 +89,7 @@ private:
 
     register_type _register;
 };
+#endif
 
 struct alignas(32) float32x8
 {

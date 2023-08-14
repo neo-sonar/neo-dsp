@@ -8,6 +8,30 @@
 
 #include <array>
 
+namespace {
+template<typename T>
+struct testing_complex
+{
+    using value_type = T;
+
+    testing_complex() = default;
+
+    testing_complex(T re) : _data{re} {}
+
+    testing_complex(T re, T im) : _data{re, im} {}
+
+    [[nodiscard]] auto real() const noexcept { return _data[0]; }
+
+    [[nodiscard]] auto imag() const noexcept { return _data[1]; }
+
+private:
+    std::array<T, 2> _data;
+};
+}  // namespace
+
+template<typename T>
+inline constexpr auto const neo::is_complex<testing_complex<T>> = true;
+
 #if defined(NEO_HAS_SIMD_SSE2)
 
 TEST_CASE("neo/math: simd::cmul(sse3)")
@@ -80,7 +104,7 @@ static auto test_float_batch()
 }
 
 template<typename ComplexBatch>
-static auto test_complex_batch()
+static auto test_icomplex_batch()
 {
     using FloatBatch = typename ComplexBatch::batch_type;
     using Float      = typename FloatBatch::value_type;
@@ -91,17 +115,17 @@ static auto test_complex_batch()
     auto test = [](auto op, auto left_val, auto right_val, auto expected) -> void {
         static constexpr auto const size = ComplexBatch::size;
 
-        auto left = std::array<std::complex<Float>, size>{};
+        auto left = std::array<testing_complex<Float>, size>{};
         std::fill(left.begin(), left.end(), left_val);
 
-        auto right = std::array<std::complex<Float>, size>{};
+        auto right = std::array<testing_complex<Float>, size>{};
         std::fill(right.begin(), right.end(), right_val);
 
         auto lhs    = ComplexBatch::load_unaligned(left.data());
         auto rhs    = ComplexBatch::load_unaligned(right.data());
         auto result = op(lhs, rhs);
 
-        auto output = std::array<std::complex<Float>, size>{};
+        auto output = std::array<testing_complex<Float>, size>{};
         result.store_unaligned(output.data());
         for (auto val : output) {
             REQUIRE(val.real() == Catch::Approx(expected.real()));
@@ -109,16 +133,17 @@ static auto test_complex_batch()
         }
     };
 
-    auto const ones   = std::complex{Float(1), Float(1)};
-    auto const twos   = std::complex{Float(2), Float(2)};
-    auto const threes = std::complex{Float(3), Float(3)};
+    auto const ones   = testing_complex{Float(1), Float(1)};
+    auto const nones  = testing_complex{Float(-1), Float(-1)};
+    auto const twos   = testing_complex{Float(2), Float(2)};
+    auto const threes = testing_complex{Float(3), Float(3)};
 
     test(std::plus{}, ones, twos, threes);
-    test(std::minus{}, ones, twos, -ones);
+    test(std::minus{}, ones, twos, nones);
 }
 
 template<typename ComplexBatch>
-static auto test_parallel_complex_batch()
+static auto test_pcomplex_batch()
 {
     using Complex     = ComplexBatch;
     using Float       = typename Complex::batch_type;
@@ -206,7 +231,7 @@ TEMPLATE_TEST_CASE("neo/math: float_batch", "", neo::simd::float32x4, neo::simd:
 
 TEMPLATE_TEST_CASE("neo/math: complex_batch", "", neo::simd::icomplex64x2, neo::simd::icomplex128x1)
 {
-    test_complex_batch<TestType>();
+    test_icomplex_batch<TestType>();
 }
 
 static_assert(std::same_as<typename neo::simd::pcomplex64x4::batch_type, neo::simd::float32x4>);
@@ -219,7 +244,7 @@ static_assert(std::same_as<typename neo::simd::pcomplex128x2::real_scalar_type, 
 
 TEMPLATE_TEST_CASE("neo/math: parallel_complex_batch", "", neo::simd::pcomplex64x4, neo::simd::pcomplex128x2)
 {
-    test_parallel_complex_batch<TestType>();
+    test_pcomplex_batch<TestType>();
 }
 
 #endif
@@ -233,7 +258,7 @@ TEMPLATE_TEST_CASE("neo/math: float_batch", "", neo::simd::float32x8, neo::simd:
 
 TEMPLATE_TEST_CASE("neo/math: complex_batch", "", neo::simd::icomplex64x4, neo::simd::icomplex128x2)
 {
-    test_complex_batch<TestType>();
+    test_icomplex_batch<TestType>();
 }
 
 static_assert(std::same_as<typename neo::simd::pcomplex64x8::batch_type, neo::simd::float32x8>);
@@ -246,13 +271,17 @@ static_assert(std::same_as<typename neo::simd::pcomplex128x4::real_scalar_type, 
 
 TEMPLATE_TEST_CASE("neo/math: parallel_complex_batch", "", neo::simd::pcomplex64x8, neo::simd::pcomplex128x4)
 {
-    test_parallel_complex_batch<TestType>();
+    test_pcomplex_batch<TestType>();
 }
 
 #endif
 
-#if defined(__F16C__)
+#if defined(NEO_HAS_SIMD_F16C)
 TEMPLATE_TEST_CASE("neo/math: float_batch", "", neo::simd::float16x8) { test_float_batch<TestType>(); }
+
+// TEMPLATE_TEST_CASE("neo/math: complex_batch", "", neo::simd::icomplex32x4) { test_icomplex_batch<TestType>(); }
+
+TEMPLATE_TEST_CASE("neo/math: parallel_complex_batch", "", neo::simd::pcomplex32x8) { test_pcomplex_batch<TestType>(); }
 #endif
 
 #if defined(NEO_HAS_SIMD_AVX512F)
@@ -264,7 +293,7 @@ TEMPLATE_TEST_CASE("neo/math: float_batch", "", neo::simd::float32x16, neo::simd
 
 TEMPLATE_TEST_CASE("neo/math: complex_batch", "", neo::simd::icomplex64x8, neo::simd::icomplex128x4)
 {
-    test_complex_batch<TestType>();
+    test_icomplex_batch<TestType>();
 }
 
 static_assert(std::same_as<typename neo::simd::pcomplex64x16::batch_type, neo::simd::float32x16>);
@@ -277,7 +306,7 @@ static_assert(std::same_as<typename neo::simd::pcomplex128x8::real_scalar_type, 
 
 TEMPLATE_TEST_CASE("neo/math: parallel_complex_batch", "", neo::simd::pcomplex64x16, neo::simd::pcomplex128x8)
 {
-    test_parallel_complex_batch<TestType>();
+    test_pcomplex_batch<TestType>();
 }
 
 #endif

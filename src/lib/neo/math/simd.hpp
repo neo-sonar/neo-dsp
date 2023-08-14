@@ -37,6 +37,11 @@ using pcomplex64x8  = parallel_complex<float32x8>;
 using pcomplex128x4 = parallel_complex<float64x4>;
 #endif
 
+#if defined(NEO_HAS_SIMD_F16C)
+using icomplex32x4 = interleave_complex<float16x8>;
+using pcomplex32x8 = parallel_complex<float16x8>;
+#endif
+
 #if defined(NEO_HAS_SIMD_AVX512F)
 using icomplex64x8  = interleave_complex<float32x16>;
 using icomplex128x4 = interleave_complex<float64x8>;
