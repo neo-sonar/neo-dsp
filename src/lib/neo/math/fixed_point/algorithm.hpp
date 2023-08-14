@@ -103,16 +103,6 @@ auto multiply(
     NEO_EXPECTS(lhs.size() == rhs.size());
     NEO_EXPECTS(lhs.size() == out.size());
 
-    // Not exactly the same as the other kernels, close enough for now.
-    if constexpr (std::same_as<StorageType, std::int16_t> && FractionalBits == 15) {
-#if defined(NEO_HAS_SIMD_SSE3)
-        simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, [](__m128i left, __m128i right) {
-            return _mm_mulhrs_epi16(left, right);
-        });
-        return;
-#endif
-    }
-
     if constexpr (std::same_as<StorageType, std::int8_t>) {
 #if defined(NEO_HAS_SIMD_SSE41)
         simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, [](__m128i left, __m128i right) {
@@ -146,6 +136,15 @@ auto multiply(
             return _mm_packs_epi32(lowShifted, highShifted);
         });
         return;
+
+#elif defined(NEO_HAS_SIMD_SSE3)
+        // Not exactly the same as the other kernels, close enough for now.
+        if constexpr (std::same_as<StorageType, std::int16_t> && FractionalBits == 15) {
+            simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, [](__m128i left, __m128i right) {
+                return _mm_mulhrs_epi16(left, right);
+            });
+            return;
+        }
 #elif defined(NEO_HAS_SIMD_NEON)
         simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, detail::mul_kernel_s16);
         return;
