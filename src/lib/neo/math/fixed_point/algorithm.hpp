@@ -32,12 +32,12 @@ inline constexpr auto const add_kernel_s16 = [](__m128i l, __m128i r) { return _
 inline constexpr auto const sub_kernel_s8  = [](__m128i l, __m128i r) { return _mm_subs_epi8(l, r); };
 inline constexpr auto const sub_kernel_s16 = [](__m128i l, __m128i r) { return _mm_subs_epi16(l, r); };
 #else
-inline constexpr auto const add_kernel_s8  = std::plus<std::int8_t>{};
-inline constexpr auto const add_kernel_s16 = std::plus<std::int16_t>{};
-inline constexpr auto const sub_kernel_s8  = std::minus<std::int8_t>{};
-inline constexpr auto const sub_kernel_s16 = std::minus<std::int16_t>{};
-inline constexpr auto const mul_kernel_s8  = std::multiplies<std::int8_t>{};
-inline constexpr auto const mul_kernel_s16 = std::multiplies<std::int16_t>{};
+inline constexpr auto const add_kernel_s8  = std::plus<q7_t>{};
+inline constexpr auto const add_kernel_s16 = std::plus<q15_t>{};
+inline constexpr auto const sub_kernel_s8  = std::minus<q7_t>{};
+inline constexpr auto const sub_kernel_s16 = std::minus<q15_t>{};
+inline constexpr auto const mul_kernel_s8  = std::multiplies<q7_t>{};
+inline constexpr auto const mul_kernel_s16 = std::multiplies<q15_t>{};
 #endif
 
 template<int IntegerBits, int FractionalBits, typename StorageType, std::size_t Extent>
