@@ -94,3 +94,6 @@ using complex64x4 = complex<float64x8>;
 #endif
 
 }  // namespace neo::simd
+
+template<typename FloatBatch>
+inline constexpr auto const neo::is_complex<neo::simd::complex<FloatBatch>> = true;

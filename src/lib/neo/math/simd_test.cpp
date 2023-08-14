@@ -65,6 +65,9 @@ static auto test_complex_batch()
     using FloatBatch = typename ComplexBatch::batch_type;
     using Float      = typename FloatBatch::value_type;
 
+    STATIC_REQUIRE(neo::complex<ComplexBatch>);
+    STATIC_REQUIRE(neo::is_complex<ComplexBatch>);
+
     auto test = [](auto op, auto left_val, auto right_val, auto expected) -> void {
         static constexpr auto const size = ComplexBatch::size;
 
