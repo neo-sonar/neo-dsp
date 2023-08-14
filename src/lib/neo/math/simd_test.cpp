@@ -58,13 +58,25 @@ static auto test_float_batch()
 {
     using Float = typename Batch::value_type;
 
-    auto const reg = Batch::broadcast(Float(42));
-    auto output    = std::array<Float, Batch::size>{};
-    reg.store_unaligned(output.data());
+    auto test = [](auto op, auto left_scalar, auto right_scalar, auto expected) {
+        auto left  = std::array<Float, Batch::size>{};
+        auto right = std::array<Float, Batch::size>{};
 
-    for (auto val : output) {
-        REQUIRE(val == Catch::Approx(42.0));
-    }
+        std::fill(left.begin(), left.end(), left_scalar);
+        std::fill(right.begin(), right.end(), right_scalar);
+
+        auto output = std::array<Float, Batch::size>{};
+        auto result = op(Batch::load_unaligned(left.data()), Batch::load_unaligned(right.data()));
+        result.store_unaligned(output.data());
+
+        for (auto val : output) {
+            REQUIRE(val == Catch::Approx(expected));
+        }
+    };
+
+    test(std::plus{}, Float(1), Float(2), Float(3));
+    test(std::minus{}, Float(1), Float(2), Float(-1));
+    test(std::multiplies{}, Float(1), Float(2), Float(2));
 }
 
 template<typename ComplexBatch>
@@ -237,6 +249,10 @@ TEMPLATE_TEST_CASE("neo/math: parallel_complex_batch", "", neo::simd::pcomplex64
     test_parallel_complex_batch<TestType>();
 }
 
+#endif
+
+#if defined(__F16C__)
+TEMPLATE_TEST_CASE("neo/math: float_batch", "", neo::simd::float16x8) { test_float_batch<TestType>(); }
 #endif
 
 #if defined(NEO_HAS_SIMD_AVX512F)

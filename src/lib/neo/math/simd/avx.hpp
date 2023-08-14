@@ -28,6 +28,62 @@ NEO_ALWAYS_INLINE auto cmul(__m256d a, __m256d b) noexcept -> __m256d
     return _mm256_addsub_pd(_mm256_mul_pd(real, real), _mm256_mul_pd(imag, imag));
 }
 
+struct alignas(32) float16x8
+{
+    using value_type    = _Float16;
+    using register_type = __m128i;
+
+    static constexpr auto const alignment = sizeof(register_type);
+    static constexpr auto const size      = std::size_t(8);
+
+    float16x8() = default;
+
+    float16x8(register_type val) noexcept : _register{val} {}
+
+    [[nodiscard]] explicit operator register_type() const { return _register; }
+
+    [[nodiscard]] static auto broadcast(value_type val) -> float16x8
+    {
+        return _mm_set1_epi16(std::bit_cast<std::int16_t>(val));
+    }
+
+    [[nodiscard]] static auto load_unaligned(value_type const* input) -> float16x8
+    {
+        return _mm_loadu_si128(reinterpret_cast<register_type const*>(input));
+    }
+
+    auto store_unaligned(value_type* output) const -> void
+    {
+        return _mm_storeu_si128(reinterpret_cast<register_type*>(output), _register);
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator+(float16x8 lhs, float16x8 rhs) -> float16x8
+    {
+        return binary_op(lhs, rhs, [](auto l, auto r) { return _mm256_add_ps(l, r); });
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator-(float16x8 lhs, float16x8 rhs) -> float16x8
+    {
+        return binary_op(lhs, rhs, [](auto l, auto r) { return _mm256_sub_ps(l, r); });
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator*(float16x8 lhs, float16x8 rhs) -> float16x8
+    {
+        return binary_op(lhs, rhs, [](auto l, auto r) { return _mm256_mul_ps(l, r); });
+    }
+
+private:
+    NEO_ALWAYS_INLINE friend auto binary_op(float16x8 lhs, float16x8 rhs, auto op) -> float16x8
+    {
+        auto const left    = _mm256_cvtph_ps(static_cast<register_type>(lhs));
+        auto const right   = _mm256_cvtph_ps(static_cast<register_type>(rhs));
+        auto const product = op(left, right);
+        return _mm256_cvtps_ph(product, _MM_FROUND_CUR_DIRECTION);
+    }
+
+    register_type _register;
+};
+
 struct alignas(32) float32x8
 {
     using value_type    = float;
