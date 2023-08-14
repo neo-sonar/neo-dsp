@@ -183,7 +183,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::simd::pcomp
 }
 #endif
 
-#if defined(NEO_HAS_SIMD_F16C) && !defined(NEO_COMPILER_GCC)
+#if defined(NEO_HAS_BASIC_FLOAT16)
 TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::simd::pcomplex32x8, neo::simd::pcomplex32x16)
 {
     using ComplexBatch  = TestType;

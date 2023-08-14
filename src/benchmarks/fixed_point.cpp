@@ -56,7 +56,7 @@ private:
     std::vector<FixedPoint> _out;
 };
 
-#if defined(NEO_HAS_SIMD_F16C) && !defined(NEO_COMPILER_GCC)
+#if defined(NEO_HAS_BASIC_FLOAT16)
 template<std::size_t Size>
 struct float16_mul_bench
 {
@@ -110,7 +110,7 @@ auto main() -> int
     neo::timeit("mul(q15[262144], q15[262144]):   ", 2, 262144, fixed_point_mul_bench<q15, 262144U>{});
     std::printf("\n");
 
-#if defined(NEO_HAS_SIMD_F16C) && !defined(NEO_COMPILER_GCC)
+#if defined(NEO_HAS_BASIC_FLOAT16)
     neo::timeit("mul(f16f32[32768], f16f32[32768]):   ", 2, 32768, float16_mul_bench<32768U>{});
     neo::timeit("mul(f16f32[131072], f16f32[131072]): ", 2, 131072, float16_mul_bench<131072U>{});
     neo::timeit("mul(f16f32[262144], f16f32[262144]): ", 2, 262144, float16_mul_bench<262144U>{});

@@ -64,6 +64,39 @@
     #define NEO_HAS_SIMD_AVX512BW 1
 #endif
 
+#if defined(_WIN32)
+    #define NEO_PLATFORM_WINDOWS 1
+#endif
+
+#if defined(__APPLE__)
+    #include <TargetConditionals.h>
+    #define NEO_PLATFORM_APPLE 1
+    #if TARGET_OS_MAC == 1
+        #define NEO_PLATFORM_MACOS
+    #else
+        #error "Unsupported Apple platform!"
+    #endif
+#endif
+
+#if defined(__linux__) and not defined(__ANDROID__)
+    #define NEO_PLATFORM_LINUX 1
+#endif
+
+#if defined(__ANDROID__)
+    #define NEO_PLATFORM_ANDROID 1
+#endif
+
+#if defined(__FreeBSD__)
+    #define NEO_PLATFORM_FREEBSD 1
+#endif
+
+#if defined(__OpenBSD__)
+    #define NEO_PLATFORM_OPENBSD 1
+#endif
+
+#if defined(NEO_HAS_SIMD_F16C) && !defined(NEO_PLATFORM_LINUX)
+    #define NEO_HAS_BASIC_FLOAT16 1
+#endif
 namespace neo {
 
 template<typename>

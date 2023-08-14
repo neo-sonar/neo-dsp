@@ -276,7 +276,7 @@ TEMPLATE_TEST_CASE("neo/math: parallel_complex_batch", "", neo::simd::pcomplex64
 
 #endif
 
-#if defined(NEO_HAS_SIMD_F16C) && !defined(NEO_COMPILER_GCC)
+#if defined(NEO_HAS_BASIC_FLOAT16)
 TEMPLATE_TEST_CASE("neo/math: float_batch", "", neo::simd::float16x8, neo::simd::float16x16)
 {
     test_float_batch<TestType>();
