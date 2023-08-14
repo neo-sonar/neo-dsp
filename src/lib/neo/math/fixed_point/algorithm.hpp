@@ -20,28 +20,28 @@ namespace neo {
 
 namespace detail {
 
-template<typename Op, typename Int>
-inline constexpr auto const saturated_kernel = [](auto l, auto r) { return saturate<Int>(Op{}(l, r)); };
-
 #if defined(NEO_HAS_SIMD_NEON)
 inline constexpr auto const add_kernel_s8  = [](int8x16_t l, int8x16_t r) { return vqaddq_s8(l, r); };
 inline constexpr auto const add_kernel_s16 = [](int16x8_t l, int16x8_t r) { return vqaddq_s16(l, r); };
 inline constexpr auto const sub_kernel_s8  = [](int8x16_t l, int8x16_t r) { return vqsubq_s8(l, r); };
 inline constexpr auto const sub_kernel_s16 = [](int16x8_t l, int16x8_t r) { return vqsubq_s16(l, r); };
+inline constexpr auto const mul_kernel_s16 = [](int16x8_t l, int16x8_t r) { return vqdmulhq_s16(l, r); };
 #elif defined(NEO_HAS_SIMD_SSE2)
-inline constexpr auto const add_kernel_s8  = [](auto l, auto r) { return _mm_adds_epi8(l, r); };
-inline constexpr auto const add_kernel_s16 = [](auto l, auto r) { return _mm_adds_epi16(l, r); };
-inline constexpr auto const sub_kernel_s8  = [](auto l, auto r) { return _mm_subs_epi8(l, r); };
-inline constexpr auto const sub_kernel_s16 = [](auto l, auto r) { return _mm_subs_epi16(l, r); };
+inline constexpr auto const add_kernel_s8  = [](__m128i l, __m128i r) { return _mm_adds_epi8(l, r); };
+inline constexpr auto const add_kernel_s16 = [](__m128i l, __m128i r) { return _mm_adds_epi16(l, r); };
+inline constexpr auto const sub_kernel_s8  = [](__m128i l, __m128i r) { return _mm_subs_epi8(l, r); };
+inline constexpr auto const sub_kernel_s16 = [](__m128i l, __m128i r) { return _mm_subs_epi16(l, r); };
 #else
-inline constexpr auto const add_kernel_s8  = saturated_kernel<std::plus, std::int8_t>;
-inline constexpr auto const add_kernel_s16 = saturated_kernel<std::plus, std::int16_t>;
-inline constexpr auto const sub_kernel_s8  = saturated_kernel<std::minus, std::int8_t>;
-inline constexpr auto const sub_kernel_s16 = saturated_kernel<std::minus, std::int16_t>;
+inline constexpr auto const add_kernel_s8  = std::plus<std::int8_t>{};
+inline constexpr auto const add_kernel_s16 = std::plus<std::int16_t>{};
+inline constexpr auto const sub_kernel_s8  = std::minus<std::int8_t>{};
+inline constexpr auto const sub_kernel_s16 = std::minus<std::int16_t>{};
+inline constexpr auto const mul_kernel_s8  = std::multiplies<std::int8_t>{};
+inline constexpr auto const mul_kernel_s16 = std::multiplies<std::int16_t>{};
 #endif
 
 template<int IntegerBits, int FractionalBits, typename StorageType, std::size_t Extent>
-auto fixed_point_kernel(
+auto apply_fixed_point_kernel(
     std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> lhs,
     std::span<fixed_point<IntegerBits, FractionalBits, StorageType> const, Extent> rhs,
     std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out,
@@ -90,7 +90,7 @@ auto add(
     std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out
 )
 {
-    detail::fixed_point_kernel(lhs, rhs, out, std::plus{}, detail::add_kernel_s8, detail::add_kernel_s16);
+    detail::apply_fixed_point_kernel(lhs, rhs, out, std::plus{}, detail::add_kernel_s8, detail::add_kernel_s16);
 }
 
 /// out[i] = saturate16(lhs[i] - rhs[i])
@@ -101,7 +101,7 @@ auto subtract(
     std::span<fixed_point<IntegerBits, FractionalBits, StorageType>, Extent> out
 )
 {
-    detail::fixed_point_kernel(lhs, rhs, out, std::minus{}, detail::sub_kernel_s8, detail::sub_kernel_s16);
+    detail::apply_fixed_point_kernel(lhs, rhs, out, std::minus{}, detail::sub_kernel_s8, detail::sub_kernel_s16);
 }
 
 /// out[i] = (lhs[i] * rhs[i]) >> FractionalBits;
@@ -120,8 +120,7 @@ auto multiply(
         auto const kernel = [](__m128i left, __m128i right) -> __m128i { return _mm_mulhrs_epi16(left, right); };
         simd::apply_kernel_sse<16>(lhs, rhs, out, std::multiplies{}, kernel);
 #elif defined(NEO_HAS_SIMD_NEON)
-        auto const kernel = [](int16x8_t left, int16x8_t right) { return vqdmulhq_s16(left, right); };
-        simd::apply_kernel_neon128<16>(lhs, rhs, out, std::multiplies{}, kernel);
+        simd::apply_kernel_neon128<16>(lhs, rhs, out, std::multiplies{}, mul_kernel_s16);
 #else
         for (auto i{0U}; i < lhs.size(); ++i) {
             out[i] = std::multiplies{}(lhs[i], rhs[i]);
@@ -167,8 +166,7 @@ auto multiply(
 
             simd::apply_kernel_sse<16>(lhs, rhs, out, std::multiplies{}, kernel);
 #elif defined(NEO_HAS_SIMD_NEON)
-            auto const kernel = [](int16x8_t left, int16x8_t right) { return vqdmulhq_s16(left, right); };
-            simd::apply_kernel_neon128<8>(lhs, rhs, out, std::multiplies{}, kernel);
+            simd::apply_kernel_neon128<8>(lhs, rhs, out, std::multiplies{}, mul_kernel_s16);
 #else
             for (auto i{0U}; i < lhs.size(); ++i) {
                 out[i] = std::multiplies{}(lhs[i], rhs[i]);
