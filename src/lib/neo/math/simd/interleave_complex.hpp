@@ -9,7 +9,7 @@
 namespace neo::simd {
 
 template<typename FloatBatch>
-struct alignas(FloatBatch::alignment) interleaved_complex
+struct alignas(FloatBatch::alignment) interleave_complex
 {
     using batch_type       = FloatBatch;
     using register_type    = typename FloatBatch::register_type;
@@ -17,15 +17,15 @@ struct alignas(FloatBatch::alignment) interleaved_complex
 
     static constexpr auto const size = FloatBatch::size / 2U;
 
-    interleaved_complex() noexcept = default;
+    interleave_complex() noexcept = default;
 
-    interleaved_complex(FloatBatch batch) noexcept : _batch{batch} {}
+    interleave_complex(FloatBatch batch) noexcept : _batch{batch} {}
 
-    interleaved_complex(register_type reg) noexcept : _batch{reg} {}
+    interleave_complex(register_type reg) noexcept : _batch{reg} {}
 
     template<neo::complex Complex>
         requires std::same_as<typename Complex::value_type, real_scalar_type>
-    [[nodiscard]] static auto load_unaligned(Complex const* val) -> interleaved_complex
+    [[nodiscard]] static auto load_unaligned(Complex const* val) -> interleave_complex
     {
         return batch_type::load_unaligned(reinterpret_cast<real_scalar_type const*>(val));
     }
@@ -39,26 +39,26 @@ struct alignas(FloatBatch::alignment) interleaved_complex
 
     [[nodiscard]] NEO_ALWAYS_INLINE auto batch() const -> batch_type { return _batch; }
 
-    NEO_ALWAYS_INLINE friend auto operator+(interleaved_complex lhs, interleaved_complex rhs) noexcept
-        -> interleaved_complex
+    NEO_ALWAYS_INLINE friend auto operator+(interleave_complex lhs, interleave_complex rhs) noexcept
+        -> interleave_complex
     {
-        return interleaved_complex{
+        return interleave_complex{
             cadd(static_cast<register_type>(lhs.batch()), static_cast<register_type>(rhs.batch())),
         };
     }
 
-    NEO_ALWAYS_INLINE friend auto operator-(interleaved_complex lhs, interleaved_complex rhs) noexcept
-        -> interleaved_complex
+    NEO_ALWAYS_INLINE friend auto operator-(interleave_complex lhs, interleave_complex rhs) noexcept
+        -> interleave_complex
     {
-        return interleaved_complex{
+        return interleave_complex{
             csub(static_cast<register_type>(lhs.batch()), static_cast<register_type>(rhs.batch())),
         };
     }
 
-    NEO_ALWAYS_INLINE friend auto operator*(interleaved_complex lhs, interleaved_complex rhs) noexcept
-        -> interleaved_complex
+    NEO_ALWAYS_INLINE friend auto operator*(interleave_complex lhs, interleave_complex rhs) noexcept
+        -> interleave_complex
     {
-        return interleaved_complex{
+        return interleave_complex{
             cmul(static_cast<register_type>(lhs.batch()), static_cast<register_type>(rhs.batch())),
         };
     }
@@ -70,4 +70,4 @@ private:
 }  // namespace neo::simd
 
 template<typename FloatBatch>
-inline constexpr auto const neo::is_complex<neo::simd::interleaved_complex<FloatBatch>> = true;
+inline constexpr auto const neo::is_complex<neo::simd::interleave_complex<FloatBatch>> = true;
