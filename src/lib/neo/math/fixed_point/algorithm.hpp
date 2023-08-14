@@ -59,6 +59,7 @@ auto apply_fixed_point_kernel(
         return;
     } else if constexpr (std::same_as<StorageType, std::int16_t>) {
         simd::apply_kernel<StorageType>(lhs, rhs, out, scalar_kernel, vector_kernel_s16);
+        return;
     }
 #endif
 
@@ -102,6 +103,7 @@ auto multiply(
     NEO_EXPECTS(lhs.size() == rhs.size());
     NEO_EXPECTS(lhs.size() == out.size());
 
+    // Not exactly the same as the other kernels, close enough for now.
     if constexpr (std::same_as<StorageType, std::int16_t> && FractionalBits == 15) {
 #if defined(NEO_HAS_SIMD_SSE3)
         simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, [](__m128i left, __m128i right) {
@@ -112,8 +114,8 @@ auto multiply(
     }
 
     if constexpr (std::same_as<StorageType, std::int8_t>) {
-#if defined(__SSE4_1__)
-        auto const kernel = [](__m128i left, __m128i right) -> __m128i {
+#if defined(NEO_HAS_SIMD_SSE41)
+        simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, [](__m128i left, __m128i right) {
             auto const lowLeft    = _mm_cvtepi8_epi16(left);
             auto const lowRight   = _mm_cvtepi8_epi16(right);
             auto const lowProduct = _mm_mullo_epi16(lowLeft, lowRight);
@@ -125,13 +127,12 @@ auto multiply(
             auto const highShifted = _mm_srli_epi16(highProduct, FractionalBits);
 
             return _mm_packs_epi16(lowShifted, highShifted);
-        };
-        simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, kernel);
+        });
         return;
 #endif
     } else if constexpr (std::same_as<StorageType, std::int16_t>) {
-#if defined(__SSE4_1__)
-        auto const kernel = [](__m128i left, __m128i right) -> __m128i {
+#if defined(NEO_HAS_SIMD_SSE41)
+        simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, [](__m128i left, __m128i right) {
             auto const lowLeft    = _mm_cvtepi16_epi32(left);
             auto const lowRight   = _mm_cvtepi16_epi32(right);
             auto const lowProduct = _mm_mullo_epi32(lowLeft, lowRight);
@@ -143,9 +144,7 @@ auto multiply(
             auto const highShifted = _mm_srli_epi32(highProduct, FractionalBits);
 
             return _mm_packs_epi32(lowShifted, highShifted);
-        };
-
-        simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, kernel);
+        });
         return;
 #elif defined(NEO_HAS_SIMD_NEON)
         simd::apply_kernel<StorageType>(lhs, rhs, out, std::multiplies{}, detail::mul_kernel_s16);

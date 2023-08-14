@@ -30,6 +30,10 @@
     #define NEO_HAS_SIMD_SSE3 1
 #endif
 
+#if defined(__SSE4_1__)
+    #define NEO_HAS_SIMD_SSE41 1
+#endif
+
 #if defined(__AVX__)
     #define NEO_HAS_SIMD_AVX 1
 #endif
