@@ -308,8 +308,8 @@ TEST_CASE("neo/math/fixed_point: complex_q15")
 template<typename Batch>
 static auto test_simd_fixed_point()
 {
-    using Scalar = Batch::value_type;
-    using Int    = Scalar::storage_type;
+    using Scalar = typename Batch::value_type;
+    using Int    = typename Scalar::storage_type;
 
     auto lhs = std::array<Scalar, Batch::size>{};
     auto rhs = std::array<Scalar, Batch::size>{};
@@ -341,7 +341,7 @@ static auto test_simd_fixed_point()
 
 #if defined(NEO_HAS_SIMD_SSE2)
 
-TEMPLATE_TEST_CASE("neo/math: fixed_point_batch", "", neo::simd::q7x16, neo::simd::q15x8)
+TEMPLATE_TEST_CASE("neo/math/fixed_point: fixed_point_batch", "", neo::simd::q7x16, neo::simd::q15x8)
 {
     STATIC_REQUIRE(TestType::alignment == 16);
     STATIC_REQUIRE(TestType::size == 16 / sizeof(typename TestType::value_type));
@@ -352,7 +352,7 @@ TEMPLATE_TEST_CASE("neo/math: fixed_point_batch", "", neo::simd::q7x16, neo::sim
 
 #if defined(NEO_HAS_SIMD_AVX2)
 
-TEMPLATE_TEST_CASE("neo/math: fixed_point_batch", "", neo::simd::q7x32, neo::simd::q15x16)
+TEMPLATE_TEST_CASE("neo/math/fixed_point: fixed_point_batch", "", neo::simd::q7x32, neo::simd::q15x16)
 {
     STATIC_REQUIRE(TestType::alignment == 32);
     STATIC_REQUIRE(TestType::size == 32 / sizeof(typename TestType::value_type));
