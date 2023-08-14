@@ -3,23 +3,23 @@
 #include <neo/config.hpp>
 
 #if defined(NEO_HAS_SIMD_NEON)
-    #include <neo/math/simd/neon.hpp>
+    #include <neo/simd/neon.hpp>
 #endif
 
 #if defined(NEO_HAS_SIMD_SSE2)
-    #include <neo/math/simd/sse2.hpp>
+    #include <neo/simd/sse2.hpp>
 #endif
 
 #if defined(NEO_HAS_SIMD_AVX)
-    #include <neo/math/simd/avx.hpp>
+    #include <neo/simd/avx.hpp>
 #endif
 
 #if defined(NEO_HAS_SIMD_AVX512F)
-    #include <neo/math/simd/avx512.hpp>
+    #include <neo/simd/avx512.hpp>
 #endif
 
-#include <neo/math/simd/interleave_complex.hpp>
-#include <neo/math/simd/parallel_complex.hpp>
+#include <neo/simd/interleave_complex.hpp>
+#include <neo/simd/parallel_complex.hpp>
 
 namespace neo::simd {
 

@@ -1,5 +1,5 @@
 #include <neo/fft.hpp>
-#include <neo/math/simd.hpp>
+#include <neo/simd.hpp>
 
 #include <neo/testing/benchmark.hpp>
 

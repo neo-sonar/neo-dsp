@@ -5,15 +5,15 @@
 #include <neo/math/fixed_point/fixed_point.hpp>
 
 #if defined(NEO_HAS_SIMD_SSE2)
-    #include <neo/math/simd/sse2.hpp>
+    #include <neo/simd/sse2.hpp>
 #endif
 
 #if defined(NEO_HAS_SIMD_AVX2)
-    #include <neo/math/simd/avx.hpp>
+    #include <neo/simd/avx.hpp>
 #endif
 
 #if defined(NEO_HAS_SIMD_NEON)
-    #include <neo/math/simd/neon.hpp>
+    #include <neo/simd/neon.hpp>
 #endif
 
 #include <functional>

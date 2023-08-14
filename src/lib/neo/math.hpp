@@ -11,5 +11,4 @@
 #include <neo/math/ilog2.hpp>
 #include <neo/math/next_power_of_two.hpp>
 #include <neo/math/power.hpp>
-#include <neo/math/simd.hpp>
 #include <neo/math/windowing.hpp>

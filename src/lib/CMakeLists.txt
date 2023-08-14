@@ -35,8 +35,9 @@ target_sources(neo_fft_tests
         "neo/math/ilog2_test.cpp"
         "neo/math/next_power_of_two_test.cpp"
         "neo/math/power_test.cpp"
-        "neo/math/simd_test.cpp"
         "neo/math/windowing_test.cpp"
+
+        "neo/simd_test.cpp"
 )
 
 catch_discover_tests(neo_fft_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
