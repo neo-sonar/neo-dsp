@@ -348,4 +348,96 @@ private:
 
 #endif
 
+#if defined(NEO_HAS_SIMD_AVX512BW)
+
+struct alignas(64) q7x64
+{
+    using value_type    = neo::q7;
+    using register_type = __m512i;
+
+    static constexpr auto const alignment = alignof(register_type);
+    static constexpr auto const size      = sizeof(register_type) / sizeof(value_type);
+
+    q7x64() = default;
+
+    NEO_ALWAYS_INLINE q7x64(register_type reg) noexcept : _reg{reg} {}
+
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
+
+    [[nodiscard]] static auto broadcast(value_type val) -> q7x64 { return _mm512_set1_epi8(val.value()); }
+
+    [[nodiscard]] static auto load_unaligned(value_type const* input) -> q7x64
+    {
+        auto const* integer = reinterpret_cast<value_type::storage_type const*>(input);
+        auto const* ptr     = reinterpret_cast<register_type const*>(integer);
+        return _mm512_loadu_si512(ptr);
+    }
+
+    auto store_unaligned(value_type* output) const -> void
+    {
+        auto* integer = reinterpret_cast<value_type::storage_type*>(output);
+        auto* ptr     = reinterpret_cast<register_type*>(integer);
+        return _mm512_storeu_si512(ptr, _reg);
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator+(q7x64 lhs, q7x64 rhs) -> q7x64
+    {
+        return _mm512_adds_epi8(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator-(q7x64 lhs, q7x64 rhs) -> q7x64
+    {
+        return _mm512_subs_epi8(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+private:
+    register_type _reg;
+};
+
+struct alignas(64) q15x32
+{
+    using value_type    = neo::q15;
+    using register_type = __m512i;
+
+    static constexpr auto const alignment = alignof(register_type);
+    static constexpr auto const size      = sizeof(register_type) / sizeof(value_type);
+
+    q15x32() = default;
+
+    NEO_ALWAYS_INLINE q15x32(register_type reg) noexcept : _reg{reg} {}
+
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
+
+    [[nodiscard]] static auto broadcast(value_type val) -> q15x32 { return _mm512_set1_epi16(val.value()); }
+
+    [[nodiscard]] static auto load_unaligned(value_type const* input) -> q15x32
+    {
+        auto const* integer = reinterpret_cast<value_type::storage_type const*>(input);
+        auto const* ptr     = reinterpret_cast<register_type const*>(integer);
+        return _mm512_loadu_si512(ptr);
+    }
+
+    auto store_unaligned(value_type* output) const -> void
+    {
+        auto* integer = reinterpret_cast<value_type::storage_type*>(output);
+        auto* ptr     = reinterpret_cast<register_type*>(integer);
+        return _mm512_storeu_si512(ptr, _reg);
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator+(q15x32 lhs, q15x32 rhs) -> q15x32
+    {
+        return _mm512_adds_epi16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator-(q15x32 lhs, q15x32 rhs) -> q15x32
+    {
+        return _mm512_subs_epi16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+private:
+    register_type _reg;
+};
+
+#endif
+
 }  // namespace neo::simd

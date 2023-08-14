@@ -360,3 +360,14 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: fixed_point_batch", "", neo::simd::q7x
 }
 
 #endif
+
+#if defined(NEO_HAS_SIMD_AVX512BW)
+
+TEMPLATE_TEST_CASE("neo/math/fixed_point: fixed_point_batch", "", neo::simd::q7x64, neo::simd::q15x32)
+{
+    STATIC_REQUIRE(TestType::alignment == 64);
+    STATIC_REQUIRE(TestType::size == 64 / sizeof(typename TestType::value_type));
+    test_simd_fixed_point<TestType>();
+}
+
+#endif

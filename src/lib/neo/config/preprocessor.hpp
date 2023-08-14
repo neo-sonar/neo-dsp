@@ -45,3 +45,7 @@
 #if defined(__AVX512F__)
     #define NEO_HAS_SIMD_AVX512F 1
 #endif
+
+#if defined(__AVX512BW__)
+    #define NEO_HAS_SIMD_AVX512BW 1
+#endif
