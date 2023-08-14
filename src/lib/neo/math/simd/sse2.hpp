@@ -70,7 +70,7 @@ NEO_ALWAYS_INLINE auto cmul(__m128d lhs, __m128d rhs) -> __m128d
     return _mm_addsub_pd(_mm_mul_pd(real, real), _mm_mul_pd(imag, imag));
 }
 
-struct float32x4
+struct alignas(16) float32x4
 {
     using value_type    = float;
     using register_type = __m128;
@@ -109,7 +109,7 @@ private:
     register_type _reg;
 };
 
-struct float64x2
+struct alignas(16) float64x2
 {
     using value_type    = double;
     using register_type = __m128d;

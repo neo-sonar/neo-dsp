@@ -68,7 +68,7 @@ NEO_ALWAYS_INLINE auto cmul(__m512d a, __m512d b) noexcept -> __m512d
     return result;
 }
 
-struct float32x16
+struct alignas(64) float32x16
 {
     using value_type    = float;
     using register_type = __m512;
@@ -107,7 +107,7 @@ private:
     register_type _val;
 };
 
-struct float64x8
+struct alignas(64) float64x8
 {
     using value_type    = double;
     using register_type = __m512d;

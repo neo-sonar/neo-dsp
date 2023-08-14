@@ -28,7 +28,7 @@ NEO_ALWAYS_INLINE auto cmul(__m256d a, __m256d b) noexcept -> __m256d
     return _mm256_addsub_pd(_mm256_mul_pd(real, real), _mm256_mul_pd(imag, imag));
 }
 
-struct float32x8
+struct alignas(32) float32x8
 {
     using value_type    = float;
     using register_type = __m256;
@@ -67,7 +67,7 @@ private:
     register_type _val;
 };
 
-struct float64x4
+struct alignas(32) float64x4
 {
     using value_type    = double;
     using register_type = __m256d;
