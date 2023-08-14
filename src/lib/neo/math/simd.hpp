@@ -55,17 +55,17 @@ struct alignas(FloatBatch::alignment) complex
 
     NEO_ALWAYS_INLINE friend auto operator+(complex lhs, complex rhs) noexcept -> complex
     {
-        return complex{cadd(static_cast<register_type>(lhs), static_cast<register_type>(rhs))};
+        return complex{cadd(lhs, rhs)};
     }
 
     NEO_ALWAYS_INLINE friend auto operator-(complex lhs, complex rhs) noexcept -> complex
     {
-        return complex{csub(static_cast<register_type>(lhs), static_cast<register_type>(rhs))};
+        return complex{csub(lhs, rhs)};
     }
 
     NEO_ALWAYS_INLINE friend auto operator*(complex lhs, complex rhs) noexcept -> complex
     {
-        return complex{cmul(static_cast<register_type>(lhs), static_cast<register_type>(rhs))};
+        return complex{cmul(lhs, rhs)};
     }
 
 private:
