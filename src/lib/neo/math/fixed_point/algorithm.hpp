@@ -166,7 +166,7 @@ auto multiply(
 
             simd::apply_kernel_sse<16>(lhs, rhs, out, std::multiplies{}, kernel);
 #elif defined(NEO_HAS_SIMD_NEON)
-            simd::apply_kernel_neon128<8>(lhs, rhs, out, std::multiplies{}, detail::mul_kernel_s16);
+            simd::apply_kernel_neon128<16>(lhs, rhs, out, std::multiplies{}, detail::mul_kernel_s16);
 #else
             for (auto i{0U}; i < lhs.size(); ++i) {
                 out[i] = std::multiplies{}(lhs[i], rhs[i]);
