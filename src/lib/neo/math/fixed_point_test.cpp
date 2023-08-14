@@ -15,13 +15,13 @@
 
 template<typename T>
 static constexpr auto tolerance = [] {
-    if constexpr (std::same_as<T, neo::q7_t>) {
+    if constexpr (std::same_as<T, neo::q7>) {
         return 0.01F;
     }
     return 0.0001F;
 }();
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: to_float(fixed_point)", "", neo::q7_t, neo::q15_t)
+TEMPLATE_TEST_CASE("neo/math/fixed_point: to_float(fixed_point)", "", neo::q7, neo::q15)
 {
     using fixed_point_t = TestType;
 
@@ -34,7 +34,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: to_float(fixed_point)", "", neo::q7_t,
     REQUIRE(approx_equal(to_float(fixed_point_t{0.75F}), 0.75F, tolerance<fixed_point_t>));
 }
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: unary_op(fixed_point)", "", neo::q7_t, neo::q15_t)
+TEMPLATE_TEST_CASE("neo/math/fixed_point: unary_op(fixed_point)", "", neo::q7, neo::q15)
 {
     using fixed_point_t = TestType;
 
@@ -88,7 +88,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: unary_op(fixed_point)", "", neo::q7_t,
     REQUIRE(unary_op(-0.99F, std::negate()));
 }
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: binary_op(fixed_point)", "", neo::q7_t, neo::q15_t)
+TEMPLATE_TEST_CASE("neo/math/fixed_point: binary_op(fixed_point)", "", neo::q7, neo::q15)
 {
     using fixed_point_t = TestType;
 
@@ -126,7 +126,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: binary_op(fixed_point)", "", neo::q7_t
     REQUIRE(binary_op(0.49F, 0.5F, std::multiplies()));
 }
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: comparison(fixed_point)", "", neo::q7_t, neo::q15_t)
+TEMPLATE_TEST_CASE("neo/math/fixed_point: comparison(fixed_point)", "", neo::q7, neo::q15)
 {
     using fixed_point_t = TestType;
 
@@ -173,7 +173,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: comparison(fixed_point)", "", neo::q7_
     REQUIRE(compare_op(+0.50F, +0.50F, std::greater_equal()));
 }
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: add(fixed_point, fixed_point)", "", neo::q7_t, neo::q15_t)
+TEMPLATE_TEST_CASE("neo/math/fixed_point: add(fixed_point, fixed_point)", "", neo::q7, neo::q15)
 {
     using fxp_t = TestType;
 
@@ -208,7 +208,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: add(fixed_point, fixed_point)", "", ne
     }
 }
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: subtract(fixed_point, fixed_point)", "", neo::q7_t, neo::q15_t)
+TEMPLATE_TEST_CASE("neo/math/fixed_point: subtract(fixed_point, fixed_point)", "", neo::q7, neo::q15)
 {
     using fxp_t = TestType;
 
@@ -243,7 +243,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: subtract(fixed_point, fixed_point)", "
     }
 }
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: multiply(fixed_point, fixed_point)", "", neo::q7_t, neo::q15_t)
+TEMPLATE_TEST_CASE("neo/math/fixed_point: multiply(fixed_point, fixed_point)", "", neo::q7, neo::q15)
 {
     using fxp_t = TestType;
 
@@ -284,12 +284,12 @@ TEST_CASE("neo/math/fixed_point: complex_q15")
     STATIC_REQUIRE(neo::is_complex<neo::complex_q15>);
 
     auto const lhs = neo::complex_q15{
-        neo::q15_t{neo::underlying_value, 1430},
-        neo::q15_t{neo::underlying_value,  420}
+        neo::q15{neo::underlying_value, 1430},
+        neo::q15{neo::underlying_value,  420}
     };
     auto const rhs = neo::complex_q15{
-        neo::q15_t{neo::underlying_value, 1000},
-        neo::q15_t{neo::underlying_value,  100}
+        neo::q15{neo::underlying_value, 1000},
+        neo::q15{neo::underlying_value,  100}
     };
 
     auto const sum = lhs + rhs;
@@ -314,12 +314,12 @@ TEST_CASE("neo/math/fixed_point: simd::q7x16")
     STATIC_REQUIRE(Batch::size == 16);
     STATIC_REQUIRE(Batch::alignment == 16);
 
-    auto lhs = std::array<neo::q7_t, Batch::size>{};
-    auto rhs = std::array<neo::q7_t, Batch::size>{};
-    auto sum = std::array<neo::q7_t, Batch::size>{};
+    auto lhs = std::array<neo::q7, Batch::size>{};
+    auto rhs = std::array<neo::q7, Batch::size>{};
+    auto sum = std::array<neo::q7, Batch::size>{};
 
-    std::fill(lhs.begin(), lhs.end(), neo::q7_t{neo::underlying_value, 50});
-    std::fill(rhs.begin(), rhs.end(), neo::q7_t{neo::underlying_value, 50});
+    std::fill(lhs.begin(), lhs.end(), neo::q7{neo::underlying_value, 50});
+    std::fill(rhs.begin(), rhs.end(), neo::q7{neo::underlying_value, 50});
 
     auto l = Batch::load_unaligned(lhs.data());
     auto r = Batch::load_unaligned(rhs.data());
@@ -338,12 +338,12 @@ TEST_CASE("neo/math/fixed_point: simd::q15x8")
     STATIC_REQUIRE(Batch::size == 8);
     STATIC_REQUIRE(Batch::alignment == 16);
 
-    auto lhs = std::array<neo::q15_t, Batch::size>{};
-    auto rhs = std::array<neo::q15_t, Batch::size>{};
-    auto sum = std::array<neo::q15_t, Batch::size>{};
+    auto lhs = std::array<neo::q15, Batch::size>{};
+    auto rhs = std::array<neo::q15, Batch::size>{};
+    auto sum = std::array<neo::q15, Batch::size>{};
 
-    std::fill(lhs.begin(), lhs.end(), neo::q15_t{neo::underlying_value, 1000});
-    std::fill(rhs.begin(), rhs.end(), neo::q15_t{neo::underlying_value, 1000});
+    std::fill(lhs.begin(), lhs.end(), neo::q15{neo::underlying_value, 1000});
+    std::fill(rhs.begin(), rhs.end(), neo::q15{neo::underlying_value, 1000});
 
     auto l = Batch::load_unaligned(lhs.data());
     auto r = Batch::load_unaligned(rhs.data());

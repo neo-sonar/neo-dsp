@@ -119,7 +119,7 @@ template<int IntegerBits, int FractionalBits, typename StorageType>
     return static_cast<double>(val);
 }
 
-using q7_t  = fixed_point<0, 7, std::int8_t>;
-using q15_t = fixed_point<0, 15, std::int16_t>;
+using q7  = fixed_point<0, 7, std::int8_t>;
+using q15 = fixed_point<0, 15, std::int16_t>;
 
 }  // namespace neo

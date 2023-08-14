@@ -95,17 +95,17 @@ private:
 
 auto main() -> int
 {
-    using neo::q15_t;
-    using neo::q7_t;
+    using neo::q15;
+    using neo::q7;
 
-    neo::timeit("mul(q7_t[32768], q7_t[32768]):       ", 1, 32768, fixed_point_mul_bench<q7_t, 32768U>{});
-    neo::timeit("mul(q7_t[131072], q7_t[131072]):     ", 1, 131072, fixed_point_mul_bench<q7_t, 131072U>{});
-    neo::timeit("mul(q7_t[262144], q7_t[262144]):     ", 1, 262144, fixed_point_mul_bench<q7_t, 262144U>{});
+    neo::timeit("mul(q7[32768], q7[32768]):       ", 1, 32768, fixed_point_mul_bench<q7, 32768U>{});
+    neo::timeit("mul(q7[131072], q7[131072]):     ", 1, 131072, fixed_point_mul_bench<q7, 131072U>{});
+    neo::timeit("mul(q7[262144], q7[262144]):     ", 1, 262144, fixed_point_mul_bench<q7, 262144U>{});
     std::printf("\n");
 
-    neo::timeit("mul(q15_t[32768], q15_t[32768]):     ", 2, 32768, fixed_point_mul_bench<q15_t, 32768U>{});
-    neo::timeit("mul(q15_t[131072], q15_t[131072]):   ", 2, 131072, fixed_point_mul_bench<q15_t, 131072U>{});
-    neo::timeit("mul(q15_t[262144], q15_t[262144]):   ", 2, 262144, fixed_point_mul_bench<q15_t, 262144U>{});
+    neo::timeit("mul(q15[32768], q15[32768]):     ", 2, 32768, fixed_point_mul_bench<q15, 32768U>{});
+    neo::timeit("mul(q15[131072], q15[131072]):   ", 2, 131072, fixed_point_mul_bench<q15, 131072U>{});
+    neo::timeit("mul(q15[262144], q15[262144]):   ", 2, 262144, fixed_point_mul_bench<q15, 262144U>{});
     std::printf("\n");
 
 #if defined(__F16C__)

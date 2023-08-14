@@ -10,19 +10,19 @@ namespace neo {
 
 struct complex_q15
 {
-    using value_type = q15_t;
+    using value_type = q15;
 
     constexpr complex_q15() = default;
 
-    constexpr complex_q15(q15_t re, q15_t im = q15_t{}) noexcept : _data{re, im} {}
+    constexpr complex_q15(q15 re, q15 im = q15{}) noexcept : _data{re, im} {}
 
-    [[nodiscard]] constexpr auto real() const noexcept -> q15_t { return _data[0]; }
+    [[nodiscard]] constexpr auto real() const noexcept -> q15 { return _data[0]; }
 
-    [[nodiscard]] constexpr auto imag() const noexcept -> q15_t { return _data[1]; }
+    [[nodiscard]] constexpr auto imag() const noexcept -> q15 { return _data[1]; }
 
-    constexpr auto real(q15_t re) noexcept -> void { _data[0] = re; }
+    constexpr auto real(q15 re) noexcept -> void { _data[0] = re; }
 
-    constexpr auto imag(q15_t im) noexcept -> void { _data[1] = im; }
+    constexpr auto imag(q15 im) noexcept -> void { _data[1] = im; }
 
     friend constexpr auto operator+(complex_q15 lhs, complex_q15 rhs) -> complex_q15
     {
@@ -48,7 +48,7 @@ struct complex_q15
     }
 
 private:
-    std::array<q15_t, 2> _data{};
+    std::array<q15, 2> _data{};
 };
 
 template<>
