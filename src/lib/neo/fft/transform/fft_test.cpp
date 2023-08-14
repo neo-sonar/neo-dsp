@@ -88,52 +88,203 @@ TEMPLATE_PRODUCT_TEST_CASE(
 }
 
 template<typename ComplexBatch, typename Kernel>
-static auto test_complex_batch_fft()
+static auto test_complex_batch_roundtrip_fft()
 {
+    using ScalarBatch   = typename ComplexBatch::batch_type;
+    using ScalarFloat   = typename ComplexBatch::real_scalar_type;
+    using ScalarComplex = std::complex<ScalarFloat>;
+
+    auto make_noise_signal = [](auto size) {
+        auto noise = neo::generate_noise_signal<ScalarComplex>(size, Catch::getSeed());
+        auto buf   = stdex::mdarray<ComplexBatch, stdex::dextents<size_t, 1>>{size};
+        for (auto i{0UL}; i < size; ++i) {
+            buf(i) = ComplexBatch{
+                ScalarBatch::broadcast(noise(i).real()),
+                ScalarBatch::broadcast(noise(i).imag()),
+            };
+        }
+        return buf;
+    };
+
+    auto make_twiddles = [](auto size, neo::fft::direction dir) {
+        auto tw  = neo::fft::make_radix2_twiddles<ScalarComplex>(size, dir);
+        auto buf = stdex::mdarray<ComplexBatch, stdex::dextents<size_t, 1>>{tw.extents()};
+        for (auto i{0UL}; i < buf.extent(0); ++i) {
+            buf(i) = ComplexBatch{
+                ScalarBatch::broadcast(tw(i).real()),
+                ScalarBatch::broadcast(tw(i).imag()),
+            };
+        }
+        return buf;
+    };
+
     auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17);
     auto const size  = 1UL << order;
 
-    auto inout    = stdex::mdarray<ComplexBatch, stdex::dextents<size_t, 1>>{size};
-    auto twiddles = stdex::mdarray<ComplexBatch, stdex::dextents<size_t, 1>>{size / 2UL};
-    neo::fft::execute_radix2_kernel(Kernel{}, inout.to_mdspan(), twiddles.to_mdspan());
+    auto inout = make_noise_signal(size);
+
+    auto const copy              = inout;
+    auto const forward_twiddles  = make_twiddles(size, neo::fft::direction::forward);
+    auto const backward_twiddles = make_twiddles(size, neo::fft::direction::backward);
+
+    neo::fft::execute_radix2_kernel(Kernel{}, inout.to_mdspan(), forward_twiddles.to_mdspan());
+    neo::fft::execute_radix2_kernel(Kernel{}, inout.to_mdspan(), backward_twiddles.to_mdspan());
+
+    for (auto i{0U}; i < inout.extent(0); ++i) {
+        auto const real_batch = inout(i).real();
+        auto const imag_batch = inout(i).imag();
+
+        auto reals = std::array<ScalarFloat, ScalarBatch::size>{};
+        auto imags = std::array<ScalarFloat, ScalarBatch::size>{};
+        real_batch.store_unaligned(reals.data());
+        imag_batch.store_unaligned(imags.data());
+
+        auto const expected_real_batch = copy(i).real();
+        auto const expected_imag_batch = copy(i).imag();
+
+        auto expected_reals = std::array<ScalarFloat, ScalarBatch::size>{};
+        auto expected_imags = std::array<ScalarFloat, ScalarBatch::size>{};
+        expected_real_batch.store_unaligned(expected_reals.data());
+        expected_imag_batch.store_unaligned(expected_imags.data());
+
+        auto const scalar = ScalarFloat(1) / static_cast<ScalarFloat>(size);
+        neo::scale(scalar, stdex::mdspan{reals.data(), stdex::extents{reals.size()}});
+        neo::scale(scalar, stdex::mdspan{imags.data(), stdex::extents{imags.size()}});
+
+        REQUIRE(neo::allclose(
+            stdex::mdspan{reals.data(), stdex::extents{reals.size()}},
+            stdex::mdspan{expected_reals.data(), stdex::extents{expected_reals.size()}}
+        ));
+
+        REQUIRE(neo::allclose(
+            stdex::mdspan{imags.data(), stdex::extents{imags.size()}},
+            stdex::mdspan{expected_imags.data(), stdex::extents{expected_imags.size()}}
+        ));
+    }
 }
 
 #if defined(NEO_HAS_SIMD_SSE2)
 TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::simd::pcomplex64x4, neo::simd::pcomplex128x2)
 {
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v1>();
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v2>();
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v3>();
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v4>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v1>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v2>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v3>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v4>();
 }
 #endif
 
 #if defined(NEO_HAS_SIMD_AVX)
 TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::simd::pcomplex64x8, neo::simd::pcomplex128x4)
 {
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v1>();
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v2>();
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v3>();
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v4>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v1>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v2>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v3>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v4>();
 }
 #endif
 
 #if defined(NEO_HAS_SIMD_F16C) && !defined(NEO_COMPILER_GCC)
 TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::simd::pcomplex32x8, neo::simd::pcomplex32x16)
 {
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v1>();
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v2>();
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v3>();
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v4>();
+    using ComplexBatch  = TestType;
+    using ScalarBatch   = typename ComplexBatch::batch_type;
+    using ScalarFloat   = typename ComplexBatch::real_scalar_type;
+    using ScalarComplex = std::complex<float>;
+
+    auto test = [](auto kernel) {
+        auto make_noise_signal = [](auto size) {
+            auto noise = neo::generate_noise_signal<ScalarComplex>(size, Catch::getSeed());
+            auto buf   = stdex::mdarray<ComplexBatch, stdex::dextents<size_t, 1>>{size};
+            for (auto i{0UL}; i < size; ++i) {
+                buf(i) = ComplexBatch{
+                    ScalarBatch::broadcast(static_cast<ScalarFloat>(noise(i).real())),
+                    ScalarBatch::broadcast(static_cast<ScalarFloat>(noise(i).imag())),
+                };
+            }
+            return buf;
+        };
+
+        auto make_twiddles = [](auto size, neo::fft::direction dir) {
+            auto tw  = neo::fft::make_radix2_twiddles<ScalarComplex>(size, dir);
+            auto buf = stdex::mdarray<ComplexBatch, stdex::dextents<size_t, 1>>{tw.extents()};
+            for (auto i{0UL}; i < buf.extent(0); ++i) {
+                buf(i) = ComplexBatch{
+                    ScalarBatch::broadcast(static_cast<ScalarFloat>(tw(i).real())),
+                    ScalarBatch::broadcast(static_cast<ScalarFloat>(tw(i).imag())),
+                };
+            }
+            return buf;
+        };
+
+        auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6);
+        auto const size  = 1UL << order;
+
+        auto inout = make_noise_signal(size);
+
+        auto const copy              = inout;
+        auto const forward_twiddles  = make_twiddles(size, neo::fft::direction::forward);
+        auto const backward_twiddles = make_twiddles(size, neo::fft::direction::backward);
+
+        neo::fft::execute_radix2_kernel(kernel, inout.to_mdspan(), forward_twiddles.to_mdspan());
+        neo::fft::execute_radix2_kernel(kernel, inout.to_mdspan(), backward_twiddles.to_mdspan());
+
+        for (auto i{0U}; i < inout.extent(0); ++i) {
+            auto const real_batch = inout(i).real();
+            auto const imag_batch = inout(i).imag();
+
+            auto reals = std::array<ScalarFloat, ScalarBatch::size>{};
+            auto imags = std::array<ScalarFloat, ScalarBatch::size>{};
+            real_batch.store_unaligned(reals.data());
+            imag_batch.store_unaligned(imags.data());
+
+            auto const expected_real_batch = copy(i).real();
+            auto const expected_imag_batch = copy(i).imag();
+
+            auto expected_reals = std::array<ScalarFloat, ScalarBatch::size>{};
+            auto expected_imags = std::array<ScalarFloat, ScalarBatch::size>{};
+            expected_real_batch.store_unaligned(expected_reals.data());
+            expected_imag_batch.store_unaligned(expected_imags.data());
+
+            auto reals_float          = std::array<float, ScalarBatch::size>{};
+            auto imags_float          = std::array<float, ScalarBatch::size>{};
+            auto expected_reals_float = std::array<float, ScalarBatch::size>{};
+            auto expected_imags_float = std::array<float, ScalarBatch::size>{};
+            std::copy(reals.begin(), reals.end(), reals_float.begin());
+            std::copy(imags.begin(), imags.end(), imags_float.begin());
+            std::copy(expected_reals.begin(), expected_reals.end(), expected_reals_float.begin());
+            std::copy(expected_imags.begin(), expected_imags.end(), expected_imags_float.begin());
+
+            auto const scalar = ScalarFloat(1) / static_cast<ScalarFloat>(size);
+            neo::scale(scalar, stdex::mdspan{reals_float.data(), stdex::extents{reals_float.size()}});
+            neo::scale(scalar, stdex::mdspan{imags_float.data(), stdex::extents{imags_float.size()}});
+
+            REQUIRE(neo::allclose(
+                stdex::mdspan{reals_float.data(), stdex::extents{reals_float.size()}},
+                stdex::mdspan{expected_reals_float.data(), stdex::extents{expected_reals_float.size()}},
+                0.1F
+            ));
+
+            REQUIRE(neo::allclose(
+                stdex::mdspan{imags_float.data(), stdex::extents{imags_float.size()}},
+                stdex::mdspan{expected_imags_float.data(), stdex::extents{expected_imags_float.size()}},
+                0.1F
+            ));
+        }
+    };
+
+    test(neo::fft::radix2_kernel_v1{});
+    test(neo::fft::radix2_kernel_v2{});
+    test(neo::fft::radix2_kernel_v3{});
+    test(neo::fft::radix2_kernel_v4{});
 }
 #endif
 
 #if defined(NEO_HAS_SIMD_AVX512F)
 TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::simd::pcomplex64x16, neo::simd::pcomplex128x8)
 {
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v1>();
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v2>();
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v3>();
-    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v4>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v1>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v2>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v3>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v4>();
 }
 #endif
