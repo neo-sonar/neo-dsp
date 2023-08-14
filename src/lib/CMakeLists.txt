@@ -22,6 +22,7 @@ target_sources(neo_fft_tests
         "neo/fft/convolution/uniform_partitioned_convolver_test.cpp"
 
         "neo/fft/transform/dft_test.cpp"
+        "neo/fft/transform/fftfreq_test.cpp"
         "neo/fft/transform/fft_test.cpp"
         "neo/fft/transform/rfft_test.cpp"
         "neo/fft/transform/stft_test.cpp"
@@ -29,7 +30,6 @@ target_sources(neo_fft_tests
 
         "neo/math/a_weighting_test.cpp"
         "neo/math/complex_test.cpp"
-        "neo/math/fftfreq_test.cpp"
         "neo/math/fixed_point_test.cpp"
         "neo/math/decibel_test.cpp"
         "neo/math/ilog2_test.cpp"

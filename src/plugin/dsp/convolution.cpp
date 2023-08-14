@@ -1,8 +1,8 @@
 #include "convolution.hpp"
 
+#include <neo/fft/transform/fftfreq.hpp>
 #include <neo/math/a_weighting.hpp>
 #include <neo/math/decibel.hpp>
-#include <neo/math/fftfreq.hpp>
 #include <neo/math/next_power_of_two.hpp>
 
 #include "dsp/normalize.hpp"
