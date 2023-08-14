@@ -32,7 +32,7 @@ NEO_ALWAYS_INLINE auto cmul(__m256d a, __m256d b) noexcept -> __m256d
     return _mm256_addsub_pd(_mm256_mul_pd(real, real), _mm256_mul_pd(imag, imag));
 }
 
-#if defined(NEO_HAS_SIMD_F16C) && defined(FLT16_MIN)
+#if defined(NEO_HAS_SIMD_F16C) && !defined(NEO_COMPILER_GCC)
 struct alignas(32) float16x8
 {
     using value_type    = _Float16;
@@ -91,6 +91,76 @@ private:
 
     register_type _register;
 };
+
+struct alignas(32) float16x16
+{
+    using value_type    = _Float16;
+    using register_type = __m256i;
+
+    static constexpr auto const alignment = std::size_t(32);
+    static constexpr auto const size      = std::size_t(16);
+
+    float16x16() = default;
+
+    float16x16(register_type val) noexcept : _register{val} {}
+
+    [[nodiscard]] explicit operator register_type() const { return _register; }
+
+    [[nodiscard]] static auto broadcast(value_type val) -> float16x16
+    {
+        auto values = std::array<_Float16, size>{};
+        std::fill(values.begin(), values.end(), val);
+        return load_unaligned(values.data());
+        // return _mm_set1_epi16(std::bit_cast<std::int16_t>(val));
+    }
+
+    [[nodiscard]] static auto load_unaligned(value_type const* input) -> float16x16
+    {
+        return _mm256_loadu_si256(reinterpret_cast<register_type const*>(input));
+    }
+
+    auto store_unaligned(value_type* output) const -> void
+    {
+        return _mm256_storeu_si256(reinterpret_cast<register_type*>(output), _register);
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator+(float16x16 lhs, float16x16 rhs) -> float16x16
+    {
+        return binary_op(lhs, rhs, [](auto l, auto r) { return _mm256_add_ps(l, r); });
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator-(float16x16 lhs, float16x16 rhs) -> float16x16
+    {
+        return binary_op(lhs, rhs, [](auto l, auto r) { return _mm256_sub_ps(l, r); });
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator*(float16x16 lhs, float16x16 rhs) -> float16x16
+    {
+        return binary_op(lhs, rhs, [](auto l, auto r) { return _mm256_mul_ps(l, r); });
+    }
+
+private:
+    NEO_ALWAYS_INLINE friend auto binary_op(float16x16 lhs, float16x16 rhs, auto op) -> float16x16
+    {
+        auto const low_left   = _mm256_extracti128_si256(static_cast<register_type>(lhs), 0);
+        auto const high_left  = _mm256_extracti128_si256(static_cast<register_type>(lhs), 1);
+        auto const low_right  = _mm256_extracti128_si256(static_cast<register_type>(rhs), 0);
+        auto const high_right = _mm256_extracti128_si256(static_cast<register_type>(rhs), 1);
+
+        auto const low_left_f16   = _mm256_cvtph_ps(low_left);
+        auto const high_left_f16  = _mm256_cvtph_ps(high_left);
+        auto const low_right_f16  = _mm256_cvtph_ps(low_right);
+        auto const high_right_f16 = _mm256_cvtph_ps(high_right);
+
+        auto const low_product  = _mm256_cvtps_ph(op(low_left_f16, low_right_f16), _MM_FROUND_CUR_DIRECTION);
+        auto const high_product = _mm256_cvtps_ph(op(high_left_f16, high_right_f16), _MM_FROUND_CUR_DIRECTION);
+
+        return _mm256_insertf128_si256(_mm256_castsi128_si256(low_product), high_product, 1);
+    }
+
+    register_type _register;
+};
+
 #endif
 
 struct alignas(32) float32x8

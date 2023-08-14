@@ -2,6 +2,16 @@
 
 #define NEO_STRINGIFY(x) #x
 
+#if defined(_MSC_VER) && !defined(__clang__)
+    #define NEO_COMPILER_MSVC 1
+#elif defined(__GNUC__) && !defined(__clang__)
+    #define NEO_COMPILER_GCC 1
+#elif defined(__clang__)
+    #define NEO_COMPILER_CLANG 1
+#else
+    #define NEO_COMPILER_UNKOWN 1
+#endif
+
 #if defined(__GNUC__) || defined(__clang__)
     #define NEO_ALWAYS_INLINE __attribute__((always_inline)) inline
 #elif defined(_MSC_VER) && !defined(__clang__)
