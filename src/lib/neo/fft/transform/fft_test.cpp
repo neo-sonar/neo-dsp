@@ -2,6 +2,7 @@
 
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/scale.hpp>
+#include <neo/math/simd.hpp>
 #include <neo/testing/testing.hpp>
 
 #include <catch2/catch_approx.hpp>
@@ -85,3 +86,54 @@ TEMPLATE_PRODUCT_TEST_CASE(
         REQUIRE(neo::allclose(noise.to_mdspan(), out));
     }
 }
+
+template<typename ComplexBatch, typename Kernel>
+static auto test_complex_batch_fft()
+{
+    auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17);
+    auto const size  = 1UL << order;
+
+    auto inout    = stdex::mdarray<ComplexBatch, stdex::dextents<size_t, 1>>{size};
+    auto twiddles = stdex::mdarray<ComplexBatch, stdex::dextents<size_t, 1>>{size / 2UL};
+    neo::fft::execute_radix2_kernel(Kernel{}, inout.to_mdspan(), twiddles.to_mdspan());
+}
+
+#if defined(NEO_HAS_SIMD_SSE2)
+TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::simd::pcomplex64x4, neo::simd::pcomplex128x2)
+{
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v1>();
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v2>();
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v3>();
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v4>();
+}
+#endif
+
+#if defined(NEO_HAS_SIMD_AVX)
+TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::simd::pcomplex64x8, neo::simd::pcomplex128x4)
+{
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v1>();
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v2>();
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v3>();
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v4>();
+}
+#endif
+
+#if defined(NEO_HAS_SIMD_F16C) && !defined(NEO_COMPILER_GCC)
+TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::simd::pcomplex32x8, neo::simd::pcomplex32x16)
+{
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v1>();
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v2>();
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v3>();
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v4>();
+}
+#endif
+
+#if defined(NEO_HAS_SIMD_AVX512F)
+TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::simd::pcomplex64x16, neo::simd::pcomplex128x8)
+{
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v1>();
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v2>();
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v3>();
+    test_complex_batch_fft<TestType, neo::fft::radix2_kernel_v4>();
+}
+#endif
