@@ -40,13 +40,28 @@ struct float32x8
 
     float32x8(register_type val) noexcept : _val{val} {}
 
-    [[nodiscard]] operator register_type() const { return _val; }
+    [[nodiscard]] explicit operator register_type() const { return _val; }
 
     [[nodiscard]] static auto broadcast(float val) -> float32x8 { return _mm256_set1_ps(val); }
 
     [[nodiscard]] static auto load_unaligned(float const* input) -> float32x8 { return _mm256_loadu_ps(input); }
 
     auto store_unaligned(float* output) const -> void { return _mm256_storeu_ps(output, _val); }
+
+    NEO_ALWAYS_INLINE friend auto operator+(float32x8 lhs, float32x8 rhs) -> float32x8
+    {
+        return _mm256_add_ps(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator-(float32x8 lhs, float32x8 rhs) -> float32x8
+    {
+        return _mm256_sub_ps(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator*(float32x8 lhs, float32x8 rhs) -> float32x8
+    {
+        return _mm256_mul_ps(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
 
 private:
     register_type _val;
@@ -64,13 +79,28 @@ struct float64x4
 
     float64x4(register_type val) noexcept : _val{val} {}
 
-    [[nodiscard]] operator register_type() const { return _val; }
+    [[nodiscard]] explicit operator register_type() const { return _val; }
 
     [[nodiscard]] static auto broadcast(double val) -> float64x4 { return _mm256_set1_pd(val); }
 
     [[nodiscard]] static auto load_unaligned(double const* input) -> float64x4 { return _mm256_loadu_pd(input); }
 
     auto store_unaligned(double* output) const -> void { return _mm256_storeu_pd(output, _val); }
+
+    NEO_ALWAYS_INLINE friend auto operator+(float64x4 lhs, float64x4 rhs) -> float64x4
+    {
+        return _mm256_add_pd(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator-(float64x4 lhs, float64x4 rhs) -> float64x4
+    {
+        return _mm256_sub_pd(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator*(float64x4 lhs, float64x4 rhs) -> float64x4
+    {
+        return _mm256_mul_pd(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
 
 private:
     register_type _val;

@@ -80,18 +80,33 @@ struct float32x4
 
     float32x4() = default;
 
-    NEO_ALWAYS_INLINE float32x4(register_type val) noexcept : _val{val} {}
+    NEO_ALWAYS_INLINE float32x4(register_type reg) noexcept : _reg{reg} {}
 
-    [[nodiscard]] NEO_ALWAYS_INLINE operator register_type() const { return _val; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
 
-    [[nodiscard]] static auto broadcast(float val) -> float32x4 { return _mm_set1_ps(val); }
+    [[nodiscard]] static auto broadcast(float reg) -> float32x4 { return _mm_set1_ps(reg); }
 
     [[nodiscard]] static auto load_unaligned(float const* input) -> float32x4 { return _mm_loadu_ps(input); }
 
-    auto store_unaligned(float* output) const -> void { return _mm_storeu_ps(output, _val); }
+    auto store_unaligned(float* output) const -> void { return _mm_storeu_ps(output, _reg); }
+
+    NEO_ALWAYS_INLINE friend auto operator+(float32x4 lhs, float32x4 rhs) -> float32x4
+    {
+        return _mm_add_ps(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator-(float32x4 lhs, float32x4 rhs) -> float32x4
+    {
+        return _mm_sub_ps(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator*(float32x4 lhs, float32x4 rhs) -> float32x4
+    {
+        return _mm_mul_ps(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
 
 private:
-    register_type _val;
+    register_type _reg;
 };
 
 struct float64x2
@@ -104,18 +119,33 @@ struct float64x2
 
     float64x2() = default;
 
-    NEO_ALWAYS_INLINE float64x2(register_type val) noexcept : _val{val} {}
+    NEO_ALWAYS_INLINE float64x2(register_type reg) noexcept : _reg{reg} {}
 
-    [[nodiscard]] NEO_ALWAYS_INLINE operator register_type() const { return _val; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
 
-    [[nodiscard]] static auto broadcast(double val) -> float64x2 { return _mm_set1_pd(val); }
+    [[nodiscard]] static auto broadcast(double reg) -> float64x2 { return _mm_set1_pd(reg); }
 
     [[nodiscard]] static auto load_unaligned(double const* input) -> float64x2 { return _mm_loadu_pd(input); }
 
-    auto store_unaligned(double* output) const -> void { return _mm_storeu_pd(output, _val); }
+    auto store_unaligned(double* output) const -> void { return _mm_storeu_pd(output, _reg); }
+
+    NEO_ALWAYS_INLINE friend auto operator+(float64x2 lhs, float64x2 rhs) -> float64x2
+    {
+        return _mm_add_pd(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator-(float64x2 lhs, float64x2 rhs) -> float64x2
+    {
+        return _mm_sub_pd(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator*(float64x2 lhs, float64x2 rhs) -> float64x2
+    {
+        return _mm_mul_pd(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
 
 private:
-    register_type _val;
+    register_type _reg;
 };
 
 template<typename ScalarType>
