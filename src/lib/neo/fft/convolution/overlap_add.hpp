@@ -81,7 +81,7 @@ auto overlap_add<Float>::overlaps() const noexcept -> size_type
 template<std::floating_point Float>
 auto overlap_add<Float>::operator()(inout_vector auto block, auto callback) -> void
 {
-    NEO_EXPECTS(_rfft.size() == block.extent(0) * 2U);
+    NEO_EXPECTS(block.extent(0) == block_size());
 
     auto const real_buffer    = _real_buffer.to_mdspan();
     auto const complex_buffer = _complex_buffer.to_mdspan();

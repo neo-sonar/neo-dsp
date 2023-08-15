@@ -1,6 +1,7 @@
 #include "overlap_add.hpp"
 #include "overlap_save.hpp"
 
+#include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/rms_error.hpp>
 #include <neo/fft/convolution/uniform_partition.hpp>
 #include <neo/testing/testing.hpp>
@@ -20,14 +21,14 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft/convolution:", "", (overlap_add, overlap_sav
     using Overlap = TestType;
     using Float   = typename Overlap::real_type;
 
-    auto const blockSize = GENERATE(as<std::size_t>{}, 128, 256, 512);
-    auto const signal    = neo::generate_noise_signal<Float>(blockSize * 15UL, Catch::getSeed());
+    auto const blockSize  = GENERATE(as<std::size_t>{}, 128, 256, 512);
+    auto const filterSize = GENERATE(as<std::size_t>{}, 8, 9, 10, 11, 13, 17, 127, 128, 129, 130, 256, 512, 1024);
+    auto const signal     = neo::generate_noise_signal<Float>(blockSize * 8UL, Catch::getSeed());
 
-    auto overlap = Overlap{blockSize, blockSize};
-
+    auto overlap = Overlap{blockSize, filterSize};
     REQUIRE(overlap.block_size() == blockSize);
-    REQUIRE(overlap.filter_size() == blockSize);
-    REQUIRE(overlap.transform_size() == blockSize * 2UL);
+    REQUIRE(overlap.filter_size() == filterSize);
+    REQUIRE(overlap.transform_size() >= blockSize + filterSize - 1);
 
     auto output = signal;
     auto blocks = stdex::mdspan{output.data(), stdex::extents{output.size()}};
@@ -42,8 +43,8 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft/convolution:", "", (overlap_add, overlap_sav
     auto const sig = signal.to_mdspan();
     auto const out = output.to_mdspan();
 
-    auto const error = neo::rms_error(sig, out);
-    REQUIRE_THAT(error, Catch::Matchers::WithinAbs(0.0, 0.00001));
+    REQUIRE(neo::allclose(out, sig));
+    REQUIRE_THAT(neo::rms_error(sig, out), Catch::Matchers::WithinAbs(0.0, 0.00001));
 
     for (auto i{0ULL}; i < output.size(); ++i) {
         CAPTURE(i);

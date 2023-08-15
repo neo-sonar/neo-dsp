@@ -67,14 +67,27 @@ auto overlap_save<Float>::transform_size() const noexcept -> size_type
 template<std::floating_point Float>
 auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> void
 {
-    NEO_EXPECTS(block.extent(0) * 2U == _window.extent(0));
+    NEO_EXPECTS(block.extent(0) == block_size());
+
+    auto slide_window_left = [step = static_cast<int>(block_size())](auto window) {
+        auto const num_steps = static_cast<int>(window.extent(0)) / step;
+        for (auto i{0}; i < num_steps - 1; ++i) {
+            auto const dest_idx = i * step;
+            auto const src_idx  = dest_idx + step;
+
+            auto const src_block  = stdex::submdspan(window, std::tuple{src_idx, src_idx + step});
+            auto const dest_block = stdex::submdspan(window, std::tuple{dest_idx, src_idx});
+            copy(src_block, dest_block);
+        }
+    };
 
     // Time domain input buffer
-    auto const window = _window.to_mdspan();
-    auto left_half    = stdex::submdspan(window, std::tuple{0, _window.extent(0) / 2});
-    auto right_half   = stdex::submdspan(window, std::tuple{_window.extent(0) / 2, _window.extent(0)});
-    copy(right_half, left_half);
-    copy(block, right_half);
+    auto const window       = _window.to_mdspan();
+    auto const keep_extents = std::tuple{transform_size() - block_size(), transform_size()};
+
+    auto const dest_in_window = stdex::submdspan(window, keep_extents);
+    slide_window_left(window);
+    copy(block, dest_in_window);
 
     // 2B-point R2C-FFT
     auto const complex_buf = _complex_buffer.to_mdspan();
@@ -93,7 +106,7 @@ auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> 
     _rfft(complex_buf, real_buf);
 
     // Copy blockSize samples to output
-    auto out = stdex::submdspan(real_buf, std::tuple{real_buf.extent(0) / 2, real_buf.extent(0)});
+    auto out = stdex::submdspan(real_buf, keep_extents);
     copy(out, block);
 }
 
