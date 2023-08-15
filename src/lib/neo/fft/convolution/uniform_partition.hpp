@@ -18,7 +18,7 @@ template<in_matrix InMat>
     using Float = typename InMat::value_type;
 
     auto const windowSize    = blockSize * 2;
-    auto const numBins       = windowSize / 2 + 1;
+    auto const numBins       = blockSize + 1;
     auto const numChannels   = buffer.extent(0);
     auto const numPartitions = divide_round_up(buffer.extent(1), blockSize);
     auto const scaleFactor   = Float(1) / static_cast<Float>(windowSize);

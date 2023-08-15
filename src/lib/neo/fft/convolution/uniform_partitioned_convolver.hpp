@@ -43,10 +43,15 @@ auto uniform_partitioned_convolver<Float, Overlap>::operator()(in_vector auto bl
         auto const fdl         = _fdl.to_mdspan();
         auto const accumulator = _accumulator.to_mdspan();
 
+        NEO_EXPECTS(inout.extent(0) == fdl.extent(1));
+        NEO_EXPECTS(inout.extent(0) == accumulator.extent(0));
+
         shift_rows_up(fdl);
         copy(inout, stdex::submdspan(fdl, 0, stdex::full_extent));
-        fill(accumulator, Float(0));
+
+        fill(accumulator, std::complex<Float>{});
         multiply_sum_columns(fdl, _filter, accumulator);
+
         copy(accumulator, inout);
     });
 }
