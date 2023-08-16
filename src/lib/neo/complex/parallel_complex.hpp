@@ -3,6 +3,7 @@
 #include <neo/config.hpp>
 
 #include <neo/complex/complex.hpp>
+#include <neo/simd/native.hpp>
 
 namespace neo {
 
@@ -53,6 +54,26 @@ private:
     FloatBatch _real;
     FloatBatch _imag;
 };
+
+#if defined(NEO_HAS_SIMD_SSE2)
+using pcomplex64x4  = parallel_complex<float32x4>;
+using pcomplex128x2 = parallel_complex<float64x2>;
+#endif
+
+#if defined(NEO_HAS_SIMD_AVX)
+using pcomplex64x8  = parallel_complex<float32x8>;
+using pcomplex128x4 = parallel_complex<float64x4>;
+#endif
+
+#if defined(NEO_HAS_BASIC_FLOAT16)
+using pcomplex32x8  = parallel_complex<float16x8>;
+using pcomplex32x16 = parallel_complex<float16x16>;
+#endif
+
+#if defined(NEO_HAS_SIMD_AVX512F)
+using pcomplex64x16 = parallel_complex<float32x16>;
+using pcomplex128x8 = parallel_complex<float64x8>;
+#endif
 
 template<typename FloatBatch>
 inline constexpr auto const is_complex<parallel_complex<FloatBatch>> = true;

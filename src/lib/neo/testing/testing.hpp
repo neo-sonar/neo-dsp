@@ -15,6 +15,24 @@
 
 namespace neo {
 
+namespace detail {
+
+template<typename T>
+consteval auto real_or_complex_value()
+{
+    if constexpr (std::floating_point<T>) {
+        return T{};
+    } else {
+        static_assert(is_complex<T>);
+        return typename T::value_type{};
+    }
+}
+
+}  // namespace detail
+
+template<typename RealOrComplex>
+using real_or_complex_value_t = decltype(detail::real_or_complex_value<RealOrComplex>());
+
 template<float_or_complex FloatOrComplex, typename URNG = std::mt19937>
 [[nodiscard]] auto generate_noise_signal(std::size_t length, typename URNG::result_type seed)
 {

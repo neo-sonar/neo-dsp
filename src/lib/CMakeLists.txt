@@ -14,6 +14,8 @@ target_sources(neo_fft_tests
         "neo/algorithm/copy_test.cpp"
 
         "neo/complex/complex_test.cpp"
+        "neo/complex/interleave_complex_test.cpp"
+        "neo/complex/parallel_complex_test.cpp"
         "neo/complex/scalar_complex_test.cpp"
 
         "neo/container/sparse_matrix_test.cpp"

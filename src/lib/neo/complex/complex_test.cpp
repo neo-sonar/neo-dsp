@@ -1,6 +1,7 @@
 #include "complex.hpp"
 
 #include <neo/complex/scalar_complex.hpp>
+#include <neo/testing/testing.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 

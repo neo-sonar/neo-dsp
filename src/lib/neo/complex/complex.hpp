@@ -19,22 +19,4 @@ concept complex = is_complex<T>;
 template<typename T>
 concept float_or_complex = std::floating_point<T> or complex<T>;
 
-namespace detail {
-
-template<typename T>
-consteval auto real_or_complex_value()
-{
-    if constexpr (std::floating_point<T>) {
-        return T{};
-    } else {
-        static_assert(is_complex<T>);
-        return typename T::value_type{};
-    }
-}
-
-}  // namespace detail
-
-template<typename RealOrComplex>
-using real_or_complex_value_t = decltype(detail::real_or_complex_value<RealOrComplex>());
-
 }  // namespace neo
