@@ -13,6 +13,9 @@ target_sources(neo_fft_tests
         "neo/algorithm/allclose_test.cpp"
         "neo/algorithm/copy_test.cpp"
 
+        "neo/complex/complex_test.cpp"
+        "neo/complex/scalar_complex_test.cpp"
+
         "neo/container/sparse_matrix_test.cpp"
 
         "neo/fft/convolution/multiply_elements_add_columns_test.cpp"
@@ -34,7 +37,6 @@ target_sources(neo_fft_tests
         "neo/math/power_test.cpp"
         "neo/math/windowing_test.cpp"
 
-        "neo/complex_test.cpp"
         "neo/fixed_point_test.cpp"
         "neo/simd_test.cpp"
 )

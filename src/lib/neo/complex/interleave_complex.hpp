@@ -65,7 +65,7 @@ private:
     FloatBatch _batch;
 };
 
-}  // namespace neo
-
 template<typename FloatBatch>
-inline constexpr auto const neo::is_complex<neo::interleave_complex<FloatBatch>> = true;
+inline constexpr auto const is_complex<interleave_complex<FloatBatch>> = true;
+
+}  // namespace neo

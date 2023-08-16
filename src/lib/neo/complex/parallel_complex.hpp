@@ -54,7 +54,7 @@ private:
     FloatBatch _imag;
 };
 
-}  // namespace neo
-
 template<typename FloatBatch>
-inline constexpr auto const neo::is_complex<neo::parallel_complex<FloatBatch>> = true;
+inline constexpr auto const is_complex<parallel_complex<FloatBatch>> = true;
+
+}  // namespace neo
