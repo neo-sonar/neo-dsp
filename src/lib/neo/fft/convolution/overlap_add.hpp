@@ -87,7 +87,7 @@ auto overlap_add<Float>::operator()(inout_vector auto block, auto callback) -> v
 
     // Copy and zero-pad input
     fill(real_buffer, Float(0));
-    copy(block, stdex::submdspan(real_buffer, std::tuple{0, block.extent(1)}));
+    copy(block, stdex::submdspan(real_buffer, std::tuple{0, block_size()}));
 
     // K-point rfft
     _rfft(real_buffer, complex_buffer);
@@ -125,7 +125,7 @@ auto overlap_add<Float>::operator()(inout_vector auto block, auto callback) -> v
 
     // Increment overlap write position
     ++_overlapWriteIdx;
-    if (_overlapWriteIdx == _overlaps.extent(0)) {
+    if (_overlapWriteIdx == num_overlaps()) {
         _overlapWriteIdx = 0;
     }
 }
