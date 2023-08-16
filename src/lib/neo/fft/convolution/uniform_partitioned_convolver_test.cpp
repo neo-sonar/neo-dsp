@@ -18,7 +18,10 @@ template<typename T>
 static constexpr auto is_sparse_convolver = false;
 
 template<typename Float, typename Overlap>
-static constexpr auto is_sparse_convolver<neo::fft::sparse_uniform_partitioned_convolver<Float, Overlap>> = true;
+static constexpr auto
+    is_sparse_convolver<neo::fft::uniform_partitioned_convolver<neo::fft::sparse_filter<Float>, Overlap>>
+    = true;
+
 }  // namespace
 
 static_assert(not is_sparse_convolver<neo::fft::upola_convolver<float>>);
