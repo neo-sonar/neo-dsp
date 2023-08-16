@@ -2,6 +2,7 @@
 
 #include <neo/config.hpp>
 
+#include <neo/algorithm/add.hpp>
 #include <neo/algorithm/copy.hpp>
 #include <neo/algorithm/fill.hpp>
 #include <neo/algorithm/scale.hpp>
@@ -28,19 +29,20 @@ struct overlap_add
     [[nodiscard]] auto block_size() const noexcept -> size_type;
     [[nodiscard]] auto filter_size() const noexcept -> size_type;
     [[nodiscard]] auto transform_size() const noexcept -> size_type;
-    [[nodiscard]] auto overlaps() const noexcept -> size_type;
+    [[nodiscard]] auto num_overlaps() const noexcept -> size_type;
 
     auto operator()(inout_vector auto block, auto callback) -> void;
 
 private:
     size_type _block_size;
     size_type _filter_size;
+    size_type _usable_coeffs{_block_size + _filter_size - 1UL};
 
-    rfft_radix2_plan<Float> _rfft{ilog2(next_power_of_two(_block_size + _filter_size - 1UL))};
+    rfft_radix2_plan<Float> _rfft{ilog2(next_power_of_two(_usable_coeffs))};
     stdex::mdarray<Float, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
     stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
 
-    size_type _overlapIdx{0};
+    size_type _overlapWriteIdx{0};
     stdex::mdarray<Float, stdex::dextents<size_t, 2>> _overlaps;
 };
 
@@ -48,10 +50,7 @@ template<std::floating_point Float>
 overlap_add<Float>::overlap_add(size_type block_size, size_type filter_size)
     : _block_size{block_size}
     , _filter_size{filter_size}
-    , _overlaps{
-          divide_round_up(_block_size + _filter_size - 1UL, _block_size),
-          _block_size + _filter_size - 1UL,
-      }
+    , _overlaps{divide_round_up(_usable_coeffs, _block_size), _usable_coeffs}
 {}
 
 template<std::floating_point Float>
@@ -73,7 +72,7 @@ auto overlap_add<Float>::transform_size() const noexcept -> size_type
 }
 
 template<std::floating_point Float>
-auto overlap_add<Float>::overlaps() const noexcept -> size_type
+auto overlap_add<Float>::num_overlaps() const noexcept -> size_type
 {
     return _overlaps.extent(0);
 }
@@ -86,28 +85,48 @@ auto overlap_add<Float>::operator()(inout_vector auto block, auto callback) -> v
     auto const real_buffer    = _real_buffer.to_mdspan();
     auto const complex_buffer = _complex_buffer.to_mdspan();
 
+    // Copy and zero-pad input
     fill(real_buffer, Float(0));
     copy(block, stdex::submdspan(real_buffer, std::tuple{0, block.extent(1)}));
 
+    // K-point rfft
     _rfft(real_buffer, complex_buffer);
 
+    // Scale
     auto const alpha  = 1.0F / static_cast<Float>(_rfft.size());
     auto const coeffs = stdex::submdspan(complex_buffer, std::tuple{0, _rfft.size() / 2 + 1});
     scale(alpha, coeffs);
 
+    // Process
     callback(coeffs);
 
+    // K-point irfft
     _rfft(complex_buffer, real_buffer);
 
-    copy(
-        stdex::submdspan(real_buffer, std::tuple{0, _overlaps.extent(1)}),
-        stdex::submdspan(_overlaps.to_mdspan(), _overlapIdx, stdex::full_extent)
-    );
-    copy(stdex::submdspan(real_buffer, std::tuple{0, block.extent(0)}), block);
+    // Copy to output
+    copy(stdex::submdspan(real_buffer, std::tuple{0, block_size()}), block);
 
-    ++_overlapIdx;
-    if (_overlapIdx == _overlaps.extent(0)) {
-        _overlapIdx = 0;
+    // Save overlap for next iteration
+    auto const signal = stdex::submdspan(real_buffer, std::tuple{0, _usable_coeffs});
+    auto const save   = stdex::submdspan(_overlaps.to_mdspan(), _overlapWriteIdx, stdex::full_extent);
+    copy(signal, save);
+
+    // Add older iterations
+    for (auto i{1UL}; i < num_overlaps(); ++i) {
+        auto const overlap_idx = (_overlapWriteIdx + num_overlaps() - i) % num_overlaps();
+        auto const start_idx   = block_size() * i;
+        auto const num_samples = std::min(block_size(), _usable_coeffs - start_idx);
+        auto const last_idx    = start_idx + num_samples;
+
+        auto const overlap = stdex::submdspan(_overlaps.to_mdspan(), overlap_idx, std::tuple{start_idx, last_idx});
+        auto const out     = stdex::submdspan(block, std::tuple{0, num_samples});
+        add(overlap, out, out);
+    }
+
+    // Increment overlap write position
+    ++_overlapWriteIdx;
+    if (_overlapWriteIdx == _overlaps.extent(0)) {
+        _overlapWriteIdx = 0;
     }
 }
 
