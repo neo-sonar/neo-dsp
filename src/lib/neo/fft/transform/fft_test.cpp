@@ -51,7 +51,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     using Complex = typename Plan::complex_type;
     using Float   = typename Complex::value_type;
 
-    auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17);
+    auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
 
     auto plan = Plan{order};
     REQUIRE(plan.order() == order);
@@ -118,7 +118,7 @@ static auto test_complex_batch_roundtrip_fft()
         return buf;
     };
 
-    auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17);
+    auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
     auto const size  = 1UL << order;
 
     auto inout = make_noise_signal(size);

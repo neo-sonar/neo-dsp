@@ -2,9 +2,7 @@
 
 #include <neo/config.hpp>
 
-#include <neo/complex.hpp>
-
-#include <concepts>
+#include <neo/complex/complex.hpp>
 
 namespace neo {
 

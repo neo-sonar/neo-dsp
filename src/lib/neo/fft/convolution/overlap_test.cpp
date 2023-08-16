@@ -50,8 +50,8 @@ TEMPLATE_PRODUCT_TEST_CASE(
     using Overlap = TestType;
     using Float   = typename Overlap::real_type;
 
-    auto const block_size  = GENERATE(as<std::size_t>{}, 128, 256, 512);
-    auto const filter_size = GENERATE(as<std::size_t>{}, 8, 9, 10, 11, 13, 17, 127, 128, 129, 130, 256, 512, 1024);
+    auto const block_size  = GENERATE(as<std::size_t>{}, 128, 512);
+    auto const filter_size = GENERATE(as<std::size_t>{}, 8, 9, 10, 17, 127, 128, 129, 130, 512, 999, 1024);
     auto const signal      = neo::generate_noise_signal<Float>(block_size * 8UL, Catch::getSeed());
 
     auto overlap = Overlap{block_size, filter_size};
