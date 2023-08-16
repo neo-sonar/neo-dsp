@@ -65,30 +65,3 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
     REQUIRE(neo::allclose(output.to_mdspan(), signal.to_mdspan()));
 }
-
-TEMPLATE_TEST_CASE("neo/fft/convolution: shift_rows_up", "", float, double, long double)
-{
-    using Float = TestType;
-
-    auto matrix_buffer = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{3, 2};
-    auto matrix        = matrix_buffer.to_mdspan();
-
-    matrix(0, 0) = Float(0);
-    matrix(0, 1) = Float(1);
-
-    matrix(1, 0) = Float(2);
-    matrix(1, 1) = Float(3);
-
-    matrix(2, 0) = Float(4);
-    matrix(2, 1) = Float(5);
-
-    neo::fft::shift_rows_up(matrix);
-    REQUIRE(matrix(1, 0) == Catch::Approx(Float(0)));
-    REQUIRE(matrix(1, 1) == Catch::Approx(Float(1)));
-    REQUIRE(matrix(2, 0) == Catch::Approx(Float(2)));
-    REQUIRE(matrix(2, 1) == Catch::Approx(Float(3)));
-
-    neo::fft::shift_rows_up(matrix);
-    REQUIRE(matrix(2, 0) == Catch::Approx(Float(0)));
-    REQUIRE(matrix(2, 1) == Catch::Approx(Float(1)));
-}

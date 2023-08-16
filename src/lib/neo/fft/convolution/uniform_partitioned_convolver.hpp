@@ -38,6 +38,15 @@ template<typename Filter, typename Overlap>
 auto uniform_partitioned_convolver<Filter, Overlap>::operator()(in_vector auto block) -> void
 {
     _overlap(block, [this](inout_vector auto inout) {
+        auto const shift_rows_up = [](inout_matrix auto matrix) {
+            auto const rows = static_cast<int>(matrix.extent(0));
+            for (auto row{rows - 1}; row > 0; --row) {
+                auto src  = stdex::submdspan(matrix, row - 1, stdex::full_extent);
+                auto dest = stdex::submdspan(matrix, row, stdex::full_extent);
+                copy(src, dest);
+            }
+        };
+
         auto const fdl         = _fdl.to_mdspan();
         auto const accumulator = _accumulator.to_mdspan();
 

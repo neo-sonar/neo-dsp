@@ -93,7 +93,7 @@ auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> 
     auto const complex_buf = _complex_buffer.to_mdspan();
     _rfft(window, complex_buf);
 
-    // Copy to FDL
+    // Scale R2C output
     auto const num_coeffs = _rfft.size() / 2 + 1;
     auto const coeffs     = stdex::submdspan(complex_buf, std::tuple{0, num_coeffs});
     scale(1.0F / static_cast<Float>(_rfft.size()), coeffs);
@@ -105,18 +105,9 @@ auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> 
     auto const real_buf = _real_buffer.to_mdspan();
     _rfft(complex_buf, real_buf);
 
-    // Copy blockSize samples to output
+    // Copy block_size samples to output
     auto out = stdex::submdspan(real_buf, keep_extents);
     copy(out, block);
 }
-
-inline constexpr auto shift_rows_up = [](inout_matrix auto matrix) {
-    auto const rows = static_cast<int>(matrix.extent(0));
-    for (auto row{rows - 1}; row > 0; --row) {
-        auto src  = stdex::submdspan(matrix, row - 1, stdex::full_extent);
-        auto dest = stdex::submdspan(matrix, row, stdex::full_extent);
-        copy(src, dest);
-    }
-};
 
 }  // namespace neo::fft
