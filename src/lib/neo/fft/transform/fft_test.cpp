@@ -16,7 +16,7 @@
 
 namespace {
 template<typename Real, typename Kernel>
-struct fft_radix2_plan_builder
+struct plan_tester
 {
     using plan_type = neo::fft::fft_radix2_plan<std::complex<Real>, Kernel>;
 };
@@ -27,9 +27,9 @@ namespace fft = neo::fft;
 using namespace neo::fft;
 
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft/transform:",
+    "neo/fft/transform: fft_radix2_plan",
     "",
-    (fft_radix2_plan_builder),
+    (plan_tester),
 
     ((float, radix2_kernel_v1),
      (float, radix2_kernel_v2),
@@ -163,8 +163,19 @@ static auto test_complex_batch_roundtrip_fft()
     }
 }
 
+namespace {
+
+template<typename Real, typename Kernel>
+struct simd_tester
+{
+    using real_type   = Real;
+    using kernel_type = Kernel;
+};
+
+}  // namespace
+
 #if defined(NEO_HAS_SIMD_SSE2)
-TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::pcomplex64x4, neo::pcomplex128x2)
+TEMPLATE_TEST_CASE("neo/fft/transform: radix2_kernel(simd_batch)", "", neo::pcomplex64x4, neo::pcomplex128x2)
 {
     test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v1>();
     test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v2>();
@@ -174,7 +185,17 @@ TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::pcomplex64x
 #endif
 
 #if defined(NEO_HAS_SIMD_AVX)
-TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::pcomplex64x8, neo::pcomplex128x4)
+TEMPLATE_TEST_CASE("neo/fft/transform: radix2_kernel(simd_batch)", "", neo::pcomplex64x8, neo::pcomplex128x4)
+{
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v1>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v2>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v3>();
+    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v4>();
+}
+#endif
+
+#if defined(NEO_HAS_SIMD_AVX512F)
+TEMPLATE_TEST_CASE("neo/fft/transform: radix2_kernel(simd_batch)", "", neo::pcomplex64x16, neo::pcomplex128x8)
 {
     test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v1>();
     test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v2>();
@@ -184,7 +205,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::pcomplex64x
 #endif
 
 #if defined(NEO_HAS_BASIC_FLOAT16)
-TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::pcomplex32x8, neo::pcomplex32x16)
+TEMPLATE_TEST_CASE("neo/fft/transform: radix2_kernel(simd_batch)", "", neo::pcomplex32x8, neo::pcomplex32x16)
 {
     using ComplexBatch  = TestType;
     using ScalarBatch   = typename ComplexBatch::batch_type;
@@ -276,15 +297,5 @@ TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::pcomplex32x
     test(neo::fft::radix2_kernel_v2{});
     test(neo::fft::radix2_kernel_v3{});
     test(neo::fft::radix2_kernel_v4{});
-}
-#endif
-
-#if defined(NEO_HAS_SIMD_AVX512F)
-TEMPLATE_TEST_CASE("neo/fft/transform: kernel(simd_batch)", "", neo::pcomplex64x16, neo::pcomplex128x8)
-{
-    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v1>();
-    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v2>();
-    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v3>();
-    test_complex_batch_roundtrip_fft<TestType, neo::fft::radix2_kernel_v4>();
 }
 #endif

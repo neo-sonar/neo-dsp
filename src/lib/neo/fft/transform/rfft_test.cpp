@@ -17,7 +17,7 @@
 namespace {
 
 template<typename Real, typename Kernel>
-struct rfft_radix2_plan_builder
+struct tester
 {
     using complex_plan_type = neo::fft::fft_radix2_plan<std::complex<Real>, Kernel>;
     using plan_type         = neo::fft::rfft_radix2_plan<Real, complex_plan_type>;
@@ -28,9 +28,9 @@ struct rfft_radix2_plan_builder
 using namespace neo::fft;
 
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft/transform:",
+    "neo/fft/transform: rfft_radix2_plan",
     "",
-    (rfft_radix2_plan_builder),
+    (tester),
 
     ((float, radix2_kernel_v1),
      (float, radix2_kernel_v2),

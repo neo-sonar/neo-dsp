@@ -34,7 +34,7 @@ inline constexpr auto const neo::is_complex<testing_complex<T>> = true;
 
 #if defined(NEO_HAS_SIMD_SSE2)
 
-TEST_CASE("neo/simd: simd::cmul(sse3)")
+TEST_CASE("neo/simd: simd::cmul(sse2/sse3)")
 {
     using Complex  = neo::icomplex64x2;
     using Register = neo::icomplex64x2::register_type;
@@ -223,77 +223,53 @@ static auto test_pcomplex_batch()
 
 #if defined(NEO_HAS_SIMD_SSE2)
 
-TEMPLATE_TEST_CASE("neo/simd: float_batch", "", neo::float32x4, neo::float64x2) { test_float_batch<TestType>(); }
-
-TEMPLATE_TEST_CASE("neo/simd: complex_batch", "", neo::icomplex64x2, neo::icomplex128x1)
-{
-    test_icomplex_batch<TestType>();
-}
-
 static_assert(std::same_as<typename neo::pcomplex64x4::batch_type, neo::float32x4>);
 static_assert(std::same_as<typename neo::pcomplex64x4::real_scalar_type, float>);
-
 static_assert(std::same_as<typename neo::pcomplex128x2::batch_type, neo::float64x2>);
 static_assert(std::same_as<typename neo::pcomplex128x2::real_scalar_type, double>);
 
-TEMPLATE_TEST_CASE("neo/simd: parallel_complex_batch", "", neo::pcomplex64x4, neo::pcomplex128x2)
-{
-    test_pcomplex_batch<TestType>();
-}
+TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::float32x4, neo::float64x2) { test_float_batch<TestType>(); }
+
+TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::icomplex64x2, neo::icomplex128x1) { test_icomplex_batch<TestType>(); }
+
+TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::pcomplex64x4, neo::pcomplex128x2) { test_pcomplex_batch<TestType>(); }
 
 #endif
 
 #if defined(NEO_HAS_SIMD_AVX)
 
-TEMPLATE_TEST_CASE("neo/simd: float_batch", "", neo::float32x8, neo::float64x4) { test_float_batch<TestType>(); }
-
-TEMPLATE_TEST_CASE("neo/simd: complex_batch", "", neo::icomplex64x4, neo::icomplex128x2)
-{
-    test_icomplex_batch<TestType>();
-}
-
 static_assert(std::same_as<typename neo::pcomplex64x8::batch_type, neo::float32x8>);
 static_assert(std::same_as<typename neo::pcomplex64x8::real_scalar_type, float>);
-
 static_assert(std::same_as<typename neo::pcomplex128x4::batch_type, neo::float64x4>);
 static_assert(std::same_as<typename neo::pcomplex128x4::real_scalar_type, double>);
 
-TEMPLATE_TEST_CASE("neo/simd: parallel_complex_batch", "", neo::pcomplex64x8, neo::pcomplex128x4)
-{
-    test_pcomplex_batch<TestType>();
-}
+TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::float32x8, neo::float64x4) { test_float_batch<TestType>(); }
+
+TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::icomplex64x4, neo::icomplex128x2) { test_icomplex_batch<TestType>(); }
+
+TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::pcomplex64x8, neo::pcomplex128x4) { test_pcomplex_batch<TestType>(); }
 
 #endif
 
 #if defined(NEO_HAS_BASIC_FLOAT16)
-TEMPLATE_TEST_CASE("neo/simd: float_batch", "", neo::float16x8, neo::float16x16) { test_float_batch<TestType>(); }
+TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::float16x8, neo::float16x16) { test_float_batch<TestType>(); }
 
-// TEMPLATE_TEST_CASE("neo/simd: complex_batch", "", neo::icomplex32x4) { test_icomplex_batch<TestType>(); }
+// TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::icomplex32x4) { test_icomplex_batch<TestType>(); }
 
-TEMPLATE_TEST_CASE("neo/simd: parallel_complex_batch", "", neo::pcomplex32x8, neo::pcomplex32x16)
-{
-    test_pcomplex_batch<TestType>();
-}
+TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::pcomplex32x8, neo::pcomplex32x16) { test_pcomplex_batch<TestType>(); }
 #endif
 
 #if defined(NEO_HAS_SIMD_AVX512F)
 
-TEMPLATE_TEST_CASE("neo/simd: float_batch", "", neo::float32x16, neo::float64x8) { test_float_batch<TestType>(); }
-
-TEMPLATE_TEST_CASE("neo/simd: complex_batch", "", neo::icomplex64x8, neo::icomplex128x4)
-{
-    test_icomplex_batch<TestType>();
-}
-
 static_assert(std::same_as<typename neo::pcomplex64x16::batch_type, neo::float32x16>);
 static_assert(std::same_as<typename neo::pcomplex64x16::real_scalar_type, float>);
-
 static_assert(std::same_as<typename neo::pcomplex128x8::batch_type, neo::float64x8>);
 static_assert(std::same_as<typename neo::pcomplex128x8::real_scalar_type, double>);
 
-TEMPLATE_TEST_CASE("neo/simd: parallel_complex_batch", "", neo::pcomplex64x16, neo::pcomplex128x8)
-{
-    test_pcomplex_batch<TestType>();
-}
+TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::float32x16, neo::float64x8) { test_float_batch<TestType>(); }
+
+TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::icomplex64x8, neo::icomplex128x4) { test_icomplex_batch<TestType>(); }
+
+TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::pcomplex64x16, neo::pcomplex128x8) { test_pcomplex_batch<TestType>(); }
 
 #endif
