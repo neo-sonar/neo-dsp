@@ -1,5 +1,5 @@
-#include "sparse_uniform_partitioned_convolver.hpp"
-#include "uniform_partitioned_convolver.hpp"
+#include "dense_convolver.hpp"
+#include "sparse_convolver.hpp"
 
 #include <neo/algorithm/allclose.hpp>
 #include <neo/fft/convolution/uniform_partition.hpp>
