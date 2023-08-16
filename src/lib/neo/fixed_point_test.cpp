@@ -1,7 +1,9 @@
 #include "fixed_point.hpp"
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <functional>
 #include <span>
@@ -17,31 +19,82 @@ template<typename T>
 static constexpr auto tolerance = [] {
     if constexpr (std::same_as<T, neo::q7>) {
         return 0.01F;
+    } else if constexpr (std::same_as<T, neo::q15>) {
+        return 0.0001F;
+    } else if constexpr (std::same_as<typename T::value_type, std::int16_t>) {
+        return 0.001F;
+    } else {
+        return 0.03F;
     }
-    return 0.0001F;
 }();
 
-TEMPLATE_TEST_CASE("neo/fixed_point: to_float(fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE(
+    "neo/fixed_point: to_float",
+    "",
+    neo::q7,
+    neo::q15,
+    (neo::fixed_point<std::int16_t, 14>),
+    (neo::fixed_point<std::int16_t, 13>),
+    (neo::fixed_point<std::int16_t, 12>),
+    (neo::fixed_point<std::int16_t, 11>),
+    (neo::fixed_point<std::int8_t, 6>),
+    (neo::fixed_point<std::int8_t, 5>)
+)
 {
-    using fixed_point_t = TestType;
+    using fxp_t = TestType;
 
-    REQUIRE(approx_equal(to_float(fixed_point_t{0.00F}), 0.00F, tolerance<fixed_point_t>));
-    REQUIRE(approx_equal(to_float(fixed_point_t{0.12F}), 0.12F, tolerance<fixed_point_t>));
-    REQUIRE(approx_equal(to_float(fixed_point_t{0.25F}), 0.25F, tolerance<fixed_point_t>));
-    REQUIRE(approx_equal(to_float(fixed_point_t{0.33F}), 0.33F, tolerance<fixed_point_t>));
-    REQUIRE(approx_equal(to_float(fixed_point_t{0.40F}), 0.40F, tolerance<fixed_point_t>));
-    REQUIRE(approx_equal(to_float(fixed_point_t{0.50F}), 0.50F, tolerance<fixed_point_t>));
-    REQUIRE(approx_equal(to_float(fixed_point_t{0.75F}), 0.75F, tolerance<fixed_point_t>));
+    REQUIRE_THAT(to_float(fxp_t{0.00F}), Catch::Matchers::WithinAbs(0.00F, tolerance<fxp_t>));
+    REQUIRE_THAT(to_float(fxp_t{0.12F}), Catch::Matchers::WithinAbs(0.12F, tolerance<fxp_t>));
+    REQUIRE_THAT(to_float(fxp_t{0.25F}), Catch::Matchers::WithinAbs(0.25F, tolerance<fxp_t>));
+    REQUIRE_THAT(to_float(fxp_t{0.33F}), Catch::Matchers::WithinAbs(0.33F, tolerance<fxp_t>));
+    REQUIRE_THAT(to_float(fxp_t{0.40F}), Catch::Matchers::WithinAbs(0.40F, tolerance<fxp_t>));
+    REQUIRE_THAT(to_float(fxp_t{0.50F}), Catch::Matchers::WithinAbs(0.50F, tolerance<fxp_t>));
+    REQUIRE_THAT(to_float(fxp_t{0.75F}), Catch::Matchers::WithinAbs(0.75F, tolerance<fxp_t>));
 }
 
-TEMPLATE_TEST_CASE("neo/fixed_point: unary_op(fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE(
+    "neo/fixed_point: to_double",
+    "",
+    neo::q7,
+    neo::q15,
+    (neo::fixed_point<std::int16_t, 14>),
+    (neo::fixed_point<std::int16_t, 13>),
+    (neo::fixed_point<std::int16_t, 12>),
+    (neo::fixed_point<std::int16_t, 11>),
+    (neo::fixed_point<std::int8_t, 6>),
+    (neo::fixed_point<std::int8_t, 5>)
+)
 {
-    using fixed_point_t = TestType;
+    using fxp_t = TestType;
+
+    REQUIRE_THAT(to_double(fxp_t{0.00}), Catch::Matchers::WithinAbs(0.00, tolerance<fxp_t>));
+    REQUIRE_THAT(to_double(fxp_t{0.12}), Catch::Matchers::WithinAbs(0.12, tolerance<fxp_t>));
+    REQUIRE_THAT(to_double(fxp_t{0.25}), Catch::Matchers::WithinAbs(0.25, tolerance<fxp_t>));
+    REQUIRE_THAT(to_double(fxp_t{0.33}), Catch::Matchers::WithinAbs(0.33, tolerance<fxp_t>));
+    REQUIRE_THAT(to_double(fxp_t{0.40}), Catch::Matchers::WithinAbs(0.40, tolerance<fxp_t>));
+    REQUIRE_THAT(to_double(fxp_t{0.50}), Catch::Matchers::WithinAbs(0.50, tolerance<fxp_t>));
+    REQUIRE_THAT(to_double(fxp_t{0.75}), Catch::Matchers::WithinAbs(0.75, tolerance<fxp_t>));
+}
+
+TEMPLATE_TEST_CASE(
+    "neo/fixed_point: unary_op",
+    "",
+    neo::q7,
+    neo::q15,
+    (neo::fixed_point<std::int16_t, 14>),
+    (neo::fixed_point<std::int16_t, 13>),
+    (neo::fixed_point<std::int16_t, 12>),
+    (neo::fixed_point<std::int16_t, 11>),
+    (neo::fixed_point<std::int8_t, 6>),
+    (neo::fixed_point<std::int8_t, 5>)
+)
+{
+    using fxp_t = TestType;
 
     auto unary_op = [](auto val, auto op) {
-        auto const result   = to_float(op(fixed_point_t{val}));
+        auto const result   = to_float(op(fxp_t{val}));
         auto const expected = op(val);
-        return approx_equal(result, expected, tolerance<fixed_point_t>);
+        return approx_equal(result, expected, tolerance<fxp_t>);
     };
 
     // operator+
@@ -88,14 +141,25 @@ TEMPLATE_TEST_CASE("neo/fixed_point: unary_op(fixed_point)", "", neo::q7, neo::q
     REQUIRE(unary_op(-0.99F, std::negate()));
 }
 
-TEMPLATE_TEST_CASE("neo/fixed_point: binary_op(fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE(
+    "neo/fixed_point: binary_op",
+    "",
+    neo::q7,
+    neo::q15,
+    (neo::fixed_point<std::int16_t, 14>),
+    (neo::fixed_point<std::int16_t, 13>),
+    (neo::fixed_point<std::int16_t, 12>),
+    (neo::fixed_point<std::int16_t, 11>),
+    (neo::fixed_point<std::int8_t, 6>),
+    (neo::fixed_point<std::int8_t, 5>)
+)
 {
-    using fixed_point_t = TestType;
+    using fxp_t = TestType;
 
     auto binary_op = [](auto lhs, auto rhs, auto op) {
-        auto const result   = to_float(op(fixed_point_t{lhs}, fixed_point_t{rhs}));
+        auto const result   = to_float(op(fxp_t{lhs}, fxp_t{rhs}));
         auto const expected = op(lhs, rhs);
-        return approx_equal(result, expected, tolerance<fixed_point_t>);
+        return approx_equal(result, expected, tolerance<fxp_t>);
     };
 
     // operator+
@@ -126,12 +190,23 @@ TEMPLATE_TEST_CASE("neo/fixed_point: binary_op(fixed_point)", "", neo::q7, neo::
     REQUIRE(binary_op(0.49F, 0.5F, std::multiplies()));
 }
 
-TEMPLATE_TEST_CASE("neo/fixed_point: comparison(fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE(
+    "neo/fixed_point: comparison",
+    "",
+    neo::q7,
+    neo::q15,
+    (neo::fixed_point<std::int16_t, 14>),
+    (neo::fixed_point<std::int16_t, 13>),
+    (neo::fixed_point<std::int16_t, 12>),
+    (neo::fixed_point<std::int16_t, 11>),
+    (neo::fixed_point<std::int8_t, 6>),
+    (neo::fixed_point<std::int8_t, 5>)
+)
 {
-    using fixed_point_t = TestType;
+    using fxp_t = TestType;
 
     auto compare_op = [](auto lhs, auto rhs, auto op) {
-        auto const result   = op(fixed_point_t{lhs}, fixed_point_t{rhs});
+        auto const result   = op(fxp_t{lhs}, fxp_t{rhs});
         auto const expected = op(lhs, rhs);
         return result == expected;
     };
@@ -173,7 +248,18 @@ TEMPLATE_TEST_CASE("neo/fixed_point: comparison(fixed_point)", "", neo::q7, neo:
     REQUIRE(compare_op(+0.50F, +0.50F, std::greater_equal()));
 }
 
-TEMPLATE_TEST_CASE("neo/fixed_point: add(fixed_point, fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE(
+    "neo/fixed_point: add",
+    "",
+    neo::q7,
+    neo::q15,
+    (neo::fixed_point<std::int16_t, 14>),
+    (neo::fixed_point<std::int16_t, 13>),
+    (neo::fixed_point<std::int16_t, 12>),
+    (neo::fixed_point<std::int16_t, 11>),
+    (neo::fixed_point<std::int8_t, 6>),
+    (neo::fixed_point<std::int8_t, 5>)
+)
 {
     using fxp_t = TestType;
 
@@ -208,7 +294,18 @@ TEMPLATE_TEST_CASE("neo/fixed_point: add(fixed_point, fixed_point)", "", neo::q7
     }
 }
 
-TEMPLATE_TEST_CASE("neo/fixed_point: subtract(fixed_point, fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE(
+    "neo/fixed_point: subtract",
+    "",
+    neo::q7,
+    neo::q15,
+    (neo::fixed_point<std::int16_t, 14>),
+    (neo::fixed_point<std::int16_t, 13>),
+    (neo::fixed_point<std::int16_t, 12>),
+    (neo::fixed_point<std::int16_t, 11>),
+    (neo::fixed_point<std::int8_t, 6>),
+    (neo::fixed_point<std::int8_t, 5>)
+)
 {
     using fxp_t = TestType;
 
@@ -243,7 +340,18 @@ TEMPLATE_TEST_CASE("neo/fixed_point: subtract(fixed_point, fixed_point)", "", ne
     }
 }
 
-TEMPLATE_TEST_CASE("neo/fixed_point: multiply(fixed_point, fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE(
+    "neo/fixed_point: multiply",
+    "",
+    neo::q7,
+    neo::q15,
+    (neo::fixed_point<std::int16_t, 14>),
+    (neo::fixed_point<std::int16_t, 13>),
+    (neo::fixed_point<std::int16_t, 12>),
+    (neo::fixed_point<std::int16_t, 11>),
+    (neo::fixed_point<std::int8_t, 6>),
+    (neo::fixed_point<std::int8_t, 5>)
+)
 {
     using fxp_t = TestType;
 

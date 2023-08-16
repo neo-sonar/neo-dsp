@@ -31,6 +31,7 @@ template<std::signed_integral IntType, int FractionalBits>
 struct fixed_point
 {
     using storage_type = IntType;
+    using value_type   = IntType;
 
     static constexpr auto const integer_bits    = std::numeric_limits<IntType>::digits - FractionalBits;
     static constexpr auto const fractional_bits = FractionalBits;
