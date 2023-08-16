@@ -3,6 +3,7 @@
 #include <neo/algorithm/multiply_sum_columns.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/container/sparse_matrix.hpp>
+#include <neo/fft/convolution/overlap_add.hpp>
 #include <neo/fft/convolution/overlap_save.hpp>
 #include <neo/math/complex.hpp>
 #include <neo/math/next_power_of_two.hpp>
@@ -11,17 +12,17 @@
 
 namespace neo::fft {
 
-template<std::floating_point Float>
-struct sparse_upols_convolver
+template<std::floating_point Float, typename Overlap>
+struct sparse_uniform_partitioned_convolver
 {
     using value_type   = Float;
-    using overlap_type = overlap_save<Float>;
+    using overlap_type = Overlap;
 
     using real_type    = Float;
     using complex_type = std::complex<Float>;
     using size_type    = std::size_t;
 
-    sparse_upols_convolver() = default;
+    sparse_uniform_partitioned_convolver() = default;
 
     template<std::predicate<std::size_t, std::size_t, complex_type> Sparsity>
     auto filter(in_matrix auto filter, Sparsity sparsity) -> void;
@@ -32,21 +33,21 @@ private:
     stdex::mdarray<complex_type, stdex::dextents<size_type, 1>> _accumulator;
     stdex::mdarray<complex_type, stdex::dextents<size_type, 2>> _fdl;
 
-    overlap_save<Float> _overlap{1, 1};
+    Overlap _overlap{1, 1};
 };
 
-template<std::floating_point Float>
+template<std::floating_point Float, typename Overlap>
 template<std::predicate<std::size_t, std::size_t, std::complex<Float>> Sparsity>
-auto sparse_upols_convolver<Float>::filter(in_matrix auto filter, Sparsity sparsity) -> void
+auto sparse_uniform_partitioned_convolver<Float, Overlap>::filter(in_matrix auto filter, Sparsity sparsity) -> void
 {
     _filter      = sparse_matrix<complex_type>{filter, sparsity};
-    _overlap     = overlap_save<Float>{filter.extent(1) - 1, filter.extent(1) - 1};
+    _overlap     = Overlap{filter.extent(1) - 1, filter.extent(1) - 1};
     _fdl         = stdex::mdarray<complex_type, stdex::dextents<size_type, 2>>{filter.extents()};
     _accumulator = stdex::mdarray<complex_type, stdex::dextents<size_type, 1>>{filter.extent(1)};
 }
 
-template<std::floating_point Float>
-auto sparse_upols_convolver<Float>::operator()(inout_vector auto block) -> void
+template<std::floating_point Float, typename Overlap>
+auto sparse_uniform_partitioned_convolver<Float, Overlap>::operator()(inout_vector auto block) -> void
 {
     _overlap(block, [this](inout_vector auto inout) {
         auto const fdl         = _fdl.to_mdspan();
@@ -59,5 +60,11 @@ auto sparse_upols_convolver<Float>::operator()(inout_vector auto block) -> void
         copy(accumulator, inout);
     });
 }
+
+template<std::floating_point Float>
+using sparse_upols_convolver = sparse_uniform_partitioned_convolver<Float, overlap_save<Float>>;
+
+template<std::floating_point Float>
+using sparse_upola_convolver = sparse_uniform_partitioned_convolver<Float, overlap_add<Float>>;
 
 }  // namespace neo::fft

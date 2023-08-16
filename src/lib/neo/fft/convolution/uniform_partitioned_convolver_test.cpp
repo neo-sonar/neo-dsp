@@ -1,4 +1,4 @@
-#include "sparse_upols_convolver.hpp"
+#include "sparse_uniform_partitioned_convolver.hpp"
 #include "uniform_partitioned_convolver.hpp"
 
 #include <neo/algorithm/allclose.hpp>
@@ -17,18 +17,22 @@ namespace {
 template<typename T>
 static constexpr auto is_sparse_convolver = false;
 
-template<typename Float>
-static constexpr auto is_sparse_convolver<neo::fft::sparse_upols_convolver<Float>> = true;
+template<typename Float, typename Overlap>
+static constexpr auto is_sparse_convolver<neo::fft::sparse_uniform_partitioned_convolver<Float, Overlap>> = true;
 }  // namespace
 
 static_assert(not is_sparse_convolver<neo::fft::upola_convolver<float>>);
 static_assert(not is_sparse_convolver<neo::fft::upols_convolver<float>>);
 static_assert(is_sparse_convolver<neo::fft::sparse_upols_convolver<float>>);
+static_assert(is_sparse_convolver<neo::fft::sparse_upola_convolver<float>>);
 
 TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft/convolution: convolver",
     "",
-    (neo::fft::upola_convolver, neo::fft::upols_convolver, neo::fft::sparse_upols_convolver),
+    (neo::fft::upola_convolver,
+     neo::fft::upols_convolver,
+     neo::fft::sparse_upola_convolver,
+     neo::fft::sparse_upols_convolver),
     (float, double, long double)
 )
 {
