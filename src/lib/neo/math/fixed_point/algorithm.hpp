@@ -44,11 +44,11 @@ inline constexpr auto const mul_kernel_s8  = std::multiplies<q7>{};
 inline constexpr auto const mul_kernel_s16 = std::multiplies<q15>{};
 #endif
 
-template<std::signed_integral IntType, int IntegerBits, int FractionalBits, std::size_t Extent>
+template<std::signed_integral IntType, int FractionalBits, std::size_t Extent>
 auto apply_fixed_point_kernel(
-    std::span<fixed_point<IntType, IntegerBits, FractionalBits> const, Extent> lhs,
-    std::span<fixed_point<IntType, IntegerBits, FractionalBits> const, Extent> rhs,
-    std::span<fixed_point<IntType, IntegerBits, FractionalBits>, Extent> out,
+    std::span<fixed_point<IntType, FractionalBits> const, Extent> lhs,
+    std::span<fixed_point<IntType, FractionalBits> const, Extent> rhs,
+    std::span<fixed_point<IntType, FractionalBits>, Extent> out,
     auto scalar_kernel,
     auto vector_kernel_s8,
     auto vector_kernel_s16
@@ -75,33 +75,33 @@ auto apply_fixed_point_kernel(
 }  // namespace detail
 
 /// out[i] = saturate16(lhs[i] + rhs[i])
-template<std::signed_integral IntType, int IntegerBits, int FractionalBits, std::size_t Extent>
+template<std::signed_integral IntType, int FractionalBits, std::size_t Extent>
 auto add(
-    std::span<fixed_point<IntType, IntegerBits, FractionalBits> const, Extent> lhs,
-    std::span<fixed_point<IntType, IntegerBits, FractionalBits> const, Extent> rhs,
-    std::span<fixed_point<IntType, IntegerBits, FractionalBits>, Extent> out
+    std::span<fixed_point<IntType, FractionalBits> const, Extent> lhs,
+    std::span<fixed_point<IntType, FractionalBits> const, Extent> rhs,
+    std::span<fixed_point<IntType, FractionalBits>, Extent> out
 )
 {
     detail::apply_fixed_point_kernel(lhs, rhs, out, std::plus{}, detail::add_kernel_s8, detail::add_kernel_s16);
 }
 
 /// out[i] = saturate16(lhs[i] - rhs[i])
-template<std::signed_integral IntType, int IntegerBits, int FractionalBits, std::size_t Extent>
+template<std::signed_integral IntType, int FractionalBits, std::size_t Extent>
 auto subtract(
-    std::span<fixed_point<IntType, IntegerBits, FractionalBits> const, Extent> lhs,
-    std::span<fixed_point<IntType, IntegerBits, FractionalBits> const, Extent> rhs,
-    std::span<fixed_point<IntType, IntegerBits, FractionalBits>, Extent> out
+    std::span<fixed_point<IntType, FractionalBits> const, Extent> lhs,
+    std::span<fixed_point<IntType, FractionalBits> const, Extent> rhs,
+    std::span<fixed_point<IntType, FractionalBits>, Extent> out
 )
 {
     detail::apply_fixed_point_kernel(lhs, rhs, out, std::minus{}, detail::sub_kernel_s8, detail::sub_kernel_s16);
 }
 
 /// out[i] = (lhs[i] * rhs[i]) >> FractionalBits;
-template<std::signed_integral IntType, int IntegerBits, int FractionalBits, std::size_t Extent>
+template<std::signed_integral IntType, int FractionalBits, std::size_t Extent>
 auto multiply(
-    std::span<fixed_point<IntType, IntegerBits, FractionalBits> const, Extent> lhs,
-    std::span<fixed_point<IntType, IntegerBits, FractionalBits> const, Extent> rhs,
-    std::span<fixed_point<IntType, IntegerBits, FractionalBits>, Extent> out
+    std::span<fixed_point<IntType, FractionalBits> const, Extent> lhs,
+    std::span<fixed_point<IntType, FractionalBits> const, Extent> rhs,
+    std::span<fixed_point<IntType, FractionalBits>, Extent> out
 )
 {
     NEO_EXPECTS(lhs.size() == rhs.size());

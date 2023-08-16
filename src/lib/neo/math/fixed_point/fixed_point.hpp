@@ -27,12 +27,12 @@ struct underlying_value_t
 
 inline constexpr auto underlying_value = underlying_value_t{};
 
-template<std::signed_integral IntType, int IntegerBits, int FractionalBits>
+template<std::signed_integral IntType, int FractionalBits>
 struct fixed_point
 {
     using storage_type = IntType;
 
-    static constexpr auto const integer_bits    = IntegerBits;
+    static constexpr auto const integer_bits    = std::numeric_limits<IntType>::digits - FractionalBits;
     static constexpr auto const fractional_bits = FractionalBits;
     static constexpr auto const scale           = static_cast<float>(1 << FractionalBits);
     static constexpr auto const inv_scale       = 1.0F / scale;
@@ -107,19 +107,19 @@ private:
     IntType _value;
 };
 
-template<std::signed_integral IntType, int IntegerBits, int FractionalBits>
-[[nodiscard]] constexpr auto to_float(fixed_point<IntType, IntegerBits, FractionalBits> val) noexcept -> float
+template<std::signed_integral IntType, int FractionalBits>
+[[nodiscard]] constexpr auto to_float(fixed_point<IntType, FractionalBits> val) noexcept -> float
 {
     return static_cast<float>(val);
 }
 
-template<std::signed_integral IntType, int IntegerBits, int FractionalBits>
-[[nodiscard]] constexpr auto to_double(fixed_point<IntType, IntegerBits, FractionalBits> val) noexcept -> double
+template<std::signed_integral IntType, int FractionalBits>
+[[nodiscard]] constexpr auto to_double(fixed_point<IntType, FractionalBits> val) noexcept -> double
 {
     return static_cast<double>(val);
 }
 
-using q7  = fixed_point<std::int8_t, 0, 7>;
-using q15 = fixed_point<std::int16_t, 0, 15>;
+using q7  = fixed_point<std::int8_t, 7>;
+using q15 = fixed_point<std::int16_t, 15>;
 
 }  // namespace neo
