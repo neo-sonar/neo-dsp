@@ -7,10 +7,10 @@
 
 #include <utility>
 
-namespace neo {
+namespace neo::fft {
 
 template<in_matrix InMatL, in_matrix InMatR, out_vector OutVec>
-constexpr auto multiply_sum_columns(InMatL lhs, InMatR rhs, OutVec out) -> void
+constexpr auto multiply_elements_add_columns(InMatL lhs, InMatR rhs, OutVec out) -> void
 {
     NEO_EXPECTS(lhs.extents() == rhs.extents());
     NEO_EXPECTS(lhs.extent(1) > 0);
@@ -25,7 +25,7 @@ constexpr auto multiply_sum_columns(InMatL lhs, InMatR rhs, OutVec out) -> void
 }
 
 template<typename U, typename IndexType, typename ValueContainer, typename IndexContainer>
-auto multiply_sum_columns(
+auto multiply_elements_add_columns(
     in_matrix auto lhs,
     sparse_matrix<U, IndexType, ValueContainer, IndexContainer> const& rhs,
     inout_vector auto accumulator
@@ -49,7 +49,7 @@ auto multiply_sum_columns(
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
-auto multiply_sum_columns(
+auto multiply_elements_add_columns(
     sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& lhs,
     sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& rhs,
     std::span<T> accumulator
@@ -94,4 +94,4 @@ auto multiply_sum_columns(
     }
 }
 
-}  // namespace neo
+}  // namespace neo::fft

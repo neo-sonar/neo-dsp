@@ -2,9 +2,9 @@
 
 #include <neo/algorithm/copy.hpp>
 #include <neo/algorithm/fill.hpp>
-#include <neo/algorithm/multiply_sum_columns.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/container/sparse_matrix.hpp>
+#include <neo/fft/convolution/multiply_elements_add_columns.hpp>
 #include <neo/fft/convolution/overlap_add.hpp>
 #include <neo/fft/convolution/overlap_save.hpp>
 #include <neo/math/complex.hpp>
@@ -50,7 +50,7 @@ auto uniform_partitioned_convolver<Float, Overlap>::operator()(in_vector auto bl
         copy(inout, stdex::submdspan(fdl, 0, stdex::full_extent));
 
         fill(accumulator, std::complex<Float>{});
-        multiply_sum_columns(fdl, _filter, accumulator);
+        multiply_elements_add_columns(fdl, _filter, accumulator);
 
         copy(accumulator, inout);
     });
