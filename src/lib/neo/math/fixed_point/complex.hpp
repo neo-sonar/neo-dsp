@@ -13,7 +13,7 @@ namespace neo {
 template<typename FixedPoint>
 struct fixed_point_complex
 {
-    using value_type = q15;
+    using value_type = FixedPoint;
 
     constexpr fixed_point_complex() = default;
 
