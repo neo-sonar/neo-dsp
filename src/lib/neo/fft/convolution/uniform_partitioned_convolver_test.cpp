@@ -40,7 +40,7 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver(old)", "", float, doubl
     test_uniform_partitioned_convolver_old<Float, neo::fft::upols_convolver<Float>>(blockSize);
 }
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: upola_convolver", "", float, double, long double)
+TEMPLATE_TEST_CASE("neo/fft/convolution: upola_convolver(old)", "", float, double, long double)
 {
     using Float    = TestType;
     auto blockSize = GENERATE(as<std::size_t>{}, 128, 256, 512);
@@ -56,12 +56,11 @@ template<std::floating_point Float, typename Convolver>
         return matrix;
     }();
 
-    auto const multi_channel_partitions = neo::fft::uniform_partition(impulse.to_mdspan(), block_size);
+    auto multi_channel_partitions = neo::fft::uniform_partition(impulse.to_mdspan(), block_size);
     REQUIRE(multi_channel_partitions.extent(0) == 1);
 
-    auto const partitions
-        = stdex::submdspan(multi_channel_partitions.to_mdspan(), 0, stdex::full_extent, stdex::full_extent);
-
+    auto partitions = stdex::submdspan(multi_channel_partitions.to_mdspan(), 0, stdex::full_extent, stdex::full_extent);
+    neo::scale(Float(block_size * 2), partitions);
     REQUIRE(partitions.extent(0) == 3);
     REQUIRE(partitions.extent(1) == block_size + 1);
 
@@ -69,7 +68,7 @@ template<std::floating_point Float, typename Convolver>
         CAPTURE(i);
 
         auto const coeff = partitions(0, i);
-        REQUIRE_THAT(coeff.real() * Float(block_size * 2), Catch::Matchers::WithinAbs(1.0, 0.00001));
+        REQUIRE_THAT(coeff.real(), Catch::Matchers::WithinAbs(1.0, 0.00001));
         REQUIRE_THAT(coeff.imag(), Catch::Matchers::WithinAbs(0.0, 0.00001));
     }
 
@@ -97,10 +96,10 @@ template<std::floating_point Float, typename Convolver>
     }
 
     // TODO: Loop should go to output.size(), curently fails on index 128 i.e. after one block
-    // for (auto i{0ULL}; i < output.size(); ++i) {
-    //     CAPTURE(i);
-    //     REQUIRE_THAT(output(i), Catch::Matchers::WithinAbs(signal(i), 0.00001));
-    // }
+    for (auto i{0ULL}; i < output.size(); ++i) {
+        CAPTURE(i);
+        REQUIRE_THAT(output(i), Catch::Matchers::WithinAbs(signal(i), 0.00001));
+    }
 }
 
 TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver", "", float, double, long double)
@@ -109,6 +108,14 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver", "", float, double, lo
 
     auto block_size = GENERATE(as<std::size_t>{}, 1024);
     test_uniform_partitioned_convolver<Float, neo::fft::upols_convolver<Float>>(block_size);
+}
+
+TEMPLATE_TEST_CASE("neo/fft/convolution: upola_convolver", "", float, double, long double)
+{
+    using Float = TestType;
+
+    auto block_size = GENERATE(as<std::size_t>{}, 1024);
+    test_uniform_partitioned_convolver<Float, neo::fft::upola_convolver<Float>>(block_size);
 }
 
 TEMPLATE_TEST_CASE("neo/fft/convolution: shift_rows_up", "", float, double, long double)
