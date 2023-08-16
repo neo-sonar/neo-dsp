@@ -51,15 +51,11 @@ auto multiply_elements_add_columns(
     auto const& rcols = rhs.column_container();
     auto const& rvals = rhs.value_container();
 
-    // first iteration overwrites output
-    auto const l0 = stdex::submdspan(lhs, 0, stdex::full_extent);
-    for (auto i{rrows[0]}; i < rrows[1]; ++i) {
-        auto const col = rcols[i];
-        out[col]       = l0[col] * rvals[i];
-    }
+    // Can't be done on the first iteration, elements are sparse.
+    // Won't hit each index like the dense case above
+    fill(out, typename decltype(out)::element_type{});
 
-    // second to n iterations accumulate to output
-    for (auto row{1UL}; row < rhs.rows(); ++row) {
+    for (auto row{0UL}; row < rhs.rows(); ++row) {
         auto const left = stdex::submdspan(lhs, row, stdex::full_extent);
 
         for (auto i{rrows[row]}; i < rrows[row + 1]; ++i) {
