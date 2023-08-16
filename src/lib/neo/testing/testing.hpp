@@ -39,7 +39,7 @@ template<std::floating_point Float>
 {
     auto const num_bins = block_size + 1;
     auto impulse        = stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 2>>{num_subfilter, num_bins};
-    fill(impulse.to_mdspan(), std::complex{Float(1), Float(0)});
+    fill(stdex::submdspan(impulse.to_mdspan(), 0, stdex::full_extent), std::complex{Float(1), Float(0)});
     return impulse;
 }
 

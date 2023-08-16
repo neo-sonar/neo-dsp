@@ -14,6 +14,9 @@ namespace neo::fft {
 template<std::floating_point Float>
 struct sparse_upols_convolver
 {
+    using value_type   = Float;
+    using overlap_type = overlap_save<Float>;
+
     using real_type    = Float;
     using complex_type = std::complex<Float>;
     using size_type    = std::size_t;

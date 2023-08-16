@@ -1,3 +1,4 @@
+#include "sparse_upols_convolver.hpp"
 #include "uniform_partitioned_convolver.hpp"
 
 #include <neo/algorithm/allclose.hpp>
@@ -12,60 +13,31 @@
 
 #include <span>
 
+namespace {
+template<typename T>
+static constexpr auto is_sparse_convolver = false;
+
+template<typename Float>
+static constexpr auto is_sparse_convolver<neo::fft::sparse_upols_convolver<Float>> = true;
+}  // namespace
+
+static_assert(not is_sparse_convolver<neo::fft::upola_convolver<float>>);
+static_assert(not is_sparse_convolver<neo::fft::upols_convolver<float>>);
+static_assert(is_sparse_convolver<neo::fft::sparse_upols_convolver<float>>);
+
 TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft/convolution: convolver",
     "",
-    (neo::fft::upola_convolver, neo::fft::upols_convolver),
+    (neo::fft::upola_convolver, neo::fft::upols_convolver, neo::fft::sparse_upols_convolver),
     (float, double, long double)
 )
 {
     using Convolver = TestType;
     using Float     = typename Convolver::value_type;
 
-    auto block_size = GENERATE(as<std::size_t>{}, 128, 256, 512, 1024);
+    auto const block_size = GENERATE(as<std::size_t>{}, 128, 256, 512, 1024);
 
-    auto const filter = [=] {
-        auto const impulse = [block_size] {
-            auto matrix  = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{1, block_size * 3};
-            matrix(0, 0) = Float(1);
-            return matrix;
-        }();
-
-        auto multi_channel = neo::fft::uniform_partition(impulse.to_mdspan(), block_size);
-        auto channel_0     = stdex::submdspan(multi_channel.to_mdspan(), 0, stdex::full_extent, stdex::full_extent);
-        REQUIRE(multi_channel.extent(0) == 1);
-
-        auto mono = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 2>>{
-            multi_channel.extent(1),
-            multi_channel.extent(2),
-        };
-
-        neo::scale(Float(block_size * 2), channel_0);
-        neo::copy(channel_0, mono.to_mdspan());
-
-        for (auto i{0ULL}; i < mono.extent(1); ++i) {
-            CAPTURE(i);
-
-            auto const coeff = mono(0, i);
-            REQUIRE_THAT(coeff.real(), Catch::Matchers::WithinAbs(1.0, 0.00001));
-            REQUIRE_THAT(coeff.imag(), Catch::Matchers::WithinAbs(0.0, 0.00001));
-        }
-
-        for (auto p{1ULL}; p < mono.extent(0); ++p) {
-            CAPTURE(p);
-
-            for (auto bin{0ULL}; bin < mono.extent(1); ++bin) {
-                CAPTURE(bin);
-
-                auto const coeff = mono(p, bin);
-                REQUIRE_THAT(coeff.real(), Catch::Matchers::WithinAbs(0.0, 0.00001));
-                REQUIRE_THAT(coeff.imag(), Catch::Matchers::WithinAbs(0.0, 0.00001));
-            }
-        }
-
-        return mono;
-    }();
-
+    auto const filter = neo::generate_identity_impulse<Float>(block_size, 3);
     REQUIRE(filter.extent(0) == 3);
     REQUIRE(filter.extent(1) == block_size + 1);
 
@@ -73,7 +45,11 @@ TEMPLATE_PRODUCT_TEST_CASE(
     auto output       = signal;
 
     auto convolver = Convolver{};
-    convolver.filter(filter.to_mdspan());
+    if constexpr (is_sparse_convolver<Convolver>) {
+        convolver.filter(filter.to_mdspan(), [](auto, auto, auto) { return true; });
+    } else {
+        convolver.filter(filter.to_mdspan());
+    }
 
     for (auto i{0U}; i < output.size(); i += block_size) {
         auto const io_block = stdex::submdspan(output.to_mdspan(), std::tuple{i, i + block_size});
