@@ -18,8 +18,8 @@
     #include <neo/simd/avx512.hpp>
 #endif
 
-#include <neo/simd/interleave_complex.hpp>
-#include <neo/simd/parallel_complex.hpp>
+#include <neo/complex/interleave_complex.hpp>
+#include <neo/complex/parallel_complex.hpp>
 
 namespace neo {
 
