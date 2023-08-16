@@ -1,5 +1,6 @@
 #include "uniform_partitioned_convolver.hpp"
 
+#include <neo/algorithm/allclose.hpp>
 #include <neo/fft/convolution/uniform_partition.hpp>
 #include <neo/testing/testing.hpp>
 
@@ -11,111 +12,75 @@
 
 #include <span>
 
-template<std::floating_point Float, typename Convolver>
-[[nodiscard]] static auto test_uniform_partitioned_convolver_old(auto blockSize)
+TEMPLATE_PRODUCT_TEST_CASE(
+    "neo/fft/convolution: convolver",
+    "",
+    (neo::fft::upola_convolver, neo::fft::upols_convolver),
+    (float, double, long double)
+)
 {
-    auto const signal     = neo::generate_noise_signal<Float>(blockSize * 20UL, Catch::getSeed());
-    auto const partitions = neo::generate_identity_impulse<Float>(blockSize, 10UL);
+    using Convolver = TestType;
+    using Float     = typename Convolver::value_type;
 
-    auto convolver = Convolver{};
-    auto output    = signal;
-    convolver.filter(partitions.to_mdspan());
+    auto block_size = GENERATE(as<std::size_t>{}, 128, 256, 512, 1024);
 
-    for (auto i{0U}; i < output.size(); i += blockSize) {
-        auto block = stdex::submdspan(output.to_mdspan(), std::tuple{i, i + blockSize});
-        convolver(block);
-    }
+    auto const filter = [=] {
+        auto const impulse = [block_size] {
+            auto matrix  = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{1, block_size * 3};
+            matrix(0, 0) = Float(1);
+            return matrix;
+        }();
 
-    // TODO: Loop should go to output.size(), curently fails on index 128 i.e. after one block
-    for (auto i{0ULL}; i < blockSize; ++i) {
-        CAPTURE(i);
-        REQUIRE_THAT(output(i), Catch::Matchers::WithinAbs(signal(i), 0.00001));
-    }
-}
+        auto multi_channel = neo::fft::uniform_partition(impulse.to_mdspan(), block_size);
+        auto channel_0     = stdex::submdspan(multi_channel.to_mdspan(), 0, stdex::full_extent, stdex::full_extent);
+        REQUIRE(multi_channel.extent(0) == 1);
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver(old)", "", float, double, long double)
-{
-    using Float    = TestType;
-    auto blockSize = GENERATE(as<std::size_t>{}, 128, 256, 512);
-    test_uniform_partitioned_convolver_old<Float, neo::fft::upols_convolver<Float>>(blockSize);
-}
+        auto mono = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 2>>{
+            multi_channel.extent(1),
+            multi_channel.extent(2),
+        };
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: upola_convolver(old)", "", float, double, long double)
-{
-    using Float    = TestType;
-    auto blockSize = GENERATE(as<std::size_t>{}, 128, 256, 512);
-    test_uniform_partitioned_convolver_old<Float, neo::fft::upola_convolver<Float>>(blockSize);
-}
+        neo::scale(Float(block_size * 2), channel_0);
+        neo::copy(channel_0, mono.to_mdspan());
 
-template<std::floating_point Float, typename Convolver>
-[[nodiscard]] static auto test_uniform_partitioned_convolver(auto block_size)
-{
-    auto const impulse = [block_size] {
-        auto matrix  = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{1, block_size * 3};
-        matrix(0, 0) = Float(1);
-        return matrix;
-    }();
+        for (auto i{0ULL}; i < mono.extent(1); ++i) {
+            CAPTURE(i);
 
-    auto multi_channel_partitions = neo::fft::uniform_partition(impulse.to_mdspan(), block_size);
-    REQUIRE(multi_channel_partitions.extent(0) == 1);
-
-    auto partitions = stdex::submdspan(multi_channel_partitions.to_mdspan(), 0, stdex::full_extent, stdex::full_extent);
-    neo::scale(Float(block_size * 2), partitions);
-    REQUIRE(partitions.extent(0) == 3);
-    REQUIRE(partitions.extent(1) == block_size + 1);
-
-    for (auto i{0ULL}; i < partitions.extent(1); ++i) {
-        CAPTURE(i);
-
-        auto const coeff = partitions(0, i);
-        REQUIRE_THAT(coeff.real(), Catch::Matchers::WithinAbs(1.0, 0.00001));
-        REQUIRE_THAT(coeff.imag(), Catch::Matchers::WithinAbs(0.0, 0.00001));
-    }
-
-    for (auto p{1ULL}; p < partitions.extent(0); ++p) {
-        CAPTURE(p);
-
-        for (auto bin{0ULL}; bin < partitions.extent(1); ++bin) {
-            CAPTURE(bin);
-
-            auto const coeff = partitions(p, bin);
-            REQUIRE_THAT(coeff.real(), Catch::Matchers::WithinAbs(0.0, 0.00001));
+            auto const coeff = mono(0, i);
+            REQUIRE_THAT(coeff.real(), Catch::Matchers::WithinAbs(1.0, 0.00001));
             REQUIRE_THAT(coeff.imag(), Catch::Matchers::WithinAbs(0.0, 0.00001));
         }
-    }
+
+        for (auto p{1ULL}; p < mono.extent(0); ++p) {
+            CAPTURE(p);
+
+            for (auto bin{0ULL}; bin < mono.extent(1); ++bin) {
+                CAPTURE(bin);
+
+                auto const coeff = mono(p, bin);
+                REQUIRE_THAT(coeff.real(), Catch::Matchers::WithinAbs(0.0, 0.00001));
+                REQUIRE_THAT(coeff.imag(), Catch::Matchers::WithinAbs(0.0, 0.00001));
+            }
+        }
+
+        return mono;
+    }();
+
+    REQUIRE(filter.extent(0) == 3);
+    REQUIRE(filter.extent(1) == block_size + 1);
 
     auto const signal = neo::generate_noise_signal<Float>(block_size * 20UL, Catch::getSeed());
     auto output       = signal;
 
     auto convolver = Convolver{};
-    convolver.filter(partitions);
+    convolver.filter(filter.to_mdspan());
 
     for (auto i{0U}; i < output.size(); i += block_size) {
         auto const io_block = stdex::submdspan(output.to_mdspan(), std::tuple{i, i + block_size});
         convolver(io_block);
     }
 
-    // TODO: Loop should go to output.size(), curently fails on index 128 i.e. after one block
-    for (auto i{0ULL}; i < output.size(); ++i) {
-        CAPTURE(i);
-        REQUIRE_THAT(output(i), Catch::Matchers::WithinAbs(signal(i), 0.00001));
-    }
-}
-
-TEMPLATE_TEST_CASE("neo/fft/convolution: upols_convolver", "", float, double, long double)
-{
-    using Float = TestType;
-
-    auto block_size = GENERATE(as<std::size_t>{}, 1024);
-    test_uniform_partitioned_convolver<Float, neo::fft::upols_convolver<Float>>(block_size);
-}
-
-TEMPLATE_TEST_CASE("neo/fft/convolution: upola_convolver", "", float, double, long double)
-{
-    using Float = TestType;
-
-    auto block_size = GENERATE(as<std::size_t>{}, 1024);
-    test_uniform_partitioned_convolver<Float, neo::fft::upola_convolver<Float>>(block_size);
+    REQUIRE(neo::allclose(output.to_mdspan(), signal.to_mdspan()));
 }
 
 TEMPLATE_TEST_CASE("neo/fft/convolution: shift_rows_up", "", float, double, long double)

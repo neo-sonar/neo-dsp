@@ -14,6 +14,9 @@ namespace neo::fft {
 template<std::floating_point Float, typename Overlap = overlap_save<Float>>
 struct uniform_partitioned_convolver
 {
+    using value_type   = Float;
+    using overlap_type = Overlap;
+
     uniform_partitioned_convolver() = default;
 
     auto filter(in_matrix auto filter) -> void;
