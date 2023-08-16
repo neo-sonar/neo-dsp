@@ -177,16 +177,16 @@ TEMPLATE_TEST_CASE("neo/fixed_point: add(fixed_point, fixed_point)", "", neo::q7
 {
     using fxp_t = TestType;
 
+    SECTION("empty")
     {
-        // empty
         auto lhs = std::vector<fxp_t>();
         auto rhs = std::vector<fxp_t>();
         auto out = std::vector<fxp_t>();
         neo::add(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
     }
 
+    SECTION("scalar")
     {
-        // scalar
         auto lhs = std::vector<fxp_t>{fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}};
         auto rhs = std::vector<fxp_t>{fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}};
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
@@ -196,8 +196,8 @@ TEMPLATE_TEST_CASE("neo/fixed_point: add(fixed_point, fixed_point)", "", neo::q7
         REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
+    SECTION("vectorized")
     {
-        // vectorized
         auto lhs = std::vector<fxp_t>(1029, fxp_t{0.125F});
         auto rhs = std::vector<fxp_t>(1029, fxp_t{0.25F});
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
@@ -212,16 +212,16 @@ TEMPLATE_TEST_CASE("neo/fixed_point: subtract(fixed_point, fixed_point)", "", ne
 {
     using fxp_t = TestType;
 
+    SECTION("empty")
     {
-        // empty
         auto lhs = std::vector<fxp_t>();
         auto rhs = std::vector<fxp_t>();
         auto out = std::vector<fxp_t>();
         neo::subtract(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
     }
 
+    SECTION("scalar")
     {
-        // scalar
         auto lhs = std::vector<fxp_t>{fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}};
         auto rhs = std::vector<fxp_t>{fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}};
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
@@ -231,8 +231,8 @@ TEMPLATE_TEST_CASE("neo/fixed_point: subtract(fixed_point, fixed_point)", "", ne
         REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
+    SECTION("vectorized")
     {
-        // vectorized
         auto lhs = std::vector<fxp_t>(1029, fxp_t{0.125F});
         auto rhs = std::vector<fxp_t>(1029, fxp_t{0.25F});
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
@@ -247,16 +247,16 @@ TEMPLATE_TEST_CASE("neo/fixed_point: multiply(fixed_point, fixed_point)", "", ne
 {
     using fxp_t = TestType;
 
+    SECTION("empty")
     {
-        // empty
         auto lhs = std::vector<fxp_t>();
         auto rhs = std::vector<fxp_t>();
         auto out = std::vector<fxp_t>();
         neo::multiply(std::span{std::as_const(lhs)}, std::span{std::as_const(rhs)}, std::span{out});
     }
 
+    SECTION("scalar")
     {
-        // scalar
         auto lhs = std::vector<fxp_t>{fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}, fxp_t{0.5}};
         auto rhs = std::vector<fxp_t>{fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}, fxp_t{0.25}};
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
@@ -266,8 +266,8 @@ TEMPLATE_TEST_CASE("neo/fixed_point: multiply(fixed_point, fixed_point)", "", ne
         REQUIRE(std::all_of(out.begin(), out.end(), eq));
     }
 
+    SECTION("vectorized")
     {
-        // vectorized
         auto lhs = std::vector<fxp_t>(1029, fxp_t{0.125F});
         auto rhs = std::vector<fxp_t>(1029, fxp_t{0.25F});
         auto out = std::vector<fxp_t>(lhs.size(), fxp_t{});
@@ -364,7 +364,7 @@ static auto test_simd_fixed_point()
 
 #if defined(NEO_HAS_SIMD_SSE2)
 
-TEMPLATE_TEST_CASE("neo/fixed_point: fixed_point_batch", "", neo::q7x16, neo::q15x8)
+TEMPLATE_TEST_CASE("neo/fixed_point: batch", "", neo::q7x16, neo::q15x8)
 {
     STATIC_REQUIRE(TestType::alignment == 16);
     STATIC_REQUIRE(TestType::size == 16 / sizeof(typename TestType::value_type));
@@ -375,7 +375,7 @@ TEMPLATE_TEST_CASE("neo/fixed_point: fixed_point_batch", "", neo::q7x16, neo::q1
 
 #if defined(NEO_HAS_SIMD_AVX2)
 
-TEMPLATE_TEST_CASE("neo/fixed_point: fixed_point_batch", "", neo::q7x32, neo::q15x16)
+TEMPLATE_TEST_CASE("neo/fixed_point: batch", "", neo::q7x32, neo::q15x16)
 {
     STATIC_REQUIRE(TestType::alignment == 32);
     STATIC_REQUIRE(TestType::size == 32 / sizeof(typename TestType::value_type));
@@ -386,7 +386,7 @@ TEMPLATE_TEST_CASE("neo/fixed_point: fixed_point_batch", "", neo::q7x32, neo::q1
 
 #if defined(NEO_HAS_SIMD_AVX512BW)
 
-TEMPLATE_TEST_CASE("neo/fixed_point: fixed_point_batch", "", neo::q7x64, neo::q15x32)
+TEMPLATE_TEST_CASE("neo/fixed_point: batch", "", neo::q7x64, neo::q15x32)
 {
     STATIC_REQUIRE(TestType::alignment == 64);
     STATIC_REQUIRE(TestType::size == 64 / sizeof(typename TestType::value_type));
