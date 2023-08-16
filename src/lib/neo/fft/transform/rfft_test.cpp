@@ -2,8 +2,8 @@
 
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/scale.hpp>
+#include <neo/complex.hpp>
 #include <neo/fft/transform/fft.hpp>
-#include <neo/math/complex.hpp>
 #include <neo/testing/testing.hpp>
 
 #include <catch2/catch_approx.hpp>

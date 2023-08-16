@@ -1,7 +1,7 @@
 #pragma once
 
+#include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
-#include <neo/math/complex.hpp>
 
 #include <concepts>
 

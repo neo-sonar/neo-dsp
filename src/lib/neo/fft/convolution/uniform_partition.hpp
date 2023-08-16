@@ -3,9 +3,9 @@
 #include <neo/algorithm/copy.hpp>
 #include <neo/algorithm/fill.hpp>
 #include <neo/algorithm/scale.hpp>
+#include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/transform/rfft.hpp>
-#include <neo/math/complex.hpp>
 #include <neo/math/divide_round_up.hpp>
 
 #include <concepts>

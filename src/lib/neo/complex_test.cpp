@@ -1,12 +1,12 @@
 #include "complex.hpp"
 
-#include <neo/math/fixed_point.hpp>
+#include <neo/fixed_point.hpp>
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("neo/math/complex: is_complex")
+TEST_CASE("neo/complex: is_complex")
 {
     STATIC_REQUIRE(neo::is_complex<std::complex<float>>);
     STATIC_REQUIRE(neo::is_complex<std::complex<double>>);
@@ -36,7 +36,7 @@ TEST_CASE("neo/math/complex: is_complex")
     STATIC_REQUIRE(not neo::is_complex<unsigned long long>);
 }
 
-TEST_CASE("neo/math/complex: complex")
+TEST_CASE("neo/complex: complex")
 {
     STATIC_REQUIRE(neo::complex<std::complex<float>>);
     STATIC_REQUIRE(neo::complex<std::complex<double>>);
@@ -66,7 +66,7 @@ TEST_CASE("neo/math/complex: complex")
     STATIC_REQUIRE(not neo::complex<unsigned long long>);
 }
 
-TEST_CASE("neo/math/complex: float_or_complex")
+TEST_CASE("neo/complex: float_or_complex")
 {
     STATIC_REQUIRE(neo::float_or_complex<float>);
     STATIC_REQUIRE(neo::float_or_complex<double>);
@@ -96,7 +96,7 @@ TEST_CASE("neo/math/complex: float_or_complex")
     STATIC_REQUIRE(not neo::float_or_complex<unsigned long long>);
 }
 
-TEST_CASE("neo/math/complex: real_or_complex_value_t")
+TEST_CASE("neo/complex: real_or_complex_value_t")
 {
     using neo::real_or_complex_value_t;
 
@@ -116,7 +116,7 @@ TEST_CASE("neo/math/complex: real_or_complex_value_t")
     STATIC_REQUIRE(std::same_as<real_or_complex_value_t<neo::scalar_complex<long double>>, long double>);
 }
 
-TEMPLATE_TEST_CASE("neo/math/complex: scalar_complex", "", float, double, long double)
+TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", float, double, long double)
 {
     using Float   = TestType;
     using Complex = neo::scalar_complex<Float>;
@@ -145,7 +145,7 @@ TEMPLATE_TEST_CASE("neo/math/complex: scalar_complex", "", float, double, long d
     REQUIRE(product.imag() == Catch::Approx(Float(24)));
 }
 
-TEMPLATE_TEST_CASE("neo/math/complex: scalar_complex", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", neo::q7, neo::q15)
 {
     using FixedPoint = TestType;
     using Complex    = neo::scalar_complex<FixedPoint>;

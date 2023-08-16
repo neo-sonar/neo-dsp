@@ -2,8 +2,8 @@
 
 #include <neo/config.hpp>
 
-#include <neo/math/complex.hpp>
-#include <neo/math/fixed_point/fixed_point.hpp>
+#include <neo/complex.hpp>
+#include <neo/fixed_point/fixed_point.hpp>
 
 #include <array>
 #include <cstdint>

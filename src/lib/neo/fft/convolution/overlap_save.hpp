@@ -5,9 +5,9 @@
 #include <neo/algorithm/copy.hpp>
 #include <neo/algorithm/fill.hpp>
 #include <neo/algorithm/scale.hpp>
+#include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/transform.hpp>
-#include <neo/math/complex.hpp>
 #include <neo/math/ilog2.hpp>
 #include <neo/math/next_power_of_two.hpp>
 

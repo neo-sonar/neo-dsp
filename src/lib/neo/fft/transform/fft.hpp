@@ -3,13 +3,13 @@
 #include <neo/config.hpp>
 
 #include <neo/algorithm/copy.hpp>
+#include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/transform/conjugate_view.hpp>
 #include <neo/fft/transform/direction.hpp>
 #include <neo/fft/transform/kernel/radix2.hpp>
 #include <neo/fft/transform/reorder.hpp>
 #include <neo/fft/transform/twiddle.hpp>
-#include <neo/math/complex.hpp>
 
 #include <utility>
 

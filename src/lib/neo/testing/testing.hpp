@@ -3,8 +3,8 @@
 #include <neo/config.hpp>
 
 #include <neo/algorithm/fill.hpp>
+#include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
-#include <neo/math/complex.hpp>
 
 #include <algorithm>
 #include <concepts>

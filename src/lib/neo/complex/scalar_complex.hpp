@@ -1,6 +1,6 @@
 #pragma once
 
-#include <neo/math/complex/complex.hpp>
+#include <neo/complex/complex.hpp>
 
 #include <array>
 

@@ -2,7 +2,7 @@
 
 #include <neo/config.hpp>
 
-#include <neo/math/complex.hpp>
+#include <neo/complex.hpp>
 
 #include <concepts>
 

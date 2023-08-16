@@ -1,8 +1,8 @@
 #pragma once
 
 #include <neo/algorithm/copy.hpp>
+#include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
-#include <neo/math/complex.hpp>
 
 namespace neo::fft {
 

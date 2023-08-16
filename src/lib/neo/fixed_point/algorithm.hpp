@@ -2,7 +2,7 @@
 
 #include <neo/config.hpp>
 
-#include <neo/math/fixed_point/fixed_point.hpp>
+#include <neo/fixed_point/fixed_point.hpp>
 
 #if defined(NEO_HAS_SIMD_SSE2)
     #include <neo/simd/sse2.hpp>

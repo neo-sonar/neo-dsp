@@ -1,6 +1,6 @@
 #include <neo/config.hpp>
 
-#include <neo/math/fixed_point.hpp>
+#include <neo/fixed_point.hpp>
 
 #include <neo/testing/benchmark.hpp>
 #include <neo/testing/testing.hpp>

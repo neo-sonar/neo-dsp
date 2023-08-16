@@ -1,12 +1,12 @@
 #pragma once
 
+#include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/container/sparse_matrix.hpp>
 #include <neo/fft/convolution/multiply_elements_add_columns.hpp>
 #include <neo/fft/convolution/overlap_add.hpp>
 #include <neo/fft/convolution/overlap_save.hpp>
 #include <neo/fft/convolution/uniform_partitioned_convolver.hpp>
-#include <neo/math/complex.hpp>
 
 namespace neo::fft {
 

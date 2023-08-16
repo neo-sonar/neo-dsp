@@ -21,7 +21,7 @@ static constexpr auto tolerance = [] {
     return 0.0001F;
 }();
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: to_float(fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE("neo/fixed_point: to_float(fixed_point)", "", neo::q7, neo::q15)
 {
     using fixed_point_t = TestType;
 
@@ -34,7 +34,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: to_float(fixed_point)", "", neo::q7, n
     REQUIRE(approx_equal(to_float(fixed_point_t{0.75F}), 0.75F, tolerance<fixed_point_t>));
 }
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: unary_op(fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE("neo/fixed_point: unary_op(fixed_point)", "", neo::q7, neo::q15)
 {
     using fixed_point_t = TestType;
 
@@ -88,7 +88,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: unary_op(fixed_point)", "", neo::q7, n
     REQUIRE(unary_op(-0.99F, std::negate()));
 }
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: binary_op(fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE("neo/fixed_point: binary_op(fixed_point)", "", neo::q7, neo::q15)
 {
     using fixed_point_t = TestType;
 
@@ -126,7 +126,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: binary_op(fixed_point)", "", neo::q7, 
     REQUIRE(binary_op(0.49F, 0.5F, std::multiplies()));
 }
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: comparison(fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE("neo/fixed_point: comparison(fixed_point)", "", neo::q7, neo::q15)
 {
     using fixed_point_t = TestType;
 
@@ -173,7 +173,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: comparison(fixed_point)", "", neo::q7,
     REQUIRE(compare_op(+0.50F, +0.50F, std::greater_equal()));
 }
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: add(fixed_point, fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE("neo/fixed_point: add(fixed_point, fixed_point)", "", neo::q7, neo::q15)
 {
     using fxp_t = TestType;
 
@@ -208,7 +208,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: add(fixed_point, fixed_point)", "", ne
     }
 }
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: subtract(fixed_point, fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE("neo/fixed_point: subtract(fixed_point, fixed_point)", "", neo::q7, neo::q15)
 {
     using fxp_t = TestType;
 
@@ -243,7 +243,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: subtract(fixed_point, fixed_point)", "
     }
 }
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: multiply(fixed_point, fixed_point)", "", neo::q7, neo::q15)
+TEMPLATE_TEST_CASE("neo/fixed_point: multiply(fixed_point, fixed_point)", "", neo::q7, neo::q15)
 {
     using fxp_t = TestType;
 
@@ -278,7 +278,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: multiply(fixed_point, fixed_point)", "
     }
 }
 
-TEST_CASE("neo/math/fixed_point: complex_q7")
+TEST_CASE("neo/fixed_point: complex_q7")
 {
     STATIC_REQUIRE(neo::complex<neo::complex_q7>);
     STATIC_REQUIRE(neo::is_complex<neo::complex_q7>);
@@ -301,7 +301,7 @@ TEST_CASE("neo/math/fixed_point: complex_q7")
     REQUIRE(static_cast<int>(diff.imag().value()) == 22);
 }
 
-TEST_CASE("neo/math/fixed_point: complex_q15")
+TEST_CASE("neo/fixed_point: complex_q15")
 {
     STATIC_REQUIRE(neo::complex<neo::complex_q15>);
     STATIC_REQUIRE(neo::is_complex<neo::complex_q15>);
@@ -364,7 +364,7 @@ static auto test_simd_fixed_point()
 
 #if defined(NEO_HAS_SIMD_SSE2)
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: fixed_point_batch", "", neo::q7x16, neo::q15x8)
+TEMPLATE_TEST_CASE("neo/fixed_point: fixed_point_batch", "", neo::q7x16, neo::q15x8)
 {
     STATIC_REQUIRE(TestType::alignment == 16);
     STATIC_REQUIRE(TestType::size == 16 / sizeof(typename TestType::value_type));
@@ -375,7 +375,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: fixed_point_batch", "", neo::q7x16, ne
 
 #if defined(NEO_HAS_SIMD_AVX2)
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: fixed_point_batch", "", neo::q7x32, neo::q15x16)
+TEMPLATE_TEST_CASE("neo/fixed_point: fixed_point_batch", "", neo::q7x32, neo::q15x16)
 {
     STATIC_REQUIRE(TestType::alignment == 32);
     STATIC_REQUIRE(TestType::size == 32 / sizeof(typename TestType::value_type));
@@ -386,7 +386,7 @@ TEMPLATE_TEST_CASE("neo/math/fixed_point: fixed_point_batch", "", neo::q7x32, ne
 
 #if defined(NEO_HAS_SIMD_AVX512BW)
 
-TEMPLATE_TEST_CASE("neo/math/fixed_point: fixed_point_batch", "", neo::q7x64, neo::q15x32)
+TEMPLATE_TEST_CASE("neo/fixed_point: fixed_point_batch", "", neo::q7x64, neo::q15x32)
 {
     STATIC_REQUIRE(TestType::alignment == 64);
     STATIC_REQUIRE(TestType::size == 64 / sizeof(typename TestType::value_type));
