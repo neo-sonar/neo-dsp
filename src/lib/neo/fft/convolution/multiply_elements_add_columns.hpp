@@ -2,6 +2,7 @@
 
 #include <neo/config.hpp>
 
+#include <neo/algorithm/fill.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/container/sparse_matrix.hpp>
 
@@ -13,9 +14,18 @@ template<in_matrix InMatL, in_matrix InMatR, out_vector OutVec>
 constexpr auto multiply_elements_add_columns(InMatL lhs, InMatR rhs, OutVec out) -> void
 {
     NEO_EXPECTS(lhs.extents() == rhs.extents());
+    NEO_EXPECTS(lhs.extent(0) > 0);
     NEO_EXPECTS(lhs.extent(1) > 0);
 
-    for (auto row{0}; std::cmp_less(row, lhs.extent(0)); ++row) {
+    // first iteration overwrites output
+    auto const l0 = stdex::submdspan(lhs, 0, stdex::full_extent);
+    auto const r0 = stdex::submdspan(rhs, 0, stdex::full_extent);
+    for (decltype(l0.extent(0)) i{0}; i < l0.extent(0); ++i) {
+        out[i] = l0[i] * r0[i];
+    }
+
+    // second to n iterations accumulate to output
+    for (auto row{1}; std::cmp_less(row, lhs.extent(0)); ++row) {
         auto const left  = stdex::submdspan(lhs, row, stdex::full_extent);
         auto const right = stdex::submdspan(rhs, row, stdex::full_extent);
         for (decltype(left.extent(0)) i{0}; i < left.extent(0); ++i) {
@@ -28,22 +38,33 @@ template<typename U, typename IndexType, typename ValueContainer, typename Index
 auto multiply_elements_add_columns(
     in_matrix auto lhs,
     sparse_matrix<U, IndexType, ValueContainer, IndexContainer> const& rhs,
-    inout_vector auto accumulator
+    inout_vector auto out
 ) -> void
 {
     NEO_EXPECTS(lhs.extent(0) == rhs.rows());
     NEO_EXPECTS(lhs.extent(1) == rhs.columns());
-    NEO_EXPECTS(lhs.extent(1) == accumulator.extent(0));
+    NEO_EXPECTS(lhs.extent(1) == out.extent(0));
+    NEO_EXPECTS(lhs.extent(0) > 0);
+    NEO_EXPECTS(lhs.extent(1) > 0);
 
-    for (auto row{0UL}; row < rhs.rows(); ++row) {
-        auto const left   = stdex::submdspan(lhs, row, stdex::full_extent);
-        auto const& rrows = rhs.row_container();
-        auto const& rcols = rhs.column_container();
-        auto const& rvals = rhs.value_container();
+    auto const& rrows = rhs.row_container();
+    auto const& rcols = rhs.column_container();
+    auto const& rvals = rhs.value_container();
 
-        for (auto i{rrows[row]}; i < rrows[row + 1]; i++) {
+    // first iteration overwrites output
+    auto const l0 = stdex::submdspan(lhs, 0, stdex::full_extent);
+    for (auto i{rrows[0]}; i < rrows[1]; ++i) {
+        auto const col = rcols[i];
+        out[col]       = l0[col] * rvals[i];
+    }
+
+    // second to n iterations accumulate to output
+    for (auto row{1UL}; row < rhs.rows(); ++row) {
+        auto const left = stdex::submdspan(lhs, row, stdex::full_extent);
+
+        for (auto i{rrows[row]}; i < rrows[row + 1]; ++i) {
             auto const col = rcols[i];
-            accumulator[col] += left[col] * rvals[i];
+            out[col] += left[col] * rvals[i];
         }
     }
 }
@@ -52,7 +73,7 @@ template<typename T, typename IndexType, typename ValueContainer, typename Index
 auto multiply_elements_add_columns(
     sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& lhs,
     sparse_matrix<T, IndexType, ValueContainer, IndexContainer> const& rhs,
-    std::span<T> accumulator
+    std::span<T> out
 ) -> void
 {
     NEO_EXPECTS(lhs.rows() == rhs.rows());
@@ -65,6 +86,8 @@ auto multiply_elements_add_columns(
     auto const& rrows = rhs.row_container();
     auto const& rcols = rhs.column_container();
     auto const& rvals = rhs.value_container();
+
+    fill(out, T{});
 
     for (auto row(std::size_t{0}); row < lhs.rows(); ++row) {
         auto const rowStart = lrows[row];
@@ -81,14 +104,14 @@ auto multiply_elements_add_columns(
             auto otherColIndex = rcols[j];
 
             if (colIndex < otherColIndex) {
-                i++;
+                ++i;
             } else if (colIndex > otherColIndex) {
-                j++;
+                ++j;
             } else {
                 auto const newValue = lvals[i] * rvals[j];
-                accumulator[colIndex] += newValue;
-                i++;
-                j++;
+                out[colIndex] += newValue;
+                ++i;
+                ++j;
             }
         }
     }

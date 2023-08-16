@@ -55,7 +55,6 @@ auto sparse_uniform_partitioned_convolver<Float, Overlap>::operator()(inout_vect
 
         shift_rows_up(fdl);
         copy(inout, stdex::submdspan(fdl, 0, stdex::full_extent));
-        fill(accumulator, Float(0));
         multiply_elements_add_columns(fdl, _filter, accumulator);
         copy(accumulator, inout);
     });

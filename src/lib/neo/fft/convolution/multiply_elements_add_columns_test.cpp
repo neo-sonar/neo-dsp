@@ -1,11 +1,12 @@
 #include "multiply_elements_add_columns.hpp"
 
+#include <neo/algorithm/all_of.hpp>
 #include <neo/math/float_equality.hpp>
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
-TEMPLATE_TEST_CASE("neo/algorithm: multiply_elements_add_columns(sparse_matrix)", "", float, double, long double)
+TEMPLATE_TEST_CASE("neo/fft/convolution: multiply_elements_add_columns(sparse_matrix)", "", float, double, long double)
 {
     using Float = TestType;
 
@@ -22,10 +23,10 @@ TEMPLATE_TEST_CASE("neo/algorithm: multiply_elements_add_columns(sparse_matrix)"
     auto acc         = stdex::mdspan{accumulator.data(), stdex::extents{accumulator.size()}};
 
     neo::fft::multiply_elements_add_columns(lhs.to_mdspan(), rhs, acc);
-    REQUIRE(std::all_of(accumulator.begin(), accumulator.end(), isZero));
+    REQUIRE(neo::all_of(acc, isZero));
 
     rhs.insert(0, 0, Float(2));
     neo::fft::multiply_elements_add_columns(lhs.to_mdspan(), rhs, acc);
     REQUIRE(accumulator[0] == Catch::Approx(Float(2)));
-    REQUIRE(std::all_of(std::next(accumulator.begin()), accumulator.end(), isZero));
+    REQUIRE(neo::all_of(stdex::submdspan(acc, std::tuple{1, acc.extent(0)}), isZero));
 }

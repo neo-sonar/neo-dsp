@@ -48,10 +48,7 @@ auto uniform_partitioned_convolver<Float, Overlap>::operator()(in_vector auto bl
 
         shift_rows_up(fdl);
         copy(inout, stdex::submdspan(fdl, 0, stdex::full_extent));
-
-        fill(accumulator, std::complex<Float>{});
         multiply_elements_add_columns(fdl, _filter, accumulator);
-
         copy(accumulator, inout);
     });
 }

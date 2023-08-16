@@ -9,8 +9,8 @@
 
 namespace neo {
 
-template<in_object InObj1, in_object InObj2, typename Predicate>
-[[nodiscard]] auto all_of(InObj1 lhs, InObj2 rhs, Predicate predicate) -> bool
+template<in_object InObj1, in_object InObj2, typename BinaryPredicate>
+[[nodiscard]] auto all_of(InObj1 lhs, InObj2 rhs, BinaryPredicate predicate) -> bool
 {
     NEO_EXPECTS(lhs.extents() == rhs.extents());
 
@@ -31,6 +31,12 @@ template<in_object InObj1, in_object InObj2, typename Predicate>
     }
 
     return true;
+}
+
+template<in_object InObj, typename UnaryPredicate>
+[[nodiscard]] auto all_of(InObj obj, UnaryPredicate predicate) -> bool
+{
+    return neo::all_of(obj, obj, [predicate](auto val, auto) { return predicate(val); });
 }
 
 }  // namespace neo
