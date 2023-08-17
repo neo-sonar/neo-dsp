@@ -16,7 +16,7 @@ enum struct contracts_check_mode
 };
 
 #if defined(_DEBUG) || !defined(NDEBUG)
-inline constexpr auto current_contracts_check_mode = contracts_check_mode::assertion;
+inline constexpr auto current_contracts_check_mode = contracts_check_mode::exception;
 #else
 inline constexpr auto current_contracts_check_mode = contracts_check_mode::exception;
 #endif
