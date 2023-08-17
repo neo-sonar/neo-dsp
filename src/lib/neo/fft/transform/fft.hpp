@@ -18,15 +18,12 @@ namespace neo::fft {
 template<typename Plan, inout_vector InOutVec>
 constexpr auto fft(Plan& plan, InOutVec inout) -> void
 {
-    NEO_EXPECTS(std::cmp_equal(inout.size(), plan.size()));
     plan(inout, direction::forward);
 }
 
 template<typename Plan, in_vector InVec, out_vector OutVec>
 constexpr auto fft(Plan& plan, InVec input, OutVec output) -> void
 {
-    NEO_EXPECTS(std::cmp_equal(input.size(), plan.size()));
-    NEO_EXPECTS(std::cmp_equal(output.size(), plan.size()));
     copy(input, output);
     fft(plan, output);
 }
@@ -34,15 +31,12 @@ constexpr auto fft(Plan& plan, InVec input, OutVec output) -> void
 template<typename Plan, inout_vector InOutVec>
 constexpr auto ifft(Plan& plan, InOutVec inout) -> void
 {
-    NEO_EXPECTS(std::cmp_equal(inout.size(), plan.size()));
     plan(inout, direction::backward);
 }
 
 template<typename Plan, in_vector InVec, out_vector OutVec>
 constexpr auto ifft(Plan& plan, InVec input, OutVec output) -> void
 {
-    NEO_EXPECTS(std::cmp_equal(input.size(), plan.size()));
-    NEO_EXPECTS(std::cmp_equal(output.size(), plan.size()));
     copy(input, output);
     ifft(plan, output);
 }

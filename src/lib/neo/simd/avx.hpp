@@ -16,9 +16,10 @@ NEO_ALWAYS_INLINE auto csub(__m256 a, __m256 b) noexcept -> __m256 { return _mm2
 
 NEO_ALWAYS_INLINE auto cmul(__m256 a, __m256 b) noexcept -> __m256
 {
-    auto real = _mm256_unpacklo_ps(a, b);  // Interleave real parts
-    auto imag = _mm256_unpackhi_ps(a, b);  // Interleave imaginary parts
-    return _mm256_addsub_ps(_mm256_mul_ps(real, real), _mm256_mul_ps(imag, imag));
+    auto const cccc = _mm256_mul_ps(a, _mm256_moveldup_ps(b));
+    auto const baba = _mm256_shuffle_ps(a, a, 0xB1);
+    auto const dddd = _mm256_mul_ps(baba, _mm256_movehdup_ps(b));
+    return _mm256_addsub_ps(cccc, dddd);
 }
 
 NEO_ALWAYS_INLINE auto cadd(__m256d a, __m256d b) noexcept -> __m256d { return _mm256_add_pd(a, b); }
