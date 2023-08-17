@@ -3,7 +3,7 @@
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/container/sparse_matrix.hpp>
-#include <neo/fft/convolution/multiply_accumulate.hpp>
+#include <neo/fft/convolution/multiply_add.hpp>
 #include <neo/fft/convolution/overlap_add.hpp>
 #include <neo/fft/convolution/overlap_save.hpp>
 #include <neo/fft/convolution/uniform_partitioned_convolver.hpp>
@@ -21,7 +21,8 @@ struct dense_filter
 
     auto operator()(in_vector auto fdl, std::integral auto filter_index, inout_vector auto accumulator) -> void
     {
-        multiply_accumulate(fdl, stdex::submdspan(_filter, filter_index, stdex::full_extent), accumulator);
+        auto const subfilter = stdex::submdspan(_filter, filter_index, stdex::full_extent);
+        multiply_add(fdl, subfilter, accumulator, accumulator);
     }
 
 private:
