@@ -1,5 +1,7 @@
 #pragma once
 
+#include <neo/config.hpp>
+
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/container/sparse_matrix.hpp>
@@ -22,6 +24,23 @@ struct dense_filter
     auto operator()(in_vector auto fdl, std::integral auto filter_index, inout_vector auto accumulator) -> void
     {
         auto const subfilter = stdex::submdspan(_filter, filter_index, stdex::full_extent);
+
+#if defined(NEO_HAS_SIMD_SSE2)
+        if constexpr (std::same_as<typename decltype(fdl)::value_type, std::complex<float>>) {
+            if (fdl.extent(0) - 1 > icomplex64x2::size) {
+                NEO_EXPECTS(((fdl.extent(0) - 1U) % icomplex64x2::size) == 0);
+                accumulator[0] = fdl[0] * subfilter[0] + accumulator[0];
+                for (auto i{1UL}; i < fdl.extent(0); i += icomplex64x2::size) {
+                    auto x      = icomplex64x2::load_unaligned(std::next(fdl.data_handle(), i));
+                    auto y      = icomplex64x2::load_unaligned(std::next(subfilter.data_handle(), i));
+                    auto z      = icomplex64x2::load_unaligned(std::next(accumulator.data_handle(), i));
+                    auto result = x * y + z;
+                    result.store_unaligned(std::next(accumulator.data_handle(), i));
+                }
+                return;
+            }
+        }
+#endif
         multiply_add(fdl, subfilter, accumulator, accumulator);
     }
 
