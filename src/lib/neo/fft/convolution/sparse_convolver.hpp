@@ -3,7 +3,7 @@
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/container/sparse_matrix.hpp>
-#include <neo/fft/convolution/multiply_elements_add_columns.hpp>
+#include <neo/fft/convolution/multiply_accumulate.hpp>
 #include <neo/fft/convolution/overlap_add.hpp>
 #include <neo/fft/convolution/overlap_save.hpp>
 #include <neo/fft/convolution/uniform_partitioned_convolver.hpp>
@@ -26,7 +26,7 @@ struct sparse_filter
 
     auto operator()(in_matrix auto fdl, std::integral auto shift, out_vector auto accumulator) -> void
     {
-        multiply_elements_add_columns(fdl, _filter, accumulator, shift);
+        multiply_accumulate(fdl, _filter, accumulator, shift);
     }
 
 private:
