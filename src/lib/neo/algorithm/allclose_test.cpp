@@ -6,7 +6,8 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-TEMPLATE_TEST_CASE("neo/algorithm: allclose", "", float, double, long double, std::complex<float>, std::complex<double>, std::complex<long double>)
+template<typename TestType>
+auto test()
 {
     using Float = neo::real_or_complex_value_t<TestType>;
 
@@ -61,4 +62,9 @@ TEMPLATE_TEST_CASE("neo/algorithm: allclose", "", float, double, long double, st
             REQUIRE_THROWS(neo::allclose(sub, zeros.to_mdspan()));
         }
     }
+}
+
+TEMPLATE_TEST_CASE("neo/algorithm: allclose", "", float, double, long double, std::complex<float>, std::complex<double>, std::complex<long double>)
+{
+    test<TestType>();
 }

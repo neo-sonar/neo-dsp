@@ -20,11 +20,10 @@ namespace detail {
 template<typename T>
 consteval auto real_or_complex_value()
 {
-    if constexpr (std::floating_point<T>) {
-        return T{};
-    } else {
-        static_assert(is_complex<T>);
+    if constexpr (complex<T>) {
         return typename T::value_type{};
+    } else {
+        return T{};
     }
 }
 

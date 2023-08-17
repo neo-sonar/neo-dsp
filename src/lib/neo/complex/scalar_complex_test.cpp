@@ -6,7 +6,8 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
-TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", float, double, long double)
+template<typename TestType>
+auto test_floating_point()
 {
     using Float   = TestType;
     using Complex = neo::scalar_complex<Float>;
@@ -39,7 +40,8 @@ TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", float, double, long double
     REQUIRE(product.imag() == Catch::Approx(Float(24)));
 }
 
-TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", neo::q7, neo::q15)
+template<typename TestType>
+auto test_fixed_point()
 {
     using FixedPoint = TestType;
     using Complex    = neo::scalar_complex<FixedPoint>;
@@ -66,4 +68,26 @@ TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", neo::q7, neo::q15)
     auto const diff = tc - sum;
     REQUIRE(diff.real().value() == -20);
     REQUIRE(diff.imag().value() == -30);
+}
+
+TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", float, double, long double) { test_floating_point<TestType>(); }
+
+#if defined(NEO_HAS_BASIC_FLOAT16)
+TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", _Float16) { test_floating_point<TestType>(); }
+#endif
+
+TEMPLATE_TEST_CASE(
+    "neo/complex: scalar_complex",
+    "",
+    neo::q7,
+    neo::q15,
+    (neo::fixed_point<std::int16_t, 14>),
+    (neo::fixed_point<std::int16_t, 13>),
+    (neo::fixed_point<std::int16_t, 12>),
+    (neo::fixed_point<std::int16_t, 11>),
+    (neo::fixed_point<std::int8_t, 6>),
+    (neo::fixed_point<std::int8_t, 5>)
+)
+{
+    test_fixed_point<TestType>();
 }
