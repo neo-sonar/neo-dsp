@@ -21,12 +21,13 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: multiply_accumulate(sparse_matrix)", ""
 
     auto accumulator = std::vector<Float>(lhs.extent(1));
     auto acc         = stdex::mdspan{accumulator.data(), stdex::extents{accumulator.size()}};
+    auto left_row0   = stdex::submdspan(lhs.to_mdspan(), 0, stdex::full_extent);
 
-    neo::fft::multiply_accumulate(lhs.to_mdspan(), rhs, acc, 0);
+    neo::fft::multiply_accumulate(left_row0, rhs, 0, acc);
     REQUIRE(neo::all_of(acc, isZero));
 
     rhs.insert(0, 0, Float(2));
-    neo::fft::multiply_accumulate(lhs.to_mdspan(), rhs, acc, 0);
+    neo::fft::multiply_accumulate(left_row0, rhs, 0, acc);
     REQUIRE(accumulator[0] == Catch::Approx(Float(2)));
     REQUIRE(neo::all_of(stdex::submdspan(acc, std::tuple{1, acc.extent(0)}), isZero));
 }
