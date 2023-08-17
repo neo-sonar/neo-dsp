@@ -23,14 +23,16 @@ private:
     Filter _filter;
     stdex::mdarray<std::complex<value_type>, stdex::dextents<size_t, 1>> _accumulator;
     stdex::mdarray<std::complex<value_type>, stdex::dextents<size_t, 2>> _fdl;
+    std::size_t _fdl_write_pos{0};
 };
 
 template<typename Filter, typename Overlap>
 auto uniform_partitioned_convolver<Filter, Overlap>::filter(in_matrix auto filter, auto... args) -> void
 {
-    _overlap     = Overlap{filter.extent(1) - 1, filter.extent(1) - 1};
-    _fdl         = stdex::mdarray<std::complex<value_type>, stdex::dextents<size_t, 2>>{filter.extents()};
-    _accumulator = stdex::mdarray<std::complex<value_type>, stdex::dextents<size_t, 1>>{filter.extent(1)};
+    _fdl_write_pos = 0UL;
+    _overlap       = Overlap{filter.extent(1) - 1, filter.extent(1) - 1};
+    _fdl           = stdex::mdarray<std::complex<value_type>, stdex::dextents<size_t, 2>>{filter.extents()};
+    _accumulator   = stdex::mdarray<std::complex<value_type>, stdex::dextents<size_t, 1>>{filter.extent(1)};
     _filter.filter(filter, args...);
 }
 
@@ -38,22 +40,17 @@ template<typename Filter, typename Overlap>
 auto uniform_partitioned_convolver<Filter, Overlap>::operator()(in_vector auto block) -> void
 {
     _overlap(block, [this](inout_vector auto inout) {
-        auto const shift_rows_up = [](inout_matrix auto matrix) {
-            auto const rows = static_cast<int>(matrix.extent(0));
-            for (auto row{rows - 1}; row > 0; --row) {
-                auto src  = stdex::submdspan(matrix, row - 1, stdex::full_extent);
-                auto dest = stdex::submdspan(matrix, row, stdex::full_extent);
-                copy(src, dest);
-            }
-        };
-
         auto const fdl         = _fdl.to_mdspan();
         auto const accumulator = _accumulator.to_mdspan();
 
-        shift_rows_up(fdl);
-        copy(inout, stdex::submdspan(fdl, 0, stdex::full_extent));
-        _filter(fdl, accumulator);
+        copy(inout, stdex::submdspan(fdl, _fdl_write_pos, stdex::full_extent));
+        _filter(fdl, _fdl_write_pos, accumulator);
         copy(accumulator, inout);
+
+        ++_fdl_write_pos;
+        if (_fdl_write_pos == fdl.extent(0)) {
+            _fdl_write_pos = 0;
+        }
     });
 }
 

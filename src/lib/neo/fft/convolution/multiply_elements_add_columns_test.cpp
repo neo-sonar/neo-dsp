@@ -22,11 +22,11 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: multiply_elements_add_columns(sparse_ma
     auto accumulator = std::vector<Float>(lhs.extent(1));
     auto acc         = stdex::mdspan{accumulator.data(), stdex::extents{accumulator.size()}};
 
-    neo::fft::multiply_elements_add_columns(lhs.to_mdspan(), rhs, acc);
+    neo::fft::multiply_elements_add_columns(lhs.to_mdspan(), rhs, acc, 0);
     REQUIRE(neo::all_of(acc, isZero));
 
     rhs.insert(0, 0, Float(2));
-    neo::fft::multiply_elements_add_columns(lhs.to_mdspan(), rhs, acc);
+    neo::fft::multiply_elements_add_columns(lhs.to_mdspan(), rhs, acc, 0);
     REQUIRE(accumulator[0] == Catch::Approx(Float(2)));
     REQUIRE(neo::all_of(stdex::submdspan(acc, std::tuple{1, acc.extent(0)}), isZero));
 }

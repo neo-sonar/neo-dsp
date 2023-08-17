@@ -11,7 +11,7 @@
 namespace neo::fft {
 
 template<in_matrix InMatL, in_matrix InMatR, out_vector OutVec>
-constexpr auto multiply_elements_add_columns(InMatL lhs, InMatR rhs, OutVec out) -> void
+constexpr auto multiply_elements_add_columns(InMatL lhs, InMatR rhs, OutVec out, std::integral auto shift) -> void
 {
     NEO_EXPECTS(lhs.extents() == rhs.extents());
     NEO_EXPECTS(lhs.extent(0) > 0);
@@ -19,15 +19,17 @@ constexpr auto multiply_elements_add_columns(InMatL lhs, InMatR rhs, OutVec out)
 
     // first iteration overwrites output
     auto const l0 = stdex::submdspan(lhs, 0, stdex::full_extent);
-    auto const r0 = stdex::submdspan(rhs, 0, stdex::full_extent);
+    auto const r0 = stdex::submdspan(rhs, shift, stdex::full_extent);
     for (decltype(l0.extent(0)) i{0}; i < l0.extent(0); ++i) {
         out[i] = l0[i] * r0[i];
     }
 
     // second to n iterations accumulate to output
-    for (auto row{1}; std::cmp_less(row, lhs.extent(0)); ++row) {
+    auto const num_rows = static_cast<int>(lhs.extent(0));
+    for (auto row{1}; row < num_rows; ++row) {
+        auto const ridx  = (static_cast<int>(shift) + num_rows - row) % num_rows;
         auto const left  = stdex::submdspan(lhs, row, stdex::full_extent);
-        auto const right = stdex::submdspan(rhs, row, stdex::full_extent);
+        auto const right = stdex::submdspan(rhs, ridx, stdex::full_extent);
         for (decltype(left.extent(0)) i{0}; i < left.extent(0); ++i) {
             out[i] += left[i] * right[i];
         }
@@ -38,7 +40,8 @@ template<typename U, typename IndexType, typename ValueContainer, typename Index
 auto multiply_elements_add_columns(
     in_matrix auto lhs,
     sparse_matrix<U, IndexType, ValueContainer, IndexContainer> const& rhs,
-    inout_vector auto out
+    inout_vector auto out,
+    std::integral auto shift
 ) -> void
 {
     NEO_EXPECTS(lhs.extent(0) == rhs.rows());
@@ -55,10 +58,12 @@ auto multiply_elements_add_columns(
     // Won't hit each index like the dense case above
     fill(out, typename decltype(out)::element_type{});
 
-    for (auto row{0UL}; row < rhs.rows(); ++row) {
+    auto const num_rows = static_cast<int>(lhs.extent(0));
+    for (auto row{0}; row < num_rows; ++row) {
+        auto const ridx = static_cast<size_t>((static_cast<int>(shift) + num_rows - row) % num_rows);
         auto const left = stdex::submdspan(lhs, row, stdex::full_extent);
 
-        for (auto i{rrows[row]}; i < rrows[row + 1]; ++i) {
+        for (auto i{rrows[ridx]}; i < rrows[ridx + 1]; ++i) {
             auto const col = rcols[i];
             out[col] += left[col] * rvals[i];
         }
