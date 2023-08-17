@@ -24,7 +24,7 @@ struct sparse_filter
         _filter = sparse_matrix<std::complex<Float>>{filter, sparsity};
     }
 
-    auto operator()(in_vector auto fdl, std::integral auto filter_index, out_vector auto accumulator) -> void
+    auto operator()(in_vector auto fdl, std::integral auto filter_index, inout_vector auto accumulator) -> void
     {
         multiply_accumulate(fdl, _filter, filter_index, accumulator);
     }

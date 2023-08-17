@@ -19,7 +19,7 @@ struct dense_filter
 
     auto filter(in_matrix auto filter) -> void { _filter = filter; }
 
-    auto operator()(in_vector auto fdl, std::integral auto filter_index, out_vector auto accumulator) -> void
+    auto operator()(in_vector auto fdl, std::integral auto filter_index, inout_vector auto accumulator) -> void
     {
         multiply_accumulate(fdl, stdex::submdspan(_filter, filter_index, stdex::full_extent), accumulator);
     }
