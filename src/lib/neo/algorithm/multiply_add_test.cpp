@@ -6,10 +6,9 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: multiply_add(sparse_matrix)", "", float, double, long double)
+template<typename Float>
+auto test()
 {
-    using Float = TestType;
-
     auto isZero = [](auto x) { return neo::float_equality::exact(x, Float(0)); };
 
     auto lhs = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{16, 32};
@@ -23,11 +22,17 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: multiply_add(sparse_matrix)", "", float
     auto acc         = stdex::mdspan{accumulator.data(), stdex::extents{accumulator.size()}};
     auto left_row0   = stdex::submdspan(lhs.to_mdspan(), 0, stdex::full_extent);
 
-    neo::fft::multiply_add(left_row0, rhs, 0, acc, acc);
+    neo::multiply_add(left_row0, rhs, 0, acc, acc);
     REQUIRE(neo::all_of(acc, isZero));
 
     rhs.insert(0, 0, Float(2));
-    neo::fft::multiply_add(left_row0, rhs, 0, acc, acc);
+    neo::multiply_add(left_row0, rhs, 0, acc, acc);
     REQUIRE(accumulator[0] == Catch::Approx(Float(2)));
     REQUIRE(neo::all_of(stdex::submdspan(acc, std::tuple{1, acc.extent(0)}), isZero));
 }
+
+TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", float, double, long double) { test<TestType>(); }
+
+#if defined(NEO_HAS_BASIC_FLOAT16)
+TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", _Float16) { test<TestType>(); }
+#endif

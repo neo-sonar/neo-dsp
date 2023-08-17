@@ -8,7 +8,7 @@
 
 #include <utility>
 
-namespace neo::fft {
+namespace neo {
 
 // out = x * y + z
 template<in_vector InVecX, in_vector InVecY, in_vector InVecZ, out_vector OutVec>
@@ -45,4 +45,4 @@ auto multiply_add(
     }
 }
 
-}  // namespace neo::fft
+}  // namespace neo

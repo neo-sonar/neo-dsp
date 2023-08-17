@@ -12,6 +12,7 @@ target_sources(neo_fft_tests
     PRIVATE
         "neo/algorithm/allclose_test.cpp"
         "neo/algorithm/copy_test.cpp"
+        "neo/algorithm/multiply_add_test.cpp"
 
         "neo/complex/complex_test.cpp"
         "neo/complex/interleave_complex_test.cpp"
@@ -20,7 +21,6 @@ target_sources(neo_fft_tests
 
         "neo/container/sparse_matrix_test.cpp"
 
-        "neo/fft/convolution/multiply_add_test.cpp"
         "neo/fft/convolution/overlap_test.cpp"
         "neo/fft/convolution/uniform_partition_test.cpp"
         "neo/fft/convolution/uniform_partitioned_convolver_test.cpp"

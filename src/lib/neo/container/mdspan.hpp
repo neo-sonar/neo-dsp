@@ -21,6 +21,7 @@
 #include <type_traits>
 
 namespace stdex {
+using Kokkos::default_accessor;
 using Kokkos::dextents;
 using Kokkos::extents;
 using Kokkos::full_extent;
