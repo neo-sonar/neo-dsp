@@ -75,8 +75,8 @@ struct alignas(16) float32x4
     using value_type    = float;
     using register_type = __m128;
 
-    static constexpr auto const alignment = sizeof(register_type);
-    static constexpr auto const size      = std::size_t(4);
+    static constexpr auto const alignment = alignof(register_type);
+    static constexpr auto const size      = sizeof(register_type) / sizeof(value_type);
 
     float32x4() = default;
 
@@ -117,8 +117,8 @@ struct alignas(16) float64x2
     using value_type    = double;
     using register_type = __m128d;
 
-    static constexpr auto const alignment = sizeof(register_type);
-    static constexpr auto const size      = std::size_t(2);
+    static constexpr auto const alignment = alignof(register_type);
+    static constexpr auto const size      = sizeof(register_type) / sizeof(value_type);
 
     float64x2() = default;
 

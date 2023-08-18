@@ -34,13 +34,13 @@ NEO_ALWAYS_INLINE auto cmul(__m256d a, __m256d b) noexcept -> __m256d
 }
 
 #if defined(NEO_HAS_BASIC_FLOAT16)
-struct alignas(32) float16x8
+struct alignas(16) float16x8
 {
     using value_type    = _Float16;
     using register_type = __m128i;
 
-    static constexpr auto const alignment = std::size_t(32);
-    static constexpr auto const size      = std::size_t(8);
+    static constexpr auto const alignment = alignof(register_type);
+    static constexpr auto const size      = sizeof(register_type) / sizeof(value_type);
 
     float16x8() = default;
 
@@ -98,8 +98,8 @@ struct alignas(32) float16x16
     using value_type    = _Float16;
     using register_type = __m256i;
 
-    static constexpr auto const alignment = std::size_t(32);
-    static constexpr auto const size      = std::size_t(16);
+    static constexpr auto const alignment = alignof(register_type);
+    static constexpr auto const size      = sizeof(register_type) / sizeof(value_type);
 
     float16x16() = default;
 
@@ -169,8 +169,8 @@ struct alignas(32) float32x8
     using value_type    = float;
     using register_type = __m256;
 
-    static constexpr auto const alignment = sizeof(register_type);
-    static constexpr auto const size      = std::size_t(8);
+    static constexpr auto const alignment = alignof(register_type);
+    static constexpr auto const size      = sizeof(register_type) / sizeof(value_type);
 
     float32x8() = default;
 
@@ -211,8 +211,8 @@ struct alignas(32) float64x4
     using value_type    = double;
     using register_type = __m256d;
 
-    static constexpr auto const alignment = sizeof(register_type);
-    static constexpr auto const size      = std::size_t(4);
+    static constexpr auto const alignment = alignof(register_type);
+    static constexpr auto const size      = sizeof(register_type) / sizeof(value_type);
 
     float64x4() = default;
 
