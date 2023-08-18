@@ -24,7 +24,8 @@ private:
     auto openFile() -> void;
     auto runBenchmarks() -> void;
     auto runWeightingTests() -> void;
-    auto runJuceConvolverBenchmark() -> void;
+    auto runJuceConvolutionBenchmark() -> void;
+    auto runDenseConvolutionBenchmark() -> void;
     auto runDenseConvolverBenchmark() -> void;
     auto runSparseConvolverBenchmark() -> void;
     auto updateImages() -> void;

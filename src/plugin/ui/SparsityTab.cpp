@@ -74,7 +74,12 @@ SparsityTab::SparsityTab()
     auto const weights     = juce::Array<juce::var>{juce::var{"No Weighting"}, juce::var{"A-Weighting"}};
     auto const weightNames = toStringArray(weights);
 
-    auto const engines     = juce::Array<juce::var>{juce::var{"juce"}, juce::var{"dense"}, juce::var{"sparse"}};
+    auto const engines = juce::Array<juce::var>{
+        juce::var{"juce"},
+        juce::var{"dense"},
+        juce::var{"dense2"},
+        juce::var{"sparse"},
+    };
     auto const engineNames = toStringArray(engines);
 
     _propertyPanel.addSection(
@@ -169,10 +174,13 @@ auto SparsityTab::runBenchmarks() -> void
     }
 
     if (hasEngineEnabled("juce")) {
-        runJuceConvolverBenchmark();
+        runJuceConvolutionBenchmark();
     }
     if (hasEngineEnabled("dense")) {
         runDenseConvolverBenchmark();
+    }
+    if (hasEngineEnabled("dense2")) {
+        runDenseConvolutionBenchmark();
     }
     if (hasEngineEnabled("sparse")) {
         runSparseConvolverBenchmark();
@@ -242,7 +250,7 @@ auto SparsityTab::runWeightingTests() -> void
     _fileInfo.insertTextAtCaret(line);
 }
 
-auto SparsityTab::runJuceConvolverBenchmark() -> void
+auto SparsityTab::runJuceConvolutionBenchmark() -> void
 {
     auto proc = JuceConvolver{
         _filterFile,
@@ -264,6 +272,47 @@ auto SparsityTab::runJuceConvolverBenchmark() -> void
     _fileInfo.insertTextAtCaret("JCONV-DENSE: " + juce::String{elapsed.count()} + "\n");
 
     writeToWavFile(file, output, 44'100.0, 32);
+}
+
+auto SparsityTab::runDenseConvolutionBenchmark() -> void
+{
+    auto out       = juce::AudioBuffer<float>{_signal.getNumChannels(), _signal.getNumSamples()};
+    auto inBuffer  = juce::dsp::AudioBlock<float const>{_signal};
+    auto outBuffer = juce::dsp::AudioBlock<float>{out};
+
+    auto proc = DenseConvolution{512};
+    proc.loadImpulseResponse(_filterFile.createInputStream());
+    proc.prepare(juce::dsp::ProcessSpec{
+        44'100.0,
+        static_cast<std::uint32_t>(512),
+        static_cast<std::uint32_t>(inBuffer.getNumChannels()),
+    });
+
+    auto start = std::chrono::system_clock::now();
+    auto file  = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv2", ".wav");
+
+    for (auto i{0UL}; i < outBuffer.getNumSamples(); i += 512) {
+        auto const numSamples = std::min(outBuffer.getNumSamples() - i, 512ULL);
+
+        auto inBlock  = inBuffer.getSubBlock(i, numSamples);
+        auto outBlock = outBuffer.getSubBlock(i, numSamples);
+        outBlock.copyFrom(inBlock);
+
+        auto ctx = juce::dsp::ProcessContextReplacing<float>{outBlock};
+        proc.process(ctx);
+    }
+
+    // proc.reset();
+
+    // auto output = to_mdarray(out);
+    // neo::peak_normalize(output.to_mdspan());
+
+    auto const end     = std::chrono::system_clock::now();
+    auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    _fileInfo.moveCaretToEnd(false);
+    _fileInfo.insertTextAtCaret("TCONV2-DENSE: " + juce::String{elapsed.count()} + "\n");
+
+    writeToWavFile(file, to_mdarray(out), 44'100.0, 32);
 }
 
 auto SparsityTab::runDenseConvolverBenchmark() -> void
