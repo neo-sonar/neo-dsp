@@ -1,8 +1,34 @@
 #pragma once
 
+#include <neo/container/mdspan.hpp>
+
+#include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>
 
 namespace neo {
+
+auto juce_normalization(juce::AudioBuffer<float>& buf) -> void;
+
+auto resample(juce::AudioBuffer<float> const& buf, double srcSampleRate, double destSampleRate)
+    -> juce::AudioBuffer<float>;
+
+template<std::floating_point Float>
+[[nodiscard]] auto to_mdarray(juce::AudioBuffer<Float> const& buffer)
+    -> stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>
+{
+    auto result = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{
+        static_cast<std::size_t>(buffer.getNumChannels()),
+        static_cast<std::size_t>(buffer.getNumSamples()),
+    };
+
+    for (auto ch{0ULL}; ch < result.extent(0); ++ch) {
+        for (auto i{0ULL}; i < result.extent(1); ++i) {
+            result(ch, i) = buffer.getSample(static_cast<int>(ch), static_cast<int>(i));
+        }
+    }
+
+    return result;
+}
 
 template<typename Processor>
 auto processBlocks(

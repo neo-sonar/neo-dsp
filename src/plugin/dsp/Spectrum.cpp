@@ -1,6 +1,6 @@
-#include "spectogram.hpp"
+#include "Spectrum.hpp"
 
-#include "dsp/normalize.hpp"
+#include "dsp/AudioBuffer.hpp"
 
 #include <juce_dsp/juce_dsp.h>
 

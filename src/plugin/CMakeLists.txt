@@ -28,18 +28,15 @@ set(PerceptualConvolution_Sources
     PluginProcessor.hpp
     PluginProcessor.cpp
 
-    dsp/cola.hpp
-    dsp/convolution.cpp
-    dsp/convolution.hpp
-    dsp/normalize.cpp
-    dsp/normalize.hpp
-    dsp/render.hpp
-    dsp/resample.cpp
-    dsp/resample.hpp
-    dsp/spectogram.cpp
-    dsp/spectogram.hpp
-    dsp/wav.cpp
-    dsp/wav.hpp
+    dsp/AudioBuffer.cpp
+    dsp/AudioBuffer.hpp
+    dsp/AudioFile.cpp
+    dsp/AudioFile.hpp
+    dsp/ConstantOverlapAdd.hpp
+    dsp/DenseConvolution.cpp
+    dsp/DenseConvolution.hpp
+    dsp/Spectrum.cpp
+    dsp/Spectrum.hpp
 )
 
 target_sources(PerceptualConvolution PRIVATE ${PerceptualConvolution_Sources})

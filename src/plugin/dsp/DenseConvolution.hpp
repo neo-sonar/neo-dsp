@@ -1,9 +1,9 @@
 #pragma once
 
-#include "dsp/cola.hpp"
+#include "dsp/ConstantOverlapAdd.hpp"
 
-#include "neo/fft/convolution.hpp"
-#include "neo/testing/testing.hpp"
+#include <neo/fft/convolution.hpp>
+#include <neo/testing/testing.hpp>
 
 #include <algorithm>
 #include <juce_dsp/juce_dsp.h>

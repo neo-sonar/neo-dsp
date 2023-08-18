@@ -5,11 +5,11 @@
 namespace neo {
 
 template<typename Processor>
-struct COLA
+struct ConstantOverlapAdd
 {
     using SampleType = typename Processor::SampleType;
 
-    explicit COLA(int frameSizeAsPowerOf2, int hopSizeDividerAsPowerOf2 = 1);
+    explicit ConstantOverlapAdd(int frameSizeAsPowerOf2, int hopSizeDividerAsPowerOf2 = 1);
 
     auto prepare(juce::dsp::ProcessSpec const& spec) -> void;
 
@@ -41,13 +41,13 @@ private:
 };
 
 template<typename Processor>
-COLA<Processor>::COLA(int frameSizeAsPowerOf2, int hopSizeDividerAsPowerOf2)
+ConstantOverlapAdd<Processor>::ConstantOverlapAdd(int frameSizeAsPowerOf2, int hopSizeDividerAsPowerOf2)
     : _frameSize(1 << frameSizeAsPowerOf2)
     , _hopSize(_frameSize >> hopSizeDividerAsPowerOf2)
 {}
 
 template<typename Processor>
-void COLA<Processor>::prepare(juce::dsp::ProcessSpec const& spec)
+void ConstantOverlapAdd<Processor>::prepare(juce::dsp::ProcessSpec const& spec)
 {
     _window = std::vector<SampleType>((size_t)_frameSize, (SampleType)0);
     createWindow();
@@ -68,7 +68,7 @@ void COLA<Processor>::prepare(juce::dsp::ProcessSpec const& spec)
 }
 
 template<typename Processor>
-void COLA<Processor>::reset()
+void ConstantOverlapAdd<Processor>::reset()
 {
     _unusedInput.clear();
     _frame.clear();
@@ -81,20 +81,20 @@ void COLA<Processor>::reset()
 }
 
 template<typename Processor>
-auto COLA<Processor>::processor() -> Processor&
+auto ConstantOverlapAdd<Processor>::processor() -> Processor&
 {
     return _processor;
 }
 
 template<typename Processor>
-auto COLA<Processor>::processor() const -> Processor const&
+auto ConstantOverlapAdd<Processor>::processor() const -> Processor const&
 {
     return _processor;
 }
 
 template<typename Processor>
 template<typename ProcessContext>
-void COLA<Processor>::process(ProcessContext const& context)
+void ConstantOverlapAdd<Processor>::process(ProcessContext const& context)
 {
     auto inBlock  = context.getInputBlock();
     auto outBlock = context.getOutputBlock();
@@ -203,7 +203,7 @@ void COLA<Processor>::process(ProcessContext const& context)
 }
 
 template<typename Processor>
-void COLA<Processor>::createWindow()
+void ConstantOverlapAdd<Processor>::createWindow()
 {
     auto type = juce::dsp::WindowingFunction<SampleType>::rectangular;
     juce::dsp::WindowingFunction<SampleType>::fillWindowingTables(_window.data(), (size_t)_frameSize, type, false);
@@ -214,7 +214,7 @@ void COLA<Processor>::createWindow()
 }
 
 template<typename Processor>
-void COLA<Processor>::writeBackFrame(int numChannels)
+void ConstantOverlapAdd<Processor>::writeBackFrame(int numChannels)
 {
     for (int ch = 0; ch < numChannels; ++ch) {
         _output.addFrom(ch, _outputOffset, _frame, ch, 0, _frameSize - _hopSize);

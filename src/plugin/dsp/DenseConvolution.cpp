@@ -1,7 +1,6 @@
-#include "convolution.hpp"
+#include "DenseConvolution.hpp"
 
-#include "dsp/normalize.hpp"
-#include "dsp/resample.hpp"
+#include "dsp/AudioBuffer.hpp"
 
 #include <neo/fft/convolution/uniform_partition.hpp>
 #include <neo/fft/transform/fftfreq.hpp>

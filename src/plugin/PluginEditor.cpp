@@ -1,16 +1,15 @@
 #include "PluginEditor.hpp"
 
+#include "dsp/AudioBuffer.hpp"
+#include "dsp/AudioFile.hpp"
+#include "dsp/DenseConvolution.hpp"
+#include "dsp/Spectrum.hpp"
+
+#include <neo/algorithm/peak_normalize.hpp>
 #include <neo/container/sparse_matrix.hpp>
 #include <neo/fft/transform/fftfreq.hpp>
 #include <neo/fft/transform/stft.hpp>
 #include <neo/math/a_weighting.hpp>
-
-#include "dsp/convolution.hpp"
-#include "dsp/normalize.hpp"
-#include "dsp/render.hpp"
-#include "dsp/resample.hpp"
-#include "dsp/spectogram.hpp"
-#include "dsp/wav.hpp"
 
 #include <span>
 

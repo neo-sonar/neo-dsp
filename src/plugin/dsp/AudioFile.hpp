@@ -6,6 +6,9 @@
 
 namespace neo {
 
+[[nodiscard]] auto loadAndResample(juce::AudioFormatManager& formats, juce::File const& file, double sampleRate)
+    -> juce::AudioBuffer<float>;
+
 auto writeToWavFile(
     juce::File const& file,
     stdex::mdspan<float, stdex::dextents<size_t, 2>> buffer,

@@ -1,4 +1,5 @@
-#include "normalize.hpp"
+
+#include "AudioBuffer.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -29,6 +30,29 @@ auto juce_normalization(juce::AudioBuffer<float>& buf) -> void
     std::for_each(channelPtrs, channelPtrs + numChannels, [normalisationFactor, numSamples](auto* channel) {
         juce::FloatVectorOperations::multiply(channel, normalisationFactor, numSamples);
     });
+}
+
+auto resample(juce::AudioBuffer<float> const& buf, double srcSampleRate, double destSampleRate)
+    -> juce::AudioBuffer<float>
+{
+    if (juce::exactlyEqual(srcSampleRate, destSampleRate)) {
+        return buf;
+    }
+
+    auto const factorReading = srcSampleRate / destSampleRate;
+
+    juce::AudioBuffer<float> original = buf;
+    juce::MemoryAudioSource memorySource(original, false);
+    juce::ResamplingAudioSource resamplingSource(&memorySource, false, buf.getNumChannels());
+
+    auto const finalSize = juce::roundToInt(juce::jmax(1.0, buf.getNumSamples() / factorReading));
+    resamplingSource.setResamplingRatio(factorReading);
+    resamplingSource.prepareToPlay(finalSize, srcSampleRate);
+
+    juce::AudioBuffer<float> result(buf.getNumChannels(), finalSize);
+    resamplingSource.getNextAudioBlock({&result, 0, result.getNumSamples()});
+
+    return result;
 }
 
 }  // namespace neo
