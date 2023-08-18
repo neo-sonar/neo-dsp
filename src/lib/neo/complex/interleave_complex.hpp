@@ -18,20 +18,20 @@ struct alignas(FloatBatch::alignment) interleave_complex
 
     interleave_complex() noexcept = default;
 
-    interleave_complex(FloatBatch batch) noexcept : _batch{batch} {}
+    NEO_ALWAYS_INLINE interleave_complex(FloatBatch batch) noexcept : _batch{batch} {}
 
-    interleave_complex(register_type reg) noexcept : _batch{reg} {}
+    NEO_ALWAYS_INLINE interleave_complex(register_type reg) noexcept : _batch{reg} {}
 
     template<neo::complex Complex>
         requires std::same_as<typename Complex::value_type, real_scalar_type>
-    [[nodiscard]] static auto load_unaligned(Complex const* val) -> interleave_complex
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(Complex const* val) -> interleave_complex
     {
         return batch_type::load_unaligned(reinterpret_cast<real_scalar_type const*>(val));
     }
 
     template<neo::complex Complex>
         requires std::same_as<typename Complex::value_type, real_scalar_type>
-    auto store_unaligned(Complex* output) const -> void
+    NEO_ALWAYS_INLINE auto store_unaligned(Complex* output) const -> void
     {
         return _batch.store_unaligned(reinterpret_cast<real_scalar_type*>(output));
     }

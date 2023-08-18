@@ -46,9 +46,9 @@ struct alignas(32) float16x8
 
     float16x8(register_type val) noexcept : _register{val} {}
 
-    [[nodiscard]] explicit operator register_type() const { return _register; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _register; }
 
-    [[nodiscard]] static auto broadcast(value_type val) -> float16x8
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(value_type val) -> float16x8
     {
         auto values = std::array<_Float16, size>{};
         std::fill(values.begin(), values.end(), val);
@@ -56,12 +56,12 @@ struct alignas(32) float16x8
         // return _mm_set1_epi16(std::bit_cast<std::int16_t>(val));
     }
 
-    [[nodiscard]] static auto load_unaligned(value_type const* input) -> float16x8
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(value_type const* input) -> float16x8
     {
         return _mm_loadu_si128(reinterpret_cast<register_type const*>(input));
     }
 
-    auto store_unaligned(value_type* output) const -> void
+    NEO_ALWAYS_INLINE auto store_unaligned(value_type* output) const -> void
     {
         return _mm_storeu_si128(reinterpret_cast<register_type*>(output), _register);
     }
@@ -105,9 +105,9 @@ struct alignas(32) float16x16
 
     float16x16(register_type val) noexcept : _register{val} {}
 
-    [[nodiscard]] explicit operator register_type() const { return _register; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _register; }
 
-    [[nodiscard]] static auto broadcast(value_type val) -> float16x16
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(value_type val) -> float16x16
     {
         auto values = std::array<_Float16, size>{};
         std::fill(values.begin(), values.end(), val);
@@ -115,12 +115,12 @@ struct alignas(32) float16x16
         // return _mm_set1_epi16(std::bit_cast<std::int16_t>(val));
     }
 
-    [[nodiscard]] static auto load_unaligned(value_type const* input) -> float16x16
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(value_type const* input) -> float16x16
     {
         return _mm256_loadu_si256(reinterpret_cast<register_type const*>(input));
     }
 
-    auto store_unaligned(value_type* output) const -> void
+    NEO_ALWAYS_INLINE auto store_unaligned(value_type* output) const -> void
     {
         return _mm256_storeu_si256(reinterpret_cast<register_type*>(output), _register);
     }
@@ -174,15 +174,18 @@ struct alignas(32) float32x8
 
     float32x8() = default;
 
-    float32x8(register_type val) noexcept : _val{val} {}
+    NEO_ALWAYS_INLINE float32x8(register_type val) noexcept : _val{val} {}
 
-    [[nodiscard]] explicit operator register_type() const { return _val; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _val; }
 
-    [[nodiscard]] static auto broadcast(float val) -> float32x8 { return _mm256_set1_ps(val); }
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(float val) -> float32x8 { return _mm256_set1_ps(val); }
 
-    [[nodiscard]] static auto load_unaligned(float const* input) -> float32x8 { return _mm256_loadu_ps(input); }
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(float const* input) -> float32x8
+    {
+        return _mm256_loadu_ps(input);
+    }
 
-    auto store_unaligned(float* output) const -> void { return _mm256_storeu_ps(output, _val); }
+    NEO_ALWAYS_INLINE auto store_unaligned(float* output) const -> void { return _mm256_storeu_ps(output, _val); }
 
     NEO_ALWAYS_INLINE friend auto operator+(float32x8 lhs, float32x8 rhs) -> float32x8
     {
@@ -213,15 +216,18 @@ struct alignas(32) float64x4
 
     float64x4() = default;
 
-    float64x4(register_type val) noexcept : _val{val} {}
+    NEO_ALWAYS_INLINE float64x4(register_type val) noexcept : _val{val} {}
 
-    [[nodiscard]] explicit operator register_type() const { return _val; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _val; }
 
-    [[nodiscard]] static auto broadcast(double val) -> float64x4 { return _mm256_set1_pd(val); }
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(double val) -> float64x4 { return _mm256_set1_pd(val); }
 
-    [[nodiscard]] static auto load_unaligned(double const* input) -> float64x4 { return _mm256_loadu_pd(input); }
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(double const* input) -> float64x4
+    {
+        return _mm256_loadu_pd(input);
+    }
 
-    auto store_unaligned(double* output) const -> void { return _mm256_storeu_pd(output, _val); }
+    NEO_ALWAYS_INLINE auto store_unaligned(double* output) const -> void { return _mm256_storeu_pd(output, _val); }
 
     NEO_ALWAYS_INLINE friend auto operator+(float64x4 lhs, float64x4 rhs) -> float64x4
     {
