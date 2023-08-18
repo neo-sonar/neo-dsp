@@ -38,9 +38,6 @@ auto DenseConvolution::loadImpulseResponse(std::unique_ptr<juce::InputStream> st
     }
 
     _impulse.emplace(std::move(buffer), reader->sampleRate);
-    if (_spec.has_value()) {
-        prepare(*_spec);
-    }
 }
 
 auto DenseConvolution::prepare(juce::dsp::ProcessSpec const& spec) -> void
@@ -68,16 +65,29 @@ auto DenseConvolution::updateImpulseResponse() -> void
 {
     jassert(_spec.has_value());
 
-    // if (_impulse.has_value()) {
-    // _convolvers.resize(spec.numChannels);
-    // auto const resampled  = resample(_impulse->buffer, _impulse->sampleRate, spec.sampleRate);
-    // auto const partitions = uniform_partition(resampled, neo::next_power_of_two(spec.maximumBlockSize));
-    // }
-
-    _filter = neo::generate_identity_impulse<float>(_spec->maximumBlockSize, 2);
-    _convolvers.resize(_spec->numChannels);
-    for (auto ch{0U}; ch < _spec->numChannels; ++ch) {
-        _convolvers[ch].filter(_filter.to_mdspan());
+    if (_impulse.has_value()) {
+        _convolvers.resize(_spec->numChannels);
+        auto resampled = resample(_impulse->buffer, _impulse->sampleRate, _spec->sampleRate);
+        // juce_normalization(resampled);
+        _filter = uniform_partition(resampled, _spec->maximumBlockSize);
+        for (auto ch{0U}; ch < _spec->numChannels; ++ch) {
+            auto channel = stdex::submdspan(_filter.to_mdspan(), ch, stdex::full_extent, stdex::full_extent);
+            _convolvers[ch].filter(channel);
+        }
+    } else {
+        // jassertfalse;
+        auto const identity = neo::generate_identity_impulse<float>(_spec->maximumBlockSize, 2);
+        _filter             = stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>>{
+            _spec->numChannels,
+            identity.extent(0),
+            identity.extent(1),
+        };
+        _convolvers.resize(_spec->numChannels);
+        for (auto ch{0U}; ch < _spec->numChannels; ++ch) {
+            auto channel = stdex::submdspan(_filter.to_mdspan(), ch, stdex::full_extent, stdex::full_extent);
+            neo::copy(identity.to_mdspan(), channel);
+            _convolvers[ch].filter(channel);
+        }
     }
 }
 

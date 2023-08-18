@@ -54,8 +54,11 @@ auto PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) -> v
         static_cast<std::uint32_t>(getMainBusNumInputChannels()),
     };
 
+    auto impulse = juce::File{R"(C:\Users\tobias\Music\Samples\IR\LexiconPCM90 Halls\LIVE_brick wallz.WAV)"};
+
     auto const K = neo::next_power_of_two(spec.maximumBlockSize);
     _convolution = std::make_unique<ConstantOverlapAdd<DenseConvolution>>(neo::ilog2(K), 0);
+    _convolution->processor().loadImpulseResponse(impulse.createInputStream());
     _convolution->prepare(spec);
 }
 

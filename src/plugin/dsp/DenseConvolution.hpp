@@ -35,7 +35,7 @@ private:
     std::optional<ImpulseResponse> _impulse;
     std::optional<juce::dsp::ProcessSpec> _spec;
     std::vector<neo::fft::upols_convolver<float>> _convolvers;
-    stdex::mdarray<std::complex<float>, stdex::dextents<std::size_t, 2>> _filter;
+    stdex::mdarray<std::complex<float>, stdex::dextents<std::size_t, 3>> _filter;
 };
 
 [[nodiscard]] auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)
