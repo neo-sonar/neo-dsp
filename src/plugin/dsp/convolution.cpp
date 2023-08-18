@@ -6,17 +6,9 @@
 #include <neo/math/next_power_of_two.hpp>
 
 #include "dsp/normalize.hpp"
-#include "dsp/resample.hpp"
 #include "neo/fft/convolution/uniform_partition.hpp"
 
 namespace neo {
-
-static auto uniform_partition(juce::AudioBuffer<float> const& buffer, int blockSize)
-    -> stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>>
-{
-    auto matrix = to_mdarray(buffer);
-    return neo::fft::uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
-}
 
 auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)
     -> juce::AudioBuffer<float>

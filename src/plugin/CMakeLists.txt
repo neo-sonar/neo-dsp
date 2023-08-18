@@ -28,6 +28,7 @@ set(PerceptualConvolution_Sources
     PluginProcessor.hpp
     PluginProcessor.cpp
 
+    dsp/cola.hpp
     dsp/convolution.cpp
     dsp/convolution.hpp
     dsp/normalize.cpp

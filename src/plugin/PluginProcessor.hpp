@@ -1,6 +1,9 @@
 
 #pragma once
 
+#include "dsp/cola.hpp"
+#include "dsp/convolution.hpp"
+
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 #include <juce_gui_extra/juce_gui_extra.h>
@@ -48,6 +51,7 @@ private:
     juce::UndoManager _undoManager{};
     juce::AudioProcessorValueTreeState _valueTree;
 
+    std::unique_ptr<COLA<Convolution>> _convolution;
     // juce::AudioParameterFloat& _inGain;
     // juce::AudioParameterFloat& _outGain;
 };

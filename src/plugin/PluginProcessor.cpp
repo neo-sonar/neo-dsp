@@ -54,10 +54,17 @@ auto PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) -> v
         static_cast<std::uint32_t>(getMainBusNumInputChannels()),
     };
 
-    juce::ignoreUnused(spec);
+    auto const K = neo::next_power_of_two(spec.maximumBlockSize);
+    _convolution = std::make_unique<COLA<Convolution>>(neo::ilog2(K), 0);
+    _convolution->prepare(spec);
 }
 
-auto PluginProcessor::releaseResources() -> void {}
+auto PluginProcessor::releaseResources() -> void
+{
+    if (_convolution) {
+        _convolution->reset();
+    }
+}
 
 auto PluginProcessor::isBusesLayoutSupported(BusesLayout const& layouts) const -> bool
 {
@@ -85,6 +92,13 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiB
     }
 
     // buffer.applyGain(_inGain);
+
+    if (_convolution) {
+        auto block   = juce::dsp::AudioBlock<float>{buffer};
+        auto context = juce::dsp::ProcessContextReplacing{block};
+        _convolution->process(context);
+    }
+
     // buffer.applyGain(_outGain);
 }
 
@@ -95,11 +109,7 @@ auto PluginProcessor::parameterChanged(juce::String const& parameterID, float ne
 
 auto PluginProcessor::hasEditor() const -> bool { return true; }
 
-auto PluginProcessor::createEditor() -> juce::AudioProcessorEditor*
-{
-    return new PluginEditor(*this);
-    // return new mc::ThemedGenericPluginEditor(getState());
-}
+auto PluginProcessor::createEditor() -> juce::AudioProcessorEditor* { return new PluginEditor(*this); }
 
 auto PluginProcessor::getStateInformation(juce::MemoryBlock& destData) -> void
 {
