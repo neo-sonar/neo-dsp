@@ -20,10 +20,17 @@ struct PluginEditor final : juce::AudioProcessorEditor
     auto resized() -> void override;
 
 private:
+    auto openFile() -> void;
+
+    juce::AudioFormatManager _formats;
+
+    juce::TextButton _openFile{"Open Impulse"};
+
     ParameterTab _parameter;
-    SparsityTab _sparsity;
+    SparsityTab _sparsity{_formats};
     juce::TabbedComponent _tabs;
 
+    std::unique_ptr<juce::FileChooser> _fileChooser{nullptr};
     juce::SharedResourcePointer<juce::TooltipWindow> _tooltipWindow;
 };
 

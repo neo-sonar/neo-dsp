@@ -55,16 +55,13 @@ private:
 
 }  // namespace
 
-SparsityTab::SparsityTab()
+SparsityTab::SparsityTab(juce::AudioFormatManager& formatManager) : _formatManager{formatManager}
 {
-    _formats.registerBasicFormats();
-
     _skip.addListener(this);
     _dynamicRange.addListener(this);
     _weighting.addListener(this);
 
-    _openFile.onClick = [this] { openFile(); };
-    _render.onClick   = [this] { runBenchmarks(); };
+    _render.onClick = [this] { runBenchmarks(); };
 
     _fileInfo.setReadOnly(true);
     _fileInfo.setMultiLine(true);
@@ -98,12 +95,25 @@ SparsityTab::SparsityTab()
         }
     );
 
-    addAndMakeVisible(_openFile);
     addAndMakeVisible(_render);
     addAndMakeVisible(_propertyPanel);
     addAndMakeVisible(_fileInfo);
     addAndMakeVisible(_spectogramImage);
     addAndMakeVisible(_histogramImage);
+}
+
+auto SparsityTab::setImpulseResponseFile(juce::File const& file) -> void
+{
+    _filter     = loadAndResample(_formatManager, file, 44'100.0);
+    _filterFile = file;
+
+    auto const filterMatrix = to_mdarray(_filter);
+    _spectrum               = neo::fft::stft(filterMatrix.to_mdspan(), 1024);
+
+    _fileInfo.setText(file.getFileName() + " (" + juce::String(_filter.getNumSamples()) + ")\n");
+    updateImages();
+
+    repaint();
 }
 
 auto SparsityTab::paint(juce::Graphics& g) -> void { juce::ignoreUnused(g); }
@@ -116,7 +126,6 @@ auto SparsityTab::resized() -> void
 
     auto right              = bounds.removeFromRight(bounds.proportionOfWidth(0.225));
     auto const buttonHeight = right.proportionOfHeight(0.1);
-    _openFile.setBounds(right.removeFromTop(buttonHeight).reduced(0, 4));
     _render.setBounds(right.removeFromTop(buttonHeight).reduced(0, 4));
     _propertyPanel.setBounds(right);
 
@@ -125,35 +134,6 @@ auto SparsityTab::resized() -> void
 }
 
 auto SparsityTab::valueChanged(juce::Value& /*value*/) -> void { updateImages(); }
-
-auto SparsityTab::openFile() -> void
-{
-    auto const* msg         = "Please select a impulse response";
-    auto const homeDir      = juce::File::getSpecialLocation(juce::File::userMusicDirectory);
-    auto const chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles;
-    auto const load         = [this](juce::FileChooser const& chooser) {
-        if (chooser.getResults().isEmpty()) {
-            return;
-        }
-
-        auto const file     = chooser.getResult();
-        auto const filename = file.getFileNameWithoutExtension();
-
-        _filter     = loadAndResample(_formats, file, 44'100.0);
-        _filterFile = file;
-
-        auto const filterMatrix = to_mdarray(_filter);
-        _spectrum               = neo::fft::stft(filterMatrix.to_mdspan(), 1024);
-
-        _fileInfo.setText(filename + " (" + juce::String(_filter.getNumSamples()) + ")\n");
-        updateImages();
-
-        repaint();
-    };
-
-    _fileChooser = std::make_unique<juce::FileChooser>(msg, homeDir, _formats.getWildcardForAllFormats());
-    _fileChooser->launchAsync(chooserFlags, load);
-}
 
 auto SparsityTab::runBenchmarks() -> void
 {
@@ -170,7 +150,7 @@ auto SparsityTab::runBenchmarks() -> void
 
     if (_signal.getNumChannels() == 0 or _signal.getNumSamples() == 0) {
         _signalFile = juce::File{R"(C:\Users\tobias\Music\Loops\Drums.wav)"};
-        _signal     = loadAndResample(_formats, _signalFile, 44'100.0);
+        _signal     = loadAndResample(_formatManager, _signalFile, 44'100.0);
     }
 
     if (hasEngineEnabled("juce")) {
