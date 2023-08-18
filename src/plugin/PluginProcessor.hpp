@@ -51,8 +51,11 @@ private:
     juce::AudioProcessorValueTreeState _valueTree;
 
     std::unique_ptr<DenseConvolution> _convolution;
-    // juce::AudioParameterFloat& _inGain;
-    // juce::AudioParameterFloat& _outGain;
+    juce::dsp::DryWetMixer<float> _mixer;
+
+    juce::AudioParameterFloat& _inGain;
+    juce::AudioParameterFloat& _outGain;
+    juce::AudioParameterFloat& _wet;
 };
 
 }  // namespace neo

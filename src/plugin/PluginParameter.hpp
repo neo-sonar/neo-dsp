@@ -3,19 +3,20 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_data_structures/juce_data_structures.h>
 
-namespace mc {
+namespace neo {
 
 struct ParamID
 {
-    // i/o
     static constexpr char const* inGain  = "inGain";
     static constexpr char const* outGain = "outGain";
-
-    // filter
-    static constexpr char const* filterEnable = "filterEnable";
-    static constexpr char const* filterType   = "filterType";
+    static constexpr char const* wet     = "wet";
 };
 
 auto createParameters() -> juce::AudioProcessorValueTreeState::ParameterLayout;
 
-}  // namespace mc
+auto getFloatParameter(juce::AudioProcessorValueTreeState& vts, juce::StringRef id) -> juce::AudioParameterFloat*;
+auto getChoiceParameter(juce::AudioProcessorValueTreeState& vts, juce::StringRef id) -> juce::AudioParameterChoice*;
+auto getIntParameter(juce::AudioProcessorValueTreeState& vts, juce::StringRef id) -> juce::AudioParameterInt*;
+auto getBoolParameter(juce::AudioProcessorValueTreeState& vts, juce::StringRef id) -> juce::AudioParameterBool*;
+
+}  // namespace neo

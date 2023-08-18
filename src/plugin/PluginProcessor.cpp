@@ -12,9 +12,10 @@ PluginProcessor::PluginProcessor()
     : AudioProcessor(BusesProperties()
                          .withInput("Input", juce::AudioChannelSet::stereo(), true)
                          .withOutput("Output", juce::AudioChannelSet::stereo(), true))
-    , _valueTree{*this, nullptr, juce::Identifier("PerceptualConvolution"), mc::createParameters()}
-// , _inGain{*mc::getFloatParameter(_valueTree, mc::ParamID::inGain)}
-// , _outGain{*mc::getFloatParameter(_valueTree, mc::ParamID::outGain)}
+    , _valueTree{*this, nullptr, juce::Identifier("PerceptualConvolution"), neo::createParameters()}
+    , _inGain{*getFloatParameter(_valueTree, ParamID::inGain)}
+    , _outGain{*getFloatParameter(_valueTree, ParamID::outGain)}
+    , _wet{*getFloatParameter(_valueTree, ParamID::wet)}
 {}
 
 PluginProcessor::~PluginProcessor() = default;
@@ -59,7 +60,11 @@ auto PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) -> v
     _convolution = std::make_unique<DenseConvolution>(samplesPerBlock);
     _convolution->loadImpulseResponse(impulse.createInputStream());
     _convolution->prepare(spec);
-    setLatencySamples(juce::nextPowerOfTwo(samplesPerBlock));
+    // setLatencySamples(juce::nextPowerOfTwo(samplesPerBlock));
+
+    _mixer.prepare(spec);
+    _mixer.setMixingRule(juce::dsp::DryWetMixingRule::balanced);
+    // _mixer.setWetLatency(static_cast<float>(juce::nextPowerOfTwo(samplesPerBlock)));
 }
 
 auto PluginProcessor::releaseResources() -> void
@@ -94,7 +99,9 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiB
         buffer.clear(i, 0, buffer.getNumSamples());
     }
 
-    // buffer.applyGain(_inGain);
+    buffer.applyGain(_inGain);
+
+    _mixer.pushDrySamples(juce::dsp::AudioBlock<float>{buffer});
 
     if (_convolution) {
         auto block   = juce::dsp::AudioBlock<float>{buffer};
@@ -102,7 +109,10 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiB
         _convolution->process(context);
     }
 
-    // buffer.applyGain(_outGain);
+    _mixer.setWetMixProportion(_wet);
+    _mixer.mixWetSamples(juce::dsp::AudioBlock<float>{buffer});
+
+    buffer.applyGain(_outGain);
 }
 
 auto PluginProcessor::parameterChanged(juce::String const& parameterID, float newValue) -> void
