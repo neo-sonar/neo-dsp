@@ -28,6 +28,8 @@ set(PerceptualConvolution_Sources
     PluginProcessor.hpp
     PluginProcessor.cpp
 
+    core/StringArray.hpp
+
     dsp/AudioBuffer.cpp
     dsp/AudioBuffer.hpp
     dsp/AudioFile.cpp
@@ -37,6 +39,11 @@ set(PerceptualConvolution_Sources
     dsp/DenseConvolution.hpp
     dsp/Spectrum.cpp
     dsp/Spectrum.hpp
+
+    ui/ParameterTab.cpp
+    ui/ParameterTab.hpp
+    ui/SparsityTab.cpp
+    ui/SparsityTab.hpp
 )
 
 target_sources(PerceptualConvolution PRIVATE ${PerceptualConvolution_Sources})
