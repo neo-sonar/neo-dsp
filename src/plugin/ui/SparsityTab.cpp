@@ -271,8 +271,8 @@ auto SparsityTab::runDenseConvolutionBenchmark() -> void
     auto start = std::chrono::system_clock::now();
     auto file  = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv2", ".wav");
 
-    for (auto i{0UL}; i < outBuffer.getNumSamples(); i += 512) {
-        auto const numSamples = std::min(outBuffer.getNumSamples() - i, 512ULL);
+    for (size_t i{0}; i < outBuffer.getNumSamples(); i += size_t(512)) {
+        auto const numSamples = std::min(outBuffer.getNumSamples() - i, size_t(512));
 
         auto inBlock  = inBuffer.getSubBlock(i, numSamples);
         auto outBlock = outBuffer.getSubBlock(i, numSamples);
