@@ -37,7 +37,10 @@ auto DenseConvolution::loadImpulseResponse(std::unique_ptr<juce::InputStream> st
         return;
     }
 
-    _impulse.emplace(std::move(buffer), reader->sampleRate);
+    _impulse = ImpulseResponse{
+        .buffer     = std::move(buffer),
+        .sampleRate = reader->sampleRate,
+    };
 }
 
 auto DenseConvolution::prepare(juce::dsp::ProcessSpec const& spec) -> void
@@ -68,7 +71,7 @@ auto DenseConvolution::updateImpulseResponse() -> void
     if (_impulse.has_value()) {
         _convolvers.resize(_spec->numChannels);
         auto resampled = resample(_impulse->buffer, _impulse->sampleRate, _spec->sampleRate);
-        // juce_normalization(resampled);
+        juce_normalization(resampled);
         _filter = uniform_partition(resampled, _spec->maximumBlockSize);
         for (auto ch{0U}; ch < _spec->numChannels; ++ch) {
             auto channel = stdex::submdspan(_filter.to_mdspan(), ch, stdex::full_extent, stdex::full_extent);
