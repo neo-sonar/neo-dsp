@@ -32,9 +32,8 @@ template<in_matrix InMat>
     auto in   = stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>{rfft.size()};
     auto out  = stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>>{rfft.size()};
 
-    auto const input        = in.to_mdspan();
-    auto const output       = out.to_mdspan();
-    auto const scale_factor = Float(1) / static_cast<Float>(rfft.size());
+    auto const input  = in.to_mdspan();
+    auto const output = out.to_mdspan();
 
     for (auto channel{0UL}; channel < num_channels; ++channel) {
         for (auto partition_idx{0UL}; partition_idx < num_partitions; ++partition_idx) {
@@ -50,7 +49,6 @@ template<in_matrix InMat>
             auto const coeffs    = stdex::submdspan(output, std::tuple{0, num_bins});
             auto const partition = stdex::submdspan(partitions.to_mdspan(), channel, partition_idx, stdex::full_extent);
             copy(coeffs, partition);
-            scale(scale_factor, partition);
         }
     }
 
