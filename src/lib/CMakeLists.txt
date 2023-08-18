@@ -21,6 +21,7 @@ target_sources(neo_fft_tests
 
         "neo/container/sparse_matrix_test.cpp"
 
+        "neo/fft/convolution/frequency_delay_line_test.cpp"
         "neo/fft/convolution/overlap_test.cpp"
         "neo/fft/convolution/uniform_partition_test.cpp"
         "neo/fft/convolution/uniform_partitioned_convolver_test.cpp"
