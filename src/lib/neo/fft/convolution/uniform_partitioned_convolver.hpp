@@ -7,7 +7,7 @@
 
 namespace neo::fft {
 
-template<typename Filter, typename Overlap>
+template<typename Overlap, typename Filter>
 struct uniform_partitioned_convolver
 {
     using filter_type  = Filter;
@@ -27,8 +27,8 @@ private:
     stdex::mdarray<std::complex<value_type>, stdex::dextents<size_t, 1>> _accumulator;
 };
 
-template<typename Filter, typename Overlap>
-auto uniform_partitioned_convolver<Filter, Overlap>::filter(in_matrix auto filter, auto... args) -> void
+template<typename Overlap, typename Filter>
+auto uniform_partitioned_convolver<Overlap, Filter>::filter(in_matrix auto filter, auto... args) -> void
 {
     _overlap     = Overlap{filter.extent(1) - 1, filter.extent(1) - 1};
     _indexer     = fdl_index<size_t>{filter.extent(0)};
@@ -37,8 +37,8 @@ auto uniform_partitioned_convolver<Filter, Overlap>::filter(in_matrix auto filte
     _filter.filter(filter, args...);
 }
 
-template<typename Filter, typename Overlap>
-auto uniform_partitioned_convolver<Filter, Overlap>::operator()(in_vector auto block) -> void
+template<typename Overlap, typename Filter>
+auto uniform_partitioned_convolver<Overlap, Filter>::operator()(in_vector auto block) -> void
 {
     _overlap(block, [this](inout_vector auto inout) {
         auto copy_to_fdl = [this, inout](auto dest_idx) {
