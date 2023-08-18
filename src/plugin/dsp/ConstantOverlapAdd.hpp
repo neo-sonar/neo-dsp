@@ -2,14 +2,21 @@
 
 #include <juce_dsp/juce_dsp.h>
 
+#include <concepts>
+
 namespace neo {
 
-template<typename Processor>
+template<std::floating_point Float>
 struct ConstantOverlapAdd
 {
-    using SampleType = typename Processor::SampleType;
+    using SampleType = Float;
 
     explicit ConstantOverlapAdd(int frameSizeAsPowerOf2, int hopSizeDividerAsPowerOf2 = 1);
+    virtual ~ConstantOverlapAdd() = default;
+
+    virtual auto prepareFrame(juce::dsp::ProcessSpec const& spec) -> void                       = 0;
+    virtual auto processFrame(juce::dsp::ProcessContextReplacing<Float> const& context) -> void = 0;
+    virtual auto resetFrame() -> void                                                           = 0;
 
     auto prepare(juce::dsp::ProcessSpec const& spec) -> void;
 
@@ -18,14 +25,9 @@ struct ConstantOverlapAdd
 
     auto reset() -> void;
 
-    [[nodiscard]] auto processor() -> Processor&;
-    [[nodiscard]] auto processor() const -> Processor const&;
-
 private:
     auto createWindow() -> void;
     auto writeBackFrame(int numChannels) -> void;
-
-    Processor _processor;
 
     juce::AudioBuffer<SampleType> _frame{};
     juce::AudioBuffer<SampleType> _unusedInput{};
@@ -40,14 +42,14 @@ private:
     int _unusedInputCount{0};
 };
 
-template<typename Processor>
-ConstantOverlapAdd<Processor>::ConstantOverlapAdd(int frameSizeAsPowerOf2, int hopSizeDividerAsPowerOf2)
+template<std::floating_point Float>
+ConstantOverlapAdd<Float>::ConstantOverlapAdd(int frameSizeAsPowerOf2, int hopSizeDividerAsPowerOf2)
     : _frameSize(1 << frameSizeAsPowerOf2)
     , _hopSize(_frameSize >> hopSizeDividerAsPowerOf2)
 {}
 
-template<typename Processor>
-void ConstantOverlapAdd<Processor>::prepare(juce::dsp::ProcessSpec const& spec)
+template<std::floating_point Float>
+void ConstantOverlapAdd<Float>::prepare(juce::dsp::ProcessSpec const& spec)
 {
     _window = std::vector<SampleType>((size_t)_frameSize, (SampleType)0);
     createWindow();
@@ -64,11 +66,11 @@ void ConstantOverlapAdd<Processor>::prepare(juce::dsp::ProcessSpec const& spec)
     _outputOffset     = _frameSize - 1;
     _unusedInputCount = 0;
 
-    _processor.prepare({spec.sampleRate, (juce::uint32)_frameSize, spec.numChannels});
+    prepareFrame({spec.sampleRate, (juce::uint32)_frameSize, spec.numChannels});
 }
 
-template<typename Processor>
-void ConstantOverlapAdd<Processor>::reset()
+template<std::floating_point Float>
+void ConstantOverlapAdd<Float>::reset()
 {
     _unusedInput.clear();
     _frame.clear();
@@ -77,24 +79,12 @@ void ConstantOverlapAdd<Processor>::reset()
     _outputOffset     = _frameSize - 1;
     _unusedInputCount = 0;
 
-    _processor.reset();
+    resetFrame();
 }
 
-template<typename Processor>
-auto ConstantOverlapAdd<Processor>::processor() -> Processor&
-{
-    return _processor;
-}
-
-template<typename Processor>
-auto ConstantOverlapAdd<Processor>::processor() const -> Processor const&
-{
-    return _processor;
-}
-
-template<typename Processor>
+template<std::floating_point Float>
 template<typename ProcessContext>
-void ConstantOverlapAdd<Processor>::process(ProcessContext const& context)
+void ConstantOverlapAdd<Float>::process(ProcessContext const& context)
 {
     auto inBlock  = context.getInputBlock();
     auto outBlock = context.getOutputBlock();
@@ -131,7 +121,9 @@ void ConstantOverlapAdd<Processor>::process(ProcessContext const& context)
         }
 
         // process frame and buffer output
-        _processor.process(_frame);
+
+        auto frame = juce::dsp::AudioBlock<Float>{_frame};
+        processFrame(juce::dsp::ProcessContextReplacing<Float>{frame});
         writeBackFrame(numChannels);
 
         notYetUsedAudioDataOffset += _hopSize;
@@ -166,7 +158,9 @@ void ConstantOverlapAdd<Processor>::process(ProcessContext const& context)
                     _frameSize
                 );
             }
-            _processor.process(_frame);
+
+            auto frame = juce::dsp::AudioBlock<Float>{_frame};
+            processFrame(juce::dsp::ProcessContextReplacing<Float>{frame});
             writeBackFrame(numChannels);
 
             dataOffset += _hopSize;
@@ -202,8 +196,8 @@ void ConstantOverlapAdd<Processor>::process(ProcessContext const& context)
     _outputOffset -= l;
 }
 
-template<typename Processor>
-void ConstantOverlapAdd<Processor>::createWindow()
+template<std::floating_point Float>
+void ConstantOverlapAdd<Float>::createWindow()
 {
     auto type = juce::dsp::WindowingFunction<SampleType>::rectangular;
     juce::dsp::WindowingFunction<SampleType>::fillWindowingTables(_window.data(), (size_t)_frameSize, type, false);
@@ -213,8 +207,8 @@ void ConstantOverlapAdd<Processor>::createWindow()
     juce::FloatVectorOperations::multiply(_window.data(), hopSizeCompensateFactor, _frameSize);
 }
 
-template<typename Processor>
-void ConstantOverlapAdd<Processor>::writeBackFrame(int numChannels)
+template<std::floating_point Float>
+void ConstantOverlapAdd<Float>::writeBackFrame(int numChannels)
 {
     for (int ch = 0; ch < numChannels; ++ch) {
         _output.addFrom(ch, _outputOffset, _frame, ch, 0, _frameSize - _hopSize);

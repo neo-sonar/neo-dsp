@@ -17,6 +17,10 @@ static auto uniform_partition(juce::AudioBuffer<float> const& buffer, std::integ
     return neo::fft::uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
 }
 
+DenseConvolution::DenseConvolution(int blockSize)
+    : ConstantOverlapAdd<float>{neo::ilog2(juce::nextPowerOfTwo(blockSize)), 0}
+{}
+
 auto DenseConvolution::loadImpulseResponse(std::unique_ptr<juce::InputStream> stream) -> void
 {
     jassert(stream != nullptr);
@@ -43,15 +47,17 @@ auto DenseConvolution::loadImpulseResponse(std::unique_ptr<juce::InputStream> st
     };
 }
 
-auto DenseConvolution::prepare(juce::dsp::ProcessSpec const& spec) -> void
+auto DenseConvolution::prepareFrame(juce::dsp::ProcessSpec const& spec) -> void
 {
     jassert(juce::isPowerOfTwo(spec.maximumBlockSize));
     _spec = spec;
     updateImpulseResponse();
 }
 
-auto DenseConvolution::process(juce::dsp::AudioBlock<float> const& block) -> void
+auto DenseConvolution::processFrame(juce::dsp::ProcessContextReplacing<float> const& context) -> void
 {
+    auto block = context.getOutputBlock();
+
     jassert(_spec.has_value());
     jassert(_spec->numChannels == block.getNumChannels());
     jassert(_convolvers.size() == block.getNumChannels());
@@ -62,7 +68,7 @@ auto DenseConvolution::process(juce::dsp::AudioBlock<float> const& block) -> voi
     }
 }
 
-auto DenseConvolution::reset() -> void {}
+auto DenseConvolution::resetFrame() -> void {}
 
 auto DenseConvolution::updateImpulseResponse() -> void
 {

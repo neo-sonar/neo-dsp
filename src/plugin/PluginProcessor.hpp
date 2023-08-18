@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "dsp/ConstantOverlapAdd.hpp"
 #include "dsp/DenseConvolution.hpp"
 
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -51,7 +50,7 @@ private:
     juce::UndoManager _undoManager{};
     juce::AudioProcessorValueTreeState _valueTree;
 
-    std::unique_ptr<ConstantOverlapAdd<DenseConvolution>> _convolution;
+    std::unique_ptr<DenseConvolution> _convolution;
     // juce::AudioParameterFloat& _inGain;
     // juce::AudioParameterFloat& _outGain;
 };

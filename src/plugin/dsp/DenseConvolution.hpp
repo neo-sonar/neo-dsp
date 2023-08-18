@@ -11,17 +11,18 @@
 
 namespace neo {
 
-struct DenseConvolution
+struct DenseConvolution final : ConstantOverlapAdd<float>
 {
     using SampleType = float;
 
-    DenseConvolution() = default;
+    explicit DenseConvolution(int blockSize);
+    ~DenseConvolution() override = default;
 
     auto loadImpulseResponse(std::unique_ptr<juce::InputStream> stream) -> void;
 
-    auto prepare(juce::dsp::ProcessSpec const& spec) -> void;
-    auto process(juce::dsp::AudioBlock<float> const& block) -> void;
-    auto reset() -> void;
+    auto prepareFrame(juce::dsp::ProcessSpec const& spec) -> void override;
+    auto processFrame(juce::dsp::ProcessContextReplacing<float> const& context) -> void override;
+    auto resetFrame() -> void override;
 
 private:
     struct ImpulseResponse

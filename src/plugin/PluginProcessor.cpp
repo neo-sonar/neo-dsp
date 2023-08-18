@@ -56,10 +56,10 @@ auto PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) -> v
 
     auto impulse = juce::File{R"(C:\Users\tobias\Music\Samples\IR\LexiconPCM90 Halls\ORCH_large hall.WAV)"};
 
-    auto const K = neo::next_power_of_two(spec.maximumBlockSize);
-    _convolution = std::make_unique<ConstantOverlapAdd<DenseConvolution>>(neo::ilog2(K), 0);
-    _convolution->processor().loadImpulseResponse(impulse.createInputStream());
+    _convolution = std::make_unique<DenseConvolution>(samplesPerBlock);
+    _convolution->loadImpulseResponse(impulse.createInputStream());
     _convolution->prepare(spec);
+    setLatencySamples(juce::nextPowerOfTwo(samplesPerBlock));
 }
 
 auto PluginProcessor::releaseResources() -> void
