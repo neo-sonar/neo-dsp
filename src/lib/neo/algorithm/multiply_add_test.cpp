@@ -29,6 +29,13 @@ auto test()
     neo::multiply_add(left_row0, rhs, 0, acc, acc);
     REQUIRE(accumulator[0] == Catch::Approx(Float(2)));
     REQUIRE(neo::all_of(stdex::submdspan(acc, std::tuple{1, acc.extent(0)}), isZero));
+
+    rhs.insert(0, 1, Float(4));
+    neo::fill(acc, Float(0));
+    neo::multiply_add(left_row0, rhs, 0, acc, acc);
+    REQUIRE(accumulator[0] == Catch::Approx(Float(2)));
+    REQUIRE(accumulator[1] == Catch::Approx(Float(4)));
+    REQUIRE(neo::all_of(stdex::submdspan(acc, std::tuple{2, acc.extent(0)}), isZero));
 }
 
 TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", float, double, long double) { test<TestType>(); }
