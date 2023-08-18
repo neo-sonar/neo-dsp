@@ -55,7 +55,7 @@ auto PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) -> v
     };
 
     auto const K = neo::next_power_of_two(spec.maximumBlockSize);
-    _convolution = std::make_unique<COLA<Convolution>>(neo::ilog2(K), 0);
+    _convolution = std::make_unique<COLA<DenseConvolution>>(neo::ilog2(K), 0);
     _convolution->prepare(spec);
 }
 

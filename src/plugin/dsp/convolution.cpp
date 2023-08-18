@@ -1,14 +1,86 @@
 #include "convolution.hpp"
 
+#include "dsp/normalize.hpp"
+#include "dsp/resample.hpp"
+
+#include <neo/fft/convolution/uniform_partition.hpp>
 #include <neo/fft/transform/fftfreq.hpp>
 #include <neo/math/a_weighting.hpp>
 #include <neo/math/decibel.hpp>
 #include <neo/math/next_power_of_two.hpp>
 
-#include "dsp/normalize.hpp"
-#include "neo/fft/convolution/uniform_partition.hpp"
-
 namespace neo {
+
+static auto uniform_partition(juce::AudioBuffer<float> const& buffer, std::integral auto blockSize)
+    -> stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>>
+{
+    auto matrix = to_mdarray(buffer);
+    return neo::fft::uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
+}
+
+auto DenseConvolution::loadImpulseResponse(std::unique_ptr<juce::InputStream> stream) -> void
+{
+    jassert(stream != nullptr);
+
+    auto formatManager = juce::AudioFormatManager{};
+    formatManager.registerBasicFormats();
+
+    auto reader = std::unique_ptr<juce::AudioFormatReader>(formatManager.createReaderFor(std::move(stream)));
+    if (reader == nullptr) {
+        return;
+    }
+
+    auto buffer = juce::AudioBuffer<float>{
+        static_cast<int>(reader->numChannels),
+        static_cast<int>(reader->lengthInSamples),
+    };
+    if (not reader->read(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), 0, buffer.getNumSamples())) {
+        return;
+    }
+
+    _impulse.emplace(std::move(buffer), reader->sampleRate);
+    if (_spec.has_value()) {
+        prepare(*_spec);
+    }
+}
+
+auto DenseConvolution::prepare(juce::dsp::ProcessSpec const& spec) -> void
+{
+    jassert(juce::isPowerOfTwo(spec.maximumBlockSize));
+    _spec = spec;
+    updateImpulseResponse();
+}
+
+auto DenseConvolution::process(juce::dsp::AudioBlock<float> const& block) -> void
+{
+    jassert(_spec.has_value());
+    jassert(_spec->numChannels == block.getNumChannels());
+    jassert(_convolvers.size() == block.getNumChannels());
+
+    for (auto ch{0U}; ch < block.getNumChannels(); ++ch) {
+        auto io = stdex::mdspan{block.getChannelPointer(ch), stdex::extents{block.getNumSamples()}};
+        std::invoke(_convolvers[ch], io);
+    }
+}
+
+auto DenseConvolution::reset() -> void {}
+
+auto DenseConvolution::updateImpulseResponse() -> void
+{
+    jassert(_spec.has_value());
+
+    // if (_impulse.has_value()) {
+    // _convolvers.resize(spec.numChannels);
+    // auto const resampled  = resample(_impulse->buffer, _impulse->sampleRate, spec.sampleRate);
+    // auto const partitions = uniform_partition(resampled, neo::next_power_of_two(spec.maximumBlockSize));
+    // }
+
+    _filter = neo::generate_identity_impulse<float>(_spec->maximumBlockSize, 2);
+    _convolvers.resize(_spec->numChannels);
+    for (auto ch{0U}; ch < _spec->numChannels; ++ch) {
+        _convolvers[ch].filter(_filter.to_mdspan());
+    }
+}
 
 auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)
     -> juce::AudioBuffer<float>
