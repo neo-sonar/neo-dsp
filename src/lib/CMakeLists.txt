@@ -19,6 +19,7 @@ target_sources(neo_fft_tests
         "neo/complex/parallel_complex_test.cpp"
         "neo/complex/scalar_complex_test.cpp"
 
+        "neo/container/compressed_float_accessor_test.cpp"
         "neo/container/sparse_matrix_test.cpp"
 
         "neo/fft/convolution/fdl_index_test.cpp"
