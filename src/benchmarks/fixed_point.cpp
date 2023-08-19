@@ -13,36 +13,50 @@
 #include <utility>
 #include <vector>
 
-template<typename Float, std::size_t Size>
-struct floating_point_mul_bench
+template<typename FloatOrComplex, std::size_t Size>
+struct float_mul
 {
-    explicit floating_point_mul_bench()
-        : _lhs(neo::generate_noise_signal<Float>(Size, std::random_device{}()))
-        , _rhs(neo::generate_noise_signal<Float>(Size, std::random_device{}()))
+    explicit float_mul()
+        : _lhs(neo::generate_noise_signal<FloatOrComplex>(Size, std::random_device{}()))
+        , _rhs(neo::generate_noise_signal<FloatOrComplex>(Size, std::random_device{}()))
         , _out(Size)
     {}
 
-    auto operator()() -> void
+    auto operator()() noexcept -> void
     {
-        std::transform(_lhs.data(), _lhs.data() + _lhs.size(), _rhs.data(), _out.data(), std::multiplies{});
+        neo::multiply(_lhs.to_mdspan(), _rhs.to_mdspan(), _out.to_mdspan());
+        neo::do_not_optimize(_out(0));
     }
 
 private:
-    stdex::mdarray<Float, stdex::extents<size_t, Size>> _lhs;
-    stdex::mdarray<Float, stdex::extents<size_t, Size>> _rhs;
-    stdex::mdarray<Float, stdex::extents<size_t, Size>> _out;
+    stdex::mdarray<FloatOrComplex, stdex::dextents<size_t, 1>> _lhs;
+    stdex::mdarray<FloatOrComplex, stdex::dextents<size_t, 1>> _rhs;
+    stdex::mdarray<FloatOrComplex, stdex::dextents<size_t, 1>> _out;
 };
 
-template<typename Float, typename Int, std::size_t Size>
-struct compressed_floatmul
+template<typename FloatOrComplex, typename IntOrComplex, std::size_t Size>
+struct cfloat_mul
 {
-    explicit compressed_floatmul() : _lhs(Size), _rhs(Size), _out(Size)
+    explicit cfloat_mul() : _lhs(Size), _rhs(Size), _out(Size)
     {
-        auto noiseA   = neo::generate_noise_signal<Float>(Size, std::random_device{}());
-        auto noiseB   = neo::generate_noise_signal<Float>(Size, std::random_device{}());
-        auto compress = [](Float val) {
-            static constexpr auto scale = static_cast<Float>(std::numeric_limits<Int>::max());
-            return static_cast<Int>(std::lround(val * scale));
+        auto noiseA   = neo::generate_noise_signal<FloatOrComplex>(Size, std::random_device{}());
+        auto noiseB   = neo::generate_noise_signal<FloatOrComplex>(Size, std::random_device{}());
+        auto compress = [](FloatOrComplex val) {
+            if constexpr (neo::complex<FloatOrComplex>) {
+                static_assert(neo::complex<IntOrComplex>);
+
+                using Float                 = typename FloatOrComplex::value_type;
+                using Int                   = typename IntOrComplex::value_type;
+                static constexpr auto scale = static_cast<Float>(std::numeric_limits<Int>::max());
+
+                return IntOrComplex(
+                    static_cast<Int>(std::lround(val.real() * scale)),
+                    static_cast<Int>(std::lround(val.imag() * scale))
+                );
+            } else {
+                static constexpr auto scale = static_cast<FloatOrComplex>(std::numeric_limits<IntOrComplex>::max());
+                return static_cast<IntOrComplex>(std::lround(val * scale));
+            }
         };
 
         std::transform(noiseA.data(), noiseA.data() + noiseA.size(), _lhs.data(), compress);
@@ -51,36 +65,52 @@ struct compressed_floatmul
 
     auto operator()() -> void
     {
-        using nested_accessor = typename stdex::mdspan<Int, stdex::extents<size_t, Size>>::accessor_type;
-        using real_accessor   = neo::compressed_accessor<Float, nested_accessor>;
-        using real_mdspan     = stdex::mdspan<Float, stdex::extents<size_t, Size>, stdex::layout_right, real_accessor>;
+        using nested_accessor = typename stdex::mdspan<IntOrComplex, stdex::dextents<size_t, 1>>::accessor_type;
+        using real_accessor   = neo::compressed_accessor<FloatOrComplex, nested_accessor>;
+        using extents         = stdex::dextents<size_t, 1>;
+        using real_mdspan     = stdex::mdspan<FloatOrComplex, extents, stdex::layout_right, real_accessor>;
 
         neo::multiply(real_mdspan(_lhs.to_mdspan()), real_mdspan(_rhs.to_mdspan()), _out.to_mdspan());
     }
 
 private:
-    stdex::mdarray<Int, stdex::extents<size_t, Size>> _lhs;
-    stdex::mdarray<Int, stdex::extents<size_t, Size>> _rhs;
-    stdex::mdarray<Float, stdex::extents<size_t, Size>> _out;
+    stdex::mdarray<IntOrComplex, stdex::dextents<size_t, 1>> _lhs;
+    stdex::mdarray<IntOrComplex, stdex::dextents<size_t, 1>> _rhs;
+    stdex::mdarray<FloatOrComplex, stdex::dextents<size_t, 1>> _out;
 };
 
 template<typename FixedPoint, std::size_t Size>
-struct fixed_point_mul_bench
+struct fixed_point_mul
 {
-    explicit fixed_point_mul_bench() : _lhs(Size), _rhs(Size), _out(Size)
+    explicit fixed_point_mul() : _lhs(Size), _rhs(Size), _out(Size)
     {
         auto rng  = std::mt19937{std::random_device{}()};
         auto dist = std::uniform_real_distribution<float>{-1.0F, 1.0F};
-        std::generate(_lhs.begin(), _lhs.end(), [&] { return FixedPoint{dist(rng)}; });
-        std::generate(_rhs.begin(), _rhs.end(), [&] { return FixedPoint{dist(rng)}; });
+        auto gen  = [&] {
+            if constexpr (neo::complex<FixedPoint>) {
+                using FP = typename FixedPoint::value_type;
+                return FixedPoint{FP{dist(rng)}, FP{dist(rng)}};
+            } else {
+                return FixedPoint{dist(rng)};
+            }
+        };
+        std::generate(_lhs.begin(), _lhs.end(), gen);
+        std::generate(_rhs.begin(), _rhs.end(), gen);
     }
 
     auto operator()() -> void
     {
-        auto const left   = std::span{std::as_const(_lhs)};
-        auto const right  = std::span{std::as_const(_rhs)};
-        auto const output = std::span{_out};
-        neo::multiply(left, right, output);
+        if constexpr (neo::complex<FixedPoint>) {
+            auto const left   = stdex::mdspan{_lhs.data(), stdex::extents{Size}};
+            auto const right  = stdex::mdspan{_rhs.data(), stdex::extents{Size}};
+            auto const output = stdex::mdspan{_out.data(), stdex::extents{Size}};
+            neo::multiply(left, right, output);
+        } else {
+            auto const left   = std::span{std::as_const(_lhs)};
+            auto const right  = std::span{std::as_const(_rhs)};
+            auto const output = std::span{_out};
+            neo::multiply(left, right, output);
+        }
     }
 
 private:
@@ -130,45 +160,23 @@ private:
 
 auto main() -> int
 {
-    using neo::q15;
-    using neo::q7;
+    static constexpr auto N = 131072U;
 
-    // neo::timeit("mul(q7[32768], q7[32768]):       ", 1, 32768, fixed_point_mul_bench<q7, 32768U>{});
-    neo::timeit("mul(q7[131072], q7[131072]):     ", 1, 131072, fixed_point_mul_bench<q7, 131072U>{});
-    // neo::timeit("mul(q7[262144], q7[262144]):     ", 1, 262144, fixed_point_mul_bench<q7, 262144U>{});
-    // std::printf("\n");
-
-    // neo::timeit("mul(q15[32768], q15[32768]):     ", 2, 32768, fixed_point_mul_bench<q15, 32768U>{});
-    neo::timeit("mul(q15[131072], q15[131072]):   ", 2, 131072, fixed_point_mul_bench<q15, 131072U>{});
-    // neo::timeit("mul(q15[262144], q15[262144]):   ", 2, 262144, fixed_point_mul_bench<q15, 262144U>{});
-    // std::printf("\n");
-
+    neo::timeit("mul(q7):     ", 1, N, fixed_point_mul<neo::q7, N>{});
+    neo::timeit("mul(q15):    ", 2, N, fixed_point_mul<neo::q15, N>{});
 #if defined(NEO_HAS_BASIC_FLOAT16)
-    // neo::timeit("mul(f16f32[32768], f16f32[32768]):   ", 2, 32768, float16_mul_bench<32768U>{});
-    neo::timeit("mul(f16f32[131072], f16f32[131072]): ", 2, 131072, float16_mul_bench<131072U>{});
-    // neo::timeit("mul(f16f32[262144], f16f32[262144]): ", 2, 262144, float16_mul_bench<262144U>{});
-    // std::printf("\n");
+    neo::timeit("mul(f16f32): ", 2, N, float16_mul_bench<N>{});
 #endif
+    neo::timeit("mul(float):  ", 4, N, float_mul<float, N>{});
+    neo::timeit("mul(double): ", 8, N, float_mul<double, N>{});
+    neo::timeit("mul(cf8):    ", 1, N, cfloat_mul<float, int8_t, N>{});
+    neo::timeit("mul(cf16):   ", 2, N, cfloat_mul<float, int16_t, N>{});
+    std::printf("\n");
 
-    // neo::timeit("mul(float[32768], float[32768]):     ", 4, 32768, floating_point_mul_bench<float, 32768U>{});
-    neo::timeit("mul(float[131072], float[131072]):   ", 4, 131072, floating_point_mul_bench<float, 131072U>{});
-    // neo::timeit("mul(float[262144], float[262144]):   ", 4, 262144, floating_point_mul_bench<float, 262144U>{});
-    // std::printf("\n");
-
-    // neo::timeit("mul(double[32768], double[32768]):   ", 8, 32768, floating_point_mul_bench<double, 32768U>{});
-    neo::timeit("mul(double[131072], double[131072]): ", 8, 131072, floating_point_mul_bench<double, 131072U>{});
-    // neo::timeit("mul(double[262144], double[262144]): ", 8, 262144, floating_point_mul_bench<double, 262144U>{});
-    // std::printf("\n");
-
-    // neo::timeit("mul(cf8[32768], cf8[32768]):     ", 1, 32768, compressed_floatmul<float, int8_t, 32768U>{});
-    neo::timeit("mul(cf8[131072], cf8[131072]):   ", 1, 131072, compressed_floatmul<float, int8_t, 131072U>{});
-    // neo::timeit("mul(cf8[262144], cf8[262144]):   ", 1, 262144, compressed_floatmul<float, int8_t, 262144U>{});
-    // std::printf("\n");
-
-    // neo::timeit("mul(cf16[32768], cf16[32768]):     ", 2, 32768, compressed_floatmul<float, int16_t, 32768U>{});
-    neo::timeit("mul(cf16[131072], cf16[131072]):   ", 2, 131072, compressed_floatmul<float, int16_t, 131072U>{});
-    // neo::timeit("mul(cf16[262144], cf16[262144]):   ", 2, 262144, compressed_floatmul<float, int16_t, 262144U>{});
-    // std::printf("\n");
+    neo::timeit("cmul(complex64):            ", 8, N, float_mul<neo::complex64, N>{});
+    neo::timeit("cmul(complex128):           ", 16, N, float_mul<neo::complex128, N>{});
+    neo::timeit("cmul(std::complex<float>):  ", 8, N, float_mul<std::complex<float>, N>{});
+    neo::timeit("cmul(std::complex<double>): ", 16, N, float_mul<std::complex<double>, N>{});
 
     return EXIT_SUCCESS;
 }
