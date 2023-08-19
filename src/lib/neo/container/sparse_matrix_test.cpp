@@ -7,10 +7,21 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
-TEMPLATE_TEST_CASE("neo/container: sparse_matrix", "", float, double, long double, std::complex<float>, std::complex<double>, std::complex<long double>)
+TEMPLATE_TEST_CASE("neo/container: sparse_matrix", "", float, double, (long double), std::complex<float>, std::complex<double>, std::complex<long double>)
 {
     using Scalar = TestType;
     using Float  = neo::real_or_complex_value_t<Scalar>;
+
+    SECTION("insert")
+    {
+        auto rhs = neo::sparse_matrix<Float>{16, 32};
+        rhs.insert(0, 0, Float(2));
+        REQUIRE(rhs(0, 0) == Catch::Approx(Float(2)));
+
+        rhs.insert(0, 1, Float(4));
+        REQUIRE(rhs(0, 0) == Catch::Approx(Float(2)));
+        REQUIRE(rhs(0, 1) == Catch::Approx(Float(4)));
+    }
 
     auto greaterEqualOne = [](auto, auto, auto v) { return std::real(v) >= Float(1); };
     auto greaterEqualTwo = [](auto, auto, auto v) { return std::real(v) >= Float(2); };

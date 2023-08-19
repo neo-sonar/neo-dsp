@@ -34,13 +34,13 @@ struct sparse_matrix
     [[nodiscard]] auto columns() const noexcept -> size_type;
     [[nodiscard]] auto size() const noexcept -> size_type;
 
-    template<in_vector InVec, std::predicate<IndexType, IndexType, T> Filter>
-        requires std::is_convertible_v<typename InVec::value_type, T>
-    auto insert_row(index_type row, InVec vec, Filter filter) -> void;
+    [[nodiscard]] auto operator()(index_type row, index_type col) const -> T;
 
     auto insert(index_type row, index_type col, T value) -> void;
 
-    [[nodiscard]] auto operator()(index_type row, index_type col) const -> T;
+    template<in_vector InVec, std::predicate<IndexType, IndexType, T> Filter>
+        requires std::is_convertible_v<typename InVec::value_type, T>
+    auto insert_row(index_type row, InVec vec, Filter filter) -> void;
 
     auto value_container() const noexcept -> value_container_type const&;
     auto column_container() const noexcept -> index_container_type const&;
@@ -116,6 +116,35 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::size() const n
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
+auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::operator()(index_type row, index_type col) const -> T
+{
+    for (auto i = _rowIndices[row]; i < _rowIndices[row + 1]; i++) {
+        if (_columIndices[i] == col) {
+            return _values[i];
+        }
+    }
+    return T{};
+}
+
+template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
+auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert(index_type row, index_type col, T value)
+    -> void
+{
+    auto idx = _rowIndices[row];
+    while (idx < _rowIndices[row + 1] && _columIndices[idx] < col) {
+        idx++;
+    }
+
+    auto const pidx = static_cast<std::ptrdiff_t>(idx);
+    _values.insert(std::next(_values.begin(), pidx), value);
+    _columIndices.insert(std::next(_columIndices.begin(), pidx), col);
+
+    for (auto i{row + 1}; i <= rows(); ++i) {
+        ++_rowIndices[i];
+    }
+}
+
+template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
 template<in_vector InVec, std::predicate<IndexType, IndexType, T> Filter>
     requires std::is_convertible_v<typename InVec::value_type, T>
 auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert_row(index_type row, InVec vec, Filter filter)
@@ -167,35 +196,6 @@ auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert_row(ind
             ++idx;
         }
     }
-}
-
-template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
-auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::insert(index_type row, index_type col, T value)
-    -> void
-{
-    auto idx = _rowIndices[row];
-    while (idx < _rowIndices[row + 1] && _columIndices[idx] < col) {
-        idx++;
-    }
-
-    auto const pidx = static_cast<std::ptrdiff_t>(idx);
-    _values.insert(std::next(_values.begin(), pidx), value);
-    _columIndices.insert(std::next(_columIndices.begin(), pidx), col);
-
-    for (auto i{row + 1}; i <= rows(); ++i) {
-        ++_rowIndices[i];
-    }
-}
-
-template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
-auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::operator()(index_type row, index_type col) const -> T
-{
-    for (auto i = _rowIndices[row]; i < _rowIndices[row + 1]; i++) {
-        if (_columIndices[i] == col) {
-            return _values[i];
-        }
-    }
-    return T{};
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
