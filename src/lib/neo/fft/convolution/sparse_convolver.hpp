@@ -12,17 +12,14 @@
 
 namespace neo::fft {
 
-template<typename Float>
+template<typename Complex>
 struct sparse_filter
 {
-    using value_type = Float;
+    using value_type = Complex;
 
     sparse_filter() = default;
 
-    auto filter(in_matrix auto filter, auto sparsity) -> void
-    {
-        _filter = sparse_matrix<std::complex<Float>>{filter, sparsity};
-    }
+    auto filter(in_matrix auto filter, auto sparsity) -> void { _filter = sparse_matrix<Complex>{filter, sparsity}; }
 
     auto operator()(in_vector auto fdl, std::integral auto filter_index, inout_vector auto accumulator) -> void
     {
@@ -30,15 +27,15 @@ struct sparse_filter
     }
 
 private:
-    sparse_matrix<std::complex<Float>> _filter;
+    sparse_matrix<Complex> _filter;
 };
 
-template<std::floating_point Float>
+template<std::floating_point Float, typename Complex = std::complex<Float>>
 using sparse_upols_convolver
-    = uniform_partitioned_convolver<overlap_save<Float>, dense_fdl<std::complex<Float>>, sparse_filter<Float>>;
+    = uniform_partitioned_convolver<overlap_save<Float>, dense_fdl<Complex>, sparse_filter<Complex>>;
 
-template<std::floating_point Float>
+template<std::floating_point Float, typename Complex = std::complex<Float>>
 using sparse_upola_convolver
-    = uniform_partitioned_convolver<overlap_add<Float>, dense_fdl<std::complex<Float>>, sparse_filter<Float>>;
+    = uniform_partitioned_convolver<overlap_add<Float>, dense_fdl<Complex>, sparse_filter<Complex>>;
 
 }  // namespace neo::fft

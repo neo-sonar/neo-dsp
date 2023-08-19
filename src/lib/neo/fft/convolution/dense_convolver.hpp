@@ -33,10 +33,10 @@ auto dense_filter_kernel(in_vector auto x_vec, in_vector auto y_vec, inout_vecto
 }
 }  // namespace detail
 
-template<typename Float>
+template<typename Complex>
 struct dense_filter
 {
-    using value_type = Float;
+    using value_type = Complex;
 
     dense_filter() = default;
 
@@ -64,15 +64,13 @@ struct dense_filter
     }
 
 private:
-    stdex::mdspan<std::complex<Float> const, stdex::dextents<size_t, 2>> _filter;
+    stdex::mdspan<Complex const, stdex::dextents<size_t, 2>> _filter;
 };
 
-template<typename Float>
-using upols_convolver
-    = uniform_partitioned_convolver<overlap_save<Float>, dense_fdl<std::complex<Float>>, dense_filter<Float>>;
+template<typename Float, typename Complex = std::complex<Float>>
+using upols_convolver = uniform_partitioned_convolver<overlap_save<Float>, dense_fdl<Complex>, dense_filter<Complex>>;
 
-template<typename Float>
-using upola_convolver
-    = uniform_partitioned_convolver<overlap_add<Float>, dense_fdl<std::complex<Float>>, dense_filter<Float>>;
+template<typename Float, typename Complex = std::complex<Float>>
+using upola_convolver = uniform_partitioned_convolver<overlap_add<Float>, dense_fdl<Complex>, dense_filter<Complex>>;
 
 }  // namespace neo::fft

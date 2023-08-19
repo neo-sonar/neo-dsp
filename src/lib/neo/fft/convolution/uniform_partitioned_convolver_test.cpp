@@ -40,7 +40,8 @@ TEMPLATE_PRODUCT_TEST_CASE(
 )
 {
     using Convolver = TestType;
-    using Float     = typename Convolver::value_type;
+    using Complex   = typename Convolver::value_type;
+    using Float     = typename Complex::value_type;
 
     auto const block_size = GENERATE(as<std::size_t>{}, 128, 256, 512, 1024);
 

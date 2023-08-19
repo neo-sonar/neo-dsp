@@ -50,7 +50,7 @@ private:
     fdl_index<size_t> _indexer;
 
     Filter _filter;
-    stdex::mdarray<std::complex<value_type>, stdex::dextents<size_t, 1>> _accumulator;
+    stdex::mdarray<value_type, stdex::dextents<size_t, 1>> _accumulator;
 };
 
 template<typename Overlap, typename Fdl, typename Filter>
@@ -59,7 +59,7 @@ auto uniform_partitioned_convolver<Overlap, Fdl, Filter>::filter(in_matrix auto 
     _overlap     = Overlap{filter.extent(1) - 1, filter.extent(1) - 1};
     _indexer     = fdl_index<size_t>{filter.extent(0)};
     _fdl         = Fdl{filter.extents()};
-    _accumulator = stdex::mdarray<std::complex<value_type>, stdex::dextents<size_t, 1>>{filter.extent(1)};
+    _accumulator = stdex::mdarray<value_type, stdex::dextents<size_t, 1>>{filter.extent(1)};
     _filter.filter(filter, args...);
 }
 
@@ -67,7 +67,7 @@ template<typename Overlap, typename Fdl, typename Filter>
 auto uniform_partitioned_convolver<Overlap, Fdl, Filter>::operator()(in_vector auto block) -> void
 {
     _overlap(block, [this](inout_vector auto inout) {
-        fill(_accumulator.to_mdspan(), std::complex<value_type>{});
+        fill(_accumulator.to_mdspan(), value_type{});
 
         auto insert   = [this, inout](auto index) { _fdl(inout, index); };
         auto multiply = [this](auto fdl, auto filter) { _filter(_fdl(fdl), filter, _accumulator.to_mdspan()); };
