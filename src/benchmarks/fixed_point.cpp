@@ -54,11 +54,20 @@ auto timeit(std::string_view name, size_t sizeOfT, size_t N, Func func)
 template<typename FloatOrComplex, std::size_t Size>
 struct float_mul
 {
-    explicit float_mul()
-        : _lhs(neo::generate_noise_signal<FloatOrComplex>(Size, std::random_device{}()))
-        , _rhs(neo::generate_noise_signal<FloatOrComplex>(Size, std::random_device{}()))
-        , _out(Size)
-    {}
+    explicit float_mul() : _lhs(Size), _rhs(Size), _out(Size)
+    {
+#if defined(NEO_HAS_BASIC_FLOAT16)
+        if constexpr (std::same_as<FloatOrComplex, _Float16>) {
+            auto const lhs = neo::generate_noise_signal<float>(Size, std::random_device{}());
+            auto const rhs = neo::generate_noise_signal<float>(Size, std::random_device{}());
+            neo::copy(lhs.to_mdspan(), _lhs.to_mdspan());
+            neo::copy(rhs.to_mdspan(), _rhs.to_mdspan());
+            return;
+        }
+#endif
+        _lhs = neo::generate_noise_signal<FloatOrComplex>(Size, std::random_device{}());
+        _rhs = neo::generate_noise_signal<FloatOrComplex>(Size, std::random_device{}());
+    }
 
     auto operator()() noexcept -> void
     {
@@ -70,6 +79,47 @@ private:
     stdex::mdarray<FloatOrComplex, stdex::dextents<size_t, 1>> _lhs;
     stdex::mdarray<FloatOrComplex, stdex::dextents<size_t, 1>> _rhs;
     stdex::mdarray<FloatOrComplex, stdex::dextents<size_t, 1>> _out;
+};
+
+template<typename Float, std::size_t Size>
+struct cmulp
+{
+    explicit cmulp() : _lhs(2, Size), _rhs(2, Size), _out(2, Size)
+    {
+        auto lr = neo::generate_noise_signal<Float>(Size, std::random_device{}());
+        auto li = neo::generate_noise_signal<Float>(Size, std::random_device{}());
+        auto rr = neo::generate_noise_signal<Float>(Size, std::random_device{}());
+        auto ri = neo::generate_noise_signal<Float>(Size, std::random_device{}());
+        neo::copy(lr.to_mdspan(), stdex::submdspan(_lhs.to_mdspan(), 0, stdex::full_extent));
+        neo::copy(li.to_mdspan(), stdex::submdspan(_lhs.to_mdspan(), 1, stdex::full_extent));
+        neo::copy(rr.to_mdspan(), stdex::submdspan(_rhs.to_mdspan(), 0, stdex::full_extent));
+        neo::copy(ri.to_mdspan(), stdex::submdspan(_rhs.to_mdspan(), 1, stdex::full_extent));
+    }
+
+    auto operator()() noexcept -> void
+    {
+        auto const lhs_real = stdex::submdspan(_lhs.to_mdspan(), 0, stdex::full_extent);
+        auto const lhs_imag = stdex::submdspan(_lhs.to_mdspan(), 1, stdex::full_extent);
+
+        auto const rhs_real = stdex::submdspan(_rhs.to_mdspan(), 0, stdex::full_extent);
+        auto const rhs_imag = stdex::submdspan(_rhs.to_mdspan(), 1, stdex::full_extent);
+
+        auto const out_real = stdex::submdspan(_out.to_mdspan(), 0, stdex::full_extent);
+        auto const out_imag = stdex::submdspan(_out.to_mdspan(), 1, stdex::full_extent);
+
+        for (auto i{0}; std::cmp_less(i, out_real.extent(0)); ++i) {
+            out_real[i] = lhs_real[i] * rhs_real[i] - lhs_imag[i] * rhs_imag[i];
+            out_imag[i] = lhs_real[i] * rhs_imag[i] + lhs_imag[i] * rhs_real[i];
+        }
+
+        neo::do_not_optimize(out_real[0]);
+        neo::do_not_optimize(out_imag[0]);
+    }
+
+private:
+    stdex::mdarray<Float, stdex::dextents<size_t, 2>> _lhs;
+    stdex::mdarray<Float, stdex::dextents<size_t, 2>> _rhs;
+    stdex::mdarray<Float, stdex::dextents<size_t, 2>> _out;
 };
 
 template<typename FloatOrComplex, typename IntOrComplex, std::size_t Size>
@@ -206,19 +256,28 @@ auto main() -> int
     timeit("mul(q15):    ", 2, N, fixed_point_mul<neo::q15, N>{});
 #if defined(NEO_HAS_BASIC_FLOAT16)
     timeit("mul(f16f32): ", 2, N, float16_mul_bench<N>{});
+    timeit("mul(_Float16): ", 2, N, float_mul<_Float16, N>{});
 #endif
-    timeit("mul(float):  ", 4, N, float_mul<float, N>{});
-    timeit("mul(double): ", 8, N, float_mul<double, N>{});
-    timeit("mul(cf8):    ", 1, N, cfloat_mul<float, int8_t, N>{});
-    timeit("mul(cf16):   ", 2, N, cfloat_mul<float, int16_t, N>{});
+    timeit("mul(float):    ", 4, N, float_mul<float, N>{});
+    timeit("mul(double):   ", 8, N, float_mul<double, N>{});
+    timeit("mul(cf8):      ", 1, N, cfloat_mul<float, int8_t, N>{});
+    timeit("mul(cf16):     ", 2, N, cfloat_mul<float, int16_t, N>{});
     std::printf("\n");
 
-    timeit("cmul(complex<cf8>):         ", 2, N, cfloat_mul<neo::complex64, neo::scalar_complex<int8_t>, N>{});
-    timeit("cmul(complex<cf16>):        ", 4, N, cfloat_mul<neo::complex64, neo::scalar_complex<int16_t>, N>{});
+    // timeit("cmul(complex<cf8>):         ", 2, N, cfloat_mul<neo::complex64, neo::scalar_complex<int8_t>, N>{});
+    // timeit("cmul(complex<cf16>):        ", 4, N, cfloat_mul<neo::complex64, neo::scalar_complex<int16_t>, N>{});
+    // timeit("cmul(complex32):            ", 4, N, float_mul<neo::scalar_complex<_Float16>, N>{});
     timeit("cmul(complex64):            ", 8, N, float_mul<neo::complex64, N>{});
     timeit("cmul(complex128):           ", 16, N, float_mul<neo::complex128, N>{});
     timeit("cmul(std::complex<float>):  ", 8, N, float_mul<std::complex<float>, N>{});
     timeit("cmul(std::complex<double>): ", 16, N, float_mul<std::complex<double>, N>{});
+    std::printf("\n");
+
+#if defined(NEO_HAS_BASIC_FLOAT16)
+    timeit("cmulp(_Float16): ", 4, N, cmulp<_Float16, N>{});
+#endif
+    timeit("cmulp(float):    ", 8, N, cmulp<float, N>{});
+    timeit("cmulp(double):   ", 16, N, cmulp<double, N>{});
 
     return EXIT_SUCCESS;
 }

@@ -32,19 +32,26 @@ consteval auto real_or_complex_value()
 template<typename RealOrComplex>
 using real_or_complex_value_t = decltype(detail::real_or_complex_value<RealOrComplex>());
 
-template<float_or_complex FloatOrComplex, typename URNG = std::mt19937>
+template<typename FloatOrComplex, typename URNG = std::mt19937>
 [[nodiscard]] auto generate_noise_signal(std::size_t length, typename URNG::result_type seed)
 {
     using Float = real_or_complex_value_t<FloatOrComplex>;
+#if defined(NEO_HAS_BASIC_FLOAT16)
+    using StandardFloat = std::conditional_t<std::same_as<Float, _Float16>, float, Float>;
+#else
+    using StandardFloat = Float;
+#endif
 
     auto rng    = URNG{seed};
-    auto dist   = std::uniform_real_distribution<Float>{Float(-1), Float(1)};
+    auto dist   = std::uniform_real_distribution<StandardFloat>{StandardFloat(-1), StandardFloat(1)};
     auto signal = stdex::mdarray<FloatOrComplex, stdex::dextents<size_t, 1>>{length};
 
-    if constexpr (std::floating_point<FloatOrComplex>) {
-        std::generate_n(signal.data(), signal.size(), [&] { return dist(rng); });
+    if constexpr (complex<FloatOrComplex>) {
+        std::generate_n(signal.data(), signal.size(), [&] {
+            return FloatOrComplex{static_cast<Float>(dist(rng)), static_cast<Float>(dist(rng))};
+        });
     } else {
-        std::generate_n(signal.data(), signal.size(), [&] { return FloatOrComplex{dist(rng), dist(rng)}; });
+        std::generate_n(signal.data(), signal.size(), [&] { return static_cast<Float>(dist(rng)); });
     }
 
     return signal;
