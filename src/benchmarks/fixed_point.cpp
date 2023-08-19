@@ -7,11 +7,49 @@
 #include <neo/testing/benchmark.hpp>
 #include <neo/testing/testing.hpp>
 
+#include <algorithm>
 #include <cfloat>
+#include <chrono>
+#include <cmath>
+#include <cstdio>
 #include <functional>
+#include <numeric>
 #include <random>
+#include <span>
+#include <string_view>
 #include <utility>
 #include <vector>
+
+namespace {
+template<typename Func>
+auto timeit(std::string_view name, size_t sizeOfT, size_t N, Func func)
+{
+    using microseconds = std::chrono::duration<double, std::micro>;
+
+    auto const size       = N;
+    auto const iterations = 25'000U;
+    auto const margin     = iterations / 20U;
+
+    auto all_runs = std::vector<double>(iterations);
+
+    func();
+    func();
+    func();
+
+    for (auto i{0U}; i < iterations; ++i) {
+        auto start = std::chrono::system_clock::now();
+        func();
+        auto stop = std::chrono::system_clock::now();
+
+        all_runs[i] = std::chrono::duration_cast<microseconds>(stop - start).count();
+    }
+
+    auto const runs            = std::span<double>(all_runs).subspan(margin, all_runs.size() - margin * 2);
+    auto const avg             = std::reduce(runs.begin(), runs.end(), 0.0) / double(runs.size());
+    auto const itemsPerSec     = static_cast<int>(std::lround(double(size) / avg));
+    auto const megaBytesPerSec = std::round(double(size * sizeOfT) / avg) / 1000.0;
+    std::printf("%-32s avg: %.1fus - GB/sec: %.2f - N/usec: %d\n", name.data(), avg, megaBytesPerSec, itemsPerSec);
+}
 
 template<typename FloatOrComplex, std::size_t Size>
 struct float_mul
@@ -158,27 +196,29 @@ private:
 };
 #endif
 
+}  // namespace
+
 auto main() -> int
 {
     static constexpr auto N = 131072U;
 
-    neo::timeit("mul(q7):     ", 1, N, fixed_point_mul<neo::q7, N>{});
-    neo::timeit("mul(q15):    ", 2, N, fixed_point_mul<neo::q15, N>{});
+    timeit("mul(q7):     ", 1, N, fixed_point_mul<neo::q7, N>{});
+    timeit("mul(q15):    ", 2, N, fixed_point_mul<neo::q15, N>{});
 #if defined(NEO_HAS_BASIC_FLOAT16)
-    neo::timeit("mul(f16f32): ", 2, N, float16_mul_bench<N>{});
+    timeit("mul(f16f32): ", 2, N, float16_mul_bench<N>{});
 #endif
-    neo::timeit("mul(float):  ", 4, N, float_mul<float, N>{});
-    neo::timeit("mul(double): ", 8, N, float_mul<double, N>{});
-    neo::timeit("mul(cf8):    ", 1, N, cfloat_mul<float, int8_t, N>{});
-    neo::timeit("mul(cf16):   ", 2, N, cfloat_mul<float, int16_t, N>{});
+    timeit("mul(float):  ", 4, N, float_mul<float, N>{});
+    timeit("mul(double): ", 8, N, float_mul<double, N>{});
+    timeit("mul(cf8):    ", 1, N, cfloat_mul<float, int8_t, N>{});
+    timeit("mul(cf16):   ", 2, N, cfloat_mul<float, int16_t, N>{});
     std::printf("\n");
 
-    neo::timeit("cmul(complex<cf8>):         ", 2, N, cfloat_mul<neo::complex64, neo::scalar_complex<int8_t>, N>{});
-    neo::timeit("cmul(complex<cf16>):        ", 4, N, cfloat_mul<neo::complex64, neo::scalar_complex<int16_t>, N>{});
-    neo::timeit("cmul(complex64):            ", 8, N, float_mul<neo::complex64, N>{});
-    neo::timeit("cmul(complex128):           ", 16, N, float_mul<neo::complex128, N>{});
-    neo::timeit("cmul(std::complex<float>):  ", 8, N, float_mul<std::complex<float>, N>{});
-    neo::timeit("cmul(std::complex<double>): ", 16, N, float_mul<std::complex<double>, N>{});
+    timeit("cmul(complex<cf8>):         ", 2, N, cfloat_mul<neo::complex64, neo::scalar_complex<int8_t>, N>{});
+    timeit("cmul(complex<cf16>):        ", 4, N, cfloat_mul<neo::complex64, neo::scalar_complex<int16_t>, N>{});
+    timeit("cmul(complex64):            ", 8, N, float_mul<neo::complex64, N>{});
+    timeit("cmul(complex128):           ", 16, N, float_mul<neo::complex128, N>{});
+    timeit("cmul(std::complex<float>):  ", 8, N, float_mul<std::complex<float>, N>{});
+    timeit("cmul(std::complex<double>): ", 16, N, float_mul<std::complex<double>, N>{});
 
     return EXIT_SUCCESS;
 }
