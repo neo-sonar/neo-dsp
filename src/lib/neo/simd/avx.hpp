@@ -48,7 +48,7 @@ struct alignas(16) float16x8
 
     [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _register; }
 
-    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(value_type val) -> float16x8
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(value_type val) noexcept -> float16x8
     {
         auto values = std::array<_Float16, size>{};
         std::fill(values.begin(), values.end(), val);
@@ -61,28 +61,28 @@ struct alignas(16) float16x8
         return _mm_loadu_si128(reinterpret_cast<register_type const*>(input));
     }
 
-    NEO_ALWAYS_INLINE auto store_unaligned(value_type* output) const -> void
+    NEO_ALWAYS_INLINE auto store_unaligned(value_type* output) const noexcept -> void
     {
         return _mm_storeu_si128(reinterpret_cast<register_type*>(output), _register);
     }
 
-    NEO_ALWAYS_INLINE friend auto operator+(float16x8 lhs, float16x8 rhs) -> float16x8
+    NEO_ALWAYS_INLINE friend auto operator+(float16x8 lhs, float16x8 rhs) noexcept -> float16x8
     {
         return binary_op(lhs, rhs, [](auto l, auto r) { return _mm256_add_ps(l, r); });
     }
 
-    NEO_ALWAYS_INLINE friend auto operator-(float16x8 lhs, float16x8 rhs) -> float16x8
+    NEO_ALWAYS_INLINE friend auto operator-(float16x8 lhs, float16x8 rhs) noexcept -> float16x8
     {
         return binary_op(lhs, rhs, [](auto l, auto r) { return _mm256_sub_ps(l, r); });
     }
 
-    NEO_ALWAYS_INLINE friend auto operator*(float16x8 lhs, float16x8 rhs) -> float16x8
+    NEO_ALWAYS_INLINE friend auto operator*(float16x8 lhs, float16x8 rhs) noexcept -> float16x8
     {
         return binary_op(lhs, rhs, [](auto l, auto r) { return _mm256_mul_ps(l, r); });
     }
 
 private:
-    NEO_ALWAYS_INLINE friend auto binary_op(float16x8 lhs, float16x8 rhs, auto op) -> float16x8
+    NEO_ALWAYS_INLINE friend auto binary_op(float16x8 lhs, float16x8 rhs, auto op) noexcept -> float16x8
     {
         auto const left    = _mm256_cvtph_ps(static_cast<register_type>(lhs));
         auto const right   = _mm256_cvtph_ps(static_cast<register_type>(rhs));
@@ -107,7 +107,7 @@ struct alignas(32) float16x16
 
     [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _register; }
 
-    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(value_type val) -> float16x16
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(value_type val) noexcept -> float16x16
     {
         auto values = std::array<_Float16, size>{};
         std::fill(values.begin(), values.end(), val);
@@ -120,28 +120,28 @@ struct alignas(32) float16x16
         return _mm256_loadu_si256(reinterpret_cast<register_type const*>(input));
     }
 
-    NEO_ALWAYS_INLINE auto store_unaligned(value_type* output) const -> void
+    NEO_ALWAYS_INLINE auto store_unaligned(value_type* output) const noexcept -> void
     {
         return _mm256_storeu_si256(reinterpret_cast<register_type*>(output), _register);
     }
 
-    NEO_ALWAYS_INLINE friend auto operator+(float16x16 lhs, float16x16 rhs) -> float16x16
+    NEO_ALWAYS_INLINE friend auto operator+(float16x16 lhs, float16x16 rhs) noexcept -> float16x16
     {
         return binary_op(lhs, rhs, [](auto l, auto r) { return _mm256_add_ps(l, r); });
     }
 
-    NEO_ALWAYS_INLINE friend auto operator-(float16x16 lhs, float16x16 rhs) -> float16x16
+    NEO_ALWAYS_INLINE friend auto operator-(float16x16 lhs, float16x16 rhs) noexcept -> float16x16
     {
         return binary_op(lhs, rhs, [](auto l, auto r) { return _mm256_sub_ps(l, r); });
     }
 
-    NEO_ALWAYS_INLINE friend auto operator*(float16x16 lhs, float16x16 rhs) -> float16x16
+    NEO_ALWAYS_INLINE friend auto operator*(float16x16 lhs, float16x16 rhs) noexcept -> float16x16
     {
         return binary_op(lhs, rhs, [](auto l, auto r) { return _mm256_mul_ps(l, r); });
     }
 
 private:
-    NEO_ALWAYS_INLINE friend auto binary_op(float16x16 lhs, float16x16 rhs, auto op) -> float16x16
+    NEO_ALWAYS_INLINE friend auto binary_op(float16x16 lhs, float16x16 rhs, auto op) noexcept -> float16x16
     {
         auto const low_left   = _mm256_extracti128_si256(static_cast<register_type>(lhs), 0);
         auto const high_left  = _mm256_extracti128_si256(static_cast<register_type>(lhs), 1);
@@ -178,26 +178,32 @@ struct alignas(32) float32x8
 
     [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _val; }
 
-    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(float val) -> float32x8 { return _mm256_set1_ps(val); }
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(float val) noexcept -> float32x8
+    {
+        return _mm256_set1_ps(val);
+    }
 
     [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(float const* input) noexcept -> float32x8
     {
         return _mm256_loadu_ps(input);
     }
 
-    NEO_ALWAYS_INLINE auto store_unaligned(float* output) const -> void { return _mm256_storeu_ps(output, _val); }
+    NEO_ALWAYS_INLINE auto store_unaligned(float* output) const noexcept -> void
+    {
+        return _mm256_storeu_ps(output, _val);
+    }
 
-    NEO_ALWAYS_INLINE friend auto operator+(float32x8 lhs, float32x8 rhs) -> float32x8
+    NEO_ALWAYS_INLINE friend auto operator+(float32x8 lhs, float32x8 rhs) noexcept -> float32x8
     {
         return _mm256_add_ps(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
-    NEO_ALWAYS_INLINE friend auto operator-(float32x8 lhs, float32x8 rhs) -> float32x8
+    NEO_ALWAYS_INLINE friend auto operator-(float32x8 lhs, float32x8 rhs) noexcept -> float32x8
     {
         return _mm256_sub_ps(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
-    NEO_ALWAYS_INLINE friend auto operator*(float32x8 lhs, float32x8 rhs) -> float32x8
+    NEO_ALWAYS_INLINE friend auto operator*(float32x8 lhs, float32x8 rhs) noexcept -> float32x8
     {
         return _mm256_mul_ps(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
@@ -220,26 +226,32 @@ struct alignas(32) float64x4
 
     [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _val; }
 
-    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(double val) -> float64x4 { return _mm256_set1_pd(val); }
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(double val) noexcept -> float64x4
+    {
+        return _mm256_set1_pd(val);
+    }
 
     [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(double const* input) noexcept -> float64x4
     {
         return _mm256_loadu_pd(input);
     }
 
-    NEO_ALWAYS_INLINE auto store_unaligned(double* output) const -> void { return _mm256_storeu_pd(output, _val); }
+    NEO_ALWAYS_INLINE auto store_unaligned(double* output) const noexcept -> void
+    {
+        return _mm256_storeu_pd(output, _val);
+    }
 
-    NEO_ALWAYS_INLINE friend auto operator+(float64x4 lhs, float64x4 rhs) -> float64x4
+    NEO_ALWAYS_INLINE friend auto operator+(float64x4 lhs, float64x4 rhs) noexcept -> float64x4
     {
         return _mm256_add_pd(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
-    NEO_ALWAYS_INLINE friend auto operator-(float64x4 lhs, float64x4 rhs) -> float64x4
+    NEO_ALWAYS_INLINE friend auto operator-(float64x4 lhs, float64x4 rhs) noexcept -> float64x4
     {
         return _mm256_sub_pd(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
-    NEO_ALWAYS_INLINE friend auto operator*(float64x4 lhs, float64x4 rhs) -> float64x4
+    NEO_ALWAYS_INLINE friend auto operator*(float64x4 lhs, float64x4 rhs) noexcept -> float64x4
     {
         return _mm256_mul_pd(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }

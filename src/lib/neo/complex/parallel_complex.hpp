@@ -26,7 +26,7 @@ struct alignas(FloatBatch::alignment) parallel_complex
 
     [[nodiscard]] NEO_ALWAYS_INLINE auto imag() const noexcept -> FloatBatch { return _imag; }
 
-    NEO_ALWAYS_INLINE friend auto operator+(parallel_complex lhs, parallel_complex rhs) -> parallel_complex
+    NEO_ALWAYS_INLINE friend auto operator+(parallel_complex lhs, parallel_complex rhs) noexcept -> parallel_complex
     {
         return parallel_complex{
             lhs.real() + rhs.real(),
@@ -34,7 +34,7 @@ struct alignas(FloatBatch::alignment) parallel_complex
         };
     }
 
-    NEO_ALWAYS_INLINE friend auto operator-(parallel_complex lhs, parallel_complex rhs) -> parallel_complex
+    NEO_ALWAYS_INLINE friend auto operator-(parallel_complex lhs, parallel_complex rhs) noexcept -> parallel_complex
     {
         return parallel_complex{
             lhs.real() - rhs.real(),
@@ -42,7 +42,7 @@ struct alignas(FloatBatch::alignment) parallel_complex
         };
     }
 
-    NEO_ALWAYS_INLINE friend auto operator*(parallel_complex lhs, parallel_complex rhs) -> parallel_complex
+    NEO_ALWAYS_INLINE friend auto operator*(parallel_complex lhs, parallel_complex rhs) noexcept -> parallel_complex
     {
         return parallel_complex{
             lhs.real() * rhs.real() - lhs.imag() * rhs.imag(),

@@ -34,34 +34,34 @@ struct alignas(16) q7x16
 
     [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
-    [[nodiscard]] static auto broadcast(value_type val) -> q7x16 { return _mm_set1_epi8(val.value()); }
+    [[nodiscard]] static auto broadcast(value_type val) noexcept -> q7x16 { return _mm_set1_epi8(val.value()); }
 
-    [[nodiscard]] static auto load_unaligned(value_type const* input) -> q7x16
+    [[nodiscard]] static auto load_unaligned(value_type const* input) noexcept -> q7x16
     {
         auto const* integer = reinterpret_cast<value_type::storage_type const*>(input);
         auto const* ptr     = reinterpret_cast<register_type const*>(integer);
         return _mm_loadu_si128(ptr);
     }
 
-    auto store_unaligned(value_type* output) const -> void
+    auto store_unaligned(value_type* output) const noexcept -> void
     {
         auto* integer = reinterpret_cast<value_type::storage_type*>(output);
         auto* ptr     = reinterpret_cast<register_type*>(integer);
         return _mm_storeu_si128(ptr, _reg);
     }
 
-    NEO_ALWAYS_INLINE friend auto operator+(q7x16 lhs, q7x16 rhs) -> q7x16
+    NEO_ALWAYS_INLINE friend auto operator+(q7x16 lhs, q7x16 rhs) noexcept -> q7x16
     {
         return _mm_adds_epi8(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
-    NEO_ALWAYS_INLINE friend auto operator-(q7x16 lhs, q7x16 rhs) -> q7x16
+    NEO_ALWAYS_INLINE friend auto operator-(q7x16 lhs, q7x16 rhs) noexcept -> q7x16
     {
         return _mm_subs_epi8(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
     // #if defined(NEO_HAS_SIMD_SSE41)
-    // NEO_ALWAYS_INLINE friend auto operator*(q7x16 lhs, q7x16 rhs) -> q7x16
+    // NEO_ALWAYS_INLINE friend auto operator*(q7x16 lhs, q7x16 rhs) noexcept -> q7x16
     // {
     //     auto const l = static_cast<register_type>(lhs);
     //     auto const r = static_cast<register_type>(rhs);
@@ -98,34 +98,34 @@ struct alignas(16) q15x8
 
     [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
-    [[nodiscard]] static auto broadcast(value_type val) -> q15x8 { return _mm_set1_epi16(val.value()); }
+    [[nodiscard]] static auto broadcast(value_type val) noexcept -> q15x8 { return _mm_set1_epi16(val.value()); }
 
-    [[nodiscard]] static auto load_unaligned(value_type const* input) -> q15x8
+    [[nodiscard]] static auto load_unaligned(value_type const* input) noexcept -> q15x8
     {
         auto const* integer = reinterpret_cast<value_type::storage_type const*>(input);
         auto const* ptr     = reinterpret_cast<register_type const*>(integer);
         return _mm_loadu_si128(ptr);
     }
 
-    auto store_unaligned(value_type* output) const -> void
+    auto store_unaligned(value_type* output) const noexcept -> void
     {
         auto* integer = reinterpret_cast<value_type::storage_type*>(output);
         auto* ptr     = reinterpret_cast<register_type*>(integer);
         return _mm_storeu_si128(ptr, _reg);
     }
 
-    NEO_ALWAYS_INLINE friend auto operator+(q15x8 lhs, q15x8 rhs) -> q15x8
+    NEO_ALWAYS_INLINE friend auto operator+(q15x8 lhs, q15x8 rhs) noexcept -> q15x8
     {
         return _mm_adds_epi16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
-    NEO_ALWAYS_INLINE friend auto operator-(q15x8 lhs, q15x8 rhs) -> q15x8
+    NEO_ALWAYS_INLINE friend auto operator-(q15x8 lhs, q15x8 rhs) noexcept -> q15x8
     {
         return _mm_subs_epi16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
     // #if defined(NEO_HAS_SIMD_SSE41)
-    // NEO_ALWAYS_INLINE friend auto operator*(q15x8 lhs, q15x8 rhs) -> q15x8
+    // NEO_ALWAYS_INLINE friend auto operator*(q15x8 lhs, q15x8 rhs) noexcept -> q15x8
     // {
     //     auto const l = static_cast<register_type>(lhs);
     //     auto const r = static_cast<register_type>(rhs);
@@ -166,28 +166,28 @@ struct alignas(32) q7x32
 
     [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
-    [[nodiscard]] static auto broadcast(value_type val) -> q7x32 { return _mm256_set1_epi8(val.value()); }
+    [[nodiscard]] static auto broadcast(value_type val) noexcept -> q7x32 { return _mm256_set1_epi8(val.value()); }
 
-    [[nodiscard]] static auto load_unaligned(value_type const* input) -> q7x32
+    [[nodiscard]] static auto load_unaligned(value_type const* input) noexcept -> q7x32
     {
         auto const* integer = reinterpret_cast<value_type::storage_type const*>(input);
         auto const* ptr     = reinterpret_cast<register_type const*>(integer);
         return _mm256_loadu_si256(ptr);
     }
 
-    auto store_unaligned(value_type* output) const -> void
+    auto store_unaligned(value_type* output) const noexcept -> void
     {
         auto* integer = reinterpret_cast<value_type::storage_type*>(output);
         auto* ptr     = reinterpret_cast<register_type*>(integer);
         return _mm256_storeu_si256(ptr, _reg);
     }
 
-    NEO_ALWAYS_INLINE friend auto operator+(q7x32 lhs, q7x32 rhs) -> q7x32
+    NEO_ALWAYS_INLINE friend auto operator+(q7x32 lhs, q7x32 rhs) noexcept -> q7x32
     {
         return _mm256_adds_epi8(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
-    NEO_ALWAYS_INLINE friend auto operator-(q7x32 lhs, q7x32 rhs) -> q7x32
+    NEO_ALWAYS_INLINE friend auto operator-(q7x32 lhs, q7x32 rhs) noexcept -> q7x32
     {
         return _mm256_subs_epi8(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
@@ -210,28 +210,28 @@ struct alignas(32) q15x16
 
     [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
-    [[nodiscard]] static auto broadcast(value_type val) -> q15x16 { return _mm256_set1_epi16(val.value()); }
+    [[nodiscard]] static auto broadcast(value_type val) noexcept -> q15x16 { return _mm256_set1_epi16(val.value()); }
 
-    [[nodiscard]] static auto load_unaligned(value_type const* input) -> q15x16
+    [[nodiscard]] static auto load_unaligned(value_type const* input) noexcept -> q15x16
     {
         auto const* integer = reinterpret_cast<value_type::storage_type const*>(input);
         auto const* ptr     = reinterpret_cast<register_type const*>(integer);
         return _mm256_loadu_si256(ptr);
     }
 
-    auto store_unaligned(value_type* output) const -> void
+    auto store_unaligned(value_type* output) const noexcept -> void
     {
         auto* integer = reinterpret_cast<value_type::storage_type*>(output);
         auto* ptr     = reinterpret_cast<register_type*>(integer);
         return _mm256_storeu_si256(ptr, _reg);
     }
 
-    NEO_ALWAYS_INLINE friend auto operator+(q15x16 lhs, q15x16 rhs) -> q15x16
+    NEO_ALWAYS_INLINE friend auto operator+(q15x16 lhs, q15x16 rhs) noexcept -> q15x16
     {
         return _mm256_adds_epi16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
-    NEO_ALWAYS_INLINE friend auto operator-(q15x16 lhs, q15x16 rhs) -> q15x16
+    NEO_ALWAYS_INLINE friend auto operator-(q15x16 lhs, q15x16 rhs) noexcept -> q15x16
     {
         return _mm256_subs_epi16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
@@ -258,28 +258,28 @@ struct alignas(64) q7x64
 
     [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
-    [[nodiscard]] static auto broadcast(value_type val) -> q7x64 { return _mm512_set1_epi8(val.value()); }
+    [[nodiscard]] static auto broadcast(value_type val) noexcept -> q7x64 { return _mm512_set1_epi8(val.value()); }
 
-    [[nodiscard]] static auto load_unaligned(value_type const* input) -> q7x64
+    [[nodiscard]] static auto load_unaligned(value_type const* input) noexcept -> q7x64
     {
         auto const* integer = reinterpret_cast<value_type::storage_type const*>(input);
         auto const* ptr     = reinterpret_cast<register_type const*>(integer);
         return _mm512_loadu_si512(ptr);
     }
 
-    auto store_unaligned(value_type* output) const -> void
+    auto store_unaligned(value_type* output) const noexcept -> void
     {
         auto* integer = reinterpret_cast<value_type::storage_type*>(output);
         auto* ptr     = reinterpret_cast<register_type*>(integer);
         return _mm512_storeu_si512(ptr, _reg);
     }
 
-    NEO_ALWAYS_INLINE friend auto operator+(q7x64 lhs, q7x64 rhs) -> q7x64
+    NEO_ALWAYS_INLINE friend auto operator+(q7x64 lhs, q7x64 rhs) noexcept -> q7x64
     {
         return _mm512_adds_epi8(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
-    NEO_ALWAYS_INLINE friend auto operator-(q7x64 lhs, q7x64 rhs) -> q7x64
+    NEO_ALWAYS_INLINE friend auto operator-(q7x64 lhs, q7x64 rhs) noexcept -> q7x64
     {
         return _mm512_subs_epi8(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
@@ -302,28 +302,28 @@ struct alignas(64) q15x32
 
     [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
-    [[nodiscard]] static auto broadcast(value_type val) -> q15x32 { return _mm512_set1_epi16(val.value()); }
+    [[nodiscard]] static auto broadcast(value_type val) noexcept -> q15x32 { return _mm512_set1_epi16(val.value()); }
 
-    [[nodiscard]] static auto load_unaligned(value_type const* input) -> q15x32
+    [[nodiscard]] static auto load_unaligned(value_type const* input) noexcept -> q15x32
     {
         auto const* integer = reinterpret_cast<value_type::storage_type const*>(input);
         auto const* ptr     = reinterpret_cast<register_type const*>(integer);
         return _mm512_loadu_si512(ptr);
     }
 
-    auto store_unaligned(value_type* output) const -> void
+    auto store_unaligned(value_type* output) const noexcept -> void
     {
         auto* integer = reinterpret_cast<value_type::storage_type*>(output);
         auto* ptr     = reinterpret_cast<register_type*>(integer);
         return _mm512_storeu_si512(ptr, _reg);
     }
 
-    NEO_ALWAYS_INLINE friend auto operator+(q15x32 lhs, q15x32 rhs) -> q15x32
+    NEO_ALWAYS_INLINE friend auto operator+(q15x32 lhs, q15x32 rhs) noexcept -> q15x32
     {
         return _mm512_adds_epi16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
-    NEO_ALWAYS_INLINE friend auto operator-(q15x32 lhs, q15x32 rhs) -> q15x32
+    NEO_ALWAYS_INLINE friend auto operator-(q15x32 lhs, q15x32 rhs) noexcept -> q15x32
     {
         return _mm512_subs_epi16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
