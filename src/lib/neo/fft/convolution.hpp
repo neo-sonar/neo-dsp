@@ -2,6 +2,7 @@
 
 #include <neo/fft/convolution/compressed_fdl.hpp>
 #include <neo/fft/convolution/dense_convolver.hpp>
+#include <neo/fft/convolution/dense_fdl.hpp>
 #include <neo/fft/convolution/fdl_index.hpp>
 #include <neo/fft/convolution/overlap_add.hpp>
 #include <neo/fft/convolution/overlap_save.hpp>

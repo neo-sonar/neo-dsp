@@ -4,6 +4,7 @@
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/container/sparse_matrix.hpp>
+#include <neo/fft/convolution/dense_fdl.hpp>
 #include <neo/fft/convolution/overlap_add.hpp>
 #include <neo/fft/convolution/overlap_save.hpp>
 #include <neo/fft/convolution/uniform_partitioned_convolver.hpp>

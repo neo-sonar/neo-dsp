@@ -7,29 +7,6 @@
 
 namespace neo::fft {
 
-template<typename Complex>
-struct dense_fdl
-{
-    using value_type = Complex;
-
-    dense_fdl() = default;
-
-    explicit dense_fdl(stdex::dextents<size_t, 2> extents) : _fdl{extents} {}
-
-    auto operator()(in_vector auto input, std::integral auto index) -> void
-    {
-        copy(input, stdex::submdspan(_fdl.to_mdspan(), index, stdex::full_extent));
-    }
-
-    auto operator()(std::integral auto index) const
-    {
-        return stdex::submdspan(_fdl.to_mdspan(), index, stdex::full_extent);
-    }
-
-private:
-    stdex::mdarray<Complex, stdex::dextents<size_t, 2>> _fdl{};
-};
-
 template<typename Overlap, typename Fdl, typename Filter>
 struct uniform_partitioned_convolver
 {
