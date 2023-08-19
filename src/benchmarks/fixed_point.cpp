@@ -56,7 +56,7 @@ struct float_mul
 {
     explicit float_mul() : _lhs(Size), _rhs(Size), _out(Size)
     {
-#if defined(NEO_HAS_BASIC_FLOAT16)
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
         if constexpr (std::same_as<FloatOrComplex, _Float16>) {
             auto const lhs = neo::generate_noise_signal<float>(Size, std::random_device{}());
             auto const rhs = neo::generate_noise_signal<float>(Size, std::random_device{}());
@@ -207,7 +207,7 @@ private:
     std::vector<FixedPoint> _out;
 };
 
-#if defined(NEO_HAS_BASIC_FLOAT16)
+#if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
 template<std::size_t Size>
 struct float16_mul_bench
 {
@@ -254,7 +254,7 @@ auto main() -> int
 
     timeit("mul(q7):     ", 1, N, fixed_point_mul<neo::q7, N>{});
     timeit("mul(q15):    ", 2, N, fixed_point_mul<neo::q15, N>{});
-#if defined(NEO_HAS_BASIC_FLOAT16)
+#if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
     timeit("mul(f16f32): ", 2, N, float16_mul_bench<N>{});
     timeit("mul(_Float16): ", 2, N, float_mul<_Float16, N>{});
 #endif
@@ -273,7 +273,7 @@ auto main() -> int
     timeit("cmul(std::complex<double>): ", 16, N, float_mul<std::complex<double>, N>{});
     std::printf("\n");
 
-#if defined(NEO_HAS_BASIC_FLOAT16)
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
     timeit("cmulp(_Float16): ", 4, N, cmulp<_Float16, N>{});
 #endif
     timeit("cmulp(float):    ", 8, N, cmulp<float, N>{});

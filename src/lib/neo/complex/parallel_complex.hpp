@@ -65,7 +65,7 @@ using pcomplex64x8  = parallel_complex<float32x8>;
 using pcomplex128x4 = parallel_complex<float64x4>;
 #endif
 
-#if defined(NEO_HAS_BASIC_FLOAT16)
+#if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
 using pcomplex32x8  = parallel_complex<float16x8>;
 using pcomplex32x16 = parallel_complex<float16x16>;
 #endif

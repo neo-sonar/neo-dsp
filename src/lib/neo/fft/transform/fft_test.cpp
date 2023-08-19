@@ -204,7 +204,7 @@ TEMPLATE_TEST_CASE("neo/fft/transform: radix2_kernel(simd_batch)", "", neo::pcom
 }
 #endif
 
-#if defined(NEO_HAS_BASIC_FLOAT16)
+#if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
 TEMPLATE_TEST_CASE("neo/fft/transform: radix2_kernel(simd_batch)", "", neo::pcomplex32x8, neo::pcomplex32x16)
 {
     using ComplexBatch  = TestType;

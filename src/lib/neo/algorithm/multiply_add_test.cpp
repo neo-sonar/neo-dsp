@@ -40,6 +40,6 @@ auto test()
 
 TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", float, double, long double) { test<TestType>(); }
 
-#if defined(NEO_HAS_BASIC_FLOAT16)
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
 TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", _Float16) { test<TestType>(); }
 #endif

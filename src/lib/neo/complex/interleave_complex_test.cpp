@@ -114,10 +114,6 @@ static auto test()
     test(std::minus{}, ones, twos, nones);
 }
 
-#if defined(NEO_HAS_BASIC_FLOAT16)
-// TEMPLATE_TEST_CASE("neo/complex: interleave_complex", "", neo::icomplex32x4) { test<TestType>(); }
-#endif
-
 #if defined(NEO_HAS_SIMD_SSE2)
 TEMPLATE_TEST_CASE("neo/complex: interleave_complex", "", neo::icomplex64x2, neo::icomplex128x1) { test<TestType>(); }
 #endif

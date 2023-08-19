@@ -85,7 +85,7 @@ static auto test()
     }
 }
 
-#if defined(NEO_HAS_BASIC_FLOAT16)
+#if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
 TEMPLATE_TEST_CASE("neo/complex: parallel_complex", "", neo::pcomplex32x8, neo::pcomplex32x16) { test<TestType>(); }
 #endif
 

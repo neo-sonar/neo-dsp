@@ -76,7 +76,7 @@ using icomplex64x4  = interleave_complex<float32x8>;
 using icomplex128x2 = interleave_complex<float64x4>;
 #endif
 
-#if defined(NEO_HAS_BASIC_FLOAT16)
+#if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
 using icomplex32x4 = interleave_complex<float16x8>;
 using icomplex32x8 = interleave_complex<float16x16>;
 #endif

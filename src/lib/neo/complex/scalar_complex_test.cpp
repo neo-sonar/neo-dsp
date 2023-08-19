@@ -72,7 +72,7 @@ auto test_fixed_point()
 
 TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", float, double, long double) { test_floating_point<TestType>(); }
 
-#if defined(NEO_HAS_BASIC_FLOAT16)
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
 TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", _Float16) { test_floating_point<TestType>(); }
 #endif
 
