@@ -2,7 +2,7 @@
 
 #include <neo/config.hpp>
 
-#include <neo/algorithm/all_of.hpp>
+#include <neo/algorithm/allmatch.hpp>
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 
@@ -14,7 +14,7 @@ namespace neo {
 template<in_object InObj1, in_object InObj2, typename Scalar>
 [[nodiscard]] auto allclose(InObj1 lhs, InObj2 rhs, Scalar tolerance) -> bool
 {
-    return neo::all_of(lhs, rhs, [tolerance](auto const& left, auto const& right) -> bool {
+    return allmatch(lhs, rhs, [tolerance](auto const& left, auto const& right) -> bool {
         return std::abs(left - right) <= tolerance;
     });
 }

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <neo/algorithm/add.hpp>
-#include <neo/algorithm/all_of.hpp>
 #include <neo/algorithm/allclose.hpp>
+#include <neo/algorithm/allmatch.hpp>
 #include <neo/algorithm/copy.hpp>
 #include <neo/algorithm/fill.hpp>
 #include <neo/algorithm/multiply.hpp>

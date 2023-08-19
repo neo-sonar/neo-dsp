@@ -11,6 +11,7 @@ add_executable(neo_fft_tests)
 target_sources(neo_fft_tests
     PRIVATE
         "neo/algorithm/allclose_test.cpp"
+        "neo/algorithm/allmatch_test.cpp"
         "neo/algorithm/copy_test.cpp"
         "neo/algorithm/multiply_add_test.cpp"
 

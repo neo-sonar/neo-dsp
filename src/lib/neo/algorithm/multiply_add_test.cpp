@@ -1,6 +1,6 @@
 #include "multiply_add.hpp"
 
-#include <neo/algorithm/all_of.hpp>
+#include <neo/algorithm/allmatch.hpp>
 #include <neo/math/float_equality.hpp>
 
 #include <catch2/catch_approx.hpp>
@@ -23,19 +23,19 @@ auto test()
     auto left_row0   = stdex::submdspan(lhs.to_mdspan(), 0, stdex::full_extent);
 
     neo::multiply_add(left_row0, rhs, 0, acc, acc);
-    REQUIRE(neo::all_of(acc, isZero));
+    REQUIRE(neo::allmatch(acc, isZero));
 
     rhs.insert(0, 0, Float(2));
     neo::multiply_add(left_row0, rhs, 0, acc, acc);
     REQUIRE(accumulator[0] == Catch::Approx(Float(2)));
-    REQUIRE(neo::all_of(stdex::submdspan(acc, std::tuple{1, acc.extent(0)}), isZero));
+    REQUIRE(neo::allmatch(stdex::submdspan(acc, std::tuple{1, acc.extent(0)}), isZero));
 
     rhs.insert(0, 1, Float(4));
     neo::fill(acc, Float(0));
     neo::multiply_add(left_row0, rhs, 0, acc, acc);
     REQUIRE(accumulator[0] == Catch::Approx(Float(2)));
     REQUIRE(accumulator[1] == Catch::Approx(Float(4)));
-    REQUIRE(neo::all_of(stdex::submdspan(acc, std::tuple{2, acc.extent(0)}), isZero));
+    REQUIRE(neo::allmatch(stdex::submdspan(acc, std::tuple{2, acc.extent(0)}), isZero));
 }
 
 TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", float, double, long double) { test<TestType>(); }
