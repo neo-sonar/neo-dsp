@@ -173,6 +173,8 @@ auto main() -> int
     neo::timeit("mul(cf16):   ", 2, N, cfloat_mul<float, int16_t, N>{});
     std::printf("\n");
 
+    neo::timeit("cmul(complex<cf8>):         ", 2, N, cfloat_mul<neo::complex64, neo::scalar_complex<int8_t>, N>{});
+    neo::timeit("cmul(complex<cf16>):        ", 4, N, cfloat_mul<neo::complex64, neo::scalar_complex<int16_t>, N>{});
     neo::timeit("cmul(complex64):            ", 8, N, float_mul<neo::complex64, N>{});
     neo::timeit("cmul(complex128):           ", 16, N, float_mul<neo::complex128, N>{});
     neo::timeit("cmul(std::complex<float>):  ", 8, N, float_mul<std::complex<float>, N>{});
