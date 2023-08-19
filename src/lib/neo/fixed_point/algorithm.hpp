@@ -151,8 +151,10 @@ auto multiply(
             return;
         }
 #elif defined(NEO_HAS_SIMD_NEON)
-        simd::apply_kernel<IntType>(lhs, rhs, out, std::multiplies{}, detail::mul_kernel_s16);
-        return;
+        if constexpr (std::same_as<IntType, std::int16_t> && FractionalBits == 15) {
+            simd::apply_kernel<IntType>(lhs, rhs, out, std::multiplies{}, detail::mul_kernel_s16);
+            return;
+        }
 #endif
     }
 
