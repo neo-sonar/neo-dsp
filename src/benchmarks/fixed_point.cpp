@@ -256,6 +256,8 @@ auto main() -> int
     timeit("mul(q15):    ", 2, N, fixed_point_mul<neo::q15, N>{});
 #if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
     timeit("mul(f16f32): ", 2, N, float16_mul_bench<N>{});
+#endif
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
     timeit("mul(_Float16): ", 2, N, float_mul<_Float16, N>{});
 #endif
     timeit("mul(float):    ", 4, N, float_mul<float, N>{});
@@ -266,7 +268,7 @@ auto main() -> int
 
     // timeit("cmul(complex<cf8>):         ", 2, N, cfloat_mul<neo::complex64, neo::scalar_complex<int8_t>, N>{});
     // timeit("cmul(complex<cf16>):        ", 4, N, cfloat_mul<neo::complex64, neo::scalar_complex<int16_t>, N>{});
-    // timeit("cmul(complex32):            ", 4, N, float_mul<neo::scalar_complex<_Float16>, N>{});
+    timeit("cmul(complex32):            ", 4, N, float_mul<neo::scalar_complex<_Float16>, N>{});
     timeit("cmul(complex64):            ", 8, N, float_mul<neo::complex64, N>{});
     timeit("cmul(complex128):           ", 16, N, float_mul<neo::complex128, N>{});
     timeit("cmul(std::complex<float>):  ", 8, N, float_mul<std::complex<float>, N>{});
