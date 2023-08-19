@@ -7,14 +7,23 @@
 
 namespace neo {
 
-template<in_vector InVec1, in_vector InVec2, out_vector OutVec>
-auto add(InVec1 x, InVec2 y, OutVec out) -> void
+template<in_object InObj1, in_object InObj2, out_object OutObj>
+    requires(InObj1::rank() == InObj2::rank() and InObj1::rank() == OutObj::rank())
+auto add(InObj1 x, InObj2 y, OutObj out) -> void
 {
     NEO_EXPECTS(x.extents() == y.extents());
     NEO_EXPECTS(x.extents() == out.extents());
 
-    for (auto i{0}; std::cmp_less(i, x.extent(0)); ++i) {
-        out[i] = x[i] + y[i];
+    if constexpr (InObj1::rank() == 1) {
+        for (auto i{0}; std::cmp_less(i, x.extent(0)); ++i) {
+            out[i] = x[i] + y[i];
+        }
+    } else {
+        for (auto i{0}; std::cmp_less(i, x.extent(0)); ++i) {
+            for (auto j{0}; std::cmp_less(j, x.extent(1)); ++j) {
+                out(i, j) = x(i, j) + y(i, j);
+            }
+        }
     }
 }
 
