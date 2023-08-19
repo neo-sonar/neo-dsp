@@ -9,12 +9,12 @@
 namespace neo {
 
 template<typename ElementType, typename NestedAccessor>
-    requires std::integral<typename NestedAccessor::element_type>
+    requires std::signed_integral<typename NestedAccessor::element_type>
 struct compressed_float_accessor
 {
     using element_type     = ElementType;
     using reference        = ElementType;
-    using data_handle_type = NestedAccessor::data_handle_type;
+    using data_handle_type = typename NestedAccessor::data_handle_type;
     using offset_policy    = compressed_float_accessor<ElementType, typename NestedAccessor::offset_policy>;
 
     constexpr compressed_float_accessor(NestedAccessor const& a) : _nested_accessor{a} {}
