@@ -6,6 +6,7 @@
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/transform/direction.hpp>
 
+#include <cassert>
 #include <numbers>
 
 namespace neo::fft {
@@ -17,7 +18,7 @@ auto dft(InVec in, OutVec out, direction dir = direction::forward) -> void
     using Complex = typename OutVec::value_type;
     using Float   = typename Complex::value_type;
 
-    NEO_EXPECTS(in.extents() == out.extents());
+    assert(in.extents() == out.extents());
 
     static constexpr auto const pi = static_cast<Float>(std::numbers::pi);
     auto const sign                = dir == direction::forward ? Float(-1) : Float(1);

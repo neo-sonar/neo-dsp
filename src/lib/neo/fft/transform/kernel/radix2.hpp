@@ -14,7 +14,7 @@ struct radix2_kernel_v1
 {
     radix2_kernel_v1() = default;
 
-    auto operator()(inout_vector auto x, auto const& twiddles) const -> void
+    auto operator()(inout_vector auto x, auto const& twiddles) const noexcept -> void
     {
         auto const size  = x.size();
         auto const order = static_cast<std::int32_t>(ilog2(size));
@@ -48,7 +48,7 @@ struct radix2_kernel_v2
 {
     radix2_kernel_v2() = default;
 
-    auto operator()(inout_vector auto x, auto const& twiddles) const -> void
+    auto operator()(inout_vector auto x, auto const& twiddles) const noexcept -> void
     {
         auto const size = x.size();
 
@@ -83,7 +83,7 @@ struct radix2_kernel_v3
 {
     radix2_kernel_v3() = default;
 
-    auto operator()(inout_vector auto x, auto const& twiddles) const -> void
+    auto operator()(inout_vector auto x, auto const& twiddles) const noexcept -> void
     {
         auto const size  = x.size();
         auto const order = ilog2(size);
@@ -114,7 +114,7 @@ struct radix2_kernel_v4
 {
     radix2_kernel_v4() = default;
 
-    auto operator()(inout_vector auto x, auto const& twiddles) const -> void
+    auto operator()(inout_vector auto x, auto const& twiddles) const noexcept -> void
     {
         auto const size  = static_cast<int>(x.size());
         auto const order = static_cast<int>(ilog2(size));

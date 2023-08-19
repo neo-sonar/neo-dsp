@@ -21,7 +21,7 @@ struct rfft_radix2_plan
 
     template<in_vector InVec, out_vector OutVec>
         requires(std::same_as<typename InVec::value_type, Float> and std::same_as<typename OutVec::value_type, complex_type>)
-    auto operator()(InVec in, OutVec out) -> void
+    auto operator()(InVec in, OutVec out) noexcept -> void
     {
         auto const buf    = _buffer.to_mdspan();
         auto const coeffs = _size / 2 + 1;
@@ -33,7 +33,7 @@ struct rfft_radix2_plan
 
     template<in_vector InVec, out_vector OutVec>
         requires(std::same_as<typename InVec::value_type, complex_type> and std::same_as<typename OutVec::value_type, Float>)
-    auto operator()(InVec in, OutVec out) -> void
+    auto operator()(InVec in, OutVec out) noexcept -> void
     {
         auto const buf    = _buffer.to_mdspan();
         auto const coeffs = _size / 2 + 1;

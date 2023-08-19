@@ -24,11 +24,6 @@ TEMPLATE_TEST_CASE("neo/algorithm: copy", "", float, double, long double, std::c
         auto const in = makeVector(Float(1));
         neo::copy(in.to_mdspan(), out.to_mdspan());
         REQUIRE(neo::allclose(in.to_mdspan(), out.to_mdspan()));
-
-        if constexpr (neo::current_contracts_check_mode == neo::contracts_check_mode::exception) {
-            auto sub = stdex::submdspan(in.to_mdspan(), std::tuple{0, size - 1UL});
-            REQUIRE_THROWS(neo::copy(sub, out.to_mdspan()));
-        }
     }
 
     SECTION("matrix")

@@ -15,7 +15,7 @@ struct conjugate_view
 
     constexpr explicit conjugate_view(InVec twiddles) noexcept : _twiddles{twiddles} {}
 
-    [[nodiscard]] constexpr auto operator[](std::integral auto index) const -> value_type
+    [[nodiscard]] constexpr auto operator[](std::integral auto index) const noexcept -> value_type
     {
         using std::conj;
         return conj(_twiddles[index]);

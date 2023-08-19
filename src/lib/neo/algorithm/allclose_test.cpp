@@ -31,11 +31,6 @@ auto test()
         REQUIRE(neo::allclose(zeros.to_mdspan(), zeros.to_mdspan()));
         REQUIRE(neo::allclose(ones.to_mdspan(), ones.to_mdspan()));
         REQUIRE(neo::allclose(ones.to_mdspan(), almostOnes.to_mdspan(), Float(0.7)));
-
-        if constexpr (neo::current_contracts_check_mode == neo::contracts_check_mode::exception) {
-            auto sub = stdex::submdspan(ones.to_mdspan(), std::tuple{0, size - 1UL});
-            REQUIRE_THROWS(neo::allclose(sub, zeros.to_mdspan()));
-        }
     }
 
     SECTION("matrix")
@@ -56,11 +51,6 @@ auto test()
         REQUIRE(neo::allclose(zeros.to_mdspan(), zeros.to_mdspan()));
         REQUIRE(neo::allclose(ones.to_mdspan(), ones.to_mdspan()));
         REQUIRE(neo::allclose(ones.to_mdspan(), almostOnes.to_mdspan(), Float(0.7)));
-
-        if constexpr (neo::current_contracts_check_mode == neo::contracts_check_mode::exception) {
-            auto sub = stdex::submdspan(ones.to_mdspan(), std::tuple{0, size - 1UL}, stdex::full_extent);
-            REQUIRE_THROWS(neo::allclose(sub, zeros.to_mdspan()));
-        }
     }
 }
 

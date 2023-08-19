@@ -82,11 +82,11 @@ struct alignas(16) float32x4
 
     NEO_ALWAYS_INLINE float32x4(register_type reg) noexcept : _reg{reg} {}
 
-    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
     [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(float reg) -> float32x4 { return _mm_set1_ps(reg); }
 
-    [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(float const* input) -> float32x4
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(float const* input) noexcept -> float32x4
     {
         return _mm_loadu_ps(input);
     }
@@ -124,11 +124,11 @@ struct alignas(16) float64x2
 
     NEO_ALWAYS_INLINE float64x2(register_type reg) noexcept : _reg{reg} {}
 
-    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
     [[nodiscard]] NEO_ALWAYS_INLINE static auto broadcast(double reg) -> float64x2 { return _mm_set1_pd(reg); }
 
-    [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(double const* input) -> float64x2
+    [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(double const* input) noexcept -> float64x2
     {
         return _mm_loadu_pd(input);
     }

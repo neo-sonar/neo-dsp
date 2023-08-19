@@ -13,6 +13,7 @@
 #include <neo/math/ilog2.hpp>
 #include <neo/math/next_power_of_two.hpp>
 
+#include <cassert>
 #include <functional>
 
 namespace neo::fft {
@@ -80,7 +81,7 @@ auto overlap_add<Float>::num_overlaps() const noexcept -> size_type
 template<std::floating_point Float>
 auto overlap_add<Float>::operator()(inout_vector auto block, auto callback) -> void
 {
-    NEO_EXPECTS(block.extent(0) == block_size());
+    assert(block.extent(0) == block_size());
 
     auto const real_buffer    = _real_buffer.to_mdspan();
     auto const complex_buffer = _complex_buffer.to_mdspan();

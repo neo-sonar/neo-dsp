@@ -11,6 +11,7 @@
 #include <neo/fft/transform/reorder.hpp>
 #include <neo/fft/transform/twiddle.hpp>
 
+#include <cassert>
 #include <utility>
 
 namespace neo::fft {
@@ -54,7 +55,7 @@ struct fft_radix2_plan
 
     template<inout_vector InOutVec>
         requires std::same_as<typename InOutVec::value_type, Complex>
-    auto operator()(InOutVec vec, direction dir) -> void;
+    auto operator()(InOutVec vec, direction dir) noexcept -> void;
 
 private:
     size_type _order;
@@ -87,9 +88,9 @@ auto fft_radix2_plan<Complex, Kernel>::order() const noexcept -> size_type
 template<typename Complex, typename Kernel>
 template<inout_vector InOutVec>
     requires std::same_as<typename InOutVec::value_type, Complex>
-auto fft_radix2_plan<Complex, Kernel>::operator()(InOutVec vec, direction dir) -> void
+auto fft_radix2_plan<Complex, Kernel>::operator()(InOutVec vec, direction dir) noexcept -> void
 {
-    NEO_EXPECTS(std::cmp_equal(vec.size(), _size));
+    assert(std::cmp_equal(vec.size(), _size));
 
     bit_reverse_permutation(vec, _index_table);
 

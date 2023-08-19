@@ -38,12 +38,4 @@ TEMPLATE_TEST_CASE(
         REQUIRE(neo::ilog2(Int(4096)) == Int(12));
         REQUIRE(neo::ilog2(Int(8192)) == Int(13));
     }
-
-    if constexpr (neo::current_contracts_check_mode == neo::contracts_check_mode::exception) {
-        REQUIRE_THROWS(neo::ilog2(Int(0)));
-
-        if constexpr (std::signed_integral<Int>) {
-            REQUIRE_THROWS(neo::ilog2(Int(-1)));
-        }
-    }
 }

@@ -4,13 +4,15 @@
 
 #include <neo/container/mdspan.hpp>
 
+#include <cassert>
+
 namespace neo {
 
 template<in_object InObj, out_object OutObj>
     requires(InObj::rank() == OutObj::rank())
 constexpr auto copy(InObj inObj, OutObj outObj) -> void
 {
-    NEO_EXPECTS(inObj.extents() == outObj.extents());
+    assert(inObj.extents() == outObj.extents());
 
     if constexpr (InObj::rank() == 1) {
         for (auto i{0ULL}; i < inObj.extent(0); ++i) {

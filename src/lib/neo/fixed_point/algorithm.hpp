@@ -16,6 +16,7 @@
     #include <neo/simd/neon.hpp>
 #endif
 
+#include <cassert>
 #include <functional>
 #include <iterator>
 #include <span>
@@ -54,8 +55,8 @@ auto apply_fixed_point_kernel(
     auto vector_kernel_s16
 )
 {
-    NEO_EXPECTS(lhs.size() == rhs.size());
-    NEO_EXPECTS(lhs.size() == out.size());
+    assert(lhs.size() == rhs.size());
+    assert(lhs.size() == out.size());
 
 #if defined(NEO_HAS_SIMD_SSE2) || defined(NEO_HAS_SIMD_NEON)
     if constexpr (std::same_as<IntType, std::int8_t>) {
@@ -104,8 +105,8 @@ auto multiply(
     std::span<fixed_point<IntType, FractionalBits>, Extent> out
 )
 {
-    NEO_EXPECTS(lhs.size() == rhs.size());
-    NEO_EXPECTS(lhs.size() == out.size());
+    assert(lhs.size() == rhs.size());
+    assert(lhs.size() == out.size());
 
     if constexpr (std::same_as<IntType, std::int8_t>) {
 #if defined(NEO_HAS_SIMD_SSE41)

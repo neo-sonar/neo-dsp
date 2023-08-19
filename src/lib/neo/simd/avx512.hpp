@@ -80,7 +80,7 @@ struct alignas(64) float32x16
 
     float32x16(register_type val) noexcept : _val{val} {}
 
-    [[nodiscard]] explicit operator register_type() const { return _val; }
+    [[nodiscard]] explicit operator register_type() const noexcept { return _val; }
 
     [[nodiscard]] static auto broadcast(float val) -> float32x16 { return _mm512_set1_ps(val); }
 
@@ -119,7 +119,7 @@ struct alignas(64) float64x8
 
     float64x8(register_type val) noexcept : _val{val} {}
 
-    [[nodiscard]] explicit operator register_type() const { return _val; }
+    [[nodiscard]] explicit operator register_type() const noexcept { return _val; }
 
     [[nodiscard]] static auto broadcast(double val) -> float64x8 { return _mm512_set1_pd(val); }
 

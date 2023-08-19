@@ -4,6 +4,7 @@
 
 #include <neo/container/mdspan.hpp>
 
+#include <cassert>
 #include <cmath>
 #include <concepts>
 #include <type_traits>
@@ -14,7 +15,7 @@ namespace neo {
 template<in_vector InVecL, in_vector InVecR>
 auto rms_error(InVecL lhs, InVecR rhs)
 {
-    NEO_EXPECTS(lhs.extents() == rhs.extents());
+    assert(lhs.extents() == rhs.extents());
 
     using LeftReal  = typename InVecL::value_type;
     using RightReal = typename InVecR::value_type;

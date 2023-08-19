@@ -6,6 +6,7 @@
 #include <neo/container/mdspan.hpp>
 #include <neo/container/sparse_matrix.hpp>
 
+#include <cassert>
 #include <utility>
 
 namespace neo {
@@ -14,9 +15,9 @@ namespace neo {
 template<in_vector InVecX, in_vector InVecY, in_vector InVecZ, out_vector OutVec>
 constexpr auto multiply_add(InVecX x, InVecY y, InVecZ z, OutVec out) -> void
 {
-    NEO_EXPECTS(x.extents() == y.extents());
-    NEO_EXPECTS(x.extents() == z.extents());
-    NEO_EXPECTS(x.extents() == out.extents());
+    assert(x.extents() == y.extents());
+    assert(x.extents() == z.extents());
+    assert(x.extents() == out.extents());
 
     for (decltype(x.extent(0)) i{0}; i < x.extent(0); ++i) {
         out[i] = x[i] * y[i] + z[i];
@@ -33,7 +34,7 @@ auto multiply_add(
     out_vector auto out
 ) -> void
 {
-    NEO_EXPECTS(x.extent(0) == y.columns());
+    assert(x.extent(0) == y.columns());
 
     auto const& rrows = y.row_container();
     auto const& rcols = y.column_container();

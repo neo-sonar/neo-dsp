@@ -2,6 +2,7 @@
 
 #include <neo/config.hpp>
 
+#include <cassert>
 #include <concepts>
 
 namespace neo {
@@ -9,7 +10,7 @@ namespace neo {
 template<std::integral Int>
 [[nodiscard]] constexpr auto ilog2(Int x) -> Int
 {
-    NEO_EXPECTS(x > Int(0));
+    assert(x > Int(0));
 
     auto result = Int{0};
     for (; x > Int(1); x >>= Int(1)) {

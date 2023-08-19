@@ -32,7 +32,7 @@ struct alignas(16) q7x16
 
     NEO_ALWAYS_INLINE q7x16(register_type reg) noexcept : _reg{reg} {}
 
-    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
     [[nodiscard]] static auto broadcast(value_type val) -> q7x16 { return _mm_set1_epi8(val.value()); }
 
@@ -96,7 +96,7 @@ struct alignas(16) q15x8
 
     NEO_ALWAYS_INLINE q15x8(register_type reg) noexcept : _reg{reg} {}
 
-    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
     [[nodiscard]] static auto broadcast(value_type val) -> q15x8 { return _mm_set1_epi16(val.value()); }
 
@@ -164,7 +164,7 @@ struct alignas(32) q7x32
 
     NEO_ALWAYS_INLINE q7x32(register_type reg) noexcept : _reg{reg} {}
 
-    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
     [[nodiscard]] static auto broadcast(value_type val) -> q7x32 { return _mm256_set1_epi8(val.value()); }
 
@@ -208,7 +208,7 @@ struct alignas(32) q15x16
 
     NEO_ALWAYS_INLINE q15x16(register_type reg) noexcept : _reg{reg} {}
 
-    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
     [[nodiscard]] static auto broadcast(value_type val) -> q15x16 { return _mm256_set1_epi16(val.value()); }
 
@@ -256,7 +256,7 @@ struct alignas(64) q7x64
 
     NEO_ALWAYS_INLINE q7x64(register_type reg) noexcept : _reg{reg} {}
 
-    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
     [[nodiscard]] static auto broadcast(value_type val) -> q7x64 { return _mm512_set1_epi8(val.value()); }
 
@@ -300,7 +300,7 @@ struct alignas(64) q15x32
 
     NEO_ALWAYS_INLINE q15x32(register_type reg) noexcept : _reg{reg} {}
 
-    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const { return _reg; }
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
 
     [[nodiscard]] static auto broadcast(value_type val) -> q15x32 { return _mm512_set1_epi16(val.value()); }
 

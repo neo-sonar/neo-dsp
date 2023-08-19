@@ -11,6 +11,7 @@
 #include <neo/math/ilog2.hpp>
 #include <neo/math/next_power_of_two.hpp>
 
+#include <cassert>
 #include <functional>
 
 namespace neo::fft {
@@ -67,7 +68,7 @@ auto overlap_save<Float>::transform_size() const noexcept -> size_type
 template<std::floating_point Float>
 auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> void
 {
-    NEO_EXPECTS(block.extent(0) == block_size());
+    assert(block.extent(0) == block_size());
 
     auto slide_window_left = [step = static_cast<int>(block_size())](auto window) {
         auto const num_steps = static_cast<int>(window.extent(0)) / step;

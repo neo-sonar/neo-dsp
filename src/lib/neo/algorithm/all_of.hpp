@@ -4,6 +4,7 @@
 
 #include <neo/container/mdspan.hpp>
 
+#include <cassert>
 #include <concepts>
 #include <utility>
 
@@ -12,7 +13,7 @@ namespace neo {
 template<in_object InObj1, in_object InObj2, typename BinaryPredicate>
 [[nodiscard]] auto all_of(InObj1 lhs, InObj2 rhs, BinaryPredicate predicate) -> bool
 {
-    NEO_EXPECTS(lhs.extents() == rhs.extents());
+    assert(lhs.extents() == rhs.extents());
 
     if constexpr (InObj1::rank() == 1) {
         for (auto i{0}; std::cmp_less(i, lhs.extent(0)); ++i) {
