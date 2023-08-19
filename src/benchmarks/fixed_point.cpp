@@ -81,19 +81,35 @@ private:
     stdex::mdarray<FloatOrComplex, stdex::dextents<size_t, 1>> _out;
 };
 
-template<typename Float, std::size_t Size>
+template<typename FloatOrFixed, std::size_t Size>
 struct cmulp
 {
     explicit cmulp() : _lhs(2, Size), _rhs(2, Size), _out(2, Size)
     {
-        auto lr = neo::generate_noise_signal<Float>(Size, std::random_device{}());
-        auto li = neo::generate_noise_signal<Float>(Size, std::random_device{}());
-        auto rr = neo::generate_noise_signal<Float>(Size, std::random_device{}());
-        auto ri = neo::generate_noise_signal<Float>(Size, std::random_device{}());
-        neo::copy(lr.to_mdspan(), stdex::submdspan(_lhs.to_mdspan(), 0, stdex::full_extent));
-        neo::copy(li.to_mdspan(), stdex::submdspan(_lhs.to_mdspan(), 1, stdex::full_extent));
-        neo::copy(rr.to_mdspan(), stdex::submdspan(_rhs.to_mdspan(), 0, stdex::full_extent));
-        neo::copy(ri.to_mdspan(), stdex::submdspan(_rhs.to_mdspan(), 1, stdex::full_extent));
+        if constexpr (std::same_as<FloatOrFixed, neo::q7> or std::same_as<FloatOrFixed, neo::q15>) {
+            auto copy_to_fixed_point = [](auto src, auto dest) {
+                for (auto i{0}; i < src.extent(0); ++i) {
+                    dest[i] = FloatOrFixed(src[i]);
+                }
+            };
+            auto lr = neo::generate_noise_signal<float>(Size, std::random_device{}());
+            auto li = neo::generate_noise_signal<float>(Size, std::random_device{}());
+            auto rr = neo::generate_noise_signal<float>(Size, std::random_device{}());
+            auto ri = neo::generate_noise_signal<float>(Size, std::random_device{}());
+            copy_to_fixed_point(lr.to_mdspan(), stdex::submdspan(_lhs.to_mdspan(), 0, stdex::full_extent));
+            copy_to_fixed_point(li.to_mdspan(), stdex::submdspan(_lhs.to_mdspan(), 1, stdex::full_extent));
+            copy_to_fixed_point(rr.to_mdspan(), stdex::submdspan(_rhs.to_mdspan(), 0, stdex::full_extent));
+            copy_to_fixed_point(ri.to_mdspan(), stdex::submdspan(_rhs.to_mdspan(), 1, stdex::full_extent));
+        } else {
+            auto lr = neo::generate_noise_signal<FloatOrFixed>(Size, std::random_device{}());
+            auto li = neo::generate_noise_signal<FloatOrFixed>(Size, std::random_device{}());
+            auto rr = neo::generate_noise_signal<FloatOrFixed>(Size, std::random_device{}());
+            auto ri = neo::generate_noise_signal<FloatOrFixed>(Size, std::random_device{}());
+            neo::copy(lr.to_mdspan(), stdex::submdspan(_lhs.to_mdspan(), 0, stdex::full_extent));
+            neo::copy(li.to_mdspan(), stdex::submdspan(_lhs.to_mdspan(), 1, stdex::full_extent));
+            neo::copy(rr.to_mdspan(), stdex::submdspan(_rhs.to_mdspan(), 0, stdex::full_extent));
+            neo::copy(ri.to_mdspan(), stdex::submdspan(_rhs.to_mdspan(), 1, stdex::full_extent));
+        }
     }
 
     auto operator()() noexcept -> void
@@ -117,9 +133,9 @@ struct cmulp
     }
 
 private:
-    stdex::mdarray<Float, stdex::dextents<size_t, 2>> _lhs;
-    stdex::mdarray<Float, stdex::dextents<size_t, 2>> _rhs;
-    stdex::mdarray<Float, stdex::dextents<size_t, 2>> _out;
+    stdex::mdarray<FloatOrFixed, stdex::dextents<size_t, 2>> _lhs;
+    stdex::mdarray<FloatOrFixed, stdex::dextents<size_t, 2>> _rhs;
+    stdex::mdarray<FloatOrFixed, stdex::dextents<size_t, 2>> _out;
 };
 
 template<typename FloatOrComplex, typename IntOrComplex, std::size_t Size>
@@ -277,6 +293,8 @@ auto main() -> int
     timeit("cmul(std::complex<double>): ", 16, N, float_mul<std::complex<double>, N>{});
     std::printf("\n");
 
+    timeit("cmulp(q7):       ", 2, N, cmulp<neo::q7, N>{});
+    timeit("cmulp(q15):      ", 4, N, cmulp<neo::q15, N>{});
 #if defined(NEO_HAS_BUILTIN_FLOAT16)
     timeit("cmulp(_Float16): ", 4, N, cmulp<_Float16, N>{});
 #endif
