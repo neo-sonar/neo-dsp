@@ -268,7 +268,9 @@ auto main() -> int
 
     // timeit("cmul(complex<cf8>):         ", 2, N, cfloat_mul<neo::complex64, neo::scalar_complex<int8_t>, N>{});
     // timeit("cmul(complex<cf16>):        ", 4, N, cfloat_mul<neo::complex64, neo::scalar_complex<int16_t>, N>{});
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
     timeit("cmul(complex32):            ", 4, N, float_mul<neo::scalar_complex<_Float16>, N>{});
+#endif
     timeit("cmul(complex64):            ", 8, N, float_mul<neo::complex64, N>{});
     timeit("cmul(complex128):           ", 16, N, float_mul<neo::complex128, N>{});
     timeit("cmul(std::complex<float>):  ", 8, N, float_mul<std::complex<float>, N>{});
