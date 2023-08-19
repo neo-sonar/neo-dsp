@@ -23,7 +23,12 @@ struct compressed_accessor
     {
         using nested_element_t = typename NestedAccessor::element_type;
 
-        if constexpr (complex<nested_element_t>) {
+        if constexpr (std::floating_point<ElementType>) {
+            constexpr auto max_val   = std::numeric_limits<nested_element_t>::max();
+            constexpr auto inv_scale = ElementType(1) / static_cast<ElementType>(max_val);
+            return static_cast<ElementType>(_nested_accessor.access(p, i)) * inv_scale;
+        } else {
+            // static_assert(complex<ElementType>);
             using element_real_t     = typename ElementType::value_type;
             using nested_real_t      = typename nested_element_t::value_type;
             constexpr auto max_val   = std::numeric_limits<nested_real_t>::max();
@@ -34,11 +39,6 @@ struct compressed_accessor
                 static_cast<element_real_t>(val.real()) * inv_scale,
                 static_cast<element_real_t>(val.imag()) * inv_scale
             );
-        } else {
-            constexpr auto max_val   = std::numeric_limits<nested_element_t>::max();
-            constexpr auto inv_scale = ElementType(1) / static_cast<ElementType>(max_val);
-
-            return static_cast<ElementType>(_nested_accessor.access(p, i)) * inv_scale;
         }
     }
 
