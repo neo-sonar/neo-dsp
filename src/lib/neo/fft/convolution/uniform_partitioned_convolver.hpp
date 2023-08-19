@@ -7,12 +7,36 @@
 
 namespace neo::fft {
 
-template<typename Overlap, typename Filter>
+template<typename Complex>
+struct dense_fdl
+{
+    using value_type = Complex;
+
+    dense_fdl() = default;
+
+    explicit dense_fdl(stdex::dextents<size_t, 2> extents) : _fdl{extents} {}
+
+    auto operator()(in_vector auto input, std::integral auto index) -> void
+    {
+        copy(input, stdex::submdspan(_fdl.to_mdspan(), index, stdex::full_extent));
+    }
+
+    auto operator()(std::integral auto index) const
+    {
+        return stdex::submdspan(_fdl.to_mdspan(), index, stdex::full_extent);
+    }
+
+private:
+    stdex::mdarray<Complex, stdex::dextents<size_t, 2>> _fdl{};
+};
+
+template<typename Overlap, typename Fdl, typename Filter>
 struct uniform_partitioned_convolver
 {
+    using overlap_type = Overlap;
+    using fdl_type     = Fdl;
     using filter_type  = Filter;
     using value_type   = typename Filter::value_type;
-    using overlap_type = Overlap;
 
     uniform_partitioned_convolver() = default;
 
@@ -21,37 +45,34 @@ struct uniform_partitioned_convolver
 
 private:
     Overlap _overlap{1, 1};
-    Filter _filter;
+
+    Fdl _fdl;
     fdl_index<size_t> _indexer;
-    stdex::mdarray<std::complex<value_type>, stdex::dextents<size_t, 2>> _fdl;
+
+    Filter _filter;
     stdex::mdarray<std::complex<value_type>, stdex::dextents<size_t, 1>> _accumulator;
 };
 
-template<typename Overlap, typename Filter>
-auto uniform_partitioned_convolver<Overlap, Filter>::filter(in_matrix auto filter, auto... args) -> void
+template<typename Overlap, typename Fdl, typename Filter>
+auto uniform_partitioned_convolver<Overlap, Fdl, Filter>::filter(in_matrix auto filter, auto... args) -> void
 {
     _overlap     = Overlap{filter.extent(1) - 1, filter.extent(1) - 1};
     _indexer     = fdl_index<size_t>{filter.extent(0)};
-    _fdl         = stdex::mdarray<std::complex<value_type>, stdex::dextents<size_t, 2>>{filter.extents()};
+    _fdl         = Fdl{filter.extents()};
     _accumulator = stdex::mdarray<std::complex<value_type>, stdex::dextents<size_t, 1>>{filter.extent(1)};
     _filter.filter(filter, args...);
 }
 
-template<typename Overlap, typename Filter>
-auto uniform_partitioned_convolver<Overlap, Filter>::operator()(in_vector auto block) -> void
+template<typename Overlap, typename Fdl, typename Filter>
+auto uniform_partitioned_convolver<Overlap, Fdl, Filter>::operator()(in_vector auto block) -> void
 {
     _overlap(block, [this](inout_vector auto inout) {
-        auto copy_to_fdl = [this, inout](auto dest_idx) {
-            copy(inout, stdex::submdspan(_fdl.to_mdspan(), dest_idx, stdex::full_extent));
-        };
-
-        auto multiply_delay_lines = [this](auto fdl_idx, auto filter_idx) {
-            auto const fdl = stdex::submdspan(_fdl.to_mdspan(), fdl_idx, stdex::full_extent);
-            _filter(fdl, filter_idx, _accumulator.to_mdspan());
-        };
-
         fill(_accumulator.to_mdspan(), std::complex<value_type>{});
-        _indexer(copy_to_fdl, multiply_delay_lines);
+
+        auto insert   = [this, inout](auto index) { _fdl(inout, index); };
+        auto multiply = [this](auto fdl, auto filter) { _filter(_fdl(fdl), filter, _accumulator.to_mdspan()); };
+        _indexer(insert, multiply);
+
         copy(_accumulator.to_mdspan(), inout);
     });
 }

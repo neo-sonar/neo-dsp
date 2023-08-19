@@ -68,9 +68,11 @@ private:
 };
 
 template<typename Float>
-using upols_convolver = uniform_partitioned_convolver<overlap_save<Float>, dense_filter<Float>>;
+using upols_convolver
+    = uniform_partitioned_convolver<overlap_save<Float>, dense_fdl<std::complex<Float>>, dense_filter<Float>>;
 
 template<typename Float>
-using upola_convolver = uniform_partitioned_convolver<overlap_add<Float>, dense_filter<Float>>;
+using upola_convolver
+    = uniform_partitioned_convolver<overlap_add<Float>, dense_fdl<std::complex<Float>>, dense_filter<Float>>;
 
 }  // namespace neo::fft

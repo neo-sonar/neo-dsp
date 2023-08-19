@@ -34,9 +34,11 @@ private:
 };
 
 template<std::floating_point Float>
-using sparse_upols_convolver = uniform_partitioned_convolver<overlap_save<Float>, sparse_filter<Float>>;
+using sparse_upols_convolver
+    = uniform_partitioned_convolver<overlap_save<Float>, dense_fdl<std::complex<Float>>, sparse_filter<Float>>;
 
 template<std::floating_point Float>
-using sparse_upola_convolver = uniform_partitioned_convolver<overlap_add<Float>, sparse_filter<Float>>;
+using sparse_upola_convolver
+    = uniform_partitioned_convolver<overlap_add<Float>, dense_fdl<std::complex<Float>>, sparse_filter<Float>>;
 
 }  // namespace neo::fft
