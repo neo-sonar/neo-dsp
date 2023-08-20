@@ -43,14 +43,14 @@ auto test_floating_point(TestType tolerance)
     auto copy = product;
     copy *= Float(4);
     REQUIRE(copy.real() == Catch::Approx(Float(-40)));
-    REQUIRE(copy.imag() == Catch::Approx(Float(24)));
+    REQUIRE(copy.imag() == Catch::Approx(Float(96)));
 
     auto conj = neo::conj(copy);
     REQUIRE(conj.real() == Catch::Approx(Float(-40)));
-    REQUIRE(conj.imag() == Catch::Approx(Float(-24)));
+    REQUIRE(conj.imag() == Catch::Approx(Float(-96)));
 
     auto absolute = neo::abs(copy);
-    REQUIRE_THAT(static_cast<double>(absolute), Catch::Matchers::WithinAbs(46.647615, tolerance));
+    REQUIRE_THAT(static_cast<double>(absolute), Catch::Matchers::WithinAbs(104, tolerance));
 }
 
 template<typename TestType>

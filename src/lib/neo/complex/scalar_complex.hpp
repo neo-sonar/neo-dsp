@@ -53,7 +53,7 @@ struct scalar_complex
         requires(not complex<OtherScalar>)
     friend constexpr auto operator*=(scalar_complex& lhs, OtherScalar rhs) noexcept -> scalar_complex&
     {
-        lhs = scalar_complex{lhs.real() * rhs, lhs.imag()};
+        lhs = scalar_complex{lhs.real() * rhs, lhs.imag() * rhs};
         return lhs;
     }
 

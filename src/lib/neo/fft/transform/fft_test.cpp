@@ -2,6 +2,7 @@
 
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/scale.hpp>
+#include <neo/complex/scalar_complex.hpp>
 #include <neo/simd.hpp>
 #include <neo/testing/testing.hpp>
 
@@ -9,17 +10,30 @@
 #include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <algorithm>
 #include <random>
 #include <vector>
 
 namespace {
-template<typename Real, typename Kernel>
-struct std_complex_plan
+template<typename Complex, typename Kernel>
+struct kernel_tester
 {
-    using plan_type = neo::fft::fft_radix2_plan<std::complex<Real>, Kernel>;
+    using plan_type = neo::fft::fft_radix2_plan<Complex, Kernel>;
 };
+
+template<typename Complex>
+using kernel_tester_v1 = kernel_tester<Complex, neo::fft::radix2_kernel_v1>;
+
+template<typename Complex>
+using kernel_tester_v2 = kernel_tester<Complex, neo::fft::radix2_kernel_v2>;
+
+template<typename Complex>
+using kernel_tester_v3 = kernel_tester<Complex, neo::fft::radix2_kernel_v3>;
+
+template<typename Complex>
+using kernel_tester_v4 = kernel_tester<Complex, neo::fft::radix2_kernel_v4>;
 
 template<typename Plan>
 auto test_fft_radix2_plan()
@@ -28,6 +42,7 @@ auto test_fft_radix2_plan()
     using Float   = typename Complex::value_type;
 
     auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
+    CAPTURE(order);
 
     auto plan = Plan{order};
     REQUIRE(plan.order() == order);
@@ -62,27 +77,14 @@ auto test_fft_radix2_plan()
         REQUIRE(neo::allclose(noise.to_mdspan(), out));
     }
 }
+
 }  // namespace
 
 TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft/transform: fft_radix2_plan",
     "",
-    (std_complex_plan),
-
-    ((float, neo::fft::radix2_kernel_v1),
-     (float, neo::fft::radix2_kernel_v2),
-     (float, neo::fft::radix2_kernel_v3),
-     (float, neo::fft::radix2_kernel_v4),
-
-     (double, neo::fft::radix2_kernel_v1),
-     (double, neo::fft::radix2_kernel_v2),
-     (double, neo::fft::radix2_kernel_v3),
-     (double, neo::fft::radix2_kernel_v4),
-
-     (long double, neo::fft::radix2_kernel_v1),
-     (long double, neo::fft::radix2_kernel_v2),
-     (long double, neo::fft::radix2_kernel_v3),
-     (long double, neo::fft::radix2_kernel_v4))
+    (kernel_tester_v1, kernel_tester_v2, kernel_tester_v3, kernel_tester_v4),
+    (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>, (std::complex<long double>))
 )
 {
     test_fft_radix2_plan<typename TestType::plan_type>();
@@ -163,17 +165,6 @@ static auto test_complex_batch_roundtrip_fft()
         ));
     }
 }
-
-namespace {
-
-template<typename Real, typename Kernel>
-struct simd_tester
-{
-    using real_type   = Real;
-    using kernel_type = Kernel;
-};
-
-}  // namespace
 
 #if defined(NEO_HAS_SIMD_SSE2)
 TEMPLATE_TEST_CASE("neo/fft/transform: radix2_kernel(simd_batch)", "", neo::pcomplex64x4, neo::pcomplex128x2)
