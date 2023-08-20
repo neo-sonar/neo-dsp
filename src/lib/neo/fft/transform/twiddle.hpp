@@ -22,8 +22,9 @@ auto fill_radix2_twiddles(OutVec table, direction dir = direction::forward) -> v
     auto const twoPi     = static_cast<Float>(std::numbers::pi * 2.0);
 
     for (std::size_t i = 0; i < tableSize; ++i) {
-        auto const angle = sign * twoPi * Float(i) / Float(fftSize);
-        table[i]         = std::polar(Float(1), angle);
+        auto const angle   = sign * twoPi * Float(i) / Float(fftSize);
+        auto const twiddle = std::polar(Float(1), angle);              // returns std::complex
+        table[i]           = Complex{twiddle.real(), twiddle.imag()};  // convert to custom complex (maybe)
     }
 }
 

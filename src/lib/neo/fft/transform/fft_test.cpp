@@ -16,38 +16,14 @@
 
 namespace {
 template<typename Real, typename Kernel>
-struct plan_tester
+struct std_complex_plan
 {
     using plan_type = neo::fft::fft_radix2_plan<std::complex<Real>, Kernel>;
 };
-}  // namespace
 
-namespace fft = neo::fft;
-
-using namespace neo::fft;
-
-TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft/transform: fft_radix2_plan",
-    "",
-    (plan_tester),
-
-    ((float, radix2_kernel_v1),
-     (float, radix2_kernel_v2),
-     (float, radix2_kernel_v3),
-     (float, radix2_kernel_v4),
-
-     (double, radix2_kernel_v1),
-     (double, radix2_kernel_v2),
-     (double, radix2_kernel_v3),
-     (double, radix2_kernel_v4),
-
-     (long double, radix2_kernel_v1),
-     (long double, radix2_kernel_v2),
-     (long double, radix2_kernel_v3),
-     (long double, radix2_kernel_v4))
-)
+template<typename Plan>
+auto test_fft_radix2_plan()
 {
-    using Plan    = typename TestType::plan_type;
     using Complex = typename Plan::complex_type;
     using Float   = typename Complex::value_type;
 
@@ -85,6 +61,31 @@ TEMPLATE_PRODUCT_TEST_CASE(
         neo::scale(Float(1) / static_cast<Float>(plan.size()), out);
         REQUIRE(neo::allclose(noise.to_mdspan(), out));
     }
+}
+}  // namespace
+
+TEMPLATE_PRODUCT_TEST_CASE(
+    "neo/fft/transform: fft_radix2_plan",
+    "",
+    (std_complex_plan),
+
+    ((float, neo::fft::radix2_kernel_v1),
+     (float, neo::fft::radix2_kernel_v2),
+     (float, neo::fft::radix2_kernel_v3),
+     (float, neo::fft::radix2_kernel_v4),
+
+     (double, neo::fft::radix2_kernel_v1),
+     (double, neo::fft::radix2_kernel_v2),
+     (double, neo::fft::radix2_kernel_v3),
+     (double, neo::fft::radix2_kernel_v4),
+
+     (long double, neo::fft::radix2_kernel_v1),
+     (long double, neo::fft::radix2_kernel_v2),
+     (long double, neo::fft::radix2_kernel_v3),
+     (long double, neo::fft::radix2_kernel_v4))
+)
+{
+    test_fft_radix2_plan<typename TestType::plan_type>();
 }
 
 template<typename ComplexBatch, typename Kernel>

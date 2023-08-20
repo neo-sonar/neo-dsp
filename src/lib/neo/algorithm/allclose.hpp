@@ -15,7 +15,8 @@ template<in_object InObj1, in_object InObj2, typename Scalar>
 [[nodiscard]] auto allclose(InObj1 lhs, InObj2 rhs, Scalar tolerance) -> bool
 {
     return allmatch(lhs, rhs, [tolerance](auto const& left, auto const& right) -> bool {
-        return std::abs(left - right) <= tolerance;
+        using std::abs;
+        return abs(left - right) <= tolerance;
     });
 }
 
@@ -25,7 +26,11 @@ template<in_object InObj1, in_object InObj2>
     auto const tolerance = [] {
         using Left  = typename InObj1::value_type;
         using Right = typename InObj2::value_type;
-        using Float = decltype(std::abs(std::declval<Left>() - std::declval<Right>()));
+        using Float = decltype([] {
+            using std::abs;
+            return abs(Left{} - Right{});
+        }());
+
         static_assert(std::floating_point<Float>);
 
         if constexpr (std::same_as<Float, float>) {

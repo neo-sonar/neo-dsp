@@ -2,28 +2,26 @@
 
 #include <neo/complex/complex.hpp>
 
-#include <array>
-
 namespace neo {
 
-template<typename ScalarType>
+template<typename Scalar>
 struct scalar_complex
 {
-    using value_type = ScalarType;
+    using value_type = Scalar;
 
     constexpr scalar_complex() = default;
 
-    constexpr scalar_complex(ScalarType re, ScalarType im = ScalarType{}) noexcept : _data{re, im} {}
+    constexpr scalar_complex(Scalar re, Scalar im = Scalar{}) noexcept : _data{re, im} {}
 
-    [[nodiscard]] constexpr auto real() const noexcept -> ScalarType { return _data[0]; }
+    [[nodiscard]] constexpr auto real() const noexcept -> Scalar { return _data[0]; }
 
-    [[nodiscard]] constexpr auto imag() const noexcept -> ScalarType { return _data[1]; }
+    [[nodiscard]] constexpr auto imag() const noexcept -> Scalar { return _data[1]; }
 
-    constexpr auto real(ScalarType re) noexcept -> void { _data[0] = re; }
+    constexpr auto real(Scalar re) noexcept -> void { _data[0] = re; }
 
-    constexpr auto imag(ScalarType im) noexcept -> void { _data[1] = im; }
+    constexpr auto imag(Scalar im) noexcept -> void { _data[1] = im; }
 
-    friend constexpr auto operator+(scalar_complex lhs, scalar_complex rhs) -> scalar_complex
+    friend constexpr auto operator+(scalar_complex lhs, scalar_complex rhs) noexcept -> scalar_complex
     {
         return scalar_complex{
             lhs.real() + rhs.real(),
@@ -31,7 +29,7 @@ struct scalar_complex
         };
     }
 
-    friend constexpr auto operator-(scalar_complex lhs, scalar_complex rhs) -> scalar_complex
+    friend constexpr auto operator-(scalar_complex lhs, scalar_complex rhs) noexcept -> scalar_complex
     {
         return scalar_complex{
             lhs.real() - rhs.real(),
@@ -39,7 +37,7 @@ struct scalar_complex
         };
     }
 
-    friend constexpr auto operator*(scalar_complex lhs, scalar_complex rhs) -> scalar_complex
+    friend constexpr auto operator*(scalar_complex lhs, scalar_complex rhs) noexcept -> scalar_complex
     {
         return scalar_complex{
             lhs.real() * rhs.real() - lhs.imag() * rhs.imag(),
@@ -47,12 +45,34 @@ struct scalar_complex
         };
     }
 
+    template<typename OtherScalar>
+        requires(not complex<OtherScalar>)
+    friend constexpr auto operator*=(scalar_complex& lhs, OtherScalar rhs) noexcept -> scalar_complex&
+    {
+        lhs = scalar_complex{lhs.real() * rhs, lhs.imag()};
+        return lhs;
+    }
+
 private:
-    std::array<ScalarType, 2> _data;  // NOLINT
+    Scalar _data[2];  // NOLINT
 };
 
-template<typename ScalarType>
-inline constexpr auto const is_complex<scalar_complex<ScalarType>> = true;
+template<typename Scalar>
+inline constexpr auto const is_complex<scalar_complex<Scalar>> = true;
+
+template<typename Scalar>
+[[nodiscard]] constexpr auto conj(scalar_complex<Scalar> const& z) noexcept -> scalar_complex<Scalar>
+{
+    return {z.real(), -z.imag()};
+}
+
+template<typename Scalar>
+[[nodiscard]] constexpr auto abs(scalar_complex<Scalar> const& z) noexcept -> Scalar
+{
+    auto const re = z.real();
+    auto const im = z.imag();
+    return std::sqrt(re * re + im * im);
+}
 
 using complex64  = scalar_complex<float>;
 using complex128 = scalar_complex<double>;

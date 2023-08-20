@@ -38,6 +38,15 @@ auto test_floating_point()
     auto const product = tc * sum;
     REQUIRE(product.real() == Catch::Approx(Float(-10)));
     REQUIRE(product.imag() == Catch::Approx(Float(24)));
+
+    auto copy = product;
+    copy *= Float(4);
+    REQUIRE(copy.real() == Catch::Approx(Float(-40)));
+    REQUIRE(copy.imag() == Catch::Approx(Float(24)));
+
+    auto conj = neo::conj(copy);
+    REQUIRE(conj.real() == Catch::Approx(Float(-40)));
+    REQUIRE(conj.imag() == Catch::Approx(Float(-24)));
 }
 
 template<typename TestType>
