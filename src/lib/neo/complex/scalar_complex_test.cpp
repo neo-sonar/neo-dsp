@@ -5,9 +5,10 @@
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 template<typename TestType>
-auto test_floating_point()
+auto test_floating_point(TestType tolerance)
 {
     using Float   = TestType;
     using Complex = neo::scalar_complex<Float>;
@@ -47,6 +48,9 @@ auto test_floating_point()
     auto conj = neo::conj(copy);
     REQUIRE(conj.real() == Catch::Approx(Float(-40)));
     REQUIRE(conj.imag() == Catch::Approx(Float(-24)));
+
+    auto absolute = neo::abs(copy);
+    REQUIRE_THAT(static_cast<double>(absolute), Catch::Matchers::WithinAbs(46.647615, tolerance));
 }
 
 template<typename TestType>
@@ -79,10 +83,13 @@ auto test_fixed_point()
     REQUIRE(diff.imag().value() == -30);
 }
 
-TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", float, double, long double) { test_floating_point<TestType>(); }
+TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", float, double, long double)
+{
+    test_floating_point<TestType>(TestType(0.00001));
+}
 
 #if defined(NEO_HAS_BUILTIN_FLOAT16)
-TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", _Float16) { test_floating_point<TestType>(); }
+TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", _Float16) { test_floating_point<TestType>(TestType(0.01)); }
 #endif
 
 TEMPLATE_TEST_CASE(

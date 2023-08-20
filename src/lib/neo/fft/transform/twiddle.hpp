@@ -11,7 +11,7 @@
 namespace neo::fft {
 
 template<inout_vector OutVec>
-auto fill_radix2_twiddles(OutVec table, direction dir = direction::forward) -> void
+auto fill_radix2_twiddles(OutVec table, direction dir = direction::forward) noexcept -> void
 {
     using Complex = typename OutVec::value_type;
     using Float   = typename Complex::value_type;
@@ -37,7 +37,7 @@ auto make_radix2_twiddles(std::size_t size, direction dir = direction::forward)
 }
 
 template<complex Complex, std::size_t Size>
-auto make_radix2_twiddles(direction dir = direction::forward)
+auto make_radix2_twiddles(direction dir = direction::forward) noexcept
 {
     auto table = stdex::mdarray<Complex, stdex::extents<std::size_t, Size / 2>>{};
     fill_radix2_twiddles(table.to_mdspan(), dir);

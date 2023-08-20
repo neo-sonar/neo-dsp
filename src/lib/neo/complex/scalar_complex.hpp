@@ -1,6 +1,10 @@
 #pragma once
 
+#include <neo/config.hpp>
+
 #include <neo/complex/complex.hpp>
+
+#include <cmath>
 
 namespace neo {
 
@@ -69,9 +73,20 @@ template<typename Scalar>
 template<typename Scalar>
 [[nodiscard]] constexpr auto abs(scalar_complex<Scalar> const& z) noexcept -> Scalar
 {
-    auto const re = z.real();
-    auto const im = z.imag();
-    return std::sqrt(re * re + im * im);
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
+    if constexpr (std::same_as<Scalar, _Float16>) {
+        auto const re = static_cast<float>(z.real());
+        auto const im = static_cast<float>(z.imag());
+        return static_cast<Scalar>(std::sqrt(re * re + im * im));
+    } else {
+#endif
+        auto const re = z.real();
+        auto const im = z.imag();
+        return std::sqrt(re * re + im * im);
+
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
+    }
+#endif
 }
 
 using complex64  = scalar_complex<float>;
