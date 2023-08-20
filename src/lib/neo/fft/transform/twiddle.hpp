@@ -28,7 +28,7 @@ auto fill_radix2_twiddles(OutVec table, direction dir = direction::forward) -> v
     }
 }
 
-template<typename Complex>
+template<complex Complex>
 auto make_radix2_twiddles(std::size_t size, direction dir = direction::forward)
 {
     auto table = stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>>{size / 2U};
@@ -36,7 +36,7 @@ auto make_radix2_twiddles(std::size_t size, direction dir = direction::forward)
     return table;
 }
 
-template<typename Complex, std::size_t Size>
+template<complex Complex, std::size_t Size>
 auto make_radix2_twiddles(direction dir = direction::forward)
 {
     auto table = stdex::mdarray<Complex, stdex::extents<std::size_t, Size / 2>>{};

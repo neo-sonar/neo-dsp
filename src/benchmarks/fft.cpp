@@ -9,6 +9,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <iostream>
 #include <numeric>
 #include <random>
 #include <span>
@@ -81,6 +82,12 @@ namespace fft = neo::fft;
 
 auto main() -> int
 {
+    // auto tw_storage = neo::fft::make_radix2_twiddles<std::complex<double>>(8);
+    // auto tw         = std::span{tw_storage.data(), tw_storage.extent(0)};
+    // for (auto i{0U}; i < tw.size(); ++i) {
+    //     std::cout << i << ": " << tw[i] << '\n';
+    // }
+
     static constexpr auto N = 1024;
 
     timeit("fft_roundtrip<complex<float>, v1>(N)", N, fft_roundtrip<float, fft::radix2_kernel_v1>{N});
