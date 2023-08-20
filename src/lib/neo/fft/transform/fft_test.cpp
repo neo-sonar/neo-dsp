@@ -24,16 +24,16 @@ struct kernel_tester
 };
 
 template<typename Complex>
-using kernel_tester_v1 = kernel_tester<Complex, neo::fft::radix2_kernel_v1>;
+using kernel_v1 = kernel_tester<Complex, neo::fft::radix2_kernel_v1>;
 
 template<typename Complex>
-using kernel_tester_v2 = kernel_tester<Complex, neo::fft::radix2_kernel_v2>;
+using kernel_v2 = kernel_tester<Complex, neo::fft::radix2_kernel_v2>;
 
 template<typename Complex>
-using kernel_tester_v3 = kernel_tester<Complex, neo::fft::radix2_kernel_v3>;
+using kernel_v3 = kernel_tester<Complex, neo::fft::radix2_kernel_v3>;
 
 template<typename Complex>
-using kernel_tester_v4 = kernel_tester<Complex, neo::fft::radix2_kernel_v4>;
+using kernel_v4 = kernel_tester<Complex, neo::fft::radix2_kernel_v4>;
 
 template<typename Plan>
 auto test_fft_radix2_plan()
@@ -83,7 +83,7 @@ auto test_fft_radix2_plan()
 TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft/transform: fft_radix2_plan",
     "",
-    (kernel_tester_v1, kernel_tester_v2, kernel_tester_v3, kernel_tester_v4),
+    (kernel_v1, kernel_v2, kernel_v3, kernel_v4),
     (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>, (std::complex<long double>))
 )
 {

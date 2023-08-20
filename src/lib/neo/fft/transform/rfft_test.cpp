@@ -16,12 +16,19 @@
 
 namespace {
 
-template<typename Real, typename Kernel>
+template<typename Float, typename Kernel, typename Complex>
 struct tester
 {
-    using complex_plan_type = neo::fft::fft_radix2_plan<std::complex<Real>, Kernel>;
-    using plan_type         = neo::fft::rfft_radix2_plan<Real, complex_plan_type>;
+    static_assert(std::same_as<Float, typename Complex::value_type>);
+    using complex_plan_type = neo::fft::fft_radix2_plan<Complex, Kernel>;
+    using plan_type         = neo::fft::rfft_radix2_plan<Float, complex_plan_type>;
 };
+
+template<typename Float, typename Kernel>
+using std_complex = tester<Float, Kernel, std::complex<Float>>;
+
+template<typename Float, typename Kernel>
+using neo_complex = tester<Float, Kernel, neo::scalar_complex<Float>>;
 
 }  // namespace
 
@@ -30,7 +37,7 @@ using namespace neo::fft;
 TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft/transform: rfft_radix2_plan",
     "",
-    (tester),
+    (std_complex, neo_complex),
 
     ((float, radix2_kernel_v1),
      (float, radix2_kernel_v2),
@@ -48,8 +55,9 @@ TEMPLATE_PRODUCT_TEST_CASE(
      (long double, radix2_kernel_v4))
 )
 {
-    using Plan  = typename TestType::plan_type;
-    using Float = typename Plan::real_type;
+    using Plan    = typename TestType::plan_type;
+    using Float   = typename Plan::real_type;
+    using Complex = typename Plan::complex_type;
 
     auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
 
@@ -58,7 +66,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     REQUIRE(rfft.size() == 1UL << order);
 
     auto signal         = neo::generate_noise_signal<Float>(rfft.size(), Catch::getSeed());
-    auto spectrum       = std::vector<std::complex<Float>>(rfft.size() / 2UL + 1UL, Float(0));
+    auto spectrum       = std::vector<Complex>(rfft.size() / 2UL + 1UL, Float(0));
     auto const original = signal;
 
     auto const real    = signal.to_mdspan();
@@ -70,9 +78,15 @@ TEMPLATE_PRODUCT_TEST_CASE(
     REQUIRE(neo::allclose(stdex::mdspan{original.data(), stdex::extents{original.size()}}, real));
 }
 
-TEMPLATE_TEST_CASE("neo/fft/transform: extract_two_real_dfts", "", float, double, long double)
+TEMPLATE_PRODUCT_TEST_CASE(
+    "neo/fft/transform: extract_two_real_dfts",
+    "",
+    (std::complex, neo::scalar_complex),
+    (float, double, long double)
+)
 {
-    using Float = TestType;
+    using Complex = TestType;
+    using Float   = typename Complex::value_type;
 
     auto order           = GENERATE(as<std::size_t>{}, 4, 5, 6, 7, 8);
     auto const size      = std::size_t(1) << order;
@@ -81,11 +95,11 @@ TEMPLATE_TEST_CASE("neo/fft/transform: extract_two_real_dfts", "", float, double
     CAPTURE(size);
     CAPTURE(numCoeffs);
 
-    auto fft = neo::fft::fft_radix2_plan<std::complex<Float>>{order};
+    auto fft = neo::fft::fft_radix2_plan<Complex>{order};
     REQUIRE(fft.size() == size);
     REQUIRE(fft.order() == order);
 
-    auto rfft = neo::fft::rfft_radix2_plan<Float>{order};
+    auto rfft = neo::fft::rfft_radix2_plan<Float, decltype(fft)>{order};
     REQUIRE(rfft.size() == size);
     REQUIRE(rfft.order() == order);
 
@@ -98,19 +112,19 @@ TEMPLATE_TEST_CASE("neo/fft/transform: extract_two_real_dfts", "", float, double
     std::generate(a.data(), a.data() + a.size(), random);
     std::generate(b.data(), b.data() + b.size(), random);
 
-    auto a_rev = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>>{numCoeffs};
-    auto b_rev = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>>{numCoeffs};
+    auto a_rev = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{numCoeffs};
+    auto b_rev = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{numCoeffs};
     rfft(a.to_mdspan(), a_rev.to_mdspan());
     rfft(b.to_mdspan(), b_rev.to_mdspan());
 
-    auto inout = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>>{size};
-    auto merge = [](Float ra, Float rb) { return std::complex{ra, rb}; };
+    auto inout = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{size};
+    auto merge = [](Float ra, Float rb) { return Complex{ra, rb}; };
     std::transform(a.data(), a.data() + a.size(), b.data(), inout.data(), merge);
 
     fft(inout.to_mdspan(), neo::fft::direction::forward);
 
-    auto ca = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>>{numCoeffs};
-    auto cb = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>>{numCoeffs};
+    auto ca = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{numCoeffs};
+    auto cb = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{numCoeffs};
     neo::fft::extract_two_real_dfts(inout.to_mdspan(), ca.to_mdspan(), cb.to_mdspan());
 
     REQUIRE(neo::allclose(a_rev.to_mdspan(), ca.to_mdspan()));

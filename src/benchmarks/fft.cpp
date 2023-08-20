@@ -24,6 +24,7 @@ auto timeit(std::string_view name, size_t N, Func func)
     using microseconds = std::chrono::duration<double, std::micro>;
 
     auto const num_runs = 50'000ULL;
+    auto const padding  = num_runs / 100ULL * 2ULL;
 
     auto all_runs = std::vector<double>{};
     all_runs.reserve(num_runs);
@@ -36,13 +37,15 @@ auto timeit(std::string_view name, size_t N, Func func)
         all_runs.push_back(std::chrono::duration_cast<microseconds>(stop - start).count());
     }
 
-    auto const runs   = std::span<double>(all_runs).subspan(1000, all_runs.size() - 1000 * 2);
+    std::sort(all_runs.begin(), all_runs.end());
+
+    auto const runs   = std::span<double>(all_runs).subspan(padding, all_runs.size() - padding * 2);
     auto const dsize  = static_cast<double>(N);
     auto const avg    = std::reduce(runs.begin(), runs.end(), 0.0) / double(runs.size());
     auto const mflops = static_cast<int>(std::lround(5.0 * dsize * std::log2(dsize) / avg)) * 2;
 
     std::printf(
-        "%-40s N: %-5zu - runs: %zu - avg: %.1fus - min: %.1fus - max: "
+        "%-32s N: %-5zu - runs: %zu - avg: %.1fus - min: %.1fus - max: "
         "%.1fus - mflops: %d\n",
         name.data(),
         N,
@@ -54,11 +57,11 @@ auto timeit(std::string_view name, size_t N, Func func)
     );
 }
 
-template<typename Float, typename Kernel>
+template<typename Complex, typename Kernel>
 struct fft_roundtrip
 {
     explicit fft_roundtrip(size_t size)
-        : _buf(neo::generate_noise_signal<std::complex<Float>>(size, std::random_device{}()))
+        : _buf(neo::generate_noise_signal<Complex>(size, std::random_device{}()))
         , _fft{neo::ilog2(size)}
     {}
 
@@ -72,8 +75,8 @@ struct fft_roundtrip
     }
 
 private:
-    stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>> _buf;
-    neo::fft::fft_radix2_plan<std::complex<Float>, Kernel> _fft;
+    stdex::mdarray<Complex, stdex::dextents<size_t, 1>> _buf;
+    neo::fft::fft_radix2_plan<Complex, Kernel> _fft;
 };
 
 }  // namespace
@@ -90,16 +93,16 @@ auto main() -> int
 
     static constexpr auto N = 1024;
 
-    timeit("fft_roundtrip<complex<float>, v1>(N)", N, fft_roundtrip<float, fft::radix2_kernel_v1>{N});
-    timeit("fft_roundtrip<complex<float>, v2>(N)", N, fft_roundtrip<float, fft::radix2_kernel_v2>{N});
-    timeit("fft_roundtrip<complex<float>, v3>(N)", N, fft_roundtrip<float, fft::radix2_kernel_v3>{N});
-    timeit("fft_roundtrip<complex<float>, v4>(N)", N, fft_roundtrip<float, fft::radix2_kernel_v4>{N});
+    timeit("fft<std::complex<float>, v1>(N)", N, fft_roundtrip<std::complex<float>, fft::radix2_kernel_v1>{N});
+    timeit("fft<std::complex<float>, v2>(N)", N, fft_roundtrip<std::complex<float>, fft::radix2_kernel_v2>{N});
+    timeit("fft<std::complex<float>, v3>(N)", N, fft_roundtrip<std::complex<float>, fft::radix2_kernel_v3>{N});
+    timeit("fft<std::complex<float>, v4>(N)", N, fft_roundtrip<std::complex<float>, fft::radix2_kernel_v4>{N});
     std::printf("\n");
 
-    timeit("fft_roundtrip<complex<double>, v1>(N)", N, fft_roundtrip<double, fft::radix2_kernel_v1>{N});
-    timeit("fft_roundtrip<complex<double>, v2>(N)", N, fft_roundtrip<double, fft::radix2_kernel_v2>{N});
-    timeit("fft_roundtrip<complex<double>, v3>(N)", N, fft_roundtrip<double, fft::radix2_kernel_v3>{N});
-    timeit("fft_roundtrip<complex<double>, v4>(N)", N, fft_roundtrip<double, fft::radix2_kernel_v4>{N});
+    timeit("fft<neo::complex64, v1>(N)", N, fft_roundtrip<neo::complex64, fft::radix2_kernel_v1>{N});
+    timeit("fft<neo::complex64, v2>(N)", N, fft_roundtrip<neo::complex64, fft::radix2_kernel_v2>{N});
+    timeit("fft<neo::complex64, v3>(N)", N, fft_roundtrip<neo::complex64, fft::radix2_kernel_v3>{N});
+    timeit("fft<neo::complex64, v4>(N)", N, fft_roundtrip<neo::complex64, fft::radix2_kernel_v4>{N});
     std::printf("\n");
 
     return EXIT_SUCCESS;
