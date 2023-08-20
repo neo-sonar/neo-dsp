@@ -2,6 +2,9 @@
 
 #include <neo/algorithm/add.hpp>
 #include <neo/algorithm/fill.hpp>
+#include <neo/fft/convolution/dense_convolver.hpp>
+#include <neo/fft/convolution/overlap_add.hpp>
+#include <neo/fft/convolution/uniform_partitioned_convolver.hpp>
 
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
@@ -74,4 +77,11 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: compressed_fdl", "", std::int8_t, std::
 
     REQUIRE_THAT(output(1).real(), Catch::Matchers::WithinAbs(1.250, tolerance));
     REQUIRE_THAT(output(1).imag(), Catch::Matchers::WithinAbs(2.333, tolerance));
+
+    using Overlap = neo::fft::overlap_save<float>;
+    using Filter  = neo::fft::dense_filter<FloatComplex>;
+
+    auto filter    = stdex::mdarray<FloatComplex, stdex::dextents<size_t, 2>>{2, 513};
+    auto convolver = neo::fft::uniform_partitioned_convolver<Overlap, Fdl, Filter>{};
+    convolver.filter(filter.to_mdspan());
 }

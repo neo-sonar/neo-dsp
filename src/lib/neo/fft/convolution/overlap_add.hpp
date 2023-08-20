@@ -18,11 +18,11 @@
 
 namespace neo::fft {
 
-template<std::floating_point Float>
+template<std::floating_point Float, complex Complex = std::complex<Float>>
 struct overlap_add
 {
     using real_type    = Float;
-    using complex_type = std::complex<Float>;
+    using complex_type = Complex;
     using size_type    = std::size_t;
 
     overlap_add(size_type block_size, size_type filter_size);
@@ -47,39 +47,39 @@ private:
     stdex::mdarray<Float, stdex::dextents<size_t, 2>> _overlaps;
 };
 
-template<std::floating_point Float>
-overlap_add<Float>::overlap_add(size_type block_size, size_type filter_size)
+template<std::floating_point Float, complex Complex>
+overlap_add<Float, Complex>::overlap_add(size_type block_size, size_type filter_size)
     : _block_size{block_size}
     , _filter_size{filter_size}
     , _overlaps{divide_round_up(_usable_coeffs, _block_size), _usable_coeffs}
 {}
 
-template<std::floating_point Float>
-auto overlap_add<Float>::block_size() const noexcept -> size_type
+template<std::floating_point Float, complex Complex>
+auto overlap_add<Float, Complex>::block_size() const noexcept -> size_type
 {
     return _block_size;
 }
 
-template<std::floating_point Float>
-auto overlap_add<Float>::filter_size() const noexcept -> size_type
+template<std::floating_point Float, complex Complex>
+auto overlap_add<Float, Complex>::filter_size() const noexcept -> size_type
 {
     return _filter_size;
 }
 
-template<std::floating_point Float>
-auto overlap_add<Float>::transform_size() const noexcept -> size_type
+template<std::floating_point Float, complex Complex>
+auto overlap_add<Float, Complex>::transform_size() const noexcept -> size_type
 {
     return _rfft.size();
 }
 
-template<std::floating_point Float>
-auto overlap_add<Float>::num_overlaps() const noexcept -> size_type
+template<std::floating_point Float, complex Complex>
+auto overlap_add<Float, Complex>::num_overlaps() const noexcept -> size_type
 {
     return _overlaps.extent(0);
 }
 
-template<std::floating_point Float>
-auto overlap_add<Float>::operator()(inout_vector auto block, auto callback) -> void
+template<std::floating_point Float, complex Complex>
+auto overlap_add<Float, Complex>::operator()(inout_vector auto block, auto callback) -> void
 {
     assert(block.extent(0) == block_size());
 

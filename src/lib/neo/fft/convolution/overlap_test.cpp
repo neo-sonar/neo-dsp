@@ -40,15 +40,10 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: overlap_add", "", float, double, long d
     REQUIRE(num_overlaps(128, 514) == 6);
 }
 
-TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft/convolution: overlap",
-    "",
-    (neo::fft::overlap_add, neo::fft::overlap_save),
-    (float, double, long double)
-)
+template<typename Overlap>
+static auto test_overlap() -> void
 {
-    using Overlap = TestType;
-    using Float   = typename Overlap::real_type;
+    using Float = typename Overlap::real_type;
 
     auto const block_size  = GENERATE(as<std::size_t>{}, 128, 512);
     auto const filter_size = GENERATE(as<std::size_t>{}, 8, 9, 10, 17, 127, 128, 129, 130, 512, 999, 1024);
@@ -80,3 +75,25 @@ TEMPLATE_PRODUCT_TEST_CASE(
         REQUIRE_THAT(out[i], Catch::Matchers::WithinAbs(sig[i], 0.00001));
     }
 }
+
+TEMPLATE_PRODUCT_TEST_CASE(
+    "neo/fft/convolution: overlap",
+    "",
+    (neo::fft::overlap_add, neo::fft::overlap_save),
+    (float, double, long double)
+)
+{
+    test_overlap<TestType>();
+}
+
+// TEMPLATE_PRODUCT_TEST_CASE(
+//     "neo/fft/convolution: overlap",
+//     "",
+//     (neo::fft::overlap_add, neo::fft::overlap_save),
+//     ((float, neo::scalar_complex<float>),
+//      (double, neo::scalar_complex<double>),
+//      (long double, neo::scalar_complex<long double>))
+// )
+// {
+//     test_overlap<TestType>();
+// }

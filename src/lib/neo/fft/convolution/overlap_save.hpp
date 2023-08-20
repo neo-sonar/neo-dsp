@@ -16,11 +16,11 @@
 
 namespace neo::fft {
 
-template<std::floating_point Float>
+template<std::floating_point Float, complex Complex = std::complex<Float>>
 struct overlap_save
 {
     using real_type    = Float;
-    using complex_type = std::complex<Float>;
+    using complex_type = Complex;
     using size_type    = std::size_t;
 
     overlap_save(size_type block_size, size_type filter_size);
@@ -41,32 +41,32 @@ private:
     stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
 };
 
-template<std::floating_point Float>
-overlap_save<Float>::overlap_save(size_type block_size, size_type filter_size)
+template<std::floating_point Float, complex Complex>
+overlap_save<Float, Complex>::overlap_save(size_type block_size, size_type filter_size)
     : _block_size{block_size}
     , _filter_size{filter_size}
 {}
 
-template<std::floating_point Float>
-auto overlap_save<Float>::block_size() const noexcept -> size_type
+template<std::floating_point Float, complex Complex>
+auto overlap_save<Float, Complex>::block_size() const noexcept -> size_type
 {
     return _block_size;
 }
 
-template<std::floating_point Float>
-auto overlap_save<Float>::filter_size() const noexcept -> size_type
+template<std::floating_point Float, complex Complex>
+auto overlap_save<Float, Complex>::filter_size() const noexcept -> size_type
 {
     return _filter_size;
 }
 
-template<std::floating_point Float>
-auto overlap_save<Float>::transform_size() const noexcept -> size_type
+template<std::floating_point Float, complex Complex>
+auto overlap_save<Float, Complex>::transform_size() const noexcept -> size_type
 {
     return _rfft.size();
 }
 
-template<std::floating_point Float>
-auto overlap_save<Float>::operator()(inout_vector auto block, auto callback) -> void
+template<std::floating_point Float, complex Complex>
+auto overlap_save<Float, Complex>::operator()(inout_vector auto block, auto callback) -> void
 {
     assert(block.extent(0) == block_size());
 
