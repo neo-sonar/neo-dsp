@@ -42,7 +42,8 @@ struct rfft_radix2_plan
 
         // Fill upper half with conjugate
         for (auto i{coeffs}; i < _size; ++i) {
-            buf[i] = std::conj(buf[_size - i]);
+            using std::conj;
+            buf[i] = conj(buf[_size - i]);
         }
 
         _fft(buf, direction::backward);
