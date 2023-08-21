@@ -58,15 +58,15 @@ auto apply_fixed_point_kernel(
     assert(lhs.size() == rhs.size());
     assert(lhs.size() == out.size());
 
-#if defined(NEO_HAS_SIMD_SSE2) || defined(NEO_HAS_SIMD_NEON)
-    if constexpr (std::same_as<IntType, std::int8_t>) {
-        simd::apply_kernel<IntType>(lhs, rhs, out, scalar_kernel, vector_kernel_s8);
-        return;
-    } else if constexpr (std::same_as<IntType, std::int16_t>) {
-        simd::apply_kernel<IntType>(lhs, rhs, out, scalar_kernel, vector_kernel_s16);
-        return;
+    if constexpr (config::has_simd_sse2 or config::has_simd_neon) {
+        if constexpr (std::same_as<IntType, std::int8_t>) {
+            simd::apply_kernel<IntType>(lhs, rhs, out, scalar_kernel, vector_kernel_s8);
+            return;
+        } else if constexpr (std::same_as<IntType, std::int16_t>) {
+            simd::apply_kernel<IntType>(lhs, rhs, out, scalar_kernel, vector_kernel_s16);
+            return;
+        }
     }
-#endif
 
     for (auto i{0U}; i < lhs.size(); ++i) {
         out[i] = scalar_kernel(lhs[i], rhs[i]);

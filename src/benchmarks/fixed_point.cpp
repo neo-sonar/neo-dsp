@@ -56,15 +56,15 @@ struct float_mul
 {
     explicit float_mul() : _lhs(Size), _rhs(Size), _out(Size)
     {
-        if constexpr (neo::config::has_builtin_float16) {
-            if constexpr (std::same_as<FloatOrComplex, _Float16>) {
-                auto const lhs = neo::generate_noise_signal<float>(Size, std::random_device{}());
-                auto const rhs = neo::generate_noise_signal<float>(Size, std::random_device{}());
-                neo::copy(lhs.to_mdspan(), _lhs.to_mdspan());
-                neo::copy(rhs.to_mdspan(), _rhs.to_mdspan());
-                return;
-            }
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
+        if constexpr (std::same_as<FloatOrComplex, _Float16>) {
+            auto const lhs = neo::generate_noise_signal<float>(Size, std::random_device{}());
+            auto const rhs = neo::generate_noise_signal<float>(Size, std::random_device{}());
+            neo::copy(lhs.to_mdspan(), _lhs.to_mdspan());
+            neo::copy(rhs.to_mdspan(), _rhs.to_mdspan());
+            return;
         }
+#endif
 
         _lhs = neo::generate_noise_signal<FloatOrComplex>(Size, std::random_device{}());
         _rhs = neo::generate_noise_signal<FloatOrComplex>(Size, std::random_device{}());
@@ -274,10 +274,10 @@ auto main() -> int
 #if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
     timeit("mul(f16f32): ", 2, N, float16_mul_bench<N>{});
 #endif
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
+    timeit("mul(_Float16): ", 2, N, float_mul<_Float16, N>{});
+#endif
 
-    if constexpr (neo::config::has_builtin_float16) {
-        timeit("mul(_Float16): ", 2, N, float_mul<_Float16, N>{});
-    }
     timeit("mul(float):    ", 4, N, float_mul<float, N>{});
     timeit("mul(double):   ", 8, N, float_mul<double, N>{});
     timeit("mul(cf8):      ", 1, N, cfloat_mul<float, int8_t, N>{});
@@ -287,9 +287,10 @@ auto main() -> int
     // timeit("cmul(complex<cf8>):         ", 2, N, cfloat_mul<neo::complex64, neo::scalar_complex<int8_t>, N>{});
     // timeit("cmul(complex<cf16>):        ", 4, N, cfloat_mul<neo::complex64, neo::scalar_complex<int16_t>, N>{});
 
-    if constexpr (neo::config::has_builtin_float16) {
-        timeit("cmul(complex32):            ", 4, N, float_mul<neo::scalar_complex<_Float16>, N>{});
-    }
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
+    timeit("cmul(complex32):            ", 4, N, float_mul<neo::scalar_complex<_Float16>, N>{});
+#endif
+
     timeit("cmul(complex64):            ", 8, N, float_mul<neo::complex64, N>{});
     timeit("cmul(complex128):           ", 16, N, float_mul<neo::complex128, N>{});
     timeit("cmul(std::complex<float>):  ", 8, N, float_mul<std::complex<float>, N>{});
@@ -299,9 +300,9 @@ auto main() -> int
     timeit("cmulp(q7):       ", 2, N, cmulp<neo::q7, N>{});
     timeit("cmulp(q15):      ", 4, N, cmulp<neo::q15, N>{});
 
-    if constexpr (neo::config::has_builtin_float16) {
-        timeit("cmulp(_Float16): ", 4, N, cmulp<_Float16, N>{});
-    }
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
+    timeit("cmulp(_Float16): ", 4, N, cmulp<_Float16, N>{});
+#endif
     timeit("cmulp(float):    ", 8, N, cmulp<float, N>{});
     timeit("cmulp(double):   ", 16, N, cmulp<double, N>{});
 
