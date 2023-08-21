@@ -343,12 +343,12 @@ TEMPLATE_TEST_CASE(
 TEMPLATE_TEST_CASE(
     "neo/fixed_point: multiply",
     "",
-    neo::q7,
     neo::q15,
     (neo::fixed_point<std::int16_t, 14>),
     (neo::fixed_point<std::int16_t, 13>),
     (neo::fixed_point<std::int16_t, 12>),
     (neo::fixed_point<std::int16_t, 11>),
+    neo::q7,
     (neo::fixed_point<std::int8_t, 6>),
     (neo::fixed_point<std::int8_t, 5>)
 )

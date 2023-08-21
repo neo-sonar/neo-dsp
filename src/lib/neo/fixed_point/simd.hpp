@@ -36,14 +36,14 @@ inline constexpr auto const sub_kernel_s16 = [](__m128i l, __m128i r) { return _
 #if defined(NEO_HAS_SIMD_SSE41)
 
 template<int FractionalBits>
-inline constexpr auto const mul_kernel_s8 = [](__m128i left, __m128i right) {
-    auto const lowLeft    = _mm_cvtepi8_epi16(left);
-    auto const lowRight   = _mm_cvtepi8_epi16(right);
+inline constexpr auto const mul_kernel_s8 = [](__m128i lhs, __m128i rhs) {
+    auto const lowLeft    = _mm_cvtepi8_epi16(lhs);
+    auto const lowRight   = _mm_cvtepi8_epi16(rhs);
     auto const lowProduct = _mm_mullo_epi16(lowLeft, lowRight);
     auto const lowShifted = _mm_srli_epi16(lowProduct, FractionalBits);
 
-    auto const highLeft    = _mm_cvtepi8_epi16(_mm_srli_si128(left, 8));
-    auto const highRight   = _mm_cvtepi8_epi16(_mm_srli_si128(right, 8));
+    auto const highLeft    = _mm_cvtepi8_epi16(_mm_srli_si128(lhs, 8));
+    auto const highRight   = _mm_cvtepi8_epi16(_mm_srli_si128(rhs, 8));
     auto const highProduct = _mm_mullo_epi16(highLeft, highRight);
     auto const highShifted = _mm_srli_epi16(highProduct, FractionalBits);
 
@@ -51,18 +51,22 @@ inline constexpr auto const mul_kernel_s8 = [](__m128i left, __m128i right) {
 };
 
 template<int FractionalBits>
-inline constexpr auto const mul_kernel_s16 = [](__m128i left, __m128i right) {
-    auto const lowLeft    = _mm_cvtepi16_epi32(left);
-    auto const lowRight   = _mm_cvtepi16_epi32(right);
-    auto const lowProduct = _mm_mullo_epi32(lowLeft, lowRight);
-    auto const lowShifted = _mm_srli_epi32(lowProduct, FractionalBits);
+inline constexpr auto const mul_kernel_s16 = [](__m128i lhs, __m128i rhs) {
+    if constexpr (FractionalBits == 15) {
+        return _mm_mulhrs_epi16(lhs, rhs);
+    } else {
+        auto const low_left    = _mm_cvtepi16_epi32(lhs);
+        auto const low_right   = _mm_cvtepi16_epi32(rhs);
+        auto const low_product = _mm_mullo_epi32(low_left, low_right);
+        auto const low_shifted = _mm_srli_epi32(low_product, FractionalBits);
 
-    auto const highLeft    = _mm_cvtepi16_epi32(_mm_srli_si128(left, 8));
-    auto const highRight   = _mm_cvtepi16_epi32(_mm_srli_si128(right, 8));
-    auto const highProduct = _mm_mullo_epi32(highLeft, highRight);
-    auto const highShifted = _mm_srli_epi32(highProduct, FractionalBits);
+        auto const high_left    = _mm_cvtepi16_epi32(_mm_srli_si128(lhs, 8));
+        auto const high_right   = _mm_cvtepi16_epi32(_mm_srli_si128(rhs, 8));
+        auto const high_product = _mm_mullo_epi32(high_left, high_right);
+        auto const high_shifted = _mm_srli_epi32(high_product, FractionalBits);
 
-    return _mm_packs_epi32(lowShifted, highShifted);
+        return _mm_packs_epi32(low_shifted, high_shifted);
+    }
 };
 #endif
 
