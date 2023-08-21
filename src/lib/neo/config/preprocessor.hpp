@@ -105,4 +105,12 @@ namespace neo {
 template<typename>
 inline constexpr auto const always_false = false;
 
+namespace config {
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
+inline constexpr auto has_builtin_float16 = true;
+#else
+inline constexpr auto has_builtin_float16 = false;
+#endif
+}  // namespace config
+
 }  // namespace neo
