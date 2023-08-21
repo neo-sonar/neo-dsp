@@ -9,12 +9,12 @@
 
 namespace neo {
 
-struct SparsityTab final
+struct BenchmarkTab final
     : juce::Component
     , juce::Value::Listener
 {
-    explicit SparsityTab(juce::AudioFormatManager& formatManager);
-    ~SparsityTab() override = default;
+    explicit BenchmarkTab(juce::AudioFormatManager& formatManager);
+    ~BenchmarkTab() override = default;
 
     auto setImpulseResponseFile(juce::File const& file) -> void;
 

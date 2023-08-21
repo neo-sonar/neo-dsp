@@ -40,10 +40,10 @@ set(PerceptualConvolution_Sources
     dsp/Spectrum.cpp
     dsp/Spectrum.hpp
 
+    ui/BenchmarkTab.cpp
+    ui/BenchmarkTab.hpp
     ui/ParameterTab.cpp
     ui/ParameterTab.hpp
-    ui/SparsityTab.cpp
-    ui/SparsityTab.hpp
 )
 
 target_sources(PerceptualConvolution PRIVATE ${PerceptualConvolution_Sources})

@@ -4,16 +4,16 @@ namespace neo {
 
 PluginEditor::PluginEditor(PluginProcessor& p)
     : AudioProcessorEditor(&p)
-    , _parameter{p}
+    , _parameterTab{p}
     , _tabs{juce::TabbedButtonBar::Orientation::TabsAtTop}
 {
     _formats.registerBasicFormats();
 
-    _openFile.onClick = [this] { openFile(); };
-
     auto bgColor = getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId);
-    _tabs.addTab("Parameter", bgColor, std::addressof(_parameter), false);
-    _tabs.addTab("Sparsity", bgColor, std::addressof(_sparsity), false);
+    _tabs.addTab("Parameter", bgColor, std::addressof(_parameterTab), false);
+    _tabs.addTab("Benchmark", bgColor, std::addressof(_benchmarkTab), false);
+
+    _openFile.onClick = [this] { openFile(); };
 
     addAndMakeVisible(_openFile);
     addAndMakeVisible(_tabs);
@@ -50,7 +50,7 @@ auto PluginEditor::openFile() -> void
 
         auto const file     = chooser.getResult();
         auto const filename = file.getFileNameWithoutExtension();
-        _sparsity.setImpulseResponseFile(file);
+        _benchmarkTab.setImpulseResponseFile(file);
     };
 
     _fileChooser = std::make_unique<juce::FileChooser>(msg, homeDir, _formats.getWildcardForAllFormats());

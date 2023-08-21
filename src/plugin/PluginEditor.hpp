@@ -1,8 +1,8 @@
 #pragma once
 
 #include "PluginProcessor.hpp"
+#include "ui/BenchmarkTab.hpp"
 #include "ui/ParameterTab.hpp"
-#include "ui/SparsityTab.hpp"
 
 #include <neo/container/mdspan.hpp>
 
@@ -26,8 +26,8 @@ private:
 
     juce::TextButton _openFile{"Open Impulse"};
 
-    ParameterTab _parameter;
-    SparsityTab _sparsity{_formats};
+    ParameterTab _parameterTab;
+    BenchmarkTab _benchmarkTab{_formats};
     juce::TabbedComponent _tabs;
 
     std::unique_ptr<juce::FileChooser> _fileChooser{nullptr};

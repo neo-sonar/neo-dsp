@@ -1,4 +1,4 @@
-#include "SparsityTab.hpp"
+#include "BenchmarkTab.hpp"
 
 #include "core/StringArray.hpp"
 #include "dsp/AudioBuffer.hpp"
@@ -55,7 +55,7 @@ private:
 
 }  // namespace
 
-SparsityTab::SparsityTab(juce::AudioFormatManager& formatManager) : _formatManager{formatManager}
+BenchmarkTab::BenchmarkTab(juce::AudioFormatManager& formatManager) : _formatManager{formatManager}
 {
     _skip.addListener(this);
     _dynamicRange.addListener(this);
@@ -104,7 +104,7 @@ SparsityTab::SparsityTab(juce::AudioFormatManager& formatManager) : _formatManag
     addAndMakeVisible(_histogramImage);
 }
 
-auto SparsityTab::setImpulseResponseFile(juce::File const& file) -> void
+auto BenchmarkTab::setImpulseResponseFile(juce::File const& file) -> void
 {
     _filter     = loadAndResample(_formatManager, file, 44'100.0);
     _filterFile = file;
@@ -118,9 +118,9 @@ auto SparsityTab::setImpulseResponseFile(juce::File const& file) -> void
     repaint();
 }
 
-auto SparsityTab::paint(juce::Graphics& g) -> void { juce::ignoreUnused(g); }
+auto BenchmarkTab::paint(juce::Graphics& g) -> void { juce::ignoreUnused(g); }
 
-auto SparsityTab::resized() -> void
+auto BenchmarkTab::resized() -> void
 {
     auto bounds = getLocalBounds();
 
@@ -136,9 +136,9 @@ auto SparsityTab::resized() -> void
     _histogramImage.setBounds(bounds.reduced(4));
 }
 
-auto SparsityTab::valueChanged(juce::Value& /*value*/) -> void { updateImages(); }
+auto BenchmarkTab::valueChanged(juce::Value& /*value*/) -> void { updateImages(); }
 
-auto SparsityTab::selectSignalFile() -> void
+auto BenchmarkTab::selectSignalFile() -> void
 {
     auto const* msg         = "Please select a signal file";
     auto const homeDir      = juce::File::getSpecialLocation(juce::File::userMusicDirectory);
@@ -154,13 +154,13 @@ auto SparsityTab::selectSignalFile() -> void
     _fileChooser->launchAsync(chooserFlags, load);
 }
 
-auto SparsityTab::loadSignalFile(juce::File const& file) -> void
+auto BenchmarkTab::loadSignalFile(juce::File const& file) -> void
 {
     _signalFile = file;
     _signal     = loadAndResample(_formatManager, _signalFile, 44'100.0);
 }
 
-auto SparsityTab::runBenchmarks() -> void
+auto BenchmarkTab::runBenchmarks() -> void
 {
     auto hasEngineEnabled = [this](auto name) {
         if (auto const* array = _engine.getValue().getArray(); array != nullptr) {
@@ -191,7 +191,7 @@ auto SparsityTab::runBenchmarks() -> void
     }
 }
 
-auto SparsityTab::runWeightingTests() -> void
+auto BenchmarkTab::runWeightingTests() -> void
 {
     auto normalized = _filter;
     juce_normalization(normalized);
@@ -254,7 +254,7 @@ auto SparsityTab::runWeightingTests() -> void
     _fileInfo.insertTextAtCaret(line);
 }
 
-auto SparsityTab::runJuceConvolutionBenchmark() -> void
+auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
 {
     auto proc = JuceConvolver{
         _filterFile,
@@ -278,7 +278,7 @@ auto SparsityTab::runJuceConvolutionBenchmark() -> void
     writeToWavFile(file, output, 44'100.0, 32);
 }
 
-auto SparsityTab::runDenseConvolutionBenchmark() -> void
+auto BenchmarkTab::runDenseConvolutionBenchmark() -> void
 {
     auto out       = juce::AudioBuffer<float>{_signal.getNumChannels(), _signal.getNumSamples()};
     auto inBuffer  = juce::dsp::AudioBlock<float const>{_signal};
@@ -319,7 +319,7 @@ auto SparsityTab::runDenseConvolutionBenchmark() -> void
     writeToWavFile(file, to_mdarray(out), 44'100.0, 32);
 }
 
-auto SparsityTab::runDenseConvolverBenchmark() -> void
+auto BenchmarkTab::runDenseConvolverBenchmark() -> void
 {
     auto start = std::chrono::system_clock::now();
 
@@ -336,7 +336,7 @@ auto SparsityTab::runDenseConvolverBenchmark() -> void
     writeToWavFile(file, output, 44'100.0, 32);
 }
 
-auto SparsityTab::runSparseConvolverBenchmark() -> void
+auto BenchmarkTab::runSparseConvolverBenchmark() -> void
 {
     auto const start = std::chrono::system_clock::now();
 
@@ -359,7 +359,7 @@ auto SparsityTab::runSparseConvolverBenchmark() -> void
     writeToWavFile(file, output, 44'100.0, 32);
 }
 
-auto SparsityTab::updateImages() -> void
+auto BenchmarkTab::updateImages() -> void
 {
     if (_spectrum.size() == 0) {
         return;
@@ -387,7 +387,7 @@ auto SparsityTab::updateImages() -> void
     repaint();
 }
 
-auto SparsityTab::getBenchmarkResultsDirectory() -> juce::File
+auto BenchmarkTab::getBenchmarkResultsDirectory() -> juce::File
 {
     auto directory = juce::File::getSpecialLocation(juce::File::userMusicDirectory)
                          .getChildFile("Perceputual Convolution")
