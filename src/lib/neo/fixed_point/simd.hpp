@@ -114,25 +114,15 @@ struct alignas(16) q7x16
         return _mm_subs_epi8(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
-    // #if defined(NEO_HAS_SIMD_SSE41)
-    // NEO_ALWAYS_INLINE friend auto operator*(q7x16 lhs, q7x16 rhs) noexcept -> q7x16
-    // {
-    //     auto const l = static_cast<register_type>(lhs);
-    //     auto const r = static_cast<register_type>(rhs);
-
-    // auto const low_left    = _mm_cvtepi8_epi16(l);
-    // auto const low_right   = _mm_cvtepi8_epi16(r);
-    // auto const low_product = _mm_mullo_epi16(low_left, low_right);
-    // auto const low_shifted = _mm_srli_epi16(low_product, q7::fractional_bits);
-
-    // auto const high_left    = _mm_cvtepi8_epi16(_mm_srli_si128(l, 8));
-    // auto const high_right   = _mm_cvtepi8_epi16(_mm_srli_si128(r, 8));
-    // auto const high_product = _mm_mullo_epi16(high_left, high_right);
-    // auto const high_shifted = _mm_srli_epi16(high_product, q7::fractional_bits);
-
-    // return _mm_packs_epi16(low_shifted, high_shifted);
-    // }
-    // #endif
+    #if defined(NEO_HAS_SIMD_SSE41)
+    NEO_ALWAYS_INLINE friend auto operator*(q7x16 lhs, q7x16 rhs) noexcept -> q7x16
+    {
+        return detail::mul_kernel_s8<value_type::fractional_bits>(
+            static_cast<register_type>(lhs),
+            static_cast<register_type>(rhs)
+        );
+    }
+    #endif
 
 private:
     register_type _reg;
@@ -178,25 +168,15 @@ struct alignas(16) q15x8
         return _mm_subs_epi16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
     }
 
-    // #if defined(NEO_HAS_SIMD_SSE41)
-    // NEO_ALWAYS_INLINE friend auto operator*(q15x8 lhs, q15x8 rhs) noexcept -> q15x8
-    // {
-    //     auto const l = static_cast<register_type>(lhs);
-    //     auto const r = static_cast<register_type>(rhs);
-
-    // auto const low_left    = _mm_cvtepi16_epi32(l);
-    // auto const low_right   = _mm_cvtepi16_epi32(r);
-    // auto const low_product = _mm_mullo_epi32(low_left, low_right);
-    // auto const low_shifted = _mm_srli_epi32(low_product, q15::fractional_bits);
-
-    // auto const high_left    = _mm_cvtepi16_epi32(_mm_srli_si128(l, 8));
-    // auto const high_right   = _mm_cvtepi16_epi32(_mm_srli_si128(r, 8));
-    // auto const high_product = _mm_mullo_epi32(high_left, high_right);
-    // auto const high_shifted = _mm_srli_epi32(high_product, q15::fractional_bits);
-
-    // return _mm_packs_epi32(low_shifted, high_shifted);
-    // }
-    // #endif
+    #if defined(NEO_HAS_SIMD_SSE41)
+    NEO_ALWAYS_INLINE friend auto operator*(q15x8 lhs, q15x8 rhs) noexcept -> q15x8
+    {
+        return detail::mul_kernel_s16<value_type::fractional_bits>(
+            static_cast<register_type>(lhs),
+            static_cast<register_type>(rhs)
+        );
+    }
+    #endif
 
 private:
     register_type _reg;

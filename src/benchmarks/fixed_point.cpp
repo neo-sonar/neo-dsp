@@ -124,9 +124,16 @@ struct cmulp
         auto const out_real = stdex::submdspan(_out.to_mdspan(), 0, stdex::full_extent);
         auto const out_imag = stdex::submdspan(_out.to_mdspan(), 1, stdex::full_extent);
 
+        auto const* NEO_RESTRICT lre = lhs_real.data_handle();
+        auto const* NEO_RESTRICT lim = lhs_imag.data_handle();
+        auto const* NEO_RESTRICT rre = rhs_real.data_handle();
+        auto const* NEO_RESTRICT rim = rhs_imag.data_handle();
+        auto* NEO_RESTRICT ore       = out_real.data_handle();
+        auto* NEO_RESTRICT oim       = out_imag.data_handle();
+
         for (auto i{0}; std::cmp_less(i, out_real.extent(0)); ++i) {
-            out_real[i] = lhs_real[i] * rhs_real[i] - lhs_imag[i] * rhs_imag[i];
-            out_imag[i] = lhs_real[i] * rhs_imag[i] + lhs_imag[i] * rhs_real[i];
+            ore[i] = lre[i] * rre[i] - lim[i] * rim[i];
+            oim[i] = lre[i] * rim[i] + lim[i] * rre[i];
         }
 
         neo::do_not_optimize(out_real[0]);
@@ -137,6 +144,105 @@ private:
     stdex::mdarray<FloatOrFixed, stdex::dextents<size_t, 2>> _lhs;
     stdex::mdarray<FloatOrFixed, stdex::dextents<size_t, 2>> _rhs;
     stdex::mdarray<FloatOrFixed, stdex::dextents<size_t, 2>> _out;
+};
+
+template<typename FixedBatch, std::size_t Size>
+struct cmulp_batch_fixed_point
+{
+    explicit cmulp_batch_fixed_point()
+        : _lhs(2, Size / FixedBatch::size)
+        , _rhs(2, Size / FixedBatch::size)
+        , _out(2, Size / FixedBatch::size)
+    {
+        auto copy_to_fixed_point = [](auto src, auto dest) {
+            for (auto i{0}; i < src.extent(0); ++i) {
+                auto const fp = typename FixedBatch::value_type{src[i]};
+                dest[i]       = FixedBatch::broadcast(fp);
+            }
+        };
+        auto lr = neo::generate_noise_signal<float>(Size / FixedBatch::size, std::random_device{}());
+        auto li = neo::generate_noise_signal<float>(Size / FixedBatch::size, std::random_device{}());
+        auto rr = neo::generate_noise_signal<float>(Size / FixedBatch::size, std::random_device{}());
+        auto ri = neo::generate_noise_signal<float>(Size / FixedBatch::size, std::random_device{}());
+        copy_to_fixed_point(lr.to_mdspan(), stdex::submdspan(_lhs.to_mdspan(), 0, stdex::full_extent));
+        copy_to_fixed_point(li.to_mdspan(), stdex::submdspan(_lhs.to_mdspan(), 1, stdex::full_extent));
+        copy_to_fixed_point(rr.to_mdspan(), stdex::submdspan(_rhs.to_mdspan(), 0, stdex::full_extent));
+        copy_to_fixed_point(ri.to_mdspan(), stdex::submdspan(_rhs.to_mdspan(), 1, stdex::full_extent));
+    }
+
+    auto operator()() noexcept -> void
+    {
+        auto const lhs_real = stdex::submdspan(_lhs.to_mdspan(), 0, stdex::full_extent);
+        auto const lhs_imag = stdex::submdspan(_lhs.to_mdspan(), 1, stdex::full_extent);
+
+        auto const rhs_real = stdex::submdspan(_rhs.to_mdspan(), 0, stdex::full_extent);
+        auto const rhs_imag = stdex::submdspan(_rhs.to_mdspan(), 1, stdex::full_extent);
+
+        auto const out_real = stdex::submdspan(_out.to_mdspan(), 0, stdex::full_extent);
+        auto const out_imag = stdex::submdspan(_out.to_mdspan(), 1, stdex::full_extent);
+
+        for (auto i{0}; std::cmp_less(i, out_real.extent(0)); ++i) {
+            out_real[i] = lhs_real[i] * rhs_real[i] - lhs_imag[i] * rhs_imag[i];
+            out_imag[i] = lhs_real[i] * rhs_imag[i] + lhs_imag[i] * rhs_real[i];
+        }
+
+        neo::do_not_optimize(out_real[0]);
+        neo::do_not_optimize(out_imag[0]);
+    }
+
+private:
+    stdex::mdarray<FixedBatch, stdex::dextents<size_t, 2>> _lhs;
+    stdex::mdarray<FixedBatch, stdex::dextents<size_t, 2>> _rhs;
+    stdex::mdarray<FixedBatch, stdex::dextents<size_t, 2>> _out;
+};
+
+template<typename FloatBatch, std::size_t Size>
+struct cmulp_batch_float
+{
+    explicit cmulp_batch_float()
+        : _lhs(2, Size / FloatBatch::size)
+        , _rhs(2, Size / FloatBatch::size)
+        , _out(2, Size / FloatBatch::size)
+    {
+        auto copy_to_fixed_point = [](auto src, auto dest) {
+            for (auto i{0}; i < src.extent(0); ++i) {
+                dest[i] = FloatBatch::broadcast(src[i]);
+            }
+        };
+        auto lr = neo::generate_noise_signal<float>(Size / FloatBatch::size, std::random_device{}());
+        auto li = neo::generate_noise_signal<float>(Size / FloatBatch::size, std::random_device{}());
+        auto rr = neo::generate_noise_signal<float>(Size / FloatBatch::size, std::random_device{}());
+        auto ri = neo::generate_noise_signal<float>(Size / FloatBatch::size, std::random_device{}());
+        copy_to_fixed_point(lr.to_mdspan(), stdex::submdspan(_lhs.to_mdspan(), 0, stdex::full_extent));
+        copy_to_fixed_point(li.to_mdspan(), stdex::submdspan(_lhs.to_mdspan(), 1, stdex::full_extent));
+        copy_to_fixed_point(rr.to_mdspan(), stdex::submdspan(_rhs.to_mdspan(), 0, stdex::full_extent));
+        copy_to_fixed_point(ri.to_mdspan(), stdex::submdspan(_rhs.to_mdspan(), 1, stdex::full_extent));
+    }
+
+    auto operator()() noexcept -> void
+    {
+        auto const lhs_real = stdex::submdspan(_lhs.to_mdspan(), 0, stdex::full_extent);
+        auto const lhs_imag = stdex::submdspan(_lhs.to_mdspan(), 1, stdex::full_extent);
+
+        auto const rhs_real = stdex::submdspan(_rhs.to_mdspan(), 0, stdex::full_extent);
+        auto const rhs_imag = stdex::submdspan(_rhs.to_mdspan(), 1, stdex::full_extent);
+
+        auto const out_real = stdex::submdspan(_out.to_mdspan(), 0, stdex::full_extent);
+        auto const out_imag = stdex::submdspan(_out.to_mdspan(), 1, stdex::full_extent);
+
+        for (auto i{0}; std::cmp_less(i, out_real.extent(0)); ++i) {
+            out_real[i] = lhs_real[i] * rhs_real[i] - lhs_imag[i] * rhs_imag[i];
+            out_imag[i] = lhs_real[i] * rhs_imag[i] + lhs_imag[i] * rhs_real[i];
+        }
+
+        neo::do_not_optimize(out_real[0]);
+        neo::do_not_optimize(out_imag[0]);
+    }
+
+private:
+    stdex::mdarray<FloatBatch, stdex::dextents<size_t, 2>> _lhs;
+    stdex::mdarray<FloatBatch, stdex::dextents<size_t, 2>> _rhs;
+    stdex::mdarray<FloatBatch, stdex::dextents<size_t, 2>> _out;
 };
 
 template<typename FloatOrComplex, typename IntOrComplex, std::size_t Size>
@@ -307,6 +413,16 @@ auto main() -> int
 #endif
     timeit("cmulp(float):    ", 8, N, cmulp<float, N>{});
     timeit("cmulp(double):   ", 16, N, cmulp<double, N>{});
+    std::printf("\n");
+
+#if defined(NEO_HAS_SIMD_SSE41)
+    timeit("cmulp_batch_fixed_point(q7):  ", 2, N, cmulp_batch_fixed_point<neo::q7x16, N>{});
+    timeit("cmulp_batch_fixed_point(q15): ", 4, N, cmulp_batch_fixed_point<neo::q15x8, N>{});
+#endif
+#if defined(NEO_HAS_SIMD_AVX)
+    timeit("cmulp_batch_float(float32x8): ", 8, N, cmulp_batch_float<neo::float32x8, N>{});
+    timeit("cmulp_batch_float(float64x4): ", 16, N, cmulp_batch_float<neo::float64x4, N>{});
+#endif
 
     return EXIT_SUCCESS;
 }
