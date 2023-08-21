@@ -73,10 +73,10 @@ BenchmarkTab::BenchmarkTab(juce::AudioFormatManager& formatManager) : _formatMan
     auto const weightNames = toStringArray(weights);
 
     auto const engines = juce::Array<juce::var>{
-        juce::var{"juce"},
-        juce::var{"dense"},
-        juce::var{"dense2"},
-        juce::var{"sparse"},
+        juce::var{"juce::Convolution"},
+        juce::var{"DenseConvolution"},
+        juce::var{"upols_convolver"},
+        juce::var{"sparse_upols_convolver"},
     };
     auto const engineNames = toStringArray(engines);
 
@@ -126,10 +126,10 @@ auto BenchmarkTab::resized() -> void
 
     _fileInfo.setBounds(bounds.removeFromBottom(bounds.proportionOfHeight(0.175)));
 
-    auto right              = bounds.removeFromRight(bounds.proportionOfWidth(0.225));
+    auto right              = bounds.removeFromRight(bounds.proportionOfWidth(0.25));
     auto const buttonHeight = right.proportionOfHeight(0.1);
-    _selectSignalFile.setBounds(right.removeFromTop(buttonHeight).reduced(0, 4));
-    _render.setBounds(right.removeFromTop(buttonHeight).reduced(0, 4));
+    _render.setBounds(right.removeFromBottom(buttonHeight).reduced(0, 4));
+    _selectSignalFile.setBounds(right.removeFromBottom(buttonHeight).reduced(0, 4));
     _propertyPanel.setBounds(right);
 
     _spectogramImage.setBounds(bounds.removeFromTop(bounds.proportionOfHeight(0.5)).reduced(4));
@@ -177,16 +177,16 @@ auto BenchmarkTab::runBenchmarks() -> void
         return;
     }
 
-    if (hasEngineEnabled("juce")) {
+    if (hasEngineEnabled("juce::Convolution")) {
         runJuceConvolutionBenchmark();
     }
-    if (hasEngineEnabled("dense")) {
-        runDenseConvolverBenchmark();
-    }
-    if (hasEngineEnabled("dense2")) {
+    if (hasEngineEnabled("DenseConvolution")) {
         runDenseConvolutionBenchmark();
     }
-    if (hasEngineEnabled("sparse")) {
+    if (hasEngineEnabled("upols_convolver")) {
+        runDenseConvolverBenchmark();
+    }
+    if (hasEngineEnabled("sparse_upols_convolver")) {
         runSparseConvolverBenchmark();
     }
 }

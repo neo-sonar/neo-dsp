@@ -19,7 +19,7 @@ PluginEditor::PluginEditor(PluginProcessor& p)
     addAndMakeVisible(_tabs);
 
     setResizable(true, true);
-    setSize(1024, 576);
+    setSize(1280, 720);
 
     _tooltipWindow->setMillisecondsBeforeTipAppears(750);
 }
