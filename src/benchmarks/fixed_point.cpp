@@ -87,7 +87,7 @@ struct cmulp
 {
     explicit cmulp() : _lhs(2, Size), _rhs(2, Size), _out(2, Size)
     {
-        if constexpr (std::same_as<FloatOrFixed, neo::q7> or std::same_as<FloatOrFixed, neo::q15>) {
+        if constexpr (std::same_as<FloatOrFixed, neo::q7> or std::same_as<FloatOrFixed, neo::q15> or std::same_as<FloatOrFixed, neo::fixed_point<int16_t, 14>>) {
             auto copy_to_fixed_point = [](auto src, auto dest) {
                 for (auto i{0}; i < src.extent(0); ++i) {
                     dest[i] = FloatOrFixed(src[i]);
@@ -271,6 +271,7 @@ auto main() -> int
 
     timeit("mul(q7):     ", 1, N, fixed_point_mul<neo::q7, N>{});
     timeit("mul(q15):    ", 2, N, fixed_point_mul<neo::q15, N>{});
+    timeit("mul(fxp_14): ", 2, N, fixed_point_mul<neo::fixed_point<int16_t, 14>, N>{});
 #if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
     timeit("mul(f16f32): ", 2, N, float16_mul_bench<N>{});
 #endif
@@ -299,6 +300,7 @@ auto main() -> int
 
     timeit("cmulp(q7):       ", 2, N, cmulp<neo::q7, N>{});
     timeit("cmulp(q15):      ", 4, N, cmulp<neo::q15, N>{});
+    timeit("cmulp(fxp_14):   ", 4, N, cmulp<neo::fixed_point<int16_t, 14>, N>{});
 
 #if defined(NEO_HAS_BUILTIN_FLOAT16)
     timeit("cmulp(_Float16): ", 4, N, cmulp<_Float16, N>{});
