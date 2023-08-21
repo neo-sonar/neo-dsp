@@ -61,7 +61,8 @@ SparsityTab::SparsityTab(juce::AudioFormatManager& formatManager) : _formatManag
     _dynamicRange.addListener(this);
     _weighting.addListener(this);
 
-    _render.onClick = [this] { runBenchmarks(); };
+    _selectSignalFile.onClick = [this] { selectSignalFile(); };
+    _render.onClick           = [this] { runBenchmarks(); };
 
     _fileInfo.setReadOnly(true);
     _fileInfo.setMultiLine(true);
@@ -95,6 +96,7 @@ SparsityTab::SparsityTab(juce::AudioFormatManager& formatManager) : _formatManag
         }
     );
 
+    addAndMakeVisible(_selectSignalFile);
     addAndMakeVisible(_render);
     addAndMakeVisible(_propertyPanel);
     addAndMakeVisible(_fileInfo);
@@ -126,6 +128,7 @@ auto SparsityTab::resized() -> void
 
     auto right              = bounds.removeFromRight(bounds.proportionOfWidth(0.225));
     auto const buttonHeight = right.proportionOfHeight(0.1);
+    _selectSignalFile.setBounds(right.removeFromTop(buttonHeight).reduced(0, 4));
     _render.setBounds(right.removeFromTop(buttonHeight).reduced(0, 4));
     _propertyPanel.setBounds(right);
 
@@ -134,6 +137,28 @@ auto SparsityTab::resized() -> void
 }
 
 auto SparsityTab::valueChanged(juce::Value& /*value*/) -> void { updateImages(); }
+
+auto SparsityTab::selectSignalFile() -> void
+{
+    auto const* msg         = "Please select a signal file";
+    auto const homeDir      = juce::File::getSpecialLocation(juce::File::userMusicDirectory);
+    auto const chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles;
+    auto const load         = [this](juce::FileChooser const& chooser) {
+        if (chooser.getResults().isEmpty()) {
+            return;
+        }
+        loadSignalFile(chooser.getResult());
+    };
+
+    _fileChooser = std::make_unique<juce::FileChooser>(msg, homeDir, _formatManager.getWildcardForAllFormats());
+    _fileChooser->launchAsync(chooserFlags, load);
+}
+
+auto SparsityTab::loadSignalFile(juce::File const& file) -> void
+{
+    _signalFile = file;
+    _signal     = loadAndResample(_formatManager, _signalFile, 44'100.0);
+}
 
 auto SparsityTab::runBenchmarks() -> void
 {
@@ -149,8 +174,7 @@ auto SparsityTab::runBenchmarks() -> void
     };
 
     if (_signal.getNumChannels() == 0 or _signal.getNumSamples() == 0) {
-        _signalFile = juce::File{R"(C:\Users\tobias\Music\Loops\Drums.wav)"};
-        _signal     = loadAndResample(_formatManager, _signalFile, 44'100.0);
+        return;
     }
 
     if (hasEngineEnabled("juce")) {
@@ -239,7 +263,7 @@ auto SparsityTab::runJuceConvolutionBenchmark() -> void
 
     auto start = std::chrono::system_clock::now();
     auto out   = juce::AudioBuffer<float>{_signal.getNumChannels(), _signal.getNumSamples()};
-    auto file  = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("jconv", ".wav");
+    auto file  = getBenchmarkResultsDirectory().getNonexistentChildFile("jconv", ".wav");
 
     processBlocks(proc, _signal, out, 512, 44'100.0);
 
@@ -269,7 +293,7 @@ auto SparsityTab::runDenseConvolutionBenchmark() -> void
     });
 
     auto start = std::chrono::system_clock::now();
-    auto file  = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv2", ".wav");
+    auto file  = getBenchmarkResultsDirectory().getNonexistentChildFile("tconv2", ".wav");
 
     for (size_t i{0}; i < outBuffer.getNumSamples(); i += size_t(512)) {
         auto const numSamples = std::min(outBuffer.getNumSamples() - i, size_t(512));
@@ -300,7 +324,7 @@ auto SparsityTab::runDenseConvolverBenchmark() -> void
     auto start = std::chrono::system_clock::now();
 
     auto output = to_mdarray(neo::dense_convolve(_signal, _filter));
-    auto file   = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile("tconv_dense", ".wav");
+    auto file   = getBenchmarkResultsDirectory().getNonexistentChildFile("tconv_dense", ".wav");
 
     neo::peak_normalize(output.to_mdspan());
 
@@ -320,7 +344,7 @@ auto SparsityTab::runSparseConvolverBenchmark() -> void
     auto const thresholdText = juce::String(juce::roundToInt(std::abs(thresholdDB) * 100));
 
     auto const filename = "tconv_sparse_" + thresholdText;
-    auto const file     = juce::File{R"(C:\Users\tobias\Music)"}.getNonexistentChildFile(filename, ".wav");
+    auto const file     = getBenchmarkResultsDirectory().getNonexistentChildFile(filename, ".wav");
 
     auto output = to_mdarray(neo::sparse_convolve(_signal, _filter, thresholdDB));
 
@@ -363,4 +387,18 @@ auto SparsityTab::updateImages() -> void
     repaint();
 }
 
+auto SparsityTab::getBenchmarkResultsDirectory() -> juce::File
+{
+    auto directory = juce::File::getSpecialLocation(juce::File::userMusicDirectory)
+                         .getChildFile("Perceputual Convolution")
+                         .getChildFile("Benchmarks");
+    if (not directory.exists()) {
+        if (auto result = directory.createDirectory(); result.failed()) {
+            DBG(result.getErrorMessage());
+            return {};
+        }
+    }
+
+    return directory;
+}
 }  // namespace neo

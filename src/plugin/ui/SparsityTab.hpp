@@ -23,16 +23,23 @@ struct SparsityTab final
     auto valueChanged(juce::Value& value) -> void override;
 
 private:
+    auto selectSignalFile() -> void;
+    auto loadSignalFile(juce::File const& file) -> void;
+
     auto runBenchmarks() -> void;
     auto runWeightingTests() -> void;
     auto runJuceConvolutionBenchmark() -> void;
     auto runDenseConvolutionBenchmark() -> void;
     auto runDenseConvolverBenchmark() -> void;
     auto runSparseConvolverBenchmark() -> void;
+
     auto updateImages() -> void;
+
+    [[nodiscard]] static auto getBenchmarkResultsDirectory() -> juce::File;
 
     juce::AudioFormatManager& _formatManager;
 
+    juce::TextButton _selectSignalFile{"Select Signal File"};
     juce::TextButton _render{"Render"};
     juce::PropertyPanel _propertyPanel{};
     juce::TextEditor _fileInfo{};
@@ -49,6 +56,8 @@ private:
     juce::Value _dynamicRange{juce::var{90.0F}};
     juce::Value _weighting{juce::var{"A-Weighting"}};
     juce::Value _engine{juce::Array<juce::var>{juce::var{"dense"}}};
+
+    std::unique_ptr<juce::FileChooser> _fileChooser{nullptr};
 };
 
 }  // namespace neo
