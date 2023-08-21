@@ -18,6 +18,56 @@
 
 namespace neo {
 
+namespace detail {
+
+#if defined(NEO_HAS_SIMD_NEON)
+inline constexpr auto const add_kernel_s8  = [](int8x16_t l, int8x16_t r) { return vqaddq_s8(l, r); };
+inline constexpr auto const add_kernel_s16 = [](int16x8_t l, int16x8_t r) { return vqaddq_s16(l, r); };
+inline constexpr auto const sub_kernel_s8  = [](int8x16_t l, int8x16_t r) { return vqsubq_s8(l, r); };
+inline constexpr auto const sub_kernel_s16 = [](int16x8_t l, int16x8_t r) { return vqsubq_s16(l, r); };
+inline constexpr auto const mul_kernel_s16 = [](int16x8_t l, int16x8_t r) { return vqdmulhq_s16(l, r); };
+#elif defined(NEO_HAS_SIMD_SSE2)
+inline constexpr auto const add_kernel_s8  = [](__m128i l, __m128i r) { return _mm_adds_epi8(l, r); };
+inline constexpr auto const add_kernel_s16 = [](__m128i l, __m128i r) { return _mm_adds_epi16(l, r); };
+inline constexpr auto const sub_kernel_s8  = [](__m128i l, __m128i r) { return _mm_subs_epi8(l, r); };
+inline constexpr auto const sub_kernel_s16 = [](__m128i l, __m128i r) { return _mm_subs_epi16(l, r); };
+#endif
+
+#if defined(NEO_HAS_SIMD_SSE41)
+
+template<int FractionalBits>
+inline constexpr auto const mul_kernel_s8 = [](__m128i left, __m128i right) {
+    auto const lowLeft    = _mm_cvtepi8_epi16(left);
+    auto const lowRight   = _mm_cvtepi8_epi16(right);
+    auto const lowProduct = _mm_mullo_epi16(lowLeft, lowRight);
+    auto const lowShifted = _mm_srli_epi16(lowProduct, FractionalBits);
+
+    auto const highLeft    = _mm_cvtepi8_epi16(_mm_srli_si128(left, 8));
+    auto const highRight   = _mm_cvtepi8_epi16(_mm_srli_si128(right, 8));
+    auto const highProduct = _mm_mullo_epi16(highLeft, highRight);
+    auto const highShifted = _mm_srli_epi16(highProduct, FractionalBits);
+
+    return _mm_packs_epi16(lowShifted, highShifted);
+};
+
+template<int FractionalBits>
+inline constexpr auto const mul_kernel_s16 = [](__m128i left, __m128i right) {
+    auto const lowLeft    = _mm_cvtepi16_epi32(left);
+    auto const lowRight   = _mm_cvtepi16_epi32(right);
+    auto const lowProduct = _mm_mullo_epi32(lowLeft, lowRight);
+    auto const lowShifted = _mm_srli_epi32(lowProduct, FractionalBits);
+
+    auto const highLeft    = _mm_cvtepi16_epi32(_mm_srli_si128(left, 8));
+    auto const highRight   = _mm_cvtepi16_epi32(_mm_srli_si128(right, 8));
+    auto const highProduct = _mm_mullo_epi32(highLeft, highRight);
+    auto const highShifted = _mm_srli_epi32(highProduct, FractionalBits);
+
+    return _mm_packs_epi32(lowShifted, highShifted);
+};
+#endif
+
+}  // namespace detail
+
 #if defined(NEO_HAS_SIMD_SSE2)
 
 struct alignas(16) q7x16
