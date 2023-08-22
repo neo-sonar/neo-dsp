@@ -1,16 +1,12 @@
 
 #pragma once
 
-#include "dsp/DenseConvolution.hpp"
+#include "PerceptualConvolution.hpp"
 
 #include <juce_audio_processors/juce_audio_processors.h>
-#include <juce_dsp/juce_dsp.h>
-#include <juce_gui_extra/juce_gui_extra.h>
 
 namespace neo {
-struct PluginProcessor final
-    : juce::AudioProcessor
-    , juce::AudioProcessorValueTreeState::Listener
+struct PluginProcessor final : juce::AudioProcessor
 {
     PluginProcessor();
     ~PluginProcessor() override;
@@ -41,8 +37,6 @@ struct PluginProcessor final
     auto getStateInformation(juce::MemoryBlock& destData) -> void override;
     auto setStateInformation(void const* data, int sizeInBytes) -> void override;
 
-    auto parameterChanged(juce::String const& parameterID, float newValue) -> void override;
-
     auto getState() noexcept -> juce::AudioProcessorValueTreeState&;
     auto getState() const noexcept -> juce::AudioProcessorValueTreeState const&;
 
@@ -50,12 +44,7 @@ private:
     juce::UndoManager _undoManager{};
     juce::AudioProcessorValueTreeState _valueTree;
 
-    std::unique_ptr<DenseConvolution> _convolution;
-    juce::dsp::DryWetMixer<float> _mixer;
-
-    juce::AudioParameterFloat& _inGain;
-    juce::AudioParameterFloat& _outGain;
-    juce::AudioParameterFloat& _wet;
+    PerceptualConvolution _convolution;
 };
 
 }  // namespace neo

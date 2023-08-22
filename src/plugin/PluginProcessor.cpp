@@ -4,8 +4,6 @@
 #include "PluginEditor.hpp"
 #include "PluginParameter.hpp"
 
-#include <juce_audio_processors/juce_audio_processors.h>
-
 namespace neo {
 
 PluginProcessor::PluginProcessor()
@@ -13,9 +11,7 @@ PluginProcessor::PluginProcessor()
                          .withInput("Input", juce::AudioChannelSet::stereo(), true)
                          .withOutput("Output", juce::AudioChannelSet::stereo(), true))
     , _valueTree{*this, nullptr, juce::Identifier("PerceptualConvolution"), neo::createParameters()}
-    , _inGain{*getFloatParameter(_valueTree, ParamID::inGain)}
-    , _outGain{*getFloatParameter(_valueTree, ParamID::outGain)}
-    , _wet{*getFloatParameter(_valueTree, ParamID::wet)}
+    , _convolution{_valueTree}
 {}
 
 PluginProcessor::~PluginProcessor() = default;
@@ -49,30 +45,14 @@ auto PluginProcessor::changeProgramName(int index, juce::String const& newName) 
 
 auto PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) -> void
 {
-    auto const spec = juce::dsp::ProcessSpec{
+    _convolution.prepare(juce::dsp::ProcessSpec{
         sampleRate,
         static_cast<std::uint32_t>(samplesPerBlock),
         static_cast<std::uint32_t>(getMainBusNumInputChannels()),
-    };
-
-    auto impulse = juce::File{R"(C:\Users\tobias\Music\Samples\IR\LexiconPCM90 Halls\ORCH_large hall.WAV)"};
-
-    _convolution = std::make_unique<DenseConvolution>(samplesPerBlock);
-    _convolution->loadImpulseResponse(impulse.createInputStream());
-    _convolution->prepare(spec);
-    // setLatencySamples(juce::nextPowerOfTwo(samplesPerBlock));
-
-    _mixer.prepare(spec);
-    _mixer.setMixingRule(juce::dsp::DryWetMixingRule::balanced);
-    // _mixer.setWetLatency(static_cast<float>(juce::nextPowerOfTwo(samplesPerBlock)));
+    });
 }
 
-auto PluginProcessor::releaseResources() -> void
-{
-    if (_convolution) {
-        _convolution->reset();
-    }
-}
+auto PluginProcessor::releaseResources() -> void { _convolution.reset(); }
 
 auto PluginProcessor::isBusesLayoutSupported(BusesLayout const& layouts) const -> bool
 {
@@ -88,36 +68,16 @@ auto PluginProcessor::isBusesLayoutSupported(BusesLayout const& layouts) const -
     return true;
 }
 
-void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& /*midiMessages*/)
 {
-
-    juce::ignoreUnused(midiMessages);
-
     juce::ScopedNoDenormals const noDenormals;
 
     for (auto i = getTotalNumInputChannels(); i < getTotalNumOutputChannels(); ++i) {
         buffer.clear(i, 0, buffer.getNumSamples());
     }
 
-    buffer.applyGain(_inGain);
-
-    _mixer.pushDrySamples(juce::dsp::AudioBlock<float>{buffer});
-
-    if (_convolution) {
-        auto block   = juce::dsp::AudioBlock<float>{buffer};
-        auto context = juce::dsp::ProcessContextReplacing{block};
-        _convolution->process(context);
-    }
-
-    _mixer.setWetMixProportion(_wet);
-    _mixer.mixWetSamples(juce::dsp::AudioBlock<float>{buffer});
-
-    buffer.applyGain(_outGain);
-}
-
-auto PluginProcessor::parameterChanged(juce::String const& parameterID, float newValue) -> void
-{
-    juce::ignoreUnused(newValue, parameterID);
+    auto block = juce::dsp::AudioBlock<float>{buffer};
+    _convolution.process(block);
 }
 
 auto PluginProcessor::hasEditor() const -> bool { return true; }

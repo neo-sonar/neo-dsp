@@ -21,6 +21,8 @@ juce_add_plugin(PerceptualConvolution
 )
 
 set(PerceptualConvolution_Sources
+    PerceptualConvolution.cpp
+    PerceptualConvolution.hpp
     PluginEditor.hpp
     PluginEditor.cpp
     PluginParameter.hpp
