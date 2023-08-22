@@ -104,6 +104,8 @@ BenchmarkTab::BenchmarkTab(juce::AudioFormatManager& formatManager) : _formatMan
     addAndMakeVisible(_histogramImage);
 }
 
+BenchmarkTab::~BenchmarkTab() { _threadPool.removeAllJobs(true, 2000); }
+
 auto BenchmarkTab::setImpulseResponseFile(juce::File const& file) -> void
 {
     _filter     = loadAndResample(_formatManager, file, 44'100.0);
@@ -178,16 +180,16 @@ auto BenchmarkTab::runBenchmarks() -> void
     }
 
     if (hasEngineEnabled("juce::Convolution")) {
-        runJuceConvolutionBenchmark();
+        _threadPool.addJob([this] { runJuceConvolutionBenchmark(); });
     }
     if (hasEngineEnabled("DenseConvolution")) {
-        runDenseConvolutionBenchmark();
+        _threadPool.addJob([this] { runDenseConvolutionBenchmark(); });
     }
     if (hasEngineEnabled("upols_convolver")) {
-        runDenseConvolverBenchmark();
+        _threadPool.addJob([this] { runDenseConvolverBenchmark(); });
     }
     if (hasEngineEnabled("sparse_upols_convolver")) {
-        runSparseConvolverBenchmark();
+        _threadPool.addJob([this] { runSparseConvolverBenchmark(); });
     }
 }
 
@@ -272,8 +274,11 @@ auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
 
     auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    _fileInfo.moveCaretToEnd(false);
-    _fileInfo.insertTextAtCaret("JCONV-DENSE: " + juce::String{elapsed.count()} + "\n");
+
+    juce::MessageManager::callAsync([this, elapsed] {
+        _fileInfo.moveCaretToEnd(false);
+        _fileInfo.insertTextAtCaret("JCONV-DENSE: " + juce::String{elapsed.count()} + "\n");
+    });
 
     writeToWavFile(file, output, 44'100.0, 32);
 }
@@ -313,8 +318,11 @@ auto BenchmarkTab::runDenseConvolutionBenchmark() -> void
 
     auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    _fileInfo.moveCaretToEnd(false);
-    _fileInfo.insertTextAtCaret("TCONV2-DENSE: " + juce::String{elapsed.count()} + "\n");
+
+    juce::MessageManager::callAsync([this, elapsed] {
+        _fileInfo.moveCaretToEnd(false);
+        _fileInfo.insertTextAtCaret("TCONV2-DENSE: " + juce::String{elapsed.count()} + "\n");
+    });
 
     writeToWavFile(file, to_mdarray(out), 44'100.0, 32);
 }
@@ -330,8 +338,11 @@ auto BenchmarkTab::runDenseConvolverBenchmark() -> void
 
     auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    _fileInfo.moveCaretToEnd(false);
-    _fileInfo.insertTextAtCaret("TCONV-DENSE: " + juce::String{elapsed.count()} + "\n");
+
+    juce::MessageManager::callAsync([this, elapsed] {
+        _fileInfo.moveCaretToEnd(false);
+        _fileInfo.insertTextAtCaret("TCONV-DENSE: " + juce::String{elapsed.count()} + "\n");
+    });
 
     writeToWavFile(file, output, 44'100.0, 32);
 }
@@ -352,9 +363,12 @@ auto BenchmarkTab::runSparseConvolverBenchmark() -> void
 
     auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    auto const line    = "TCONV-SPARSE(" + thresholdText + "): " + juce::String{elapsed.count()} + "\n";
-    _fileInfo.moveCaretToEnd(false);
-    _fileInfo.insertTextAtCaret(line);
+
+    juce::MessageManager::callAsync([this, elapsed, thresholdText] {
+        auto const line = "TCONV-SPARSE(" + thresholdText + "): " + juce::String{elapsed.count()} + "\n";
+        _fileInfo.moveCaretToEnd(false);
+        _fileInfo.insertTextAtCaret(line);
+    });
 
     writeToWavFile(file, output, 44'100.0, 32);
 }

@@ -14,7 +14,7 @@ struct BenchmarkTab final
     , juce::Value::Listener
 {
     explicit BenchmarkTab(juce::AudioFormatManager& formatManager);
-    ~BenchmarkTab() override = default;
+    ~BenchmarkTab() override;
 
     auto setImpulseResponseFile(juce::File const& file) -> void;
 
@@ -58,6 +58,7 @@ private:
     juce::Value _engine{juce::Array<juce::var>{juce::var{"dense"}}};
 
     std::unique_ptr<juce::FileChooser> _fileChooser{nullptr};
+    juce::ThreadPool _threadPool{juce::ThreadPoolOptions{}.withNumberOfThreads(1).withThreadName("Benchmark Thread")};
 };
 
 }  // namespace neo
