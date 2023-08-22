@@ -31,12 +31,12 @@ private:
     sparse_matrix<Complex> _filter;
 };
 
-template<std::floating_point Float, typename Complex = std::complex<Float>>
+template<complex Complex>
 using sparse_upols_convolver
-    = uniform_partitioned_convolver<overlap_save<Float>, dense_fdl<Complex>, sparse_filter<Complex>>;
+    = uniform_partitioned_convolver<overlap_save<Complex>, dense_fdl<Complex>, sparse_filter<Complex>>;
 
-template<std::floating_point Float, typename Complex = std::complex<Float>>
+template<complex Complex>
 using sparse_upola_convolver
-    = uniform_partitioned_convolver<overlap_add<Float>, dense_fdl<Complex>, sparse_filter<Complex>>;
+    = uniform_partitioned_convolver<overlap_add<Complex>, dense_fdl<Complex>, sparse_filter<Complex>>;
 
 }  // namespace neo::fft

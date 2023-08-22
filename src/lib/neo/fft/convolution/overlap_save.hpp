@@ -16,11 +16,12 @@
 
 namespace neo::fft {
 
-template<std::floating_point Float, complex Complex = std::complex<Float>>
+template<complex Complex>
 struct overlap_save
 {
-    using real_type    = Float;
+    using value_type   = Complex;
     using complex_type = Complex;
+    using real_type    = typename Complex::value_type;
     using size_type    = std::size_t;
 
     overlap_save(size_type block_size, size_type filter_size);
@@ -34,39 +35,39 @@ struct overlap_save
 private:
     size_type _block_size;
     size_type _filter_size;
-    rfft_radix2_plan<Float> _rfft{ilog2(next_power_of_two(_block_size + _filter_size - 1UL))};
+    rfft_radix2_plan<real_type> _rfft{ilog2(next_power_of_two(_block_size + _filter_size - 1UL))};
 
-    stdex::mdarray<Float, stdex::dextents<size_t, 1>> _window{_rfft.size()};
-    stdex::mdarray<Float, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
+    stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _window{_rfft.size()};
+    stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
     stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
 };
 
-template<std::floating_point Float, complex Complex>
-overlap_save<Float, Complex>::overlap_save(size_type block_size, size_type filter_size)
+template<complex Complex>
+overlap_save<Complex>::overlap_save(size_type block_size, size_type filter_size)
     : _block_size{block_size}
     , _filter_size{filter_size}
 {}
 
-template<std::floating_point Float, complex Complex>
-auto overlap_save<Float, Complex>::block_size() const noexcept -> size_type
+template<complex Complex>
+auto overlap_save<Complex>::block_size() const noexcept -> size_type
 {
     return _block_size;
 }
 
-template<std::floating_point Float, complex Complex>
-auto overlap_save<Float, Complex>::filter_size() const noexcept -> size_type
+template<complex Complex>
+auto overlap_save<Complex>::filter_size() const noexcept -> size_type
 {
     return _filter_size;
 }
 
-template<std::floating_point Float, complex Complex>
-auto overlap_save<Float, Complex>::transform_size() const noexcept -> size_type
+template<complex Complex>
+auto overlap_save<Complex>::transform_size() const noexcept -> size_type
 {
     return _rfft.size();
 }
 
-template<std::floating_point Float, complex Complex>
-auto overlap_save<Float, Complex>::operator()(inout_vector auto block, auto callback) -> void
+template<complex Complex>
+auto overlap_save<Complex>::operator()(inout_vector auto block, auto callback) -> void
 {
     assert(block.extent(0) == block_size());
 
@@ -97,7 +98,7 @@ auto overlap_save<Float, Complex>::operator()(inout_vector auto block, auto call
     // Scale R2C output
     auto const num_coeffs = _rfft.size() / 2 + 1;
     auto const coeffs     = stdex::submdspan(complex_buf, std::tuple{0, num_coeffs});
-    scale(1.0F / static_cast<Float>(_rfft.size()), coeffs);
+    scale(1.0F / static_cast<real_type>(_rfft.size()), coeffs);
 
     // Apply processing
     callback(coeffs);

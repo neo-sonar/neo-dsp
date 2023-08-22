@@ -32,10 +32,10 @@ private:
     stdex::mdspan<Complex const, stdex::dextents<size_t, 2>> _filter;
 };
 
-template<typename Float, typename Complex = std::complex<Float>>
-using upols_convolver = uniform_partitioned_convolver<overlap_save<Float>, dense_fdl<Complex>, dense_filter<Complex>>;
+template<complex Complex>
+using upols_convolver = uniform_partitioned_convolver<overlap_save<Complex>, dense_fdl<Complex>, dense_filter<Complex>>;
 
-template<typename Float, typename Complex = std::complex<Float>>
-using upola_convolver = uniform_partitioned_convolver<overlap_add<Float>, dense_fdl<Complex>, dense_filter<Complex>>;
+template<complex Complex>
+using upola_convolver = uniform_partitioned_convolver<overlap_add<Complex>, dense_fdl<Complex>, dense_filter<Complex>>;
 
 }  // namespace neo::fft

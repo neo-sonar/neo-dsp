@@ -78,7 +78,7 @@ TEMPLATE_TEST_CASE("neo/fft/convolution: compressed_fdl", "", std::int8_t, std::
     REQUIRE_THAT(output(1).real(), Catch::Matchers::WithinAbs(1.250, tolerance));
     REQUIRE_THAT(output(1).imag(), Catch::Matchers::WithinAbs(2.333, tolerance));
 
-    using Overlap = neo::fft::overlap_save<float>;
+    using Overlap = neo::fft::overlap_save<FloatComplex>;
     using Filter  = neo::fft::dense_filter<FloatComplex>;
 
     auto filter    = stdex::mdarray<FloatComplex, stdex::dextents<size_t, 2>>{2, 513};

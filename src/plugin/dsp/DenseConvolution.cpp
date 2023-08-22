@@ -110,7 +110,7 @@ auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<fl
     auto partitions = uniform_partition(filter, blockSize);
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
-        auto convolver     = neo::fft::upols_convolver<float>{};
+        auto convolver     = neo::fft::upols_convolver<std::complex<float>>{};
         auto const channel = static_cast<size_t>(ch);
         auto const full    = stdex::full_extent;
         convolver.filter(stdex::submdspan(partitions.to_mdspan(), channel, full, full));
@@ -167,7 +167,7 @@ auto sparse_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<f
     }();
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
-        auto convolver               = neo::fft::sparse_upols_convolver<float>{};
+        auto convolver               = neo::fft::sparse_upols_convolver<std::complex<float>>{};
         auto const channel           = static_cast<size_t>(ch);
         auto const full              = stdex::full_extent;
         auto const channelPartitions = stdex::submdspan(partitions.to_mdspan(), channel, full, full);

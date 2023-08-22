@@ -18,11 +18,12 @@
 
 namespace neo::fft {
 
-template<std::floating_point Float, complex Complex = std::complex<Float>>
+template<complex Complex>
 struct overlap_add
 {
-    using real_type    = Float;
+    using value_type   = Complex;
     using complex_type = Complex;
+    using real_type    = typename Complex::value_type;
     using size_type    = std::size_t;
 
     overlap_add(size_type block_size, size_type filter_size);
@@ -39,47 +40,47 @@ private:
     size_type _filter_size;
     size_type _usable_coeffs{_block_size + _filter_size - 1UL};
 
-    rfft_radix2_plan<Float> _rfft{ilog2(next_power_of_two(_usable_coeffs))};
-    stdex::mdarray<Float, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
+    rfft_radix2_plan<real_type> _rfft{ilog2(next_power_of_two(_usable_coeffs))};
+    stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
     stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
 
     size_type _overlapWriteIdx{0};
-    stdex::mdarray<Float, stdex::dextents<size_t, 2>> _overlaps;
+    stdex::mdarray<real_type, stdex::dextents<size_t, 2>> _overlaps;
 };
 
-template<std::floating_point Float, complex Complex>
-overlap_add<Float, Complex>::overlap_add(size_type block_size, size_type filter_size)
+template<complex Complex>
+overlap_add<Complex>::overlap_add(size_type block_size, size_type filter_size)
     : _block_size{block_size}
     , _filter_size{filter_size}
     , _overlaps{divide_round_up(_usable_coeffs, _block_size), _usable_coeffs}
 {}
 
-template<std::floating_point Float, complex Complex>
-auto overlap_add<Float, Complex>::block_size() const noexcept -> size_type
+template<complex Complex>
+auto overlap_add<Complex>::block_size() const noexcept -> size_type
 {
     return _block_size;
 }
 
-template<std::floating_point Float, complex Complex>
-auto overlap_add<Float, Complex>::filter_size() const noexcept -> size_type
+template<complex Complex>
+auto overlap_add<Complex>::filter_size() const noexcept -> size_type
 {
     return _filter_size;
 }
 
-template<std::floating_point Float, complex Complex>
-auto overlap_add<Float, Complex>::transform_size() const noexcept -> size_type
+template<complex Complex>
+auto overlap_add<Complex>::transform_size() const noexcept -> size_type
 {
     return _rfft.size();
 }
 
-template<std::floating_point Float, complex Complex>
-auto overlap_add<Float, Complex>::num_overlaps() const noexcept -> size_type
+template<complex Complex>
+auto overlap_add<Complex>::num_overlaps() const noexcept -> size_type
 {
     return _overlaps.extent(0);
 }
 
-template<std::floating_point Float, complex Complex>
-auto overlap_add<Float, Complex>::operator()(inout_vector auto block, auto callback) -> void
+template<complex Complex>
+auto overlap_add<Complex>::operator()(inout_vector auto block, auto callback) -> void
 {
     assert(block.extent(0) == block_size());
 
@@ -87,14 +88,14 @@ auto overlap_add<Float, Complex>::operator()(inout_vector auto block, auto callb
     auto const complex_buffer = _complex_buffer.to_mdspan();
 
     // Copy and zero-pad input
-    fill(real_buffer, Float(0));
+    fill(real_buffer, real_type(0));
     copy(block, stdex::submdspan(real_buffer, std::tuple{0, block_size()}));
 
     // K-point rfft
     _rfft(real_buffer, complex_buffer);
 
     // Scale
-    auto const alpha  = 1.0F / static_cast<Float>(_rfft.size());
+    auto const alpha  = 1.0F / static_cast<real_type>(_rfft.size());
     auto const coeffs = stdex::submdspan(complex_buffer, std::tuple{0, _rfft.size() / 2 + 1});
     scale(alpha, coeffs);
 

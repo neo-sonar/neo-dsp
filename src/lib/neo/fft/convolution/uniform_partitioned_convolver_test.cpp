@@ -17,17 +17,17 @@ namespace {
 template<typename T>
 static constexpr auto is_sparse_convolver = false;
 
-template<typename Float, typename Overlap, typename Fdl>
+template<typename Complex, typename Overlap, typename Fdl>
 static constexpr auto
-    is_sparse_convolver<neo::fft::uniform_partitioned_convolver<Overlap, Fdl, neo::fft::sparse_filter<Float>>>
+    is_sparse_convolver<neo::fft::uniform_partitioned_convolver<Overlap, Fdl, neo::fft::sparse_filter<Complex>>>
     = true;
 
 }  // namespace
 
-static_assert(not is_sparse_convolver<neo::fft::upola_convolver<float>>);
-static_assert(not is_sparse_convolver<neo::fft::upols_convolver<float>>);
-static_assert(is_sparse_convolver<neo::fft::sparse_upols_convolver<float>>);
-static_assert(is_sparse_convolver<neo::fft::sparse_upola_convolver<float>>);
+static_assert(not is_sparse_convolver<neo::fft::upola_convolver<std::complex<float>>>);
+static_assert(not is_sparse_convolver<neo::fft::upols_convolver<std::complex<float>>>);
+static_assert(is_sparse_convolver<neo::fft::sparse_upols_convolver<std::complex<float>>>);
+static_assert(is_sparse_convolver<neo::fft::sparse_upola_convolver<std::complex<float>>>);
 
 TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft/convolution: convolver",
@@ -36,7 +36,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
      neo::fft::upols_convolver,
      neo::fft::sparse_upola_convolver,
      neo::fft::sparse_upols_convolver),
-    (float, double, long double)
+    (std::complex<float>, std::complex<double>, std::complex<long double>)
 )
 {
     using Convolver = TestType;
