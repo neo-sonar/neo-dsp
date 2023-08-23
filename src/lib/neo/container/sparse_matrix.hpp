@@ -30,6 +30,9 @@ struct sparse_matrix
         requires std::is_convertible_v<typename InMat::value_type, T>
     sparse_matrix(InMat matrix, Filter filter);
 
+    [[nodiscard]] auto extent(size_type e) const noexcept -> size_type;
+    [[nodiscard]] auto extents() const noexcept -> stdex::dextents<index_type, 2>;
+
     [[nodiscard]] auto rows() const noexcept -> size_type;
     [[nodiscard]] auto columns() const noexcept -> size_type;
     [[nodiscard]] auto size() const noexcept -> size_type;
@@ -43,8 +46,7 @@ struct sparse_matrix
     auto row_container() const noexcept -> index_container_type const&;
 
 private:
-    size_type _rows{0};
-    size_type _columns{0};
+    stdex::dextents<index_type, 2> _extents;
     ValueContainer _values;
     IndexContainer _columIndices;
     IndexContainer _rowIndices;
@@ -52,9 +54,8 @@ private:
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
 sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(size_type rows, size_type cols)
-    : _rows{rows}
-    , _columns{cols}
-    , _rowIndices(_rows + 1UL, 0)
+    : _extents{rows, cols}
+    , _rowIndices(rows + 1UL, 0)
 {}
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
@@ -94,15 +95,28 @@ sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(InMat
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
+auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::extent(size_type e) const noexcept -> size_type
+{
+    return _extents.extent(e);
+}
+
+template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
+auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::extents() const noexcept
+    -> stdex::dextents<index_type, 2>
+{
+    return _extents;
+}
+
+template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
 auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::rows() const noexcept -> size_type
 {
-    return _rows;
+    return extent(0);
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
 auto sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::columns() const noexcept -> size_type
 {
-    return _columns;
+    return extent(1);
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
