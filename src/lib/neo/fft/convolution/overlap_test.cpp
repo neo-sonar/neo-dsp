@@ -2,7 +2,7 @@
 #include "overlap_save.hpp"
 
 #include <neo/algorithm/allclose.hpp>
-#include <neo/algorithm/rms_error.hpp>
+#include <neo/algorithm/root_mean_squared_error.hpp>
 #include <neo/complex/scalar_complex.hpp>
 #include <neo/fft/convolution/uniform_partition.hpp>
 #include <neo/testing/testing.hpp>
@@ -70,7 +70,7 @@ static auto test_overlap() -> void
     auto const out = output.to_mdspan();
 
     REQUIRE(neo::allclose(out, sig));
-    REQUIRE_THAT(neo::rms_error(sig, out), Catch::Matchers::WithinAbs(0.0, 0.00001));
+    REQUIRE_THAT(neo::root_mean_squared_error(sig, out), Catch::Matchers::WithinAbs(0.0, 0.00001));
 
     for (auto i{0ULL}; i < output.size(); ++i) {
         CAPTURE(i);
