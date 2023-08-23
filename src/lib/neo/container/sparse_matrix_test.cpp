@@ -12,39 +12,50 @@ TEMPLATE_TEST_CASE("neo/container: sparse_matrix", "", float, double, long doubl
     using Scalar = TestType;
     using Float  = neo::real_or_complex_value_t<Scalar>;
 
+    auto greaterEqualToX = [](auto x) {
+        return [x](auto, auto, auto v) {
+            if constexpr (neo::complex<Scalar>) {
+                return v.real() >= Float(x);
+            } else {
+                return v >= Float(x);
+            }
+        };
+    };
+
+    auto greaterEqualOne = greaterEqualToX(Float(1));
+    auto greaterEqualTwo = greaterEqualToX(Float(2));
+
     SECTION("insert")
     {
-        auto rhs = neo::sparse_matrix<Float>{16, 32};
-        rhs.insert(0, 0, Float(2));
-        REQUIRE(rhs(0, 0) == Catch::Approx(Float(2)));
+        auto matrix = neo::sparse_matrix<Float>{16, 32};
+        REQUIRE(matrix(0, 0) == Catch::Approx(Float(0)));
+        matrix.insert(0, 0, Float(2));
+        REQUIRE(matrix(0, 0) == Catch::Approx(Float(2)));
 
-        rhs.insert(0, 1, Float(4));
-        REQUIRE(rhs(0, 0) == Catch::Approx(Float(2)));
-        REQUIRE(rhs(0, 1) == Catch::Approx(Float(4)));
+        matrix.insert(0, 1, Float(4));
+        REQUIRE(matrix(0, 0) == Catch::Approx(Float(2)));
+        REQUIRE(matrix(0, 1) == Catch::Approx(Float(4)));
+
+        REQUIRE(matrix(0, 4) == Catch::Approx(Float(0)));
+        matrix.insert(0, 4, Float(42));
+        REQUIRE(matrix(0, 4) == Catch::Approx(Float(42)));
     }
 
-    auto greaterEqualOne = [](auto, auto, auto v) { return std::real(v) >= Float(1); };
-    auto greaterEqualTwo = [](auto, auto, auto v) { return std::real(v) >= Float(2); };
+    auto dense = stdex::mdarray<Scalar, stdex::dextents<std::size_t, 2>>{16, 32};
+    neo::fill(dense.to_mdspan(), Scalar(Float(1)));
 
-    auto lhs = stdex::mdarray<Scalar, stdex::dextents<std::size_t, 2>>{16, 32};
-    neo::fill(lhs.to_mdspan(), Scalar(Float(1)));
+    auto sparse = neo::sparse_matrix<Scalar>{dense.to_mdspan(), greaterEqualOne};
+    REQUIRE(sparse.rows() == dense.extent(0));
+    REQUIRE(sparse.columns() == dense.extent(1));
+    REQUIRE(sparse.extent(0) == dense.extent(0));
+    REQUIRE(sparse.extent(1) == dense.extent(1));
+    REQUIRE(sparse.size() == dense.size());
+    REQUIRE(sparse.extents() == dense.extents());
+    REQUIRE(sparse.value_container().size() == dense.size());
 
-    auto other = neo::sparse_matrix<Scalar>{lhs.to_mdspan(), greaterEqualOne};
-    REQUIRE(other.rows() == lhs.extent(0));
-    REQUIRE(other.columns() == lhs.extent(1));
-    REQUIRE(other.extent(0) == lhs.extent(0));
-    REQUIRE(other.extent(1) == lhs.extent(1));
-    REQUIRE(other.size() == lhs.size());
-    REQUIRE(other.extents() == lhs.extents());
-    REQUIRE(other.value_container().size() == lhs.size());
-
-    other = neo::sparse_matrix<Scalar>{lhs.to_mdspan(), greaterEqualTwo};
-    REQUIRE(other.rows() == lhs.extent(0));
-    REQUIRE(other.columns() == lhs.extent(1));
-    REQUIRE(other.size() == lhs.size());
-    REQUIRE(other.value_container().size() == 0);
-
-    auto rowData = std::vector<Scalar>(lhs.extent(1));
-    auto row     = stdex::mdspan{rowData.data(), stdex::extents{rowData.size()}};
-    neo::fill(row, Scalar(Float(2)));
+    sparse = neo::sparse_matrix<Scalar>{dense.to_mdspan(), greaterEqualTwo};
+    REQUIRE(sparse.rows() == dense.extent(0));
+    REQUIRE(sparse.columns() == dense.extent(1));
+    REQUIRE(sparse.size() == dense.size());
+    REQUIRE(sparse.value_container().size() == 0);
 }
