@@ -9,6 +9,6 @@
 #include <neo/math/idiv.hpp>
 #include <neo/math/ilog2.hpp>
 #include <neo/math/ipow.hpp>
-#include <neo/math/math_precision.hpp>
 #include <neo/math/next_power_of_two.hpp>
+#include <neo/math/precision.hpp>
 #include <neo/math/windowing.hpp>

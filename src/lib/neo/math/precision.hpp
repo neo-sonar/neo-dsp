@@ -2,7 +2,7 @@
 
 namespace neo {
 
-enum struct math_precision
+enum struct precision
 {
     accurate,
     estimate,
