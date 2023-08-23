@@ -13,6 +13,7 @@ target_sources(neo_fft_tests
         "neo/algorithm/allclose_test.cpp"
         "neo/algorithm/allmatch_test.cpp"
         "neo/algorithm/copy_test.cpp"
+        "neo/algorithm/mean_squared_error_test.cpp"
         "neo/algorithm/multiply_add_test.cpp"
 
         "neo/complex/complex_test.cpp"
