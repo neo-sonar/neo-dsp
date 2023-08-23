@@ -144,8 +144,12 @@ normalization_factor(stdex::mdspan<std::complex<float> const, stdex::dextents<si
     return 1.0F / maxPower;
 }
 
-auto sparse_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter, float thresholdDB)
-    -> juce::AudioBuffer<float>
+auto sparse_convolve(
+    juce::AudioBuffer<float> const& signal,
+    juce::AudioBuffer<float> const& filter,
+    float thresholdDB,
+    int lowBinsToKeep
+) -> juce::AudioBuffer<float>
 {
     auto const blockSize = 512;
 
@@ -155,13 +159,17 @@ auto sparse_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<f
 
     auto const K = neo::next_power_of_two((partitions.extent(2) - 1U) * 2U);
 
-    auto const weights = [K, bins = partitions.extent(2)] {
-        auto w = std::vector<float>(bins);
-        for (auto i{0U}; i < w.size(); ++i) {
-            auto const frequency = neo::fftfreq<float>(K, i, 44'100.0);
-            auto const weight    = frequency > 0.0F ? neo::a_weighting(frequency) : 0.0F;
+    auto const weights = [K, bins = partitions.extent(2), lowBinsToKeep] {
+        jassert(std::cmp_less(lowBinsToKeep, bins));
 
-            w[i] = weight;
+        auto w = std::vector<float>(bins);
+        std::fill(w.begin(), std::next(w.begin(), lowBinsToKeep), 100.0F);
+
+        for (auto i{lowBinsToKeep}; i < std::ssize(w); ++i) {
+            auto const frequency = neo::fftfreq<float>(K, i, 44'100.0);
+            auto const weight    = neo::a_weighting(frequency);
+
+            w[static_cast<std::size_t>(i)] = weight;
         }
         return w;
     }();

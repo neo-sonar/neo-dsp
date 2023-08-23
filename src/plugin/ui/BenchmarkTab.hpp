@@ -32,6 +32,7 @@ private:
     auto runDenseConvolutionBenchmark() -> void;
     auto runDenseConvolverBenchmark() -> void;
     auto runSparseConvolverBenchmark() -> void;
+    auto runSparseQualityTests() -> void;
 
     auto updateImages() -> void;
 
@@ -53,6 +54,7 @@ private:
     stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 2>> _spectrum;
     stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>> _partitions;
 
+    juce::Value _binsToKeep{juce::var{10}};
     juce::Value _dynamicRange{juce::var{90.0F}};
     juce::Value _weighting{juce::var{"A-Weighting"}};
     juce::Value _engine{juce::Array<juce::var>{juce::var{"dense"}}};

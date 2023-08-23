@@ -7,6 +7,7 @@
 #include "dsp/Spectrum.hpp"
 
 #include <neo/algorithm/peak_normalize.hpp>
+#include <neo/algorithm/root_mean_squared_error.hpp>
 #include <neo/container/sparse_matrix.hpp>
 #include <neo/fft/transform/fftfreq.hpp>
 #include <neo/fft/transform/stft.hpp>
@@ -98,6 +99,7 @@ BenchmarkTab::BenchmarkTab(juce::AudioFormatManager& formatManager) : _formatMan
         juce::var{"DenseConvolution"},
         juce::var{"upola_convolver"},
         juce::var{"sparse_upola_convolver"},
+        juce::var{"sparse_quality_tests"},
     };
     auto const engineNames = toStringArray(engines);
 
@@ -105,6 +107,7 @@ BenchmarkTab::BenchmarkTab(juce::AudioFormatManager& formatManager) : _formatMan
         "Sparsity",
         juce::Array<juce::PropertyComponent*>{
             std::make_unique<juce::SliderPropertyComponent>(_dynamicRange, "Dynamic Range", 10.0, 100.0, 0.5).release(),
+            std::make_unique<juce::SliderPropertyComponent>(_binsToKeep, "Keep Low Bins", 0.0, 25.0, 1.0).release(),
             std::make_unique<juce::ChoicePropertyComponent>(_weighting, "Weighting", weightNames, weights).release(),
         }
     );
@@ -220,6 +223,9 @@ auto BenchmarkTab::runBenchmarks() -> void
     }
     if (hasEngineEnabled("sparse_upola_convolver")) {
         _threadPool.addJob([this] { runSparseConvolverBenchmark(); });
+    }
+    if (hasEngineEnabled("sparse_quality_tests")) {
+        _threadPool.addJob([this] { runSparseQualityTests(); });
     }
 }
 
@@ -358,10 +364,11 @@ auto BenchmarkTab::runDenseConvolverBenchmark() -> void
 
 auto BenchmarkTab::runSparseConvolverBenchmark() -> void
 {
-    auto const thresholdDB = -static_cast<float>(_dynamicRange.getValue());
+    auto const thresholdDB   = -static_cast<float>(_dynamicRange.getValue());
+    auto const numBinsToKeep = static_cast<int>(_binsToKeep.getValue());
 
     auto const start  = std::chrono::system_clock::now();
-    auto const result = neo::sparse_convolve(_signal, _filter, thresholdDB);
+    auto const result = neo::sparse_convolve(_signal, _filter, thresholdDB, numBinsToKeep);
     auto const end    = std::chrono::system_clock::now();
 
     auto output = to_mdarray(result);
@@ -379,6 +386,39 @@ auto BenchmarkTab::runSparseConvolverBenchmark() -> void
     auto const filename = "tconv_sparse_" + thresholdText;
     auto const file     = getBenchmarkResultsDirectory().getNonexistentChildFile(filename, ".wav");
     writeToWavFile(file, output, 44'100.0, 32);
+}
+
+auto BenchmarkTab::runSparseQualityTests() -> void
+{
+    auto const dense = [this] {
+        auto result = to_mdarray(neo::dense_convolve(_signal, _filter));
+        neo::peak_normalize(result.to_mdspan());
+        return result;
+    }();
+
+    auto const numBinsToKeep = static_cast<int>(_binsToKeep.getValue());
+
+    auto calculateErrorsForDynamicRange = [this, reference = dense.to_mdspan(), numBinsToKeep](auto dynamicRange) {
+        auto sparse = to_mdarray(neo::sparse_convolve(_signal, _filter, -dynamicRange, numBinsToKeep));
+        neo::peak_normalize(sparse.to_mdspan());
+
+        return neo::root_mean_squared_error(
+            stdex::submdspan(reference, 0, stdex::full_extent),
+            stdex::submdspan(sparse.to_mdspan(), 0, stdex::full_extent)
+        );
+    };
+
+    juce::MessageManager::callAsync([this] { _fileInfo.moveCaretToEnd(false); });
+
+    for (auto range : {144, 138, 132, 126, 120, 114, 108, 102, 96, 90, 84, 78, 72, 66, 60, 54, 48, 42, 36, 30}) {
+        auto const rmse = calculateErrorsForDynamicRange(static_cast<float>(range));
+        auto const text = "SPARSE-QUALITY(" + juce::String{range} + "): rmse = " + juce::String{rmse, 7}
+                        + " rmse(dB) = " + juce::String{to_decibels(rmse)} + "\n";
+
+        juce::MessageManager::callAsync([this, text] { _fileInfo.insertTextAtCaret(text); });
+    }
+
+    juce::MessageManager::callAsync([this] { _fileInfo.insertTextAtCaret("SPARSE-QUALITY: Done\n"); });
 }
 
 auto BenchmarkTab::updateImages() -> void

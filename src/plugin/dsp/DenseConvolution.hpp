@@ -42,8 +42,11 @@ private:
 [[nodiscard]] auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)
     -> juce::AudioBuffer<float>;
 
-[[nodiscard]] auto
-sparse_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter, float thresholdDB)
-    -> juce::AudioBuffer<float>;
+[[nodiscard]] auto sparse_convolve(
+    juce::AudioBuffer<float> const& signal,
+    juce::AudioBuffer<float> const& filter,
+    float thresholdDB,
+    int lowBinsToKeep
+) -> juce::AudioBuffer<float>;
 
 }  // namespace neo
