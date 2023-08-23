@@ -12,7 +12,7 @@
 namespace neo {
 
 template<in_object InObj1, in_object InObj2, typename Scalar>
-[[nodiscard]] auto allclose(InObj1 lhs, InObj2 rhs, Scalar tolerance) -> bool
+[[nodiscard]] auto allclose(InObj1 lhs, InObj2 rhs, Scalar tolerance) noexcept -> bool
 {
     return allmatch(lhs, rhs, [tolerance](auto const& left, auto const& right) -> bool {
         using std::abs;
@@ -21,7 +21,7 @@ template<in_object InObj1, in_object InObj2, typename Scalar>
 }
 
 template<in_object InObj1, in_object InObj2>
-[[nodiscard]] auto allclose(InObj1 lhs, InObj2 rhs) -> bool
+[[nodiscard]] auto allclose(InObj1 lhs, InObj2 rhs) noexcept -> bool
 {
     auto const tolerance = [] {
         using Left  = typename InObj1::value_type;

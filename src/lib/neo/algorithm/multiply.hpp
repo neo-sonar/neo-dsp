@@ -9,7 +9,7 @@
 namespace neo {
 
 template<in_vector InVec1, in_vector InVec2, out_vector OutVec>
-auto multiply(InVec1 x, InVec2 y, OutVec out) -> void
+auto multiply(InVec1 x, InVec2 y, OutVec out) noexcept -> void
 {
     assert(x.extents() == y.extents());
     assert(x.extents() == out.extents());

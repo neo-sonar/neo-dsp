@@ -14,7 +14,7 @@ namespace neo {
 
 template<in_object InObj>
     requires std::floating_point<typename InObj::value_type>
-[[nodiscard]] auto peak_normalization_factor(InObj obj)
+[[nodiscard]] auto peak_normalization_factor(InObj obj) noexcept
 {
     using Float = typename InObj::value_type;
 
@@ -49,7 +49,7 @@ template<in_object InObj>
 
 // normalized_sample = sample / max(abs(buffer))
 template<inout_object InOutObj>
-auto peak_normalize(InOutObj obj) -> void
+auto peak_normalize(InOutObj obj) noexcept -> void
 {
     scale(peak_normalization_factor(obj), obj);
 }

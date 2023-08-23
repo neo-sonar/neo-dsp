@@ -11,7 +11,7 @@
 namespace neo {
 
 template<in_object InObj1, in_object InObj2, typename BinaryPredicate>
-[[nodiscard]] auto allmatch(InObj1 lhs, InObj2 rhs, BinaryPredicate predicate) -> bool
+[[nodiscard]] auto allmatch(InObj1 lhs, InObj2 rhs, BinaryPredicate predicate) noexcept -> bool
 {
     assert(lhs.extents() == rhs.extents());
 
@@ -35,7 +35,7 @@ template<in_object InObj1, in_object InObj2, typename BinaryPredicate>
 }
 
 template<in_object InObj, typename UnaryPredicate>
-[[nodiscard]] auto allmatch(InObj obj, UnaryPredicate predicate) -> bool
+[[nodiscard]] auto allmatch(InObj obj, UnaryPredicate predicate) noexcept -> bool
 {
     return allmatch(obj, obj, [predicate](auto val, auto) { return predicate(val); });
 }

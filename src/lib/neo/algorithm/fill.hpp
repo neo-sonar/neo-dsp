@@ -5,7 +5,7 @@
 namespace neo {
 
 template<inout_object InOutObj, typename T>
-constexpr auto fill(InOutObj obj, T const& val) -> void
+constexpr auto fill(InOutObj obj, T const& val) noexcept -> void
 {
     if constexpr (InOutObj::rank() == 1) {
         for (auto i{0ULL}; i < obj.extent(0); ++i) {

@@ -10,7 +10,7 @@ namespace neo {
 
 template<in_object InObj, out_object OutObj>
     requires(InObj::rank() == OutObj::rank())
-constexpr auto copy(InObj inObj, OutObj outObj) -> void
+constexpr auto copy(InObj inObj, OutObj outObj) noexcept -> void
 {
     assert(inObj.extents() == outObj.extents());
 

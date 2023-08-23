@@ -13,7 +13,7 @@
 namespace neo {
 
 template<in_vector InVecL, in_vector InVecR>
-auto rms_error(InVecL lhs, InVecR rhs)
+auto rms_error(InVecL lhs, InVecR rhs) noexcept
 {
     assert(lhs.extents() == rhs.extents());
 
