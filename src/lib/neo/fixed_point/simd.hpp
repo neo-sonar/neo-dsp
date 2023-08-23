@@ -16,6 +16,8 @@
     #include <neo/simd/neon.hpp>
 #endif
 
+#include <cassert>
+
 namespace neo {
 
 namespace detail {
@@ -68,6 +70,19 @@ inline constexpr auto const mul_kernel_s16 = [](__m128i lhs, __m128i rhs) {
         return _mm_packs_epi32(low_shifted, high_shifted);
     }
 };
+#endif
+
+#if defined(NEO_HAS_SIMD_AVX2)
+
+template<int FractionalBits>
+inline constexpr auto const mul_kernel_avx2_s16 = [](__m256i lhs, __m256i rhs) {
+    if constexpr (FractionalBits == 15) {
+        return _mm256_mulhrs_epi16(lhs, rhs);
+    } else {
+        assert(false);
+    }
+};
+
 #endif
 
 }  // namespace detail
@@ -268,6 +283,14 @@ struct alignas(32) q15x16
     NEO_ALWAYS_INLINE friend auto operator-(q15x16 lhs, q15x16 rhs) noexcept -> q15x16
     {
         return _mm256_subs_epi16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator*(q15x16 lhs, q15x16 rhs) noexcept -> q15x16
+    {
+        return detail::mul_kernel_avx2_s16<value_type::fractional_bits>(
+            static_cast<register_type>(lhs),
+            static_cast<register_type>(rhs)
+        );
     }
 
 private:

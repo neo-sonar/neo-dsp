@@ -416,9 +416,15 @@ auto main() -> int
     std::printf("\n");
 
 #if defined(NEO_HAS_SIMD_SSE41)
-    timeit("cmulp_batch_fixed_point(q7):  ", 2, N, cmulp_batch_fixed_point<neo::q7x16, N>{});
-    timeit("cmulp_batch_fixed_point(q15): ", 4, N, cmulp_batch_fixed_point<neo::q15x8, N>{});
+    timeit("cmulp_batch_fixed_point(q7x16):  ", 2, N, cmulp_batch_fixed_point<neo::q7x16, N>{});
+    timeit("cmulp_batch_fixed_point(q15x8):  ", 4, N, cmulp_batch_fixed_point<neo::q15x8, N>{});
+
 #endif
+
+#if defined(NEO_HAS_SIMD_AVX2)
+    timeit("cmulp_batch_fixed_point(q15x16): ", 4, N, cmulp_batch_fixed_point<neo::q15x16, N>{});
+#endif
+
 #if defined(NEO_HAS_SIMD_AVX)
     timeit("cmulp_batch_float(float32x8): ", 8, N, cmulp_batch_float<neo::float32x8, N>{});
     timeit("cmulp_batch_float(float64x4): ", 16, N, cmulp_batch_float<neo::float64x4, N>{});
