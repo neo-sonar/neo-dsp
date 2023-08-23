@@ -53,7 +53,6 @@ struct alignas(16) float16x8
         auto values = std::array<_Float16, size>{};
         std::fill(values.begin(), values.end(), val);
         return load_unaligned(values.data());
-        // return _mm_set1_epi16(std::bit_cast<std::int16_t>(val));
     }
 
     [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(value_type const* input) noexcept -> float16x8
@@ -112,7 +111,6 @@ struct alignas(32) float16x16
         auto values = std::array<_Float16, size>{};
         std::fill(values.begin(), values.end(), val);
         return load_unaligned(values.data());
-        // return _mm_set1_epi16(std::bit_cast<std::int16_t>(val));
     }
 
     [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(value_type const* input) noexcept -> float16x16
