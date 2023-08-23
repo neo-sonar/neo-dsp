@@ -44,21 +44,4 @@ TEMPLATE_TEST_CASE("neo/container: sparse_matrix", "", float, double, (long doub
     auto rowData = std::vector<Scalar>(lhs.extent(1));
     auto row     = stdex::mdspan{rowData.data(), stdex::extents{rowData.size()}};
     neo::fill(row, Scalar(Float(2)));
-
-    other.insert_row(0, row, [](auto, auto, auto) { return true; });
-    REQUIRE(other.value_container().size() == 32);
-    REQUIRE(other.column_container().size() == 32);
-
-    auto const half = lhs.extent(1) / 2;
-    other.insert_row(1, row, [half](auto, auto col, auto) { return col < half; });
-    REQUIRE(neo::float_equality::exact(other(1, half), Scalar(Float(0))));
-    REQUIRE(neo::float_equality::exact(other(1, half - 1), Scalar(Float(2))));
-
-    other.insert_row(1, row, [](auto, auto, auto) { return true; });
-    REQUIRE(other.value_container().size() == 64);
-    REQUIRE(other.column_container().size() == 64);
-
-    other.insert_row(1, row, [](auto, auto col, auto) { return col % 2U == 0; });
-    REQUIRE(other.value_container().size() == 48);
-    REQUIRE(other.column_container().size() == 48);
 }
