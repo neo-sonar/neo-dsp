@@ -51,8 +51,8 @@ private:
     juce::AudioBuffer<float> _signal{};
     juce::AudioBuffer<float> _filter{};
     stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 2>> _spectrum;
+    stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>> _partitions;
 
-    juce::Value _skip{juce::var{0}};
     juce::Value _dynamicRange{juce::var{90.0F}};
     juce::Value _weighting{juce::var{"A-Weighting"}};
     juce::Value _engine{juce::Array<juce::var>{juce::var{"dense"}}};

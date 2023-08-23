@@ -2,6 +2,8 @@
 
 #include "dsp/AudioBuffer.hpp"
 
+#include <neo/math/decibel.hpp>
+
 #include <juce_dsp/juce_dsp.h>
 
 namespace neo {
@@ -27,7 +29,7 @@ auto powerSpectrumImage(
         auto const weight     = weighting(static_cast<std::size_t>(y));
         auto const power      = bin * bin;
         auto const normalized = power * scale;
-        auto const dB         = juce::Decibels::gainToDecibels(normalized, -144.0F) + weight;
+        auto const dB         = neo::to_decibels(normalized, -144.0F) + weight;
         auto const dBClamped  = std::clamp(dB, -144.0F, 0.0F);
         auto const color      = [=] {
             if (dB < threshold) {
@@ -78,9 +80,9 @@ auto powerHistogram(
             auto const bin        = std::abs(spectogram(f, b));
             auto const power      = bin * bin;
             auto const normalized = power * scale;
-            auto const dB         = juce::Decibels::gainToDecibels(normalized, -144.0F) + weight;
+            auto const dB         = neo::to_decibels(normalized, -144.0F) + weight;
             auto const dBClamped  = std::clamp(dB, -143.0F, 0.0F);
-            auto const index      = static_cast<std::size_t>(std::lround(std::abs(dBClamped)));
+            auto const index      = static_cast<std::size_t>(juce::roundToInt(std::abs(dBClamped)));
             histogram[index] += 1;
         }
     }

@@ -11,6 +11,7 @@
 #include <neo/fft/transform/fftfreq.hpp>
 #include <neo/fft/transform/stft.hpp>
 #include <neo/math/a_weighting.hpp>
+#include <neo/math/decibel.hpp>
 
 #include <juce_dsp/juce_dsp.h>
 
@@ -53,11 +54,31 @@ private:
     juce::dsp::ProcessSpec _spec;
 };
 
+struct FrequencySpectrumWeighting
+{
+    FrequencySpectrumWeighting(std::integral auto size, double sr)
+    {
+        _weights.resize(static_cast<size_t>(size));
+        for (auto i{0UL}; i < static_cast<size_t>(size); ++i) {
+            auto frequency = neo::fftfreq<float>(size, i, sr);
+            _weights[i]    = juce::exactlyEqual(frequency, 0.0F) ? 0.0F : neo::a_weighting(frequency);
+        }
+    }
+
+    auto operator[](std::integral auto binIndex) const
+    {
+        jassert(juce::isPositiveAndBelow(binIndex, _weights.size()));
+        return _weights[static_cast<std::size_t>(binIndex)];
+    }
+
+private:
+    std::vector<float> _weights;
+};
+
 }  // namespace
 
 BenchmarkTab::BenchmarkTab(juce::AudioFormatManager& formatManager) : _formatManager{formatManager}
 {
-    _skip.addListener(this);
     _dynamicRange.addListener(this);
     _weighting.addListener(this);
 
@@ -83,7 +104,6 @@ BenchmarkTab::BenchmarkTab(juce::AudioFormatManager& formatManager) : _formatMan
     _propertyPanel.addSection(
         "Sparsity",
         juce::Array<juce::PropertyComponent*>{
-            std::make_unique<juce::SliderPropertyComponent>(_skip, "Skip", 0.0, 16.0, 1.0).release(),
             std::make_unique<juce::SliderPropertyComponent>(_dynamicRange, "Dynamic Range", 10.0, 100.0, 0.5).release(),
             std::make_unique<juce::ChoicePropertyComponent>(_weighting, "Weighting", weightNames, weights).release(),
         }
@@ -113,6 +133,16 @@ auto BenchmarkTab::setImpulseResponseFile(juce::File const& file) -> void
 
     auto const filterMatrix = to_mdarray(_filter);
     _spectrum               = neo::fft::stft(filterMatrix.to_mdspan(), 1024);
+
+    auto normalized = _filter;
+    juce_normalization(normalized);
+    auto const impulse = to_mdarray(normalized);
+
+    auto const blockSize = 512ULL;
+    _partitions          = neo::fft::uniform_partition(
+        stdex::submdspan(impulse.to_mdspan(), stdex::full_extent, std::tuple{blockSize, impulse.extent(1)}),
+        blockSize
+    );
 
     _fileInfo.setText(file.getFileName() + " (" + juce::String(_filter.getNumSamples()) + ")\n");
     updateImages();
@@ -195,18 +225,7 @@ auto BenchmarkTab::runBenchmarks() -> void
 
 auto BenchmarkTab::runWeightingTests() -> void
 {
-    auto normalized = _filter;
-    juce_normalization(normalized);
-
-    auto const blockSize  = 512ULL;
-    auto const skip       = static_cast<std::size_t>(static_cast<int>(_skip.getValue()));
-    auto const impulse    = to_mdarray(normalized);
-    auto const partitions = neo::fft::uniform_partition(
-        stdex::submdspan(impulse.to_mdspan(), stdex::full_extent, std::tuple{blockSize * skip, impulse.extent(1)}),
-        blockSize
-    );
-
-    auto const scale = [filter = partitions.to_mdspan()] {
+    auto const scale = [filter = _partitions.to_mdspan()] {
         auto max = 0.0F;
         for (auto ch{0U}; ch < filter.extent(0); ++ch) {
             for (auto f{0U}; f < filter.extent(1); ++f) {
@@ -221,34 +240,26 @@ auto BenchmarkTab::runWeightingTests() -> void
         return 1.0F / max;
     }();
 
-    auto const weighting = [=, this](std::size_t binIndex) {
-        if (_weighting.getValue() == "A-Weighting") {
-            auto const frequency = neo::fftfreq<float>(blockSize * 2ULL, binIndex, 44'100.0);
-            if (juce::exactlyEqual(frequency, 0.0F)) {
-                return 0.0F;
-            }
-            auto const weight = neo::a_weighting(frequency);
-            return weight;
-        }
-        return 0.0F;
-    };
+    auto const isWeighted = _weighting.getValue() == "A-Weighting";
+    auto const weights    = FrequencySpectrumWeighting{1024, 44'100.0};
+    auto const weighting  = [=](std::size_t binIndex) { return isWeighted ? weights[binIndex] : 0.0F; };
 
     auto count           = 0;
     auto const threshold = -static_cast<float>(_dynamicRange.getValue());
 
-    for (auto f{0U}; f < partitions.extent(1); ++f) {
-        for (auto b{0U}; b < partitions.extent(2); ++b) {
+    for (auto f{0U}; f < _partitions.extent(1); ++f) {
+        for (auto b{0U}; b < _partitions.extent(2); ++b) {
             auto const weight = weighting(b);
-            for (auto ch{0U}; ch < partitions.extent(0); ++ch) {
-                auto const bin   = std::abs(partitions(ch, f, b));
+            for (auto ch{0U}; ch < _partitions.extent(0); ++ch) {
+                auto const bin   = std::abs(_partitions(ch, f, b));
                 auto const power = bin * bin;
-                auto const dB    = juce::Decibels::gainToDecibels(power * scale, -144.0F) + weight;
+                auto const dB    = neo::to_decibels(power * scale, -144.0F) + weight;
                 count += static_cast<int>(dB > threshold);
             }
         }
     }
 
-    auto const total = static_cast<double>(partitions.size());
+    auto const total = static_cast<double>(_partitions.size());
     auto const line  = juce::String(static_cast<double>(count) / total * 100.0, 2) + "% " + juce::String(threshold, 1)
                     + "dB " + _weighting.getValue().toString() + "\n";
 
@@ -379,17 +390,9 @@ auto BenchmarkTab::updateImages() -> void
         return;
     }
 
-    auto const weighting = [this](std::size_t binIndex) {
-        if (_weighting.getValue() == "A-Weighting") {
-            auto const frequency = neo::fftfreq<float>(1024, binIndex, 44'100.0);
-            if (juce::exactlyEqual(frequency, 0.0F)) {
-                return 0.0F;
-            }
-            auto const weight = neo::a_weighting(frequency);
-            return weight;
-        }
-        return 0.0F;
-    };
+    auto const isWeighted = _weighting.getValue() == "A-Weighting";
+    auto const weights    = FrequencySpectrumWeighting{1024, 44'100.0};
+    auto const weighting  = [=](std::size_t binIndex) { return isWeighted ? weights[binIndex] : 0.0F; };
 
     auto spectogramImage = neo::powerSpectrumImage(_spectrum, weighting, -static_cast<float>(_dynamicRange.getValue()));
     auto histogramImage  = neo::powerHistogramImage(_spectrum, weighting);
