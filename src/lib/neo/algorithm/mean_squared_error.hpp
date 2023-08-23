@@ -10,11 +10,12 @@
 
 namespace neo {
 
-template<in_vector InVecL, in_vector InVecR>
-[[nodiscard]] auto mean_squared_error(InVecL lhs, InVecR rhs) noexcept
+template<in_object InObjL, in_object InObjR>
+    requires(InObjL::rank() == InObjR::rank())
+[[nodiscard]] auto mean_squared_error(InObjL lhs, InObjR rhs) noexcept
 {
-    using Index = std::common_type_t<typename InVecL::index_type, typename InVecR::index_type>;
-    using Float = std::common_type_t<typename InVecL::value_type, typename InVecR::value_type>;
+    using Index = std::common_type_t<typename InObjL::index_type, typename InObjR::index_type>;
+    using Float = std::common_type_t<typename InObjL::value_type, typename InObjR::value_type>;
 
     static_assert(std::floating_point<Float>);
     assert(lhs.extents() == rhs.extents());
@@ -29,10 +30,21 @@ template<in_vector InVecL, in_vector InVecR>
     };
 
     auto sum = Float(0);
-    for (Index i{0}; std::cmp_less(i, lhs.extent(0)); ++i) {
-        auto const diff    = abs_if_needed(lhs[i]) - abs_if_needed(rhs[i]);
-        auto const squared = diff * diff;
-        sum += squared;
+
+    if constexpr (InObjL::rank() == 1) {
+        for (Index i{0}; std::cmp_less(i, lhs.extent(0)); ++i) {
+            auto const diff    = abs_if_needed(lhs[i]) - abs_if_needed(rhs[i]);
+            auto const squared = diff * diff;
+            sum += squared;
+        }
+    } else {
+        for (Index i{0}; std::cmp_less(i, lhs.extent(0)); ++i) {
+            for (Index j{0}; std::cmp_less(j, lhs.extent(1)); ++j) {
+                auto const diff    = abs_if_needed(lhs(i, j)) - abs_if_needed(rhs(i, j));
+                auto const squared = diff * diff;
+                sum += squared;
+            }
+        }
     }
 
     return sum / static_cast<Float>(lhs.size());

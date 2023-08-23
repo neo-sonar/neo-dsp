@@ -13,11 +13,11 @@
 
 namespace neo {
 
-template<in_vector InVecL, in_vector InVecR>
-[[nodiscard]] auto root_mean_squared_error(InVecL lhs, InVecR rhs) noexcept
+template<in_object InObjL, in_object InObjR>
+    requires(InObjL::rank() == InObjR::rank())
+[[nodiscard]] auto root_mean_squared_error(InObjL lhs, InObjR rhs) noexcept
 {
-    using std::sqrt;
-    return sqrt(mean_squared_error(lhs, rhs));
+    return std::sqrt(mean_squared_error(lhs, rhs));
 }
 
 }  // namespace neo

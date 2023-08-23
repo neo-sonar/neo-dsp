@@ -401,11 +401,7 @@ auto BenchmarkTab::runSparseQualityTests() -> void
     auto calculateErrorsForDynamicRange = [this, reference = dense.to_mdspan(), numBinsToKeep](auto dynamicRange) {
         auto sparse = to_mdarray(neo::sparse_convolve(_signal, _filter, -dynamicRange, numBinsToKeep));
         neo::peak_normalize(sparse.to_mdspan());
-
-        return neo::root_mean_squared_error(
-            stdex::submdspan(reference, 0, stdex::full_extent),
-            stdex::submdspan(sparse.to_mdspan(), 0, stdex::full_extent)
-        );
+        return neo::root_mean_squared_error(reference, sparse.to_mdspan());
     };
 
     juce::MessageManager::callAsync([this] { _fileInfo.moveCaretToEnd(false); });

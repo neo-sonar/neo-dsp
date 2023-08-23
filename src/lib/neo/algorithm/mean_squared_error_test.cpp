@@ -17,11 +17,23 @@ TEMPLATE_TEST_CASE("neo/algorithm: mean_squared_error", "", float, double, std::
         neo::fill(vec.to_mdspan(), val);
         return vec;
     };
+    auto const fill_matrix = [size](Float val) {
+        auto vec = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{size, size * 2};
+        neo::fill(vec.to_mdspan(), val);
+        return vec;
+    };
 
     SECTION("vector")
     {
         auto const lhs = fill_vector(Float(0));
         auto const rhs = fill_vector(Float(1));
+        REQUIRE(neo::mean_squared_error(lhs.to_mdspan(), rhs.to_mdspan()) == Catch::Approx(1.0));
+    }
+
+    SECTION("matrix")
+    {
+        auto const lhs = fill_matrix(Float(0));
+        auto const rhs = fill_matrix(Float(1));
         REQUIRE(neo::mean_squared_error(lhs.to_mdspan(), rhs.to_mdspan()) == Catch::Approx(1.0));
     }
 }
