@@ -14,20 +14,22 @@ template<in_object InObjL, in_object InObjR>
     requires(InObjL::rank() == InObjR::rank())
 [[nodiscard]] auto mean_squared_error(InObjL lhs, InObjR rhs) noexcept
 {
-    using Index = std::common_type_t<typename InObjL::index_type, typename InObjR::index_type>;
-    using Float = std::common_type_t<typename InObjL::value_type, typename InObjR::value_type>;
-
-    static_assert(std::floating_point<Float>);
-    assert(lhs.extents() == rhs.extents());
+    using Index  = std::common_type_t<typename InObjL::index_type, typename InObjR::index_type>;
+    using Scalar = std::common_type_t<typename InObjL::value_type, typename InObjR::value_type>;
 
     auto abs_if_needed = [](auto val) {
-        if constexpr (complex<Float>) {
+        if constexpr (complex<Scalar>) {
             using std::abs;
             return abs(val);
         } else {
             return val;
         }
     };
+
+    using Float = decltype(abs_if_needed(std::declval<Scalar>()));
+
+    static_assert(std::floating_point<Float>);
+    assert(lhs.extents() == rhs.extents());
 
     auto sum = Float(0);
 
