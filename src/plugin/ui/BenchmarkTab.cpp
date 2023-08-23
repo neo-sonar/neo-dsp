@@ -96,8 +96,8 @@ BenchmarkTab::BenchmarkTab(juce::AudioFormatManager& formatManager) : _formatMan
     auto const engines = juce::Array<juce::var>{
         juce::var{"juce::Convolution"},
         juce::var{"DenseConvolution"},
-        juce::var{"upols_convolver"},
-        juce::var{"sparse_upols_convolver"},
+        juce::var{"upola_convolver"},
+        juce::var{"sparse_upola_convolver"},
     };
     auto const engineNames = toStringArray(engines);
 
@@ -215,10 +215,10 @@ auto BenchmarkTab::runBenchmarks() -> void
     if (hasEngineEnabled("DenseConvolution")) {
         _threadPool.addJob([this] { runDenseConvolutionBenchmark(); });
     }
-    if (hasEngineEnabled("upols_convolver")) {
+    if (hasEngineEnabled("upola_convolver")) {
         _threadPool.addJob([this] { runDenseConvolverBenchmark(); });
     }
-    if (hasEngineEnabled("sparse_upols_convolver")) {
+    if (hasEngineEnabled("sparse_upola_convolver")) {
         _threadPool.addJob([this] { runSparseConvolverBenchmark(); });
     }
 }
@@ -274,18 +274,17 @@ auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
         {44'100.0, 512, 2}
     };
 
-    auto start = std::chrono::system_clock::now();
-    auto out   = juce::AudioBuffer<float>{_signal.getNumChannels(), _signal.getNumSamples()};
-    auto file  = getBenchmarkResultsDirectory().getNonexistentChildFile("jconv", ".wav");
+    auto out  = juce::AudioBuffer<float>{_signal.getNumChannels(), _signal.getNumSamples()};
+    auto file = getBenchmarkResultsDirectory().getNonexistentChildFile("jconv", ".wav");
 
+    auto const start = std::chrono::system_clock::now();
     processBlocks(proc, _signal, out, 512, 44'100.0);
+    auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(out);
     neo::peak_normalize(output.to_mdspan());
 
-    auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
     juce::MessageManager::callAsync([this, elapsed] {
         _fileInfo.moveCaretToEnd(false);
         _fileInfo.insertTextAtCaret("JCONV-DENSE: " + juce::String{elapsed.count()} + "\n");
@@ -309,8 +308,6 @@ auto BenchmarkTab::runDenseConvolutionBenchmark() -> void
     });
 
     auto start = std::chrono::system_clock::now();
-    auto file  = getBenchmarkResultsDirectory().getNonexistentChildFile("tconv2", ".wav");
-
     for (size_t i{0}; i < outBuffer.getNumSamples(); i += size_t(512)) {
         auto const numSamples = std::min(outBuffer.getNumSamples() - i, size_t(512));
 
@@ -321,13 +318,13 @@ auto BenchmarkTab::runDenseConvolutionBenchmark() -> void
         auto ctx = juce::dsp::ProcessContextReplacing<float>{outBlock};
         proc.process(ctx);
     }
+    auto const end = std::chrono::system_clock::now();
 
     // proc.reset();
 
     // auto output = to_mdarray(out);
     // neo::peak_normalize(output.to_mdspan());
 
-    auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
     juce::MessageManager::callAsync([this, elapsed] {
@@ -335,19 +332,19 @@ auto BenchmarkTab::runDenseConvolutionBenchmark() -> void
         _fileInfo.insertTextAtCaret("TCONV2-DENSE: " + juce::String{elapsed.count()} + "\n");
     });
 
+    auto file = getBenchmarkResultsDirectory().getNonexistentChildFile("tconv2", ".wav");
     writeToWavFile(file, to_mdarray(out), 44'100.0, 32);
 }
 
 auto BenchmarkTab::runDenseConvolverBenchmark() -> void
 {
-    auto start = std::chrono::system_clock::now();
+    auto start     = std::chrono::system_clock::now();
+    auto result    = neo::dense_convolve(_signal, _filter);
+    auto const end = std::chrono::system_clock::now();
 
-    auto output = to_mdarray(neo::dense_convolve(_signal, _filter));
-    auto file   = getBenchmarkResultsDirectory().getNonexistentChildFile("tconv_dense", ".wav");
-
+    auto output = to_mdarray(result);
     neo::peak_normalize(output.to_mdspan());
 
-    auto const end     = std::chrono::system_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
     juce::MessageManager::callAsync([this, elapsed] {
@@ -355,25 +352,23 @@ auto BenchmarkTab::runDenseConvolverBenchmark() -> void
         _fileInfo.insertTextAtCaret("TCONV-DENSE: " + juce::String{elapsed.count()} + "\n");
     });
 
+    auto file = getBenchmarkResultsDirectory().getNonexistentChildFile("tconv_dense", ".wav");
     writeToWavFile(file, output, 44'100.0, 32);
 }
 
 auto BenchmarkTab::runSparseConvolverBenchmark() -> void
 {
-    auto const start = std::chrono::system_clock::now();
+    auto const thresholdDB = -static_cast<float>(_dynamicRange.getValue());
 
-    auto const thresholdDB   = -static_cast<float>(_dynamicRange.getValue());
-    auto const thresholdText = juce::String(juce::roundToInt(std::abs(thresholdDB) * 100));
+    auto const start  = std::chrono::system_clock::now();
+    auto const result = neo::sparse_convolve(_signal, _filter, thresholdDB);
+    auto const end    = std::chrono::system_clock::now();
 
-    auto const filename = "tconv_sparse_" + thresholdText;
-    auto const file     = getBenchmarkResultsDirectory().getNonexistentChildFile(filename, ".wav");
-
-    auto output = to_mdarray(neo::sparse_convolve(_signal, _filter, thresholdDB));
-
+    auto output = to_mdarray(result);
     neo::peak_normalize(output.to_mdspan());
 
-    auto const end     = std::chrono::system_clock::now();
-    auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    auto const elapsed       = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    auto const thresholdText = juce::String(juce::roundToInt(std::abs(thresholdDB) * 100));
 
     juce::MessageManager::callAsync([this, elapsed, thresholdText] {
         auto const line = "TCONV-SPARSE(" + thresholdText + "): " + juce::String{elapsed.count()} + "\n";
@@ -381,6 +376,8 @@ auto BenchmarkTab::runSparseConvolverBenchmark() -> void
         _fileInfo.insertTextAtCaret(line);
     });
 
+    auto const filename = "tconv_sparse_" + thresholdText;
+    auto const file     = getBenchmarkResultsDirectory().getNonexistentChildFile(filename, ".wav");
     writeToWavFile(file, output, 44'100.0, 32);
 }
 
