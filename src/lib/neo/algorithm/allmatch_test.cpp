@@ -32,6 +32,9 @@ auto test()
 
         REQUIRE(neo::allmatch(zeros.to_mdspan(), zeros.to_mdspan(), exact));
         REQUIRE(neo::allmatch(ones.to_mdspan(), ones.to_mdspan(), exact));
+
+        REQUIRE(neo::allmatch(zeros.to_mdspan(), [exact](auto val) { return exact(val, Float(0)); }));
+        REQUIRE(neo::allmatch(ones.to_mdspan(), [exact](auto val) { return exact(val, Float(1)); }));
     }
 
     SECTION("matrix")
@@ -51,6 +54,9 @@ auto test()
 
         REQUIRE(neo::allmatch(zeros.to_mdspan(), zeros.to_mdspan(), exact));
         REQUIRE(neo::allmatch(ones.to_mdspan(), ones.to_mdspan(), exact));
+
+        REQUIRE(neo::allmatch(zeros.to_mdspan(), [exact](auto val) { return exact(val, Float(0)); }));
+        REQUIRE(neo::allmatch(ones.to_mdspan(), [exact](auto val) { return exact(val, Float(1)); }));
     }
 }
 
