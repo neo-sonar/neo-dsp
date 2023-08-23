@@ -1,14 +1,25 @@
 #include "allmatch.hpp"
 
 #include <neo/algorithm/fill.hpp>
+#include <neo/complex/scalar_complex.hpp>
 #include <neo/math/float_equality.hpp>
 #include <neo/testing/testing.hpp>
 
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-template<typename TestType>
-auto test()
+TEMPLATE_TEST_CASE(
+    "neo/algorithm: allmatch",
+    "",
+    float,
+    double,
+    long double,
+    std::complex<float>,
+    std::complex<double>,
+    std::complex<long double>,
+    neo::complex64,
+    neo::complex128
+)
 {
     using Float = neo::real_or_complex_value_t<TestType>;
 
@@ -58,9 +69,4 @@ auto test()
         REQUIRE(neo::allmatch(zeros.to_mdspan(), [exact](auto val) { return exact(val, Float(0)); }));
         REQUIRE(neo::allmatch(ones.to_mdspan(), [exact](auto val) { return exact(val, Float(1)); }));
     }
-}
-
-TEMPLATE_TEST_CASE("neo/algorithm: allmatch", "", float, double, long double, std::complex<float>, std::complex<double>, std::complex<long double>)
-{
-    test<TestType>();
 }
