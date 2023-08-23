@@ -6,7 +6,7 @@
 #include <neo/algorithm/scale.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/transform/rfft.hpp>
-#include <neo/math/divide_round_up.hpp>
+#include <neo/math/idiv.hpp>
 #include <neo/math/windowing.hpp>
 
 namespace neo::fft {
@@ -24,7 +24,7 @@ template<in_matrix InMat>
 
     auto const totalNumSamples = static_cast<int>(buffer.extent(1));
     auto const numBins         = static_cast<std::size_t>(windowSize / 2 + 1);
-    auto const numFrames       = static_cast<std::size_t>(divide_round_up(totalNumSamples, windowSize));
+    auto const numFrames       = static_cast<std::size_t>(idiv(totalNumSamples, windowSize));
 
     auto result = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 2>>{numFrames, numBins};
 

@@ -40,8 +40,8 @@ target_sources(neo_fft_tests
         "neo/math/a_weighting_test.cpp"
         "neo/math/decibel_test.cpp"
         "neo/math/ilog2_test.cpp"
+        "neo/math/ipow_test.cpp"
         "neo/math/next_power_of_two_test.cpp"
-        "neo/math/power_test.cpp"
         "neo/math/windowing_test.cpp"
 
         "neo/fixed_point_test.cpp"

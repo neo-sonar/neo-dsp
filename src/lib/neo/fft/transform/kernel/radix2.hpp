@@ -4,7 +4,7 @@
 
 #include <neo/container/mdspan.hpp>
 #include <neo/math/ilog2.hpp>
-#include <neo/math/power.hpp>
+#include <neo/math/ipow.hpp>
 
 #include <utility>
 
@@ -23,7 +23,7 @@ struct radix2_kernel_v1
         auto stride       = 2;
 
         for (auto stage = 0; stage < order; ++stage) {
-            auto const tw_stride = power<2>(order - stage - 1);
+            auto const tw_stride = ipow<2>(order - stage - 1);
 
             for (auto k = 0; std::cmp_less(k, size); k += stride) {
                 for (auto pair = 0; pair < stage_length; ++pair) {
@@ -90,9 +90,9 @@ struct radix2_kernel_v3
 
         for (auto stage{0ULL}; stage < order; ++stage) {
 
-            auto const stage_length = power<2ULL>(stage);
-            auto const stride       = power<2ULL>(stage + 1);
-            auto const tw_stride    = power<2ULL>(order - stage - 1ULL);
+            auto const stage_length = ipow<2ULL>(stage);
+            auto const stride       = ipow<2ULL>(stage + 1);
+            auto const tw_stride    = ipow<2ULL>(order - stage - 1ULL);
 
             for (auto k{0ULL}; k < size; k += stride) {
                 for (auto pair{0ULL}; pair < stage_length; ++pair) {
@@ -121,10 +121,10 @@ struct radix2_kernel_v4
 
         {
             // stage 0
-            static constexpr auto const stage_length = 1;  // power<2>(0)
-            static constexpr auto const stride       = 2;  // power<2>(0 + 1)
+            static constexpr auto const stage_length = 1;  // ipow<2>(0)
+            static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
 
-            auto const tw_stride = power<2>(order - 1);
+            auto const tw_stride = ipow<2>(order - 1);
 
             for (auto k{0}; k < size; k += stride) {
                 for (auto pair{0}; pair < stage_length; ++pair) {
@@ -142,9 +142,9 @@ struct radix2_kernel_v4
 
         for (auto stage{1}; stage < order; ++stage) {
 
-            auto const stage_length = power<2>(stage);
-            auto const stride       = power<2>(stage + 1);
-            auto const tw_stride    = power<2>(order - stage - 1);
+            auto const stage_length = ipow<2>(stage);
+            auto const stride       = ipow<2>(stage + 1);
+            auto const tw_stride    = ipow<2>(order - stage - 1);
 
             for (auto k{0}; k < size; k += stride) {
                 for (auto pair{0}; pair < stage_length; pair += 2) {

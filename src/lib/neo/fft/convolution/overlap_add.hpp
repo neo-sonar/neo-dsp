@@ -9,7 +9,7 @@
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/transform.hpp>
-#include <neo/math/divide_round_up.hpp>
+#include <neo/math/idiv.hpp>
 #include <neo/math/ilog2.hpp>
 #include <neo/math/next_power_of_two.hpp>
 
@@ -52,7 +52,7 @@ template<complex Complex>
 overlap_add<Complex>::overlap_add(size_type block_size, size_type filter_size)
     : _block_size{block_size}
     , _filter_size{filter_size}
-    , _overlaps{divide_round_up(_usable_coeffs, _block_size), _usable_coeffs}
+    , _overlaps{idiv(_usable_coeffs, _block_size), _usable_coeffs}
 {}
 
 template<complex Complex>

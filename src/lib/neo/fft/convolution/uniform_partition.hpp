@@ -6,7 +6,7 @@
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/transform/rfft.hpp>
-#include <neo/math/divide_round_up.hpp>
+#include <neo/math/idiv.hpp>
 
 #include <concepts>
 
@@ -26,7 +26,7 @@ struct uniform_partitioner
     auto operator()(InMat impulse_response)
     {
         auto const num_channels   = impulse_response.extent(0);
-        auto const num_partitions = divide_round_up(impulse_response.extent(1), _block_size);
+        auto const num_partitions = idiv(impulse_response.extent(1), _block_size);
 
         auto partitions = stdex::mdarray<Complex, stdex::dextents<size_type, 3>>{
             num_channels,
