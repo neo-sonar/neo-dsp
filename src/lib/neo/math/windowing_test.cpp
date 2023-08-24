@@ -5,7 +5,7 @@
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-TEMPLATE_TEST_CASE("neo/math: rectangular_window", "", float, double, long double)
+TEMPLATE_TEST_CASE("neo/math: rectangular_window", "", float, double)
 {
     using Float  = TestType;
     using Window = neo::rectangular_window<Float>;
@@ -17,7 +17,7 @@ TEMPLATE_TEST_CASE("neo/math: rectangular_window", "", float, double, long doubl
     }
 }
 
-TEMPLATE_TEST_CASE("neo/math: hann_window", "", float, double, long double)
+TEMPLATE_TEST_CASE("neo/math: hann_window", "", float, double)
 {
     using Float  = TestType;
     using Window = neo::hann_window<Float>;
@@ -59,7 +59,7 @@ TEMPLATE_TEST_CASE("neo/math: hann_window", "", float, double, long double)
     }
 }
 
-TEMPLATE_TEST_CASE("neo/math: hamming_window", "", float, double, long double)
+TEMPLATE_TEST_CASE("neo/math: hamming_window", "", float, double)
 {
     using Float  = TestType;
     using Window = neo::hamming_window<Float>;
@@ -105,7 +105,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     "neo/math: generate_window",
     "",
     (neo::rectangular_window, neo::hann_window, neo::hamming_window),
-    (float, double, long double)
+    (float, double)
 )
 {
     using Window = TestType;

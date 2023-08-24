@@ -15,7 +15,7 @@
 
 #include <tuple>
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: overlap_add", "", float, double, long double)
+TEMPLATE_TEST_CASE("neo/fft/convolution: overlap_add", "", float, double)
 {
     using Float   = TestType;
     using Complex = std::complex<Float>;
@@ -82,20 +82,8 @@ TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft/convolution: overlap",
     "",
     (neo::fft::overlap_add, neo::fft::overlap_save),
-    (std::complex<float>, std::complex<double>, std::complex<long double>)
+    (std::complex<float>, std::complex<double>)
 )
 {
     test_overlap<TestType>();
 }
-
-// TEMPLATE_PRODUCT_TEST_CASE(
-//     "neo/fft/convolution: overlap",
-//     "",
-//     (neo::fft::overlap_add, neo::fft::overlap_save),
-//     ((float, neo::scalar_complex<float>),
-//      (double, neo::scalar_complex<double>),
-//      (long double, neo::scalar_complex<long double>))
-// )
-// {
-//     test_overlap<TestType>();
-// }

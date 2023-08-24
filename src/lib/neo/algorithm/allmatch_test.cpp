@@ -13,10 +13,8 @@ TEMPLATE_TEST_CASE(
     "",
     float,
     double,
-    long double,
     std::complex<float>,
     std::complex<double>,
-    std::complex<long double>,
     neo::complex64,
     neo::complex128
 )

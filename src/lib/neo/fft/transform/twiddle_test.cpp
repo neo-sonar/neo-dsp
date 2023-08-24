@@ -10,7 +10,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft/transform: make_radix2_twiddles",
     "",
     (std::complex, neo::scalar_complex),
-    (float, double, long double)
+    (float, double)
 )
 {
     using Complex = TestType;

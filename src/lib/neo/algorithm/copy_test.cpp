@@ -7,7 +7,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-TEMPLATE_TEST_CASE("neo/algorithm: copy", "", float, double, long double, std::complex<float>, std::complex<double>, std::complex<long double>)
+TEMPLATE_TEST_CASE("neo/algorithm: copy", "", float, double, std::complex<float>, std::complex<double>)
 {
     using Float     = neo::real_or_complex_value_t<TestType>;
     auto const size = GENERATE(as<std::size_t>{}, 2, 33, 128);

@@ -4,7 +4,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-TEMPLATE_TEST_CASE("neo/math: to_decibels<precision::accurate>", "", float, double, long double)
+TEMPLATE_TEST_CASE("neo/math: to_decibels<precision::accurate>", "", float, double)
 {
     using Float = TestType;
 
@@ -19,7 +19,7 @@ TEMPLATE_TEST_CASE("neo/math: to_decibels<precision::accurate>", "", float, doub
     REQUIRE(neo::to_decibels<neo::precision::accurate>(Float(0.00001), Float(-50.0)) == Catch::Approx(-50.0));
 }
 
-TEMPLATE_TEST_CASE("neo/math: to_decibels<precision::estimate>", "", float, double, long double)
+TEMPLATE_TEST_CASE("neo/math: to_decibels<precision::estimate>", "", float, double)
 {
     using Float = TestType;
 

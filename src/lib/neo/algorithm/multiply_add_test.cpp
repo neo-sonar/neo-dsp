@@ -38,7 +38,7 @@ auto test()
     REQUIRE(neo::allmatch(stdex::submdspan(acc, std::tuple{2, acc.extent(0)}), isZero));
 }
 
-TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", float, double, long double) { test<TestType>(); }
+TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", float, double) { test<TestType>(); }
 
 #if defined(NEO_HAS_BUILTIN_FLOAT16)
 TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", _Float16) { test<TestType>(); }

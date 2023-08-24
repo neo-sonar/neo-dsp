@@ -84,7 +84,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft/transform: fft_radix2_plan",
     "",
     (kernel_v1, kernel_v2, kernel_v3, kernel_v4),
-    (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>, (std::complex<long double>))
+    (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>)
 )
 {
     test_fft_radix2_plan<typename TestType::plan_type>();

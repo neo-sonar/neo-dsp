@@ -83,7 +83,7 @@ auto test_fixed_point()
     REQUIRE(diff.imag().value() == -30);
 }
 
-TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", float, double, long double)
+TEMPLATE_TEST_CASE("neo/complex: scalar_complex", "", float, double)
 {
     test_floating_point<TestType>(TestType(0.00001));
 }

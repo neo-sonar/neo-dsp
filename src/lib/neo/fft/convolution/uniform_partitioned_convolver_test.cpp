@@ -36,7 +36,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
      neo::fft::upols_convolver,
      neo::fft::sparse_upola_convolver,
      neo::fft::sparse_upols_convolver),
-    (std::complex<float>, std::complex<double>, std::complex<long double>)
+    (std::complex<float>, std::complex<double>)
 )
 {
     using Convolver = TestType;

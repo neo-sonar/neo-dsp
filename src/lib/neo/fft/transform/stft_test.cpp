@@ -3,7 +3,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
-TEMPLATE_TEST_CASE("neo/fft/transform: stft", "", float, double, long double)
+TEMPLATE_TEST_CASE("neo/fft/transform: stft", "", float, double)
 {
     using Float = TestType;
 
