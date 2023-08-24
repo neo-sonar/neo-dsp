@@ -5,8 +5,8 @@
 #include <neo/fft/convolution/uniform_partition.hpp>
 #include <neo/fft/transform/fftfreq.hpp>
 #include <neo/math/a_weighting.hpp>
-#include <neo/math/decibel.hpp>
 #include <neo/math/next_power_of_two.hpp>
+#include <neo/unit/decibel.hpp>
 
 namespace neo {
 

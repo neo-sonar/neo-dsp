@@ -12,7 +12,7 @@
 #include <neo/fft/transform/fftfreq.hpp>
 #include <neo/fft/transform/stft.hpp>
 #include <neo/math/a_weighting.hpp>
-#include <neo/math/decibel.hpp>
+#include <neo/unit/decibel.hpp>
 
 #include <juce_dsp/juce_dsp.h>
 

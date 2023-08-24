@@ -2,7 +2,7 @@
 
 #include <neo/algorithm/add.hpp>
 #include <neo/complex/scalar_complex.hpp>
-#include <neo/math/decibel.hpp>
+#include <neo/unit/decibel.hpp>
 
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
