@@ -245,6 +245,28 @@ private:
     stdex::mdarray<FloatBatch, stdex::dextents<size_t, 2>> _out;
 };
 
+template<typename Float, typename Int>
+auto compress_float(auto val)
+{
+    static constexpr auto scale = static_cast<Float>(std::numeric_limits<Int>::max());
+    return static_cast<Int>(std::lround(val * scale));
+}
+
+template<typename FloatOrComplex, typename IntOrComplex>
+auto compress_complex(auto val)
+{
+    static_assert(neo::complex<IntOrComplex>);
+
+    using Float                 = typename FloatOrComplex::value_type;
+    using Int                   = typename IntOrComplex::value_type;
+    static constexpr auto scale = static_cast<Float>(std::numeric_limits<Int>::max());
+
+    return IntOrComplex(
+        static_cast<Int>(std::lround(val.real() * scale)),
+        static_cast<Int>(std::lround(val.imag() * scale))
+    );
+}
+
 template<typename FloatOrComplex, typename IntOrComplex, std::size_t Size>
 struct cfloat_mul
 {
@@ -254,19 +276,9 @@ struct cfloat_mul
         auto noiseB   = neo::generate_noise_signal<FloatOrComplex>(Size, std::random_device{}());
         auto compress = [](FloatOrComplex val) {
             if constexpr (neo::complex<FloatOrComplex>) {
-                static_assert(neo::complex<IntOrComplex>);
-
-                using Float                 = typename FloatOrComplex::value_type;
-                using Int                   = typename IntOrComplex::value_type;
-                static constexpr auto scale = static_cast<Float>(std::numeric_limits<Int>::max());
-
-                return IntOrComplex(
-                    static_cast<Int>(std::lround(val.real() * scale)),
-                    static_cast<Int>(std::lround(val.imag() * scale))
-                );
+                return compress_complex<FloatOrComplex, IntOrComplex>(val);
             } else {
-                static constexpr auto scale = static_cast<FloatOrComplex>(std::numeric_limits<IntOrComplex>::max());
-                return static_cast<IntOrComplex>(std::lround(val * scale));
+                return compress_float<FloatOrComplex, IntOrComplex>(val);
             }
         };
 
@@ -381,7 +393,7 @@ auto main() -> int
 #if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
     timeit("mul(f16f32): ", 2, N, float16_mul_bench<N>{});
 #endif
-#if defined(NEO_HAS_BUILTIN_FLOAT16)
+#if defined(NEO_HAS_SIMD_F16C)
     timeit("mul(_Float16): ", 2, N, float_mul<_Float16, N>{});
 #endif
 
@@ -394,7 +406,7 @@ auto main() -> int
     // timeit("cmul(complex<cf8>):         ", 2, N, cfloat_mul<neo::complex64, neo::scalar_complex<int8_t>, N>{});
     // timeit("cmul(complex<cf16>):        ", 4, N, cfloat_mul<neo::complex64, neo::scalar_complex<int16_t>, N>{});
 
-#if defined(NEO_HAS_BUILTIN_FLOAT16)
+#if defined(NEO_HAS_SIMD_F16C)
     timeit("cmul(complex32):            ", 4, N, float_mul<neo::scalar_complex<_Float16>, N>{});
 #endif
 
@@ -404,11 +416,11 @@ auto main() -> int
     timeit("cmul(std::complex<double>): ", 16, N, float_mul<std::complex<double>, N>{});
     std::printf("\n");
 
-    timeit("cmulp(q7):       ", 2, N, cmulp<neo::q7, N>{});
-    timeit("cmulp(q15):      ", 4, N, cmulp<neo::q15, N>{});
-    timeit("cmulp(fxp_14):   ", 4, N, cmulp<neo::fixed_point<int16_t, 14>, N>{});
+    // timeit("cmulp(q7):       ", 2, N, cmulp<neo::q7, N>{});
+    // timeit("cmulp(q15):      ", 4, N, cmulp<neo::q15, N>{});
+    // timeit("cmulp(fxp_14):   ", 4, N, cmulp<neo::fixed_point<int16_t, 14>, N>{});
 
-#if defined(NEO_HAS_BUILTIN_FLOAT16)
+#if defined(NEO_HAS_SIMD_F16C)
     timeit("cmulp(_Float16): ", 4, N, cmulp<_Float16, N>{});
 #endif
     timeit("cmulp(float):    ", 8, N, cmulp<float, N>{});
@@ -423,6 +435,11 @@ auto main() -> int
 
 #if defined(NEO_HAS_SIMD_AVX2)
     timeit("cmulp_batch_fixed_point(q15x16): ", 4, N, cmulp_batch_fixed_point<neo::q15x16, N>{});
+#endif
+
+#if defined(NEO_HAS_SIMD_SSE2)
+    timeit("cmulp_batch_float(float32x4): ", 8, N, cmulp_batch_float<neo::float32x4, N>{});
+    timeit("cmulp_batch_float(float64x2): ", 16, N, cmulp_batch_float<neo::float64x2, N>{});
 #endif
 
 #if defined(NEO_HAS_SIMD_AVX)

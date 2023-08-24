@@ -2,9 +2,9 @@
 
 #define NEO_STRINGIFY(x) #x
 
-#if defined(_MSC_VER) && !defined(__clang__)
+#if defined(_MSC_VER) and not defined(__clang__)
     #define NEO_COMPILER_MSVC 1
-#elif defined(__GNUC__) && !defined(__clang__)
+#elif defined(__GNUC__) and not defined(__clang__)
     #define NEO_COMPILER_GCC 1
 #elif defined(__clang__)
     #define NEO_COMPILER_CLANG 1
@@ -12,9 +12,9 @@
     #define NEO_COMPILER_UNKOWN 1
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
+#if defined(__GNUC__) or defined(__clang__)
     #define NEO_ALWAYS_INLINE __attribute__((always_inline)) inline
-#elif defined(_MSC_VER) && !defined(__clang__)
+#elif defined(_MSC_VER) and not defined(__clang__)
     #define NEO_ALWAYS_INLINE __forceinline
 #else
     #define NEO_ALWAYS_INLINE inline
@@ -22,7 +22,7 @@
 
 #if defined(_MSC_VER)
     #define NEO_RESTRICT __restrict
-#elif defined(__GNUC__) || defined(__clang__)
+#elif defined(__GNUC__) or defined(__clang__)
     #define NEO_RESTRICT __restrict__
 #else
     #define NEO_RESTRICT
@@ -32,15 +32,15 @@
     #define NEO_HAS_SIMD_NEON 1
 #endif
 
-#if defined(__SSE2__)
+#if defined(__SSE2__) or defined(_M_AMD64) or defined(_M_X64)
     #define NEO_HAS_SIMD_SSE2 1
 #endif
 
-#if defined(__SSE3__)
+#if defined(__SSE3__) or defined(__AVX__)
     #define NEO_HAS_SIMD_SSE3 1
 #endif
 
-#if defined(__SSE4_1__)
+#if defined(__SSE4_1__) or defined(__AVX__)
     #define NEO_HAS_SIMD_SSE41 1
 #endif
 
@@ -96,7 +96,7 @@
 
 #if defined(NEO_PLATFORM_MACOS)
     #define NEO_HAS_BUILTIN_FLOAT16 1
-#elif defined(NEO_HAS_SIMD_SSE41) and not defined(NEO_PLATFORM_LINUX)
+#elif defined(NEO_HAS_SIMD_SSE41) and not defined(NEO_PLATFORM_LINUX) and not defined(NEO_COMPILER_MSVC)
     #define NEO_HAS_BUILTIN_FLOAT16 1
 #endif
 

@@ -58,7 +58,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
     auto rfft = Plan{order};
     REQUIRE(rfft.order() == order);
-    REQUIRE(rfft.size() == 1UL << order);
+    REQUIRE(rfft.size() == std::size_t(1) << order);
 
     auto signal         = neo::generate_noise_signal<Float>(rfft.size(), Catch::getSeed());
     auto spectrum       = std::vector<Complex>(rfft.size() / 2UL + 1UL, Float(0));

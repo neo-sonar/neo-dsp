@@ -59,7 +59,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
         convolver.filter(filter.to_mdspan());
     }
 
-    for (auto i{0U}; i < output.size(); i += block_size) {
+    for (std::size_t i{0}; i < output.size(); i += block_size) {
         auto const io_block = stdex::submdspan(output.to_mdspan(), std::tuple{i, i + block_size});
         convolver(io_block);
     }

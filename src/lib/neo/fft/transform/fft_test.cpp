@@ -46,7 +46,7 @@ auto test_fft_radix2_plan()
 
     auto plan = Plan{order};
     REQUIRE(plan.order() == order);
-    REQUIRE(plan.size() == 1UL << order);
+    REQUIRE(plan.size() == std::size_t(1) << order);
 
     auto const noise = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
 

@@ -35,8 +35,9 @@ template<in_object InObj1, in_object InObj2>
 
         if constexpr (std::same_as<Float, float>) {
             return Float(1e-5);
+        } else {
+            return Float(1e-9);
         }
-        return Float(1e-9);
     }();
 
     return allclose(lhs, rhs, tolerance);

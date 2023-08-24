@@ -48,7 +48,7 @@ auto processBlocks(
         static_cast<std::uint32_t>(input.getNumChannels()),
     });
 
-    for (auto i{0UL}; i < output.getNumSamples(); i += blockSize) {
+    for (std::size_t i{0}; i < output.getNumSamples(); i += blockSize) {
         auto const numSamples = std::min(output.getNumSamples() - i, blockSize);
 
         auto in  = input.getSubBlock(i, numSamples);
