@@ -46,10 +46,10 @@ target_sources(neo_fft_tests
         "neo/math/ipow_test.cpp"
         "neo/math/windowing_test.cpp"
 
+        "neo/simd_test.cpp"
+
         "neo/unit/decibel_test.cpp"
         "neo/unit/mel_test.cpp"
-
-        "neo/simd_test.cpp"
 )
 
 catch_discover_tests(neo_fft_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
