@@ -38,6 +38,8 @@ target_sources(neo_fft_tests
         "neo/fft/transform/stft_test.cpp"
         "neo/fft/transform/twiddle_test.cpp"
 
+        "neo/fixed_point/fixed_point_test.cpp"
+
         "neo/math/a_weighting_test.cpp"
         "neo/math/decibel_test.cpp"
         "neo/math/ilog2_test.cpp"
@@ -45,7 +47,8 @@ target_sources(neo_fft_tests
         "neo/math/next_power_of_two_test.cpp"
         "neo/math/windowing_test.cpp"
 
-        "neo/fixed_point_test.cpp"
+        "neo/unit/mel_test.cpp"
+
         "neo/simd_test.cpp"
 )
 
