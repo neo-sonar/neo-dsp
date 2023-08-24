@@ -9,9 +9,9 @@
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/transform.hpp>
+#include <neo/math/bit_ceil.hpp>
 #include <neo/math/idiv.hpp>
 #include <neo/math/ilog2.hpp>
-#include <neo/math/next_power_of_two.hpp>
 
 #include <cassert>
 #include <functional>
@@ -40,7 +40,7 @@ private:
     size_type _filter_size;
     size_type _usable_coeffs{_block_size + _filter_size - 1UL};
 
-    rfft_radix2_plan<real_type> _rfft{ilog2(next_power_of_two(_usable_coeffs))};
+    rfft_radix2_plan<real_type> _rfft{ilog2(bit_ceil(_usable_coeffs))};
     stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
     stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
 

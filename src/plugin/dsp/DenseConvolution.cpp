@@ -5,7 +5,7 @@
 #include <neo/fft/convolution/uniform_partition.hpp>
 #include <neo/fft/transform/fftfreq.hpp>
 #include <neo/math/a_weighting.hpp>
-#include <neo/math/next_power_of_two.hpp>
+#include <neo/math/bit_ceil.hpp>
 #include <neo/unit/decibel.hpp>
 
 namespace neo {
@@ -157,7 +157,7 @@ auto sparse_convolve(
     auto block      = std::vector<float>(size_t(blockSize));
     auto partitions = uniform_partition(filter, blockSize);
 
-    auto const K = neo::next_power_of_two((partitions.extent(2) - 1U) * 2U);
+    auto const K = neo::bit_ceil((partitions.extent(2) - 1U) * 2U);
 
     auto const weights = [K, bins = partitions.extent(2), lowBinsToKeep] {
         jassert(std::cmp_less(lowBinsToKeep, bins));

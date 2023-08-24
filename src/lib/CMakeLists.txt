@@ -41,9 +41,9 @@ target_sources(neo_fft_tests
         "neo/fixed_point/fixed_point_test.cpp"
 
         "neo/math/a_weighting_test.cpp"
+        "neo/math/bit_ceil_test.cpp"
         "neo/math/ilog2_test.cpp"
         "neo/math/ipow_test.cpp"
-        "neo/math/next_power_of_two_test.cpp"
         "neo/math/windowing_test.cpp"
 
         "neo/unit/decibel_test.cpp"
