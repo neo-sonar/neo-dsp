@@ -2,6 +2,7 @@
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 TEMPLATE_TEST_CASE("neo/unit: mel_to_hertz(hertz_to_mel)", "", float, double)
@@ -28,7 +29,35 @@ TEMPLATE_TEST_CASE("neo/unit: mel_to_hertz(hertz_to_mel)", "", float, double)
     REQUIRE_THAT(roundtrip(Float(880)), Catch::Matchers::WithinAbs(880.0, margin));
 }
 
-TEMPLATE_TEST_CASE("neo/unit: mel_frequencies", "", float, double)
+TEMPLATE_TEST_CASE("neo/unit: mel_frequencies ", "", float, double)
+{
+    using Float = TestType;
+
+    SECTION("empty")
+    {
+        auto buffer = stdex::mdarray<Float, stdex::dextents<size_t, 1>>{0};
+        neo::mel_frequencies(buffer.to_mdspan(), Float(0), Float(11'025));
+    }
+
+    auto const fmin   = GENERATE(as<Float>{}, 0, 55, 110);
+    auto const fmax   = GENERATE(as<Float>{}, 11'025, 22'050, 44'100);
+    auto const n_mels = GENERATE(as<std::size_t>{}, 1, 2, 33, 128);
+
+    CAPTURE(n_mels);
+    CAPTURE(fmin);
+    CAPTURE(fmax);
+
+    auto buffer = stdex::mdarray<Float, stdex::dextents<size_t, 1>>{n_mels};
+    neo::mel_frequencies(buffer.to_mdspan(), fmin, fmax);
+
+    REQUIRE(buffer(0) == Catch::Approx(fmin));
+
+    if (n_mels > 1UL) {
+        REQUIRE(buffer(n_mels - 1) == Catch::Approx(fmax));
+    }
+}
+
+TEMPLATE_TEST_CASE("neo/unit: mel_frequencies vs. librosa", "", float, double)
 {
     using Float = TestType;
 

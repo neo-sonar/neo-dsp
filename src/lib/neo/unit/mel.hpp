@@ -28,6 +28,11 @@ auto mel_frequencies(OutVec out, Float fmin, Float fmax) noexcept -> void
         return;
     }
 
+    if (std::cmp_equal(n_mels, 1)) {
+        out[0] = fmin;
+        return;
+    }
+
     auto const min_mel = hertz_to_mel(fmin);
     auto const max_mel = hertz_to_mel(fmax);
     auto const step    = (max_mel - min_mel) / static_cast<Float>(n_mels - 1);
