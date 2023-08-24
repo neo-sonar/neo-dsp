@@ -54,10 +54,14 @@ private:
     stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 2>> _spectrum;
     stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>> _partitions;
 
+    // Sparsity
     juce::Value _binsToKeep{juce::var{10}};
     juce::Value _dynamicRange{juce::var{90.0F}};
     juce::Value _weighting{juce::var{"A-Weighting"}};
     juce::Value _engine{juce::Array<juce::var>{juce::var{"dense"}}};
+
+    // Quality
+    juce::Value _stftWindowSize{juce::var{512}};
 
     std::unique_ptr<juce::FileChooser> _fileChooser{nullptr};
     juce::ThreadPool _threadPool{juce::ThreadPoolOptions{}.withNumberOfThreads(1).withThreadName("Benchmark Thread")};

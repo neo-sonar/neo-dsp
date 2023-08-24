@@ -94,6 +94,9 @@ BenchmarkTab::BenchmarkTab(juce::AudioFormatManager& formatManager) : _formatMan
     auto const weights     = juce::Array<juce::var>{juce::var{"No Weighting"}, juce::var{"A-Weighting"}};
     auto const weightNames = toStringArray(weights);
 
+    auto const stftSizes     = juce::Array<juce::var>{juce::var{512}, juce::var{1024}, juce::var{2048}};
+    auto const stftSizeNames = juce::StringArray{"512", "1024", "2048"};
+
     auto const engines = juce::Array<juce::var>{
         juce::var{"juce::Convolution"},
         juce::var{"DenseConvolution"},
@@ -109,6 +112,14 @@ BenchmarkTab::BenchmarkTab(juce::AudioFormatManager& formatManager) : _formatMan
             std::make_unique<juce::SliderPropertyComponent>(_dynamicRange, "Dynamic Range", 10.0, 100.0, 0.5).release(),
             std::make_unique<juce::SliderPropertyComponent>(_binsToKeep, "Keep Low Bins", 0.0, 25.0, 1.0).release(),
             std::make_unique<juce::ChoicePropertyComponent>(_weighting, "Weighting", weightNames, weights).release(),
+        }
+    );
+
+    _propertyPanel.addSection(
+        "Quality",
+        juce::Array<juce::PropertyComponent*>{
+            std::make_unique<juce::ChoicePropertyComponent>(_stftWindowSize, "STF Size", stftSizeNames, stftSizes)
+                .release(),
         }
     );
 
@@ -390,23 +401,30 @@ auto BenchmarkTab::runSparseConvolverBenchmark() -> void
 
 auto BenchmarkTab::runSparseQualityTests() -> void
 {
+    auto const stftSize = static_cast<int>(_stftWindowSize.getValue());
+
     auto const dense = [this] {
         auto result = to_mdarray(neo::dense_convolve(_signal, _filter));
         neo::peak_normalize(result.to_mdspan());
         return result;
     }();
 
+    auto const dense_spectrum = neo::fft::stft(dense.to_mdspan(), stftSize);
+
     auto const numBinsToKeep = static_cast<int>(_binsToKeep.getValue());
 
-    auto calculateErrorsForDynamicRange = [this, reference = dense.to_mdspan(), numBinsToKeep](auto dynamicRange) {
+    auto calculateErrorsForDynamicRange = [=, this](auto dynamicRange) {
         auto sparse = to_mdarray(neo::sparse_convolve(_signal, _filter, -dynamicRange, numBinsToKeep));
         neo::peak_normalize(sparse.to_mdspan());
-        return neo::root_mean_squared_error(reference, sparse.to_mdspan());
+        auto sparse_spectrum = neo::fft::stft(sparse.to_mdspan(), stftSize);
+        return neo::root_mean_squared_error(dense_spectrum.to_mdspan(), sparse_spectrum.to_mdspan());
     };
 
     juce::MessageManager::callAsync([this] { _fileInfo.moveCaretToEnd(false); });
 
-    for (auto range : {144, 138, 132, 126, 120, 114, 108, 102, 96, 90, 84, 78, 72, 66, 60, 54, 48, 42, 36, 30}) {
+    for (auto range : {
+             144, 138, 132, 126, 120, 114, 108, 102, 96, 90, 84, 78, 72, 66, 60, 54, 48, 42, 36, 30, 24, 18, 12, 6, 3,
+         }) {
         auto const rmse = calculateErrorsForDynamicRange(static_cast<float>(range));
         auto const text = "SPARSE-QUALITY(" + juce::String{range} + "): rmse = " + juce::String{rmse, 7}
                         + " rmse(dB) = " + juce::String{to_decibels(rmse)} + "\n";
