@@ -1,22 +1,18 @@
 #pragma once
 
 #include <neo/config.hpp>
-#include <neo/container/mdspan.hpp>
 
-#include <cassert>
-#include <utility>
+#include <neo/algorithm/detail/linalg_binary_op.hpp>
+
+#include <functional>
 
 namespace neo {
 
-template<in_vector InVec1, in_vector InVec2, out_vector OutVec>
-auto multiply(InVec1 x, InVec2 y, OutVec out) noexcept -> void
+template<in_object InObj1, in_object InObj2, out_object OutObj>
+    requires(InObj1::rank() == InObj2::rank() and InObj1::rank() == OutObj::rank())
+auto multiply(InObj1 x, InObj2 y, OutObj out) noexcept -> void
 {
-    assert(x.extents() == y.extents());
-    assert(x.extents() == out.extents());
-
-    for (auto i{0}; std::cmp_less(i, x.extent(0)); ++i) {
-        out[i] = x[i] * y[i];
-    }
+    return detail::linalg_binary_op(x, y, out, std::multiplies{});
 }
 
 }  // namespace neo
