@@ -14,20 +14,22 @@ TEMPLATE_TEST_CASE("neo/fft/transform: stft", "", float, double)
 {
     using Float = TestType;
 
-    auto const size   = GENERATE(as<std::size_t>{}, 2040, 2048);
-    auto const signal = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{1, size};
+    auto const signal_length = GENERATE(as<std::size_t>{}, 2040, 2048);
+    auto const signal        = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{1, signal_length};
 
-    auto const no_overlap_options = neo::fft::stft_options{
+    auto const no_overlap_options = neo::fft::stft_options<Float>{
         .frame_length   = 256,
-        .overlap_length = 0,
         .transform_size = 256,
+        .overlap_length = 0,
     };
 
     auto no_overlap = neo::fft::stft(signal.to_mdspan(), no_overlap_options);
-    REQUIRE(no_overlap.extent(0) == 8);
-    REQUIRE(no_overlap.extent(1) == 129);
+    REQUIRE(no_overlap.extent(0) == 1);
+    REQUIRE(no_overlap.extent(1) == 8);
+    REQUIRE(no_overlap.extent(2) == 129);
 
     auto half_overlap = neo::fft::stft(signal.to_mdspan(), 256);
-    REQUIRE(half_overlap.extent(0) == 16);
-    REQUIRE(half_overlap.extent(1) == 129);
+    REQUIRE(half_overlap.extent(0) == 1);
+    REQUIRE(half_overlap.extent(1) == 16);
+    REQUIRE(half_overlap.extent(2) == 129);
 }

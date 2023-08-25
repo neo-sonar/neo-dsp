@@ -417,7 +417,10 @@ auto BenchmarkTab::runSparseQualityTests() -> void
         auto sparse = to_mdarray(neo::sparse_convolve(_signal, _filter, -dynamicRange, numBinsToKeep));
         neo::peak_normalize(sparse.to_mdspan());
         auto sparse_spectrum = neo::fft::stft(sparse.to_mdspan(), stftSize);
-        return neo::root_mean_squared_error(dense_spectrum.to_mdspan(), sparse_spectrum.to_mdspan());
+        return neo::root_mean_squared_error(
+            stdex::submdspan(dense_spectrum.to_mdspan(), 0, stdex::full_extent, stdex::full_extent),
+            stdex::submdspan(sparse_spectrum.to_mdspan(), 0, stdex::full_extent, stdex::full_extent)
+        );
     };
 
     juce::MessageManager::callAsync([this] { _fileInfo.moveCaretToEnd(false); });
@@ -445,8 +448,15 @@ auto BenchmarkTab::updateImages() -> void
     auto const weights    = FrequencySpectrumWeighting{1024, 44'100.0};
     auto const weighting  = [=](std::size_t binIndex) { return isWeighted ? weights[binIndex] : 0.0F; };
 
-    auto spectogramImage = neo::powerSpectrumImage(_spectrum, weighting, -static_cast<float>(_dynamicRange.getValue()));
-    auto histogramImage  = neo::powerHistogramImage(_spectrum, weighting);
+    auto spectogramImage = neo::powerSpectrumImage(
+        stdex::submdspan(_spectrum.to_mdspan(), 0, stdex::full_extent, stdex::full_extent),
+        weighting,
+        -static_cast<float>(_dynamicRange.getValue())
+    );
+    auto histogramImage = neo::powerHistogramImage(
+        stdex::submdspan(_spectrum.to_mdspan(), 0, stdex::full_extent, stdex::full_extent),
+        weighting
+    );
 
     _spectogramImage.setImage(spectogramImage);
     _histogramImage.setImage(histogramImage);

@@ -54,7 +54,7 @@ struct hamming_window
 auto fill_window(inout_vector auto vec, auto window)
 {
     for (auto i{0}; std::cmp_less(i, vec.extent(0)); ++i) {
-        vec(i) = window(i, vec.extent(0));
+        vec(i) = window(i, static_cast<int>(vec.extent(0)));
     }
 }
 

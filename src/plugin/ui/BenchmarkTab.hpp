@@ -51,7 +51,7 @@ private:
     juce::File _filterFile{};
     juce::AudioBuffer<float> _signal{};
     juce::AudioBuffer<float> _filter{};
-    stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 2>> _spectrum;
+    stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>> _spectrum;
     stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>> _partitions;
 
     // Sparsity

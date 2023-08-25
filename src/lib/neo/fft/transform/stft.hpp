@@ -9,6 +9,8 @@
 #include <neo/math/idiv.hpp>
 #include <neo/math/windowing.hpp>
 
+#include <functional>
+
 namespace neo::fft {
 
 namespace detail {
@@ -20,25 +22,30 @@ namespace detail {
 
 }  // namespace detail
 
+template<std::floating_point Float>
 struct stft_options
 {
     int frame_length;
-    int overlap_length;
     int transform_size;
+    int overlap_length;
+    std::function<Float(int, int)> window{hann_window<Float>{}};
 };
 
 template<std::floating_point Float>
 struct stft_plan
 {
     explicit stft_plan(int transform_size)
-        : _options{
+        : stft_plan({
             .frame_length   = transform_size,
-            .overlap_length = transform_size / 2,
             .transform_size = transform_size,
-        }
+            .overlap_length = transform_size / 2,
+        })
     {}
 
-    explicit stft_plan(stft_options options) : _options{options} {}
+    explicit stft_plan(stft_options<Float> options) : _options{std::move(options)}
+    {
+        fill_window(_window_func.to_mdspan(), _options.window);
+    }
 
     template<in_matrix InMat>
     [[nodiscard]] auto operator()(InMat x)
@@ -50,46 +57,48 @@ struct stft_plan
             detail::num_sftf_frames(total_num_samples, _options.frame_length, _options.overlap_length)
         );
 
-        auto result = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 2>>{
+        auto result = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 3>>{
+            x.extent(0),
             num_frames,
             num_bins,
         };
 
-        for (auto frame_idx{0UL}; frame_idx < result.extent(0); ++frame_idx) {
-            fill(_fft_input.to_mdspan(), Float(0));
-            fill(_fft_output.to_mdspan(), Float(0));
+        for (auto channel{0UL}; channel < result.extent(0); ++channel) {
+            for (auto frame_idx{0UL}; frame_idx < result.extent(1); ++frame_idx) {
+                fill(_fft_input.to_mdspan(), Float(0));
+                fill(_fft_output.to_mdspan(), Float(0));
 
-            auto const idx         = static_cast<int>(frame_idx) * _options.overlap_length;
-            auto const num_samples = std::min(total_num_samples - idx, _options.frame_length);
-            auto const channel     = 0;
+                auto const sample_idx  = static_cast<int>(frame_idx) * _options.overlap_length;
+                auto const num_samples = std::min(total_num_samples - sample_idx, _options.frame_length);
+                auto const block       = stdex::submdspan(x, channel, std::tuple{sample_idx, sample_idx + num_samples});
+                auto const window      = stdex::submdspan(_fft_input.to_mdspan(), std::tuple{0, num_samples});
+                copy(block, window);
 
-            auto block  = stdex::submdspan(x, channel, std::tuple{idx, idx + num_samples});
-            auto window = stdex::submdspan(_fft_input.to_mdspan(), std::tuple{0, num_samples});
+                multiply(_fft_input.to_mdspan(), _window_func.to_mdspan(), _fft_input.to_mdspan());
+                _rfft(_fft_input.to_mdspan(), _fft_output.to_mdspan());
 
-            copy(block, window);
-            multiply(_fft_input.to_mdspan(), _hann.to_mdspan(), _fft_input.to_mdspan());
-            _rfft(_fft_input.to_mdspan(), _fft_output.to_mdspan());
+                auto coeffs = stdex::submdspan(_fft_output.to_mdspan(), std::tuple{0, result.extent(2)});
+                auto frame  = stdex::submdspan(result.to_mdspan(), channel, frame_idx, std::tuple{0, result.extent(2)});
 
-            auto coeffs = stdex::submdspan(_fft_output.to_mdspan(), std::tuple{0, result.extent(1)});
-            auto frame  = stdex::submdspan(result.to_mdspan(), frame_idx, std::tuple{0, result.extent(1)});
-
-            scale(scalar, coeffs);
-            copy(coeffs, frame);
+                scale(scalar, coeffs);
+                copy(coeffs, frame);
+            }
         }
-
         return result;
     }
 
 private:
-    stft_options _options;
+    stft_options<Float> _options;
+
     rfft_radix2_plan<Float> _rfft{static_cast<size_t>(ilog2(_options.transform_size))};
     stdex::mdarray<Float, stdex::dextents<std::size_t, 1>> _fft_input{_rfft.size()};
     stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>> _fft_output{_rfft.size()};
-    stdex::mdarray<Float, stdex::dextents<std::size_t, 1>> _hann{generate_window<Float>(_rfft.size())};
+
+    stdex::mdarray<Float, stdex::dextents<std::size_t, 1>> _window_func{_rfft.size()};
 };
 
 template<in_matrix InMat>
-[[nodiscard]] auto stft(InMat x, stft_options options)
+[[nodiscard]] auto stft(InMat x, stft_options<typename InMat::value_type> options)
 {
     auto plan = stft_plan<typename InMat::value_type>{options};
     return plan(x);
@@ -97,7 +106,6 @@ template<in_matrix InMat>
 
 template<in_matrix InMat>
 [[nodiscard]] auto stft(InMat x, int window_size)
-    -> stdex::mdarray<std::complex<typename InMat::value_type>, stdex::dextents<size_t, 2>>
 {
     auto plan = stft_plan<typename InMat::value_type>{window_size};
     return plan(x);
