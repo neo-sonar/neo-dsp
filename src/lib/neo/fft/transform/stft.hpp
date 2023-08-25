@@ -17,7 +17,7 @@ namespace detail {
 
 [[nodiscard]] constexpr auto num_sftf_frames(int signal_len, int frame_len, int overlap_len) noexcept
 {
-    return 1 + idiv((signal_len - frame_len + overlap_len), (frame_len - overlap_len));
+    return 1 + idiv(signal_len - frame_len + overlap_len, frame_len - overlap_len);
 }
 
 }  // namespace detail
@@ -44,42 +44,47 @@ struct stft_plan
 
     explicit stft_plan(stft_options<Float> options) : _options{std::move(options)}
     {
-        fill_window(_window_func.to_mdspan(), _options.window);
+        fill_window(_window.to_mdspan(), _options.window);
     }
 
     template<in_matrix InMat>
     [[nodiscard]] auto operator()(InMat x)
     {
-        auto const total_num_samples = static_cast<int>(x.extent(1));
-        auto const num_bins          = _rfft.size() / 2UL + 1UL;
-        auto const num_frames        = static_cast<std::size_t>(
-            detail::num_sftf_frames(total_num_samples, _options.frame_length, _options.overlap_length)
-        );
+        auto const frame_len = _options.frame_length;
+        auto const overlap   = _options.overlap_length;
+
+        auto const num_channels = x.extent(0);
+        auto const signal_len   = static_cast<int>(x.extent(1));
+
+        auto const num_bins   = _rfft.size() / 2UL + 1UL;
+        auto const num_frames = static_cast<std::size_t>(detail::num_sftf_frames(signal_len, frame_len, overlap));
+
+        auto const in  = _input.to_mdspan();
+        auto const out = _output.to_mdspan();
 
         auto result = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 3>>{
-            x.extent(0),
+            num_channels,
             num_frames,
             num_bins,
         };
 
-        for (auto channel{0}; std::cmp_less(channel, result.extent(0)); ++channel) {
-            for (auto frame_idx{0}; std::cmp_less(frame_idx, result.extent(1)); ++frame_idx) {
-                fill(_input.to_mdspan(), Float(0));
-                fill(_output.to_mdspan(), Float(0));
+        for (auto ch_idx{0}; std::cmp_less(ch_idx, num_channels); ++ch_idx) {
+            for (auto frame_idx{0}; std::cmp_less(frame_idx, num_frames); ++frame_idx) {
+                auto const sample_idx  = frame_idx * frame_len - frame_idx * overlap;
+                auto const num_samples = std::min(signal_len - sample_idx, frame_len);
 
-                auto const sample_idx  = frame_idx * _options.frame_length - frame_idx * _options.overlap_length;
-                auto const num_samples = std::min(total_num_samples - sample_idx, _options.frame_length);
-                auto const block       = stdex::submdspan(x, channel, std::tuple{sample_idx, sample_idx + num_samples});
-                auto const window      = stdex::submdspan(_input.to_mdspan(), std::tuple{0, num_samples});
-                copy(block, window);
+                auto const in_block  = stdex::submdspan(x, ch_idx, std::tuple{sample_idx, sample_idx + num_samples});
+                auto const in_window = stdex::submdspan(in, std::tuple{0, num_samples});
+                fill(in, Float(0));
+                fill(out, Float(0));
+                copy(in_block, in_window);
 
-                multiply(_input.to_mdspan(), _window_func.to_mdspan(), _input.to_mdspan());
-                _rfft(_input.to_mdspan(), _output.to_mdspan());
+                multiply(in, _window.to_mdspan(), in);
+                _rfft(in, out);
 
-                auto coeffs = stdex::submdspan(_output.to_mdspan(), std::tuple{0, result.extent(2)});
-                auto frame  = stdex::submdspan(result.to_mdspan(), channel, frame_idx, std::tuple{0, result.extent(2)});
-
-                copy(coeffs, frame);
+                auto coeffs       = stdex::submdspan(out, std::tuple{0, num_bins});
+                auto result_frame = stdex::submdspan(result.to_mdspan(), ch_idx, frame_idx, std::tuple{0, num_bins});
+                copy(coeffs, result_frame);
             }
         }
 
@@ -93,7 +98,7 @@ private:
     stdex::mdarray<Float, stdex::dextents<std::size_t, 1>> _input{_rfft.size()};
     stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>> _output{_rfft.size()};
 
-    stdex::mdarray<Float, stdex::dextents<std::size_t, 1>> _window_func{_rfft.size()};
+    stdex::mdarray<Float, stdex::dextents<std::size_t, 1>> _window{_rfft.size()};
 };
 
 template<in_matrix InMat>
