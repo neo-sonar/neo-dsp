@@ -12,3 +12,4 @@
 #include <neo/algorithm/peak_normalize.hpp>
 #include <neo/algorithm/root_mean_squared_error.hpp>
 #include <neo/algorithm/scale.hpp>
+#include <neo/algorithm/variance.hpp>
