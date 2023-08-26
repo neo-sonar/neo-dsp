@@ -6,6 +6,15 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 
 namespace neo {
+
+struct ProcessSpecListener
+{
+    ProcessSpecListener()          = default;
+    virtual ~ProcessSpecListener() = default;
+
+    virtual auto processSpecChanged(juce::dsp::ProcessSpec const& spec) -> void = 0;
+};
+
 struct PluginProcessor final : juce::AudioProcessor
 {
     PluginProcessor();
@@ -37,14 +46,22 @@ struct PluginProcessor final : juce::AudioProcessor
     auto getStateInformation(juce::MemoryBlock& destData) -> void override;
     auto setStateInformation(void const* data, int sizeInBytes) -> void override;
 
-    auto getState() noexcept -> juce::AudioProcessorValueTreeState&;
-    auto getState() const noexcept -> juce::AudioProcessorValueTreeState const&;
+    [[nodiscard]] auto getProcessSpec() const noexcept -> juce::dsp::ProcessSpec;
+
+    auto addProcessSpecListener(ProcessSpecListener* listener) -> void;
+    auto removeProcessSpecListener(ProcessSpecListener* listener) -> void;
+
+    [[nodiscard]] auto getState() noexcept -> juce::AudioProcessorValueTreeState&;
+    [[nodiscard]] auto getState() const noexcept -> juce::AudioProcessorValueTreeState const&;
 
 private:
     juce::UndoManager _undoManager{};
     juce::AudioProcessorValueTreeState _valueTree;
+    std::optional<juce::dsp::ProcessSpec> _spec{std::nullopt};
 
     PerceptualConvolution _convolution;
+
+    juce::ListenerList<ProcessSpecListener> _specListeners;
 };
 
 }  // namespace neo

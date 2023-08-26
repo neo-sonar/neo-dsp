@@ -11,13 +11,16 @@
 
 namespace neo {
 
-struct PluginEditor final : juce::AudioProcessorEditor
+struct PluginEditor final
+    : juce::AudioProcessorEditor
+    , ProcessSpecListener
 {
     explicit PluginEditor(PluginProcessor& p);
     ~PluginEditor() noexcept override;
 
     auto paint(juce::Graphics& g) -> void override;
     auto resized() -> void override;
+    auto processSpecChanged(juce::dsp::ProcessSpec const& spec) -> void override;
 
 private:
     auto openFile() -> void;
@@ -29,6 +32,9 @@ private:
     ParameterTab _parameterTab;
     BenchmarkTab _benchmarkTab{_formats};
     juce::TabbedComponent _tabs;
+    juce::Label _sampleRateLabel{"Samplerate: ??"};
+    juce::Label _blockSizeLabel{"Block-size: ??"};
+    juce::Label _numChannelsLabel{"Channels: ??"};
 
     std::unique_ptr<juce::FileChooser> _fileChooser{nullptr};
     juce::SharedResourcePointer<juce::TooltipWindow> _tooltipWindow;

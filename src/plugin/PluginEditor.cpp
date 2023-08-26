@@ -15,8 +15,15 @@ PluginEditor::PluginEditor(PluginProcessor& p)
 
     _openFile.onClick = [this] { openFile(); };
 
+    processSpecChanged(p.getProcessSpec());
+    p.addProcessSpecListener(this);
+
     addAndMakeVisible(_openFile);
     addAndMakeVisible(_tabs);
+
+    addAndMakeVisible(_sampleRateLabel);
+    addAndMakeVisible(_blockSizeLabel);
+    addAndMakeVisible(_numChannelsLabel);
 
     setResizable(true, true);
     setSize(1280, 720);
@@ -24,7 +31,11 @@ PluginEditor::PluginEditor(PluginProcessor& p)
     _tooltipWindow->setMillisecondsBeforeTipAppears(750);
 }
 
-PluginEditor::~PluginEditor() noexcept { setLookAndFeel(nullptr); }
+PluginEditor::~PluginEditor() noexcept
+{
+    dynamic_cast<PluginProcessor&>(processor).removeProcessSpecListener(this);
+    setLookAndFeel(nullptr);
+}
 
 auto PluginEditor::paint(juce::Graphics& g) -> void
 {
@@ -33,9 +44,23 @@ auto PluginEditor::paint(juce::Graphics& g) -> void
 
 auto PluginEditor::resized() -> void
 {
-    auto area = getLocalBounds();
+    auto area       = getLocalBounds();
+    auto labelArea  = area.removeFromBottom(area.proportionOfHeight(0.05));
+    auto labelWidth = labelArea.proportionOfWidth(1.0 / 3.0);
+
+    _sampleRateLabel.setBounds(labelArea.removeFromLeft(labelWidth));
+    _blockSizeLabel.setBounds(labelArea.removeFromLeft(labelWidth));
+    _numChannelsLabel.setBounds(labelArea.removeFromLeft(labelWidth));
+
     _openFile.setBounds(area.removeFromTop(area.proportionOfHeight(0.1)).reduced(0, 5));
     _tabs.setBounds(area);
+}
+
+auto PluginEditor::processSpecChanged(juce::dsp::ProcessSpec const& spec) -> void
+{
+    _sampleRateLabel.setText("Samplerate: " + juce::String{spec.sampleRate}, juce::sendNotification);
+    _blockSizeLabel.setText("Block-size: " + juce::String{spec.maximumBlockSize}, juce::sendNotification);
+    _numChannelsLabel.setText("Channels: " + juce::String{spec.numChannels}, juce::sendNotification);
 }
 
 auto PluginEditor::openFile() -> void

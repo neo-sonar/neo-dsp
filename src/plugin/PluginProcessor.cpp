@@ -45,11 +45,15 @@ auto PluginProcessor::changeProgramName(int index, juce::String const& newName) 
 
 auto PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) -> void
 {
-    _convolution.prepare(juce::dsp::ProcessSpec{
+    _spec = juce::dsp::ProcessSpec{
         sampleRate,
         static_cast<std::uint32_t>(samplesPerBlock),
-        static_cast<std::uint32_t>(getMainBusNumInputChannels()),
-    });
+        static_cast<std::uint32_t>(getMainBusNumOutputChannels()),
+    };
+
+    _convolution.prepare(*_spec);
+
+    _specListeners.call(&ProcessSpecListener::processSpecChanged, *_spec);
 }
 
 auto PluginProcessor::releaseResources() -> void { _convolution.reset(); }
@@ -97,6 +101,18 @@ auto PluginProcessor::setStateInformation(void const* data, int sizeInBytes) -> 
     if (tree.isValid()) {
         _valueTree.state = tree;
     }
+}
+
+auto PluginProcessor::getProcessSpec() const noexcept -> juce::dsp::ProcessSpec
+{
+    return _spec.value_or(juce::dsp::ProcessSpec{44'100.0, 512, 2});
+}
+
+auto PluginProcessor::addProcessSpecListener(ProcessSpecListener* listener) -> void { _specListeners.add(listener); }
+
+auto PluginProcessor::removeProcessSpecListener(ProcessSpecListener* listener) -> void
+{
+    _specListeners.remove(listener);
 }
 
 auto PluginProcessor::getState() noexcept -> juce::AudioProcessorValueTreeState& { return _valueTree; }
