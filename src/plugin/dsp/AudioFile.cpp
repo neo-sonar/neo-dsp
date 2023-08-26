@@ -1,11 +1,9 @@
 #include "AudioFile.hpp"
 
-#include "dsp/AudioBuffer.hpp"
-
 namespace neo {
 
 auto loadAndResample(juce::AudioFormatManager& formats, juce::File const& file, double sampleRate)
-    -> juce::AudioBuffer<float>
+    -> BufferWithSampleRate<float>
 {
     auto reader = std::unique_ptr<juce::AudioFormatReader>{formats.createReaderFor(file.createInputStream())};
     if (reader == nullptr) {
@@ -13,14 +11,16 @@ auto loadAndResample(juce::AudioFormatManager& formats, juce::File const& file, 
     }
 
     auto buffer = juce::AudioBuffer<float>{int(reader->numChannels), int(reader->lengthInSamples)};
-    if (!reader->read(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), 0, buffer.getNumSamples())) {
+    if (not reader->read(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), 0, buffer.getNumSamples())) {
         return {};
     }
 
-    if (not juce::exactlyEqual(reader->sampleRate, sampleRate)) {
-        return resample(buffer, reader->sampleRate, sampleRate);
+    auto result = BufferWithSampleRate<float>{std::move(buffer), reader->sampleRate};
+    if (not juce::exactlyEqual(result.sampleRate, sampleRate)) {
+        return resample(result, sampleRate);
     }
-    return buffer;
+
+    return result;
 }
 
 auto writeToWavFile(

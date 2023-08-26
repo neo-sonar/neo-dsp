@@ -32,25 +32,28 @@ auto juce_normalization(juce::AudioBuffer<float>& buf) -> void
     });
 }
 
-auto resample(juce::AudioBuffer<float> const& buf, double srcSampleRate, double destSampleRate)
-    -> juce::AudioBuffer<float>
+auto resample(BufferWithSampleRate<float> const& buf, double destSampleRate) -> BufferWithSampleRate<float>
 {
-    if (juce::exactlyEqual(srcSampleRate, destSampleRate)) {
+    if (juce::exactlyEqual(buf.sampleRate, destSampleRate)) {
         return buf;
     }
 
-    auto const factorReading = srcSampleRate / destSampleRate;
+    auto const factorReading = buf.sampleRate / destSampleRate;
 
-    juce::AudioBuffer<float> original = buf;
-    juce::MemoryAudioSource memorySource(original, false);
-    juce::ResamplingAudioSource resamplingSource(&memorySource, false, buf.getNumChannels());
+    auto original     = buf;
+    auto memorySource = juce::MemoryAudioSource(original.buffer, false);
 
-    auto const finalSize = juce::roundToInt(juce::jmax(1.0, buf.getNumSamples() / factorReading));
-    resamplingSource.setResamplingRatio(factorReading);
-    resamplingSource.prepareToPlay(finalSize, srcSampleRate);
+    auto const finalSize = juce::roundToInt(juce::jmax(1.0, buf.buffer.getNumSamples() / factorReading));
 
-    juce::AudioBuffer<float> result(buf.getNumChannels(), finalSize);
-    resamplingSource.getNextAudioBlock({&result, 0, result.getNumSamples()});
+    auto result = BufferWithSampleRate<float>{
+        .buffer     = juce::AudioBuffer<float>{buf.buffer.getNumChannels(), finalSize},
+        .sampleRate = destSampleRate,
+    };
+
+    auto resampler = juce::ResamplingAudioSource(&memorySource, false, buf.buffer.getNumChannels());
+    resampler.setResamplingRatio(factorReading);
+    resampler.prepareToPlay(finalSize, buf.sampleRate);
+    resampler.getNextAudioBlock({&result.buffer, 0, result.buffer.getNumSamples()});
 
     return result;
 }

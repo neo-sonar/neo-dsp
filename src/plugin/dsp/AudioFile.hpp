@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dsp/AudioBuffer.hpp"
+
 #include <neo/container/mdspan.hpp>
 
 #include <juce_audio_formats/juce_audio_formats.h>
@@ -7,7 +9,7 @@
 namespace neo {
 
 [[nodiscard]] auto loadAndResample(juce::AudioFormatManager& formats, juce::File const& file, double sampleRate)
-    -> juce::AudioBuffer<float>;
+    -> BufferWithSampleRate<float>;
 
 auto writeToWavFile(
     juce::File const& file,

@@ -9,8 +9,15 @@ namespace neo {
 
 auto juce_normalization(juce::AudioBuffer<float>& buf) -> void;
 
-auto resample(juce::AudioBuffer<float> const& buf, double srcSampleRate, double destSampleRate)
-    -> juce::AudioBuffer<float>;
+template<std::floating_point Float>
+struct BufferWithSampleRate
+{
+    juce::AudioBuffer<Float> buffer;
+    double sampleRate;
+};
+
+[[nodiscard]] auto resample(BufferWithSampleRate<float> const& buf, double destSampleRate)
+    -> BufferWithSampleRate<float>;
 
 template<std::floating_point Float>
 [[nodiscard]] auto to_mdarray(juce::AudioBuffer<Float> const& buffer)

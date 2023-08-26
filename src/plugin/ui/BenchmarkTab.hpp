@@ -49,8 +49,9 @@ private:
 
     juce::File _signalFile{};
     juce::File _filterFile{};
-    juce::AudioBuffer<float> _signal{};
-    juce::AudioBuffer<float> _filter{};
+    BufferWithSampleRate<float> _signal{};
+    BufferWithSampleRate<float> _filter{};
+
     stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>> _spectrum;
     stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>> _partitions;
 

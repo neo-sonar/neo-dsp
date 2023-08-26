@@ -29,14 +29,16 @@ auto PerceptualConvolution::process(juce::dsp::ProcessContextReplacing<float> co
     auto block = context.getOutputBlock();
 
     block.multiplyBy(_inGain);
-    _mixer.pushDrySamples(block);
 
     if (_convolution) {
+        _mixer.pushDrySamples(block);
+
         _convolution->process(context);
+
+        _mixer.setWetMixProportion(_wet);
+        _mixer.mixWetSamples(block);
     }
 
-    _mixer.setWetMixProportion(_wet);
-    _mixer.mixWetSamples(block);
     block.multiplyBy(_outGain);
 }
 

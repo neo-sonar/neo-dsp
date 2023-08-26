@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dsp/AudioBuffer.hpp"
 #include "dsp/ConstantOverlapAdd.hpp"
 
 #include <neo/fft/convolution.hpp>
@@ -25,15 +26,9 @@ struct DenseConvolution final : ConstantOverlapAdd<float>
     auto resetFrame() -> void override;
 
 private:
-    struct ImpulseResponse
-    {
-        juce::AudioBuffer<float> buffer;
-        double sampleRate;
-    };
-
     auto updateImpulseResponse() -> void;
 
-    std::optional<ImpulseResponse> _impulse;
+    std::optional<BufferWithSampleRate<float>> _impulse;
     std::optional<juce::dsp::ProcessSpec> _spec;
     std::vector<neo::fft::upols_convolver<std::complex<float>>> _convolvers;
     stdex::mdarray<std::complex<float>, stdex::dextents<std::size_t, 3>> _filter;

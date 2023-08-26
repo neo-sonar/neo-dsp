@@ -159,10 +159,10 @@ auto BenchmarkTab::setImpulseResponseFile(juce::File const& file) -> void
     _filter     = loadAndResample(_formatManager, file, 44'100.0);
     _filterFile = file;
 
-    auto const filterMatrix = to_mdarray(_filter);
+    auto const filterMatrix = to_mdarray(_filter.buffer);
     _spectrum               = neo::fft::stft(filterMatrix.to_mdspan(), 1024);
 
-    auto normalized = _filter;
+    auto normalized = _filter.buffer;
     juce_normalization(normalized);
     auto const impulse = to_mdarray(normalized);
 
@@ -172,7 +172,7 @@ auto BenchmarkTab::setImpulseResponseFile(juce::File const& file) -> void
         blockSize
     );
 
-    _fileInfo.setText(file.getFileName() + " (" + juce::String(_filter.getNumSamples()) + ")\n");
+    _fileInfo.setText(file.getFileName() + " (" + juce::String(_filter.buffer.getNumSamples()) + ")\n");
     updateImages();
 
     repaint();
@@ -233,7 +233,7 @@ auto BenchmarkTab::runBenchmarks() -> void
         return false;
     };
 
-    if (_signal.getNumChannels() == 0 or _signal.getNumSamples() == 0) {
+    if (_signal.buffer.getNumChannels() == 0 or _signal.buffer.getNumSamples() == 0) {
         return;
     }
 
@@ -305,11 +305,11 @@ auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
         {44'100.0, 512, 2}
     };
 
-    auto out  = juce::AudioBuffer<float>{_signal.getNumChannels(), _signal.getNumSamples()};
+    auto out  = juce::AudioBuffer<float>{_signal.buffer.getNumChannels(), _signal.buffer.getNumSamples()};
     auto file = getBenchmarkResultsDirectory().getNonexistentChildFile("jconv", ".wav");
 
     auto const start = std::chrono::system_clock::now();
-    processBlocks(proc, _signal, out, 512, 44'100.0);
+    processBlocks(proc, _signal.buffer, out, 512, 44'100.0);
     auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(out);
@@ -326,8 +326,8 @@ auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
 
 auto BenchmarkTab::runDenseConvolutionBenchmark() -> void
 {
-    auto out       = juce::AudioBuffer<float>{_signal.getNumChannels(), _signal.getNumSamples()};
-    auto inBuffer  = juce::dsp::AudioBlock<float const>{_signal};
+    auto out       = juce::AudioBuffer<float>{_signal.buffer.getNumChannels(), _signal.buffer.getNumSamples()};
+    auto inBuffer  = juce::dsp::AudioBlock<float const>{_signal.buffer};
     auto outBuffer = juce::dsp::AudioBlock<float>{out};
 
     auto proc = DenseConvolution{512};
@@ -370,7 +370,7 @@ auto BenchmarkTab::runDenseConvolutionBenchmark() -> void
 auto BenchmarkTab::runDenseConvolverBenchmark() -> void
 {
     auto start     = std::chrono::system_clock::now();
-    auto result    = neo::dense_convolve(_signal, _filter);
+    auto result    = neo::dense_convolve(_signal.buffer, _filter.buffer);
     auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(result);
@@ -393,7 +393,7 @@ auto BenchmarkTab::runSparseConvolverBenchmark() -> void
     auto const numBinsToKeep = static_cast<int>(_binsToKeep.getValue());
 
     auto const start  = std::chrono::system_clock::now();
-    auto const result = neo::sparse_convolve(_signal, _filter, thresholdDB, numBinsToKeep);
+    auto const result = neo::sparse_convolve(_signal.buffer, _filter.buffer, thresholdDB, numBinsToKeep);
     auto const end    = std::chrono::system_clock::now();
 
     auto output = to_mdarray(result);
@@ -424,7 +424,7 @@ auto BenchmarkTab::runSparseQualityTests() -> void
     auto stftPlan = neo::fft::stft_plan<double>{stftOptions};
 
     auto const dense = [this] {
-        auto result = to_mdarray(neo::dense_convolve(_signal, _filter));
+        auto result = to_mdarray(neo::dense_convolve(_signal.buffer, _filter.buffer));
         neo::peak_normalize(result.to_mdspan());
         return result;
     }();
@@ -434,7 +434,7 @@ auto BenchmarkTab::runSparseQualityTests() -> void
     auto const numBinsToKeep = static_cast<int>(_binsToKeep.getValue());
 
     auto calculateErrorsForDynamicRange = [=, this](auto dynamicRange) {
-        auto sparse = to_mdarray(neo::sparse_convolve(_signal, _filter, -dynamicRange, numBinsToKeep));
+        auto sparse = to_mdarray(neo::sparse_convolve(_signal.buffer, _filter.buffer, -dynamicRange, numBinsToKeep));
         neo::peak_normalize(sparse.to_mdspan());
 
         auto stft             = neo::fft::stft_plan<double>{stftOptions};
