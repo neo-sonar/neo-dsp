@@ -96,8 +96,7 @@ BenchmarkTab::BenchmarkTab(PluginProcessor& processor, juce::AudioFormatManager&
     : _processor{processor}
     , _formatManager{formatManager}
 {
-    processSpecChanged(_processor.getProcessSpec());
-    _processor.addProcessSpecListener(this);
+    _formatManager.registerBasicFormats();
 
     _dynamicRange.addListener(this);
     _weighting.addListener(this);
@@ -107,8 +106,11 @@ BenchmarkTab::BenchmarkTab(PluginProcessor& processor, juce::AudioFormatManager&
 
     _fileInfo.setReadOnly(true);
     _fileInfo.setMultiLine(true);
-    _spectogramImage.setImagePlacement(juce::RectanglePlacement::centred);
-    _histogramImage.setImagePlacement(juce::RectanglePlacement::centred);
+    _spectogramImage.setImagePlacement(juce::RectanglePlacement::stretchToFit);
+    _histogramImage.setImagePlacement(juce::RectanglePlacement::stretchToFit);
+
+    processSpecChanged(_processor.getProcessSpec());
+    _processor.addProcessSpecListener(this);
 
     auto const weights     = juce::Array<juce::var>{juce::var{"No Weighting"}, juce::var{"A-Weighting"}};
     auto const weightNames = toStringArray(weights);
@@ -128,7 +130,7 @@ BenchmarkTab::BenchmarkTab(PluginProcessor& processor, juce::AudioFormatManager&
     _propertyPanel.addSection(
         "Sparsity",
         juce::Array<juce::PropertyComponent*>{
-            std::make_unique<juce::SliderPropertyComponent>(_dynamicRange, "Dynamic Range", 10.0, 100.0, 0.5).release(),
+            std::make_unique<juce::SliderPropertyComponent>(_dynamicRange, "Dynamic Range", 10.0, 90.0, 0.1).release(),
             std::make_unique<juce::SliderPropertyComponent>(_binsToKeep, "Keep Low Bins", 0.0, 25.0, 1.0).release(),
             std::make_unique<juce::ChoicePropertyComponent>(_weighting, "Weighting", weightNames, weights).release(),
         }

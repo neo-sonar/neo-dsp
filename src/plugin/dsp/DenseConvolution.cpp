@@ -45,6 +45,8 @@ auto DenseConvolution::loadImpulseResponse(std::unique_ptr<juce::InputStream> st
         .buffer     = std::move(buffer),
         .sampleRate = reader->sampleRate,
     };
+
+    updateImpulseResponse();
 }
 
 auto DenseConvolution::prepareFrame(juce::dsp::ProcessSpec const& spec) -> void
@@ -72,7 +74,9 @@ auto DenseConvolution::resetFrame() -> void {}
 
 auto DenseConvolution::updateImpulseResponse() -> void
 {
-    jassert(_spec.has_value());
+    if (not _spec.has_value()) {
+        return;
+    }
 
     if (_impulse.has_value()) {
         _convolvers.resize(_spec->numChannels);
@@ -84,7 +88,6 @@ auto DenseConvolution::updateImpulseResponse() -> void
             _convolvers[ch].filter(channel);
         }
     } else {
-        // jassertfalse;
         auto const identity = neo::generate_identity_impulse<float>(_spec->maximumBlockSize, 2);
         _filter             = stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>>{
             _spec->numChannels,

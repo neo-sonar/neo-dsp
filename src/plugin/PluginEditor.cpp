@@ -8,8 +8,6 @@ PluginEditor::PluginEditor(PluginProcessor& p)
     , _benchmarkTab{p, _formats}
     , _tabs{juce::TabbedButtonBar::Orientation::TabsAtTop}
 {
-    _formats.registerBasicFormats();
-
     auto bgColor = getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId);
     _tabs.addTab("Parameter", bgColor, std::addressof(_parameterTab), false);
     _tabs.addTab("Benchmark", bgColor, std::addressof(_benchmarkTab), false);

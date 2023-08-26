@@ -30,25 +30,19 @@ auto powerSpectrumImage(
         auto const power      = bin * bin;
         auto const normalized = power * scale;
         auto const dB         = neo::to_decibels(normalized, -144.0F) * 0.5F + weight;
-        auto const dBClamped  = std::clamp(dB, -144.0F, 0.0F);
-        auto const color      = [=] {
-            if (dB < threshold) {
-                auto level = juce::jmap(dBClamped, -144.0F, threshold, 0.0F, 1.0F);
-                return juce::Colours::white.darker(level);
-            }
-            return juce::Colours::black;
-        }();
-
+        auto const color      = dB < threshold ? juce::Colours::white : juce::Colours::black;
         img.setPixelAt(x, y, color);
     };
 
-    auto const rows = static_cast<int>(frames.extent(0));
-    auto const cols = static_cast<int>(frames.extent(1));
-    auto img        = juce::Image{juce::Image::PixelFormat::ARGB, cols, rows, true};
+    auto const numFrames = static_cast<int>(frames.extent(0));
+    auto const numBins   = static_cast<int>(frames.extent(1));
 
-    for (auto frameIdx{0U}; frameIdx < frames.extent(0); ++frameIdx) {
-        for (auto binIdx{0U}; binIdx < frames.extent(1); ++binIdx) {
-            fillPixel(img, static_cast<int>(binIdx), static_cast<int>(frameIdx), std::abs(frames(frameIdx, binIdx)));
+    auto img = juce::Image{juce::Image::PixelFormat::ARGB, numFrames, numBins, true};
+
+    for (auto frameIdx{0}; frameIdx < numFrames; ++frameIdx) {
+        for (auto binIdx{0}; binIdx < numBins; ++binIdx) {
+            auto const bin = frames(frameIdx, binIdx);
+            fillPixel(img, frameIdx, numBins - binIdx - 1, std::abs(bin));
         }
     }
 
