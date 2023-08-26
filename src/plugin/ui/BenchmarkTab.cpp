@@ -76,6 +76,20 @@ private:
     std::vector<float> _weights;
 };
 
+[[nodiscard]] auto maxChannelRMSError(auto const& signal, auto const& reconstructed)
+{
+    jassert(signal.extents() == reconstructed.extents());
+
+    auto rmse = 0.0;
+    for (auto ch{0U}; ch < signal.extent(0); ++ch) {
+        auto sig_channel = stdex::submdspan(signal.to_mdspan(), ch, stdex::full_extent, stdex::full_extent);
+        auto rec_channel = stdex::submdspan(reconstructed.to_mdspan(), ch, stdex::full_extent, stdex::full_extent);
+
+        rmse = std::max(rmse, neo::root_mean_squared_error(sig_channel, rec_channel));
+    }
+    return rmse;
+}
+
 }  // namespace
 
 BenchmarkTab::BenchmarkTab(juce::AudioFormatManager& formatManager) : _formatManager{formatManager}
@@ -401,8 +415,13 @@ auto BenchmarkTab::runSparseConvolverBenchmark() -> void
 
 auto BenchmarkTab::runSparseQualityTests() -> void
 {
-    auto const stftSize = static_cast<int>(_stftWindowSize.getValue());
-    auto stftPlan       = neo::fft::stft_plan<double>{stftSize};
+    auto const stftSize    = static_cast<int>(_stftWindowSize.getValue());
+    auto const stftOptions = neo::fft::stft_options<double>{
+        .frame_length   = stftSize,
+        .transform_size = stftSize * 2,
+        .overlap_length = stftSize / 2,
+    };
+    auto stftPlan = neo::fft::stft_plan<double>{stftOptions};
 
     auto const dense = [this] {
         auto result = to_mdarray(neo::dense_convolve(_signal, _filter));
@@ -410,7 +429,7 @@ auto BenchmarkTab::runSparseQualityTests() -> void
         return result;
     }();
 
-    auto const dense_spectrum = stftPlan(dense.to_mdspan());
+    auto const denseSpectogram = stftPlan(dense.to_mdspan());
 
     auto const numBinsToKeep = static_cast<int>(_binsToKeep.getValue());
 
@@ -418,13 +437,9 @@ auto BenchmarkTab::runSparseQualityTests() -> void
         auto sparse = to_mdarray(neo::sparse_convolve(_signal, _filter, -dynamicRange, numBinsToKeep));
         neo::peak_normalize(sparse.to_mdspan());
 
-        auto stft            = neo::fft::stft_plan<double>{stftSize};
-        auto sparse_spectrum = stft(sparse.to_mdspan());
-
-        return neo::root_mean_squared_error(
-            stdex::submdspan(dense_spectrum.to_mdspan(), 0, stdex::full_extent, stdex::full_extent),
-            stdex::submdspan(sparse_spectrum.to_mdspan(), 0, stdex::full_extent, stdex::full_extent)
-        );
+        auto stft             = neo::fft::stft_plan<double>{stftOptions};
+        auto sparseSpectogram = stft(sparse.to_mdspan());
+        return maxChannelRMSError(denseSpectogram, sparseSpectogram);
     };
 
     juce::MessageManager::callAsync([this] { _fileInfo.moveCaretToEnd(false); });
