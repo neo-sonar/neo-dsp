@@ -1,5 +1,8 @@
 #pragma once
 
+#include "PluginProcessor.hpp"
+#include "dsp/AudioBuffer.hpp"
+
 #include <neo/container/mdspan.hpp>
 
 #include <juce_audio_formats/juce_audio_formats.h>
@@ -12,8 +15,10 @@ namespace neo {
 struct BenchmarkTab final
     : juce::Component
     , juce::Value::Listener
+    , ProcessSpecListener
+
 {
-    explicit BenchmarkTab(juce::AudioFormatManager& formatManager);
+    explicit BenchmarkTab(PluginProcessor& processor, juce::AudioFormatManager& formatManager);
     ~BenchmarkTab() override;
 
     auto setImpulseResponseFile(juce::File const& file) -> void;
@@ -21,6 +26,7 @@ struct BenchmarkTab final
     auto paint(juce::Graphics& g) -> void override;
     auto resized() -> void override;
     auto valueChanged(juce::Value& value) -> void override;
+    auto processSpecChanged(juce::dsp::ProcessSpec const& spec) -> void override;
 
 private:
     auto selectSignalFile() -> void;
@@ -38,7 +44,9 @@ private:
 
     [[nodiscard]] static auto getBenchmarkResultsDirectory() -> juce::File;
 
+    PluginProcessor& _processor;
     juce::AudioFormatManager& _formatManager;
+    juce::dsp::ProcessSpec _spec;
 
     juce::TextButton _selectSignalFile{"Select Signal File"};
     juce::TextButton _render{"Render"};
@@ -48,9 +56,9 @@ private:
     juce::ImageComponent _histogramImage{};
 
     juce::File _signalFile{};
-    juce::File _filterFile{};
+    juce::File _impulseFile{};
     BufferWithSampleRate<float> _signal{};
-    BufferWithSampleRate<float> _filter{};
+    BufferWithSampleRate<float> _impulse{};
 
     stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>> _spectrum;
     stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>> _partitions;

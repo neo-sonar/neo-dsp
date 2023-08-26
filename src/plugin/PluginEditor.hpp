@@ -30,7 +30,7 @@ private:
     juce::TextButton _openFile{"Open Impulse"};
 
     ParameterTab _parameterTab;
-    BenchmarkTab _benchmarkTab{_formats};
+    BenchmarkTab _benchmarkTab;
     juce::TabbedComponent _tabs;
     juce::Label _sampleRateLabel{"Samplerate: ??"};
     juce::Label _blockSizeLabel{"Block-size: ??"};

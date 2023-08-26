@@ -23,7 +23,7 @@ namespace {
 struct JuceConvolver
 {
     explicit JuceConvolver(juce::File impulse, juce::dsp::ProcessSpec const& spec)
-        : _filter{std::move(impulse)}
+        : _impulse{std::move(impulse)}
         , _spec{spec}
     {
         auto const trim      = juce::dsp::Convolution::Trim::no;
@@ -31,7 +31,7 @@ struct JuceConvolver
         auto const normalize = juce::dsp::Convolution::Normalise::no;
 
         _convolver.prepare(spec);
-        _convolver.loadImpulseResponse(_filter, stereo, trim, 0, normalize);
+        _convolver.loadImpulseResponse(_impulse, stereo, trim, 0, normalize);
 
         // impulse is loaded on background thread, may not have loaded fast enough in
         // unit-tests
@@ -49,7 +49,7 @@ struct JuceConvolver
     }
 
 private:
-    juce::File _filter;
+    juce::File _impulse;
     juce::dsp::ConvolutionMessageQueue _queue;
     juce::dsp::Convolution _convolver{juce::dsp::Convolution::Latency{0}, _queue};
     juce::dsp::ProcessSpec _spec;
@@ -92,8 +92,13 @@ private:
 
 }  // namespace
 
-BenchmarkTab::BenchmarkTab(juce::AudioFormatManager& formatManager) : _formatManager{formatManager}
+BenchmarkTab::BenchmarkTab(PluginProcessor& processor, juce::AudioFormatManager& formatManager)
+    : _processor{processor}
+    , _formatManager{formatManager}
 {
+    processSpecChanged(_processor.getProcessSpec());
+    _processor.addProcessSpecListener(this);
+
     _dynamicRange.addListener(this);
     _weighting.addListener(this);
 
@@ -152,17 +157,21 @@ BenchmarkTab::BenchmarkTab(juce::AudioFormatManager& formatManager) : _formatMan
     addAndMakeVisible(_histogramImage);
 }
 
-BenchmarkTab::~BenchmarkTab() { _threadPool.removeAllJobs(true, 2000); }
+BenchmarkTab::~BenchmarkTab()
+{
+    _processor.removeProcessSpecListener(this);
+    _threadPool.removeAllJobs(true, 2000);
+}
 
 auto BenchmarkTab::setImpulseResponseFile(juce::File const& file) -> void
 {
-    _filter     = loadAndResample(_formatManager, file, 44'100.0);
-    _filterFile = file;
+    _impulse     = loadAndResample(_formatManager, file, _spec.sampleRate);
+    _impulseFile = file;
 
-    auto const filterMatrix = to_mdarray(_filter.buffer);
+    auto const filterMatrix = to_mdarray(_impulse.buffer);
     _spectrum               = neo::fft::stft(filterMatrix.to_mdspan(), 1024);
 
-    auto normalized = _filter.buffer;
+    auto normalized = _impulse.buffer;
     juce_normalization(normalized);
     auto const impulse = to_mdarray(normalized);
 
@@ -172,7 +181,7 @@ auto BenchmarkTab::setImpulseResponseFile(juce::File const& file) -> void
         blockSize
     );
 
-    _fileInfo.setText(file.getFileName() + " (" + juce::String(_filter.buffer.getNumSamples()) + ")\n");
+    _fileInfo.setText(file.getFileName() + " (" + juce::String(_impulse.buffer.getNumSamples()) + ")\n");
     updateImages();
 
     repaint();
@@ -198,6 +207,13 @@ auto BenchmarkTab::resized() -> void
 
 auto BenchmarkTab::valueChanged(juce::Value& /*value*/) -> void { updateImages(); }
 
+auto BenchmarkTab::processSpecChanged(juce::dsp::ProcessSpec const& spec) -> void
+{
+    _spec = spec;
+    loadSignalFile(_signalFile);
+    setImpulseResponseFile(_impulseFile);
+}
+
 auto BenchmarkTab::selectSignalFile() -> void
 {
     auto const* msg         = "Please select a signal file";
@@ -217,7 +233,7 @@ auto BenchmarkTab::selectSignalFile() -> void
 auto BenchmarkTab::loadSignalFile(juce::File const& file) -> void
 {
     _signalFile = file;
-    _signal     = loadAndResample(_formatManager, _signalFile, 44'100.0);
+    _signal     = loadAndResample(_formatManager, _signalFile, _spec.sampleRate);
 }
 
 auto BenchmarkTab::runBenchmarks() -> void
@@ -272,7 +288,7 @@ auto BenchmarkTab::runWeightingTests() -> void
     }();
 
     auto const isWeighted = _weighting.getValue() == "A-Weighting";
-    auto const weights    = FrequencySpectrumWeighting{1024, 44'100.0};
+    auto const weights    = FrequencySpectrumWeighting{1024, _spec.sampleRate};
     auto const weighting  = [=](std::size_t binIndex) { return isWeighted ? weights[binIndex] : 0.0F; };
 
     auto count           = 0;
@@ -300,16 +316,12 @@ auto BenchmarkTab::runWeightingTests() -> void
 
 auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
 {
-    auto proc = JuceConvolver{
-        _filterFile,
-        {44'100.0, 512, 2}
-    };
-
+    auto proc = JuceConvolver{_impulseFile, _spec};
     auto out  = juce::AudioBuffer<float>{_signal.buffer.getNumChannels(), _signal.buffer.getNumSamples()};
     auto file = getBenchmarkResultsDirectory().getNonexistentChildFile("jconv", ".wav");
 
     auto const start = std::chrono::system_clock::now();
-    processBlocks(proc, _signal.buffer, out, 512, 44'100.0);
+    processBlocks(proc, _signal.buffer, out, _spec.maximumBlockSize, _spec.sampleRate);
     auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(out);
@@ -321,7 +333,7 @@ auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
         _fileInfo.insertTextAtCaret("JCONV-DENSE: " + juce::String{elapsed.count()} + "\n");
     });
 
-    writeToWavFile(file, output, 44'100.0, 32);
+    writeToWavFile(file, output, _spec.sampleRate, 32);
 }
 
 auto BenchmarkTab::runDenseConvolutionBenchmark() -> void
@@ -330,17 +342,17 @@ auto BenchmarkTab::runDenseConvolutionBenchmark() -> void
     auto inBuffer  = juce::dsp::AudioBlock<float const>{_signal.buffer};
     auto outBuffer = juce::dsp::AudioBlock<float>{out};
 
-    auto proc = DenseConvolution{512};
-    proc.loadImpulseResponse(_filterFile.createInputStream());
+    auto proc = DenseConvolution{static_cast<int>(_spec.maximumBlockSize)};
+    proc.loadImpulseResponse(_impulseFile.createInputStream());
     proc.prepare(juce::dsp::ProcessSpec{
-        44'100.0,
-        static_cast<std::uint32_t>(512),
+        _spec.sampleRate,
+        static_cast<std::uint32_t>(_spec.maximumBlockSize),
         static_cast<std::uint32_t>(inBuffer.getNumChannels()),
     });
 
     auto start = std::chrono::system_clock::now();
-    for (size_t i{0}; i < outBuffer.getNumSamples(); i += size_t(512)) {
-        auto const numSamples = std::min(outBuffer.getNumSamples() - i, size_t(512));
+    for (size_t i{0}; i < outBuffer.getNumSamples(); i += size_t(_spec.maximumBlockSize)) {
+        auto const numSamples = std::min(outBuffer.getNumSamples() - i, size_t(_spec.maximumBlockSize));
 
         auto inBlock  = inBuffer.getSubBlock(i, numSamples);
         auto outBlock = outBuffer.getSubBlock(i, numSamples);
@@ -351,26 +363,22 @@ auto BenchmarkTab::runDenseConvolutionBenchmark() -> void
     }
     auto const end = std::chrono::system_clock::now();
 
-    // proc.reset();
-
-    // auto output = to_mdarray(out);
-    // neo::peak_normalize(output.to_mdspan());
-
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
     juce::MessageManager::callAsync([this, elapsed] {
         _fileInfo.moveCaretToEnd(false);
         _fileInfo.insertTextAtCaret("TCONV2-DENSE: " + juce::String{elapsed.count()} + "\n");
     });
 
-    auto file = getBenchmarkResultsDirectory().getNonexistentChildFile("tconv2", ".wav");
-    writeToWavFile(file, to_mdarray(out), 44'100.0, 32);
+    auto file   = getBenchmarkResultsDirectory().getNonexistentChildFile("tconv2", ".wav");
+    auto output = to_mdarray(out);
+    neo::peak_normalize(output.to_mdspan());
+    writeToWavFile(file, output, _spec.sampleRate, 32);
 }
 
 auto BenchmarkTab::runDenseConvolverBenchmark() -> void
 {
     auto start     = std::chrono::system_clock::now();
-    auto result    = neo::dense_convolve(_signal.buffer, _filter.buffer);
+    auto result    = neo::dense_convolve(_signal.buffer, _impulse.buffer);
     auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(result);
@@ -384,7 +392,7 @@ auto BenchmarkTab::runDenseConvolverBenchmark() -> void
     });
 
     auto file = getBenchmarkResultsDirectory().getNonexistentChildFile("tconv_dense", ".wav");
-    writeToWavFile(file, output, 44'100.0, 32);
+    writeToWavFile(file, output, _spec.sampleRate, 32);
 }
 
 auto BenchmarkTab::runSparseConvolverBenchmark() -> void
@@ -392,9 +400,10 @@ auto BenchmarkTab::runSparseConvolverBenchmark() -> void
     auto const thresholdDB   = -static_cast<float>(_dynamicRange.getValue());
     auto const numBinsToKeep = static_cast<int>(_binsToKeep.getValue());
 
-    auto const start  = std::chrono::system_clock::now();
-    auto const result = neo::sparse_convolve(_signal.buffer, _filter.buffer, thresholdDB, numBinsToKeep);
-    auto const end    = std::chrono::system_clock::now();
+    auto const start = std::chrono::system_clock::now();
+    auto const result
+        = neo::sparse_convolve(_signal.buffer, _impulse.buffer, _impulse.sampleRate, thresholdDB, numBinsToKeep);
+    auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(result);
     neo::peak_normalize(output.to_mdspan());
@@ -410,7 +419,7 @@ auto BenchmarkTab::runSparseConvolverBenchmark() -> void
 
     auto const filename = "tconv_sparse_" + thresholdText;
     auto const file     = getBenchmarkResultsDirectory().getNonexistentChildFile(filename, ".wav");
-    writeToWavFile(file, output, 44'100.0, 32);
+    writeToWavFile(file, output, _spec.sampleRate, 32);
 }
 
 auto BenchmarkTab::runSparseQualityTests() -> void
@@ -424,7 +433,7 @@ auto BenchmarkTab::runSparseQualityTests() -> void
     auto stftPlan = neo::fft::stft_plan<double>{stftOptions};
 
     auto const dense = [this] {
-        auto result = to_mdarray(neo::dense_convolve(_signal.buffer, _filter.buffer));
+        auto result = to_mdarray(neo::dense_convolve(_signal.buffer, _impulse.buffer));
         neo::peak_normalize(result.to_mdspan());
         return result;
     }();
@@ -434,7 +443,9 @@ auto BenchmarkTab::runSparseQualityTests() -> void
     auto const numBinsToKeep = static_cast<int>(_binsToKeep.getValue());
 
     auto calculateErrorsForDynamicRange = [=, this](auto dynamicRange) {
-        auto sparse = to_mdarray(neo::sparse_convolve(_signal.buffer, _filter.buffer, -dynamicRange, numBinsToKeep));
+        auto sparse = to_mdarray(
+            neo::sparse_convolve(_signal.buffer, _impulse.buffer, _impulse.sampleRate, -dynamicRange, numBinsToKeep)
+        );
         neo::peak_normalize(sparse.to_mdspan());
 
         auto stft             = neo::fft::stft_plan<double>{stftOptions};
@@ -463,7 +474,7 @@ auto BenchmarkTab::updateImages() -> void
     }
 
     auto const isWeighted = _weighting.getValue() == "A-Weighting";
-    auto const weights    = FrequencySpectrumWeighting{1024, 44'100.0};
+    auto const weights    = FrequencySpectrumWeighting{1024, _spec.sampleRate};
     auto const weighting  = [=](std::size_t binIndex) { return isWeighted ? weights[binIndex] : 0.0F; };
 
     auto spectogramImage = neo::powerSpectrumImage(

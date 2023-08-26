@@ -40,6 +40,7 @@ private:
 [[nodiscard]] auto sparse_convolve(
     juce::AudioBuffer<float> const& signal,
     juce::AudioBuffer<float> const& filter,
+    double sampleRate,
     float thresholdDB,
     int lowBinsToKeep
 ) -> juce::AudioBuffer<float>;

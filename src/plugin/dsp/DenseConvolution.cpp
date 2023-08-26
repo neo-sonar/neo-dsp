@@ -147,6 +147,7 @@ normalization_factor(stdex::mdspan<std::complex<float> const, stdex::dextents<si
 auto sparse_convolve(
     juce::AudioBuffer<float> const& signal,
     juce::AudioBuffer<float> const& filter,
+    double sampleRate,
     float thresholdDB,
     int lowBinsToKeep
 ) -> juce::AudioBuffer<float>
@@ -159,14 +160,14 @@ auto sparse_convolve(
 
     auto const K = neo::bit_ceil((partitions.extent(2) - 1U) * 2U);
 
-    auto const weights = [K, bins = partitions.extent(2), lowBinsToKeep] {
+    auto const weights = [K, bins = partitions.extent(2), lowBinsToKeep, sampleRate] {
         jassert(std::cmp_less(lowBinsToKeep, bins));
 
         auto w = std::vector<float>(bins);
         std::fill(w.begin(), std::next(w.begin(), lowBinsToKeep), 100.0F);
 
         for (auto i{lowBinsToKeep}; i < std::ssize(w); ++i) {
-            auto const frequency = neo::fftfreq<float>(K, i, 44'100.0);
+            auto const frequency = neo::fftfreq<float>(K, i, sampleRate);
             auto const weight    = neo::a_weighting(frequency);
 
             w[static_cast<std::size_t>(i)] = weight;

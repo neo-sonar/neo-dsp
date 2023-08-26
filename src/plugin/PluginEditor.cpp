@@ -5,6 +5,7 @@ namespace neo {
 PluginEditor::PluginEditor(PluginProcessor& p)
     : AudioProcessorEditor(&p)
     , _parameterTab{p}
+    , _benchmarkTab{p, _formats}
     , _tabs{juce::TabbedButtonBar::Orientation::TabsAtTop}
 {
     _formats.registerBasicFormats();
