@@ -270,7 +270,7 @@ auto BenchmarkTab::runWeightingTests() -> void
             for (auto ch{0U}; ch < _partitions.extent(0); ++ch) {
                 auto const bin   = std::abs(_partitions(ch, f, b));
                 auto const power = bin * bin;
-                auto const dB    = neo::to_decibels(power * scale, -144.0F) + weight;
+                auto const dB    = neo::to_decibels(power * scale, -144.0F) * 0.5F + weight;
                 count += static_cast<int>(dB > threshold);
             }
         }
@@ -402,6 +402,7 @@ auto BenchmarkTab::runSparseConvolverBenchmark() -> void
 auto BenchmarkTab::runSparseQualityTests() -> void
 {
     auto const stftSize = static_cast<int>(_stftWindowSize.getValue());
+    auto stftPlan       = neo::fft::stft_plan<double>{stftSize};
 
     auto const dense = [this] {
         auto result = to_mdarray(neo::dense_convolve(_signal, _filter));
@@ -409,14 +410,17 @@ auto BenchmarkTab::runSparseQualityTests() -> void
         return result;
     }();
 
-    auto const dense_spectrum = neo::fft::stft(dense.to_mdspan(), stftSize);
+    auto const dense_spectrum = stftPlan(dense.to_mdspan());
 
     auto const numBinsToKeep = static_cast<int>(_binsToKeep.getValue());
 
     auto calculateErrorsForDynamicRange = [=, this](auto dynamicRange) {
         auto sparse = to_mdarray(neo::sparse_convolve(_signal, _filter, -dynamicRange, numBinsToKeep));
         neo::peak_normalize(sparse.to_mdspan());
-        auto sparse_spectrum = neo::fft::stft(sparse.to_mdspan(), stftSize);
+
+        auto stft            = neo::fft::stft_plan<double>{stftSize};
+        auto sparse_spectrum = stft(sparse.to_mdspan());
+
         return neo::root_mean_squared_error(
             stdex::submdspan(dense_spectrum.to_mdspan(), 0, stdex::full_extent, stdex::full_extent),
             stdex::submdspan(sparse_spectrum.to_mdspan(), 0, stdex::full_extent, stdex::full_extent)
@@ -425,11 +429,10 @@ auto BenchmarkTab::runSparseQualityTests() -> void
 
     juce::MessageManager::callAsync([this] { _fileInfo.moveCaretToEnd(false); });
 
-    for (auto range : {
-             144, 138, 132, 126, 120, 114, 108, 102, 96, 90, 84, 78, 72, 66, 60, 54, 48, 42, 36, 30, 24, 18, 12, 6, 3,
-         }) {
-        auto const rmse = calculateErrorsForDynamicRange(static_cast<float>(range));
-        auto const text = "SPARSE-QUALITY(" + juce::String{range} + "): rmse = " + juce::String{rmse, 7}
+    for (auto i{180}; i > 0; --i) {
+        auto const range = juce::jmap(static_cast<double>(i), 1.0, 180.0, 1.0, 90.0);
+        auto const rmse  = calculateErrorsForDynamicRange(static_cast<float>(range));
+        auto const text  = "SPARSE-QUALITY(" + juce::String{range} + "): rmse = " + juce::String{rmse, 7}
                         + " rmse(dB) = " + juce::String{to_decibels(rmse)} + "\n";
 
         juce::MessageManager::callAsync([this, text] { _fileInfo.insertTextAtCaret(text); });

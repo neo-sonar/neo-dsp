@@ -16,10 +16,10 @@ auto powerSpectrumImage(
 {
     auto const scale = [=] {
         auto max = 0.0F;
-        for (auto f{0U}; f < frames.extent(0); ++f) {
-            for (auto b{0U}; b < frames.extent(1); ++b) {
-                auto const bin = std::abs(frames(f, b));
-                max            = std::max(max, bin * bin);
+        for (auto frameIdx{0U}; frameIdx < frames.extent(0); ++frameIdx) {
+            for (auto binIdx{0U}; binIdx < frames.extent(1); ++binIdx) {
+                auto bin = std::abs(frames(frameIdx, binIdx));
+                max      = std::max(max, bin * bin);
             }
         }
         return 1.0F / max;
@@ -29,7 +29,7 @@ auto powerSpectrumImage(
         auto const weight     = weighting(static_cast<std::size_t>(y));
         auto const power      = bin * bin;
         auto const normalized = power * scale;
-        auto const dB         = neo::to_decibels(normalized, -144.0F) + weight;
+        auto const dB         = neo::to_decibels(normalized, -144.0F) * 0.5F + weight;
         auto const dBClamped  = std::clamp(dB, -144.0F, 0.0F);
         auto const color      = [=] {
             if (dB < threshold) {
@@ -46,9 +46,9 @@ auto powerSpectrumImage(
     auto const cols = static_cast<int>(frames.extent(1));
     auto img        = juce::Image{juce::Image::PixelFormat::ARGB, cols, rows, true};
 
-    for (auto f{0U}; f < frames.extent(0); ++f) {
-        for (auto b{0U}; b < frames.extent(1); ++b) {
-            fillPixel(img, static_cast<int>(b), static_cast<int>(f), std::abs(frames(f, b)));
+    for (auto frameIdx{0U}; frameIdx < frames.extent(0); ++frameIdx) {
+        for (auto binIdx{0U}; binIdx < frames.extent(1); ++binIdx) {
+            fillPixel(img, static_cast<int>(binIdx), static_cast<int>(frameIdx), std::abs(frames(frameIdx, binIdx)));
         }
     }
 
@@ -63,9 +63,9 @@ auto powerHistogram(
 
     auto const scale = [=] {
         auto max = 0.0F;
-        for (auto f{0U}; f < spectogram.extent(0); ++f) {
-            for (auto b{0U}; b < spectogram.extent(1); ++b) {
-                auto const bin = std::abs(spectogram(f, b));
+        for (auto frameIdx{0U}; frameIdx < spectogram.extent(0); ++frameIdx) {
+            for (auto binIdx{0U}; binIdx < spectogram.extent(1); ++binIdx) {
+                auto const bin = std::abs(spectogram(frameIdx, binIdx));
                 max            = std::max(max, bin * bin);
             }
         }
@@ -74,13 +74,13 @@ auto powerHistogram(
 
     auto histogram = std::vector<int>(144, 0);
 
-    for (auto f{0U}; f < spectogram.extent(0); ++f) {
-        for (auto b{0U}; b < spectogram.extent(1); ++b) {
-            auto const weight     = weighting(b);
-            auto const bin        = std::abs(spectogram(f, b));
+    for (auto frameIdx{0U}; frameIdx < spectogram.extent(0); ++frameIdx) {
+        for (auto binIdx{0U}; binIdx < spectogram.extent(1); ++binIdx) {
+            auto const weight     = weighting(binIdx);
+            auto const bin        = std::abs(spectogram(frameIdx, binIdx));
             auto const power      = bin * bin;
             auto const normalized = power * scale;
-            auto const dB         = neo::to_decibels(normalized, -144.0F) + weight;
+            auto const dB         = neo::to_decibels(normalized, -144.0F) * 0.5F + weight;
             auto const dBClamped  = std::clamp(dB, -143.0F, 0.0F);
             auto const index      = static_cast<std::size_t>(juce::roundToInt(std::abs(dBClamped)));
             histogram[index] += 1;

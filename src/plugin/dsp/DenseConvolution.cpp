@@ -185,7 +185,7 @@ auto sparse_convolve(
         auto const isAboveThreshold = [thresholdDB, scale, &weights](auto /*row*/, auto col, auto bin) {
             auto const gain  = std::abs(bin);
             auto const power = gain * gain;
-            auto const dB    = to_decibels(power * scale) + weights[col];
+            auto const dB    = to_decibels(power * scale) * 0.5F + weights[col];
             return dB > thresholdDB;
         };
 
