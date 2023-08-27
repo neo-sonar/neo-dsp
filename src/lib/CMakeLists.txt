@@ -23,6 +23,7 @@ target_sources(neo_fft_tests
         "neo/complex/interleave_complex_test.cpp"
         "neo/complex/parallel_complex_test.cpp"
         "neo/complex/scalar_complex_test.cpp"
+        "neo/complex/split_complex_test.cpp"
 
         "neo/container/compressed_accessor_test.cpp"
         "neo/container/sparse_matrix_test.cpp"

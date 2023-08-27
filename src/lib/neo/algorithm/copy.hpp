@@ -12,7 +12,7 @@ template<in_object InObj, out_object OutObj>
     requires(InObj::rank() == OutObj::rank())
 constexpr auto copy(InObj inObj, OutObj outObj) noexcept -> void
 {
-    assert(detail::all_extents_match(inObj, outObj));
+    assert(detail::extents_equal(inObj, outObj));
 
     if constexpr (InObj::rank() == 1) {
         for (auto i{0ULL}; i < inObj.extent(0); ++i) {

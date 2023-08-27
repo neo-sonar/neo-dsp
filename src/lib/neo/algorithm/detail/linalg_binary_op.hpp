@@ -12,7 +12,7 @@ template<in_object InObj1, in_object InObj2, out_object OutObj, typename Op>
     requires(InObj1::rank() == InObj2::rank() and InObj1::rank() == OutObj::rank())
 auto linalg_binary_op(InObj1 x, InObj2 y, OutObj out, Op op) noexcept -> void
 {
-    assert(detail::all_extents_match(x, y, out));
+    assert(detail::extents_equal(x, y, out));
 
     if constexpr (InObj1::rank() == 1) {
         for (auto i{0}; std::cmp_less(i, x.extent(0)); ++i) {

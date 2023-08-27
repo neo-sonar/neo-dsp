@@ -15,7 +15,7 @@ namespace neo {
 template<in_vector InVecX, in_vector InVecY, in_vector InVecZ, out_vector OutVec>
 constexpr auto multiply_add(InVecX x, InVecY y, InVecZ z, OutVec out) noexcept -> void
 {
-    assert(detail::all_extents_match(x, y, z, out));
+    assert(detail::extents_equal(x, y, z, out));
 
     for (decltype(x.extent(0)) i{0}; i < x.extent(0); ++i) {
         out[i] = x[i] * y[i] + z[i];

@@ -94,7 +94,7 @@ concept inout_object =                                                          
 
 namespace detail {
 
-[[nodiscard]] constexpr auto all_extents_match(in_object auto ref, in_object auto... others) noexcept -> bool
+[[nodiscard]] constexpr auto extents_equal(in_object auto ref, in_object auto... others) noexcept -> bool
 {
     return ((ref.extents() == others.extents()) and ...);
 }

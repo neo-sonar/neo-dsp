@@ -13,7 +13,7 @@ namespace neo {
 template<in_object InObj1, in_object InObj2, typename BinaryPredicate>
 [[nodiscard]] auto allmatch(InObj1 lhs, InObj2 rhs, BinaryPredicate predicate) noexcept -> bool
 {
-    assert(detail::all_extents_match(lhs, rhs));
+    assert(detail::extents_equal(lhs, rhs));
 
     if constexpr (InObj1::rank() == 1) {
         for (auto i{0}; std::cmp_less(i, lhs.extent(0)); ++i) {
