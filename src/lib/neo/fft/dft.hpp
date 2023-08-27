@@ -18,7 +18,7 @@ auto dft(InVec in, OutVec out, direction dir = direction::forward) -> void
     using Complex = typename OutVec::value_type;
     using Float   = typename Complex::value_type;
 
-    assert(in.extents() == out.extents());
+    assert(detail::all_extents_match(in, out));
 
     static constexpr auto const pi = static_cast<Float>(std::numbers::pi);
     auto const sign                = dir == direction::forward ? Float(-1) : Float(1);

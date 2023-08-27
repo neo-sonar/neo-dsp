@@ -92,4 +92,13 @@ concept inout_object =                                                          
     && std::same_as<std::remove_const_t<typename T::element_type>, typename T::element_type>  //
     && T::is_always_unique();                                                                 //
 
+namespace detail {
+
+[[nodiscard]] constexpr auto all_extents_match(in_object auto ref, in_object auto... others) noexcept -> bool
+{
+    return ((ref.extents() == others.extents()) and ...);
+}
+
+}  // namespace detail
+
 }  // namespace neo
