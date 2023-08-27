@@ -5,8 +5,6 @@
 #include <neo/testing/benchmark.hpp>
 #include <neo/testing/testing.hpp>
 
-#include <Accelerate/Accelerate.h>
-
 #include <algorithm>
 #include <chrono>
 #include <cmath>
