@@ -43,3 +43,20 @@ Uniformly partitioned overlap-save convolver with a sparse frequency delay line 
 |  `q15_t`   |      | **Yes** |     | **Yes** | **Yes** |            |          |    **Yes**    |  _Probably_   |
 |   `BF16`   |      |         |     |         |         |  **Yes**   |          |               |               |
 | `_Float16` |      |         |     |         |         |            | **Yes**  |               |               |
+
+## Resources
+
+### FFT
+
+- [COMPUTING THE FAST FOURIER TRANSFORMON SIMD MICROPROCESSOR](https://www.cs.waikato.ac.nz/~ihw/PhD_theses/Anthony_Blake.pdf)
+- [Notes on FFTs: for implementers](https://fgiesen.wordpress.com/2023/03/19/notes-on-ffts-for-implementers/)
+- [OTFFT Library](http://wwwa.pikara.ne.jp/okojisan/otfft-en/stockham1.html)
+- [Discrete fourier transform and convolution -- scaling factor?](https://mathematica.stackexchange.com/questions/206788/discrete-fourier-transform-and-convolution-scaling-factor)
+- [FXT Library](https://www.jjj.de/fxt/demo/arith/index.html)
+- [FXT Library: Algorithms for programmers ideas and source code](http://dsp-book.narod.ru/fxtbook.pdf)
+
+### DSP
+
+- [musicinformationretrieval.com](https://musicinformationretrieval.com/index.html)
+- [Audio Signal Processing for Machine Learning](https://youtube.com/playlist?list=PL-wATfeyAMNqIee7cH3q1bh4QJFAaeNv0&si=51JQNk_IuZSZITxX)
+- [AudioLabsErlangen](https://www.youtube.com/@AudioLabsErlangen/videos)
