@@ -3,6 +3,7 @@
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/scale.hpp>
 #include <neo/complex/scalar_complex.hpp>
+#include <neo/fft/transform.hpp>
 #include <neo/simd.hpp>
 #include <neo/testing/testing.hpp>
 
@@ -89,6 +90,13 @@ TEMPLATE_PRODUCT_TEST_CASE(
 {
     test_fft_radix2_plan<typename TestType::plan_type>();
 }
+
+#if defined(NEO_PLATFORM_APPLE)
+TEMPLATE_TEST_CASE("neo/fft/transform: fft_apple_vdsp_plan", "", neo::complex64, std::complex<float>)
+{
+    test_fft_radix2_plan<neo::fft::fft_apple_vdsp_plan<TestType>>();
+}
+#endif
 
 template<typename ComplexBatch, typename Kernel>
 static auto test_complex_batch_roundtrip_fft()

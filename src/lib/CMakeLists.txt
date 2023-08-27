@@ -62,3 +62,8 @@ target_link_libraries(neo_fft_tests
         Catch2::Catch2WithMain
         juce::juce_recommended_warning_flags
 )
+
+if(APPLE)
+    find_library(ACCELERATE_LIBRARY Accelerate)
+    target_link_libraries(neo_fft_tests PRIVATE ${ACCELERATE_LIBRARY})
+endif()

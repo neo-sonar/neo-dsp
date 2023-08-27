@@ -5,6 +5,8 @@
 #include <neo/testing/benchmark.hpp>
 #include <neo/testing/testing.hpp>
 
+#include <Accelerate/Accelerate.h>
+
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -53,12 +55,15 @@ auto timeit(std::string_view name, size_t N, Func func)
     );
 }
 
-template<typename Complex, typename Kernel>
-struct fft_roundtrip
+template<typename Plan>
+struct fft_bench
 {
-    explicit fft_roundtrip(size_t size)
+    using complex_type = typename Plan::complex_type;
+    using real_type    = typename complex_type::value_type;
+
+    explicit fft_bench(size_t size)
         : _plan{neo::ilog2(size)}
-        , _buffer(neo::generate_noise_signal<Complex>(_plan.size(), std::random_device{}()))
+        , _buffer(neo::generate_noise_signal<complex_type>(_plan.size(), std::random_device{}()))
     {}
 
     auto operator()() -> void
@@ -67,37 +72,91 @@ struct fft_roundtrip
 
         neo::fft::fft(_plan, buffer);
         neo::fft::ifft(_plan, buffer);
+        neo::scale(real_type(1) / static_cast<real_type>(_plan.size()), buffer);
 
         neo::do_not_optimize(buffer[0]);
         neo::do_not_optimize(buffer[buffer.extent(0) - 1]);
     }
 
 private:
-    neo::fft::fft_radix2_plan<Complex, Kernel> _plan;
-    stdex::mdarray<Complex, stdex::dextents<size_t, 1>> _buffer;
+    Plan _plan;
+    stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _buffer;
 };
+
+#if defined(NEO_PLATFORM_APPLE)
+
+struct vdsp_fft_bench
+{
+    explicit vdsp_fft_bench(size_t size) : _size{size}, _input{2, _size}, _output{2, _size}
+    {
+        auto const noise = neo::generate_noise_signal<neo::complex64>(size, std::random_device{}());
+        for (auto i{0U}; i < size; ++i) {
+            _input(0, i) = noise(i).real();
+            _input(1, i) = noise(i).imag();
+        }
+    }
+
+    ~vdsp_fft_bench()
+    {
+        if (_plan != nullptr) {
+            vDSP_destroy_fftsetup(_plan);
+        }
+    }
+
+    auto operator()() -> void
+    {
+        auto in  = DSPSplitComplex{.realp = std::addressof(_input(0, 0)), .imagp = std::addressof(_input(1, 0))};
+        auto out = DSPSplitComplex{.realp = std::addressof(_output(0, 0)), .imagp = std::addressof(_output(1, 0))};
+
+        vDSP_fft_zop(_plan, &in, 1, &out, 1, _order, kFFTDirection_Forward);
+        vDSP_fft_zop(_plan, &out, 1, &in, 1, _order, kFFTDirection_Inverse);
+
+        auto const factor = 1.0F / static_cast<float>(_size);
+        vDSP_vsmul(in.realp, 1, &factor, in.realp, 1, _size);
+        vDSP_vsmul(in.imagp, 1, &factor, in.imagp, 1, _size);
+
+        neo::do_not_optimize(in.imagp[0]);
+        neo::do_not_optimize(in.realp[0]);
+    }
+
+private:
+    size_t _size;
+    vDSP_Length _order{static_cast<vDSP_Length>(neo::ilog2(_size))};
+    FFTSetup _plan{vDSP_create_fftsetup(_order, 2)};
+    stdex::mdarray<float, stdex::dextents<size_t, 2>> _input;
+    stdex::mdarray<float, stdex::dextents<size_t, 2>> _output;
+};
+
+#endif
 
 }  // namespace
 
-namespace fft = neo::fft;
-
 auto main(int argc, char** argv) -> int
 {
+    using namespace neo::fft;
+
     auto N = 1024UL;
     if (argc == 2) {
         N = std::stoul(argv[1]);
     }
 
-    timeit("fft<std::complex<float>, v1>", N, fft_roundtrip<std::complex<float>, fft::radix2_kernel_v1>{N});
-    timeit("fft<std::complex<float>, v2>", N, fft_roundtrip<std::complex<float>, fft::radix2_kernel_v2>{N});
-    timeit("fft<std::complex<float>, v3>", N, fft_roundtrip<std::complex<float>, fft::radix2_kernel_v3>{N});
-    timeit("fft<std::complex<float>, v4>", N, fft_roundtrip<std::complex<float>, fft::radix2_kernel_v4>{N});
+#if defined(NEO_PLATFORM_APPLE)
+    timeit("apple_vdsp_parallel<float> ", N, vdsp_fft_bench{N});
+    timeit("apple_vdsp<complex<float>> ", N, fft_bench<fft_apple_vdsp_plan<std::complex<float>>>{N});
+    timeit("apple_vdsp<complex64>      ", N, fft_bench<fft_apple_vdsp_plan<neo::complex64>>{N});
+    std::printf("\n");
+#endif
+
+    timeit("fft<complex<float>, v1>", N, fft_bench<fft_radix2_plan<std::complex<float>, radix2_kernel_v1>>{N});
+    timeit("fft<complex<float>, v2>", N, fft_bench<fft_radix2_plan<std::complex<float>, radix2_kernel_v2>>{N});
+    timeit("fft<complex<float>, v3>", N, fft_bench<fft_radix2_plan<std::complex<float>, radix2_kernel_v3>>{N});
+    timeit("fft<complex<float>, v4>", N, fft_bench<fft_radix2_plan<std::complex<float>, radix2_kernel_v4>>{N});
     std::printf("\n");
 
-    timeit("fft<neo::complex64, v1>", N, fft_roundtrip<neo::complex64, fft::radix2_kernel_v1>{N});
-    timeit("fft<neo::complex64, v2>", N, fft_roundtrip<neo::complex64, fft::radix2_kernel_v2>{N});
-    timeit("fft<neo::complex64, v3>", N, fft_roundtrip<neo::complex64, fft::radix2_kernel_v3>{N});
-    timeit("fft<neo::complex64, v4>", N, fft_roundtrip<neo::complex64, fft::radix2_kernel_v4>{N});
+    timeit("fft<complex64, v1>", N, fft_bench<fft_radix2_plan<neo::complex64, radix2_kernel_v1>>{N});
+    timeit("fft<complex64, v2>", N, fft_bench<fft_radix2_plan<neo::complex64, radix2_kernel_v2>>{N});
+    timeit("fft<complex64, v3>", N, fft_bench<fft_radix2_plan<neo::complex64, radix2_kernel_v3>>{N});
+    timeit("fft<complex64, v4>", N, fft_bench<fft_radix2_plan<neo::complex64, radix2_kernel_v4>>{N});
     std::printf("\n");
 
     return EXIT_SUCCESS;
