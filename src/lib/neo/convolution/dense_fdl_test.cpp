@@ -3,7 +3,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 
 TEMPLATE_TEST_CASE(
-    "neo/fft/convolution: dense_fdl",
+    "neo/convolution: dense_fdl",
     "",
     std::complex<float>,
     std::complex<double>,

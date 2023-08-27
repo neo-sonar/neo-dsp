@@ -5,7 +5,7 @@
 #include <neo/algorithm/copy.hpp>
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
-#include <neo/fft/transform/direction.hpp>
+#include <neo/fft/direction.hpp>
 
 #include <Accelerate/Accelerate.h>
 

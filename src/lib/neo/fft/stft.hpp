@@ -5,7 +5,7 @@
 #include <neo/algorithm/multiply.hpp>
 #include <neo/algorithm/scale.hpp>
 #include <neo/container/mdspan.hpp>
-#include <neo/fft/transform/rfft.hpp>
+#include <neo/fft/rfft.hpp>
 #include <neo/math/idiv.hpp>
 #include <neo/math/windowing.hpp>
 

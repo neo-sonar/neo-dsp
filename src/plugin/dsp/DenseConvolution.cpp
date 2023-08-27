@@ -2,8 +2,8 @@
 
 #include "dsp/AudioBuffer.hpp"
 
-#include <neo/fft/convolution/uniform_partition.hpp>
-#include <neo/fft/transform/fftfreq.hpp>
+#include <neo/convolution/uniform_partition.hpp>
+#include <neo/fft/fftfreq.hpp>
 #include <neo/math/a_weighting.hpp>
 #include <neo/math/bit_ceil.hpp>
 #include <neo/unit/decibel.hpp>

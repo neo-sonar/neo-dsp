@@ -2,7 +2,7 @@
 
 #include <catch2/catch_template_test_macros.hpp>
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: fdl_index", "", int, unsigned, std::ptrdiff_t, std::size_t)
+TEMPLATE_TEST_CASE("neo/convolution: fdl_index", "", int, unsigned, std::ptrdiff_t, std::size_t)
 {
     using Index = TestType;
 

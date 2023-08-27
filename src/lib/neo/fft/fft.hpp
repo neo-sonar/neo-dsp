@@ -5,11 +5,11 @@
 #include <neo/algorithm/copy.hpp>
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
-#include <neo/fft/transform/conjugate_view.hpp>
-#include <neo/fft/transform/direction.hpp>
-#include <neo/fft/transform/kernel/radix2.hpp>
-#include <neo/fft/transform/reorder.hpp>
-#include <neo/fft/transform/twiddle.hpp>
+#include <neo/fft/conjugate_view.hpp>
+#include <neo/fft/direction.hpp>
+#include <neo/fft/kernel/radix2.hpp>
+#include <neo/fft/reorder.hpp>
+#include <neo/fft/twiddle.hpp>
 
 #include <cassert>
 #include <utility>

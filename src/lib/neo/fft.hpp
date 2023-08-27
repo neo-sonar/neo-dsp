@@ -2,5 +2,16 @@
 
 #include <neo/config.hpp>
 
-#include <neo/fft/convolution.hpp>
-#include <neo/fft/transform.hpp>
+#include <neo/fft/conjugate_view.hpp>
+#include <neo/fft/dft.hpp>
+#include <neo/fft/direction.hpp>
+#include <neo/fft/fft.hpp>
+#include <neo/fft/fftfreq.hpp>
+#include <neo/fft/reorder.hpp>
+#include <neo/fft/rfft.hpp>
+#include <neo/fft/stft.hpp>
+#include <neo/fft/twiddle.hpp>
+
+#if defined(NEO_PLATFORM_APPLE)
+    #include <neo/fft/external/accelerate.hpp>
+#endif

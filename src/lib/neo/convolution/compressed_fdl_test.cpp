@@ -2,14 +2,14 @@
 
 #include <neo/algorithm/add.hpp>
 #include <neo/algorithm/fill.hpp>
-#include <neo/fft/convolution/dense_convolver.hpp>
-#include <neo/fft/convolution/overlap_add.hpp>
-#include <neo/fft/convolution/uniform_partitioned_convolver.hpp>
+#include <neo/convolution/dense_convolver.hpp>
+#include <neo/convolution/overlap_add.hpp>
+#include <neo/convolution/uniform_partitioned_convolver.hpp>
 
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: compressed_fdl", "", std::int8_t, std::int16_t)
+TEMPLATE_TEST_CASE("neo/convolution: compressed_fdl", "", std::int8_t, std::int16_t)
 {
     using Int          = TestType;
     using IntComplex   = neo::scalar_complex<Int>;

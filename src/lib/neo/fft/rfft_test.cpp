@@ -3,7 +3,7 @@
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/scale.hpp>
 #include <neo/complex.hpp>
-#include <neo/fft/transform/fft.hpp>
+#include <neo/fft/fft.hpp>
 #include <neo/testing/testing.hpp>
 
 #include <catch2/catch_approx.hpp>
@@ -35,7 +35,7 @@ using neo_complex = tester<Float, Kernel, neo::scalar_complex<Float>>;
 using namespace neo::fft;
 
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft/transform: rfft_radix2_plan",
+    "neo/fft: rfft_radix2_plan",
     "",
     (std_complex, neo_complex),
 
@@ -73,12 +73,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     REQUIRE(neo::allclose(stdex::mdspan{original.data(), stdex::extents{original.size()}}, real));
 }
 
-TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft/transform: extract_two_real_dfts",
-    "",
-    (std::complex, neo::scalar_complex),
-    (float, double)
-)
+TEMPLATE_PRODUCT_TEST_CASE("neo/fft: extract_two_real_dfts", "", (std::complex, neo::scalar_complex), (float, double))
 {
     using Complex = TestType;
     using Float   = typename Complex::value_type;

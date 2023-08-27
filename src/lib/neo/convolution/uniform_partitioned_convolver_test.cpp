@@ -2,7 +2,7 @@
 #include "sparse_convolver.hpp"
 
 #include <neo/algorithm/allclose.hpp>
-#include <neo/fft/convolution/uniform_partition.hpp>
+#include <neo/convolution/uniform_partition.hpp>
 #include <neo/testing/testing.hpp>
 
 #include <catch2/catch_approx.hpp>
@@ -30,7 +30,7 @@ static_assert(is_sparse_convolver<neo::fft::sparse_upols_convolver<std::complex<
 static_assert(is_sparse_convolver<neo::fft::sparse_upola_convolver<std::complex<float>>>);
 
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft/convolution: convolver",
+    "neo/convolution: convolver",
     "",
     (neo::fft::upola_convolver,
      neo::fft::upols_convolver,

@@ -3,7 +3,7 @@
 #include <neo/algorithm/copy.hpp>
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
-#include <neo/fft/convolution/fdl_index.hpp>
+#include <neo/convolution/fdl_index.hpp>
 
 namespace neo::fft {
 

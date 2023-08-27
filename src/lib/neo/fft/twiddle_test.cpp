@@ -6,12 +6,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft/transform: make_radix2_twiddles",
-    "",
-    (std::complex, neo::scalar_complex),
-    (float, double)
-)
+TEMPLATE_PRODUCT_TEST_CASE("neo/fft: make_radix2_twiddles", "", (std::complex, neo::scalar_complex), (float, double))
 {
     using Complex = TestType;
 

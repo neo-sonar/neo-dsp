@@ -3,7 +3,7 @@
 #include "dsp/AudioBuffer.hpp"
 #include "dsp/ConstantOverlapAdd.hpp"
 
-#include <neo/fft/convolution.hpp>
+#include <neo/convolution.hpp>
 #include <neo/testing/testing.hpp>
 
 #include <algorithm>

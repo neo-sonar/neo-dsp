@@ -4,7 +4,7 @@
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/root_mean_squared_error.hpp>
 #include <neo/complex/scalar_complex.hpp>
-#include <neo/fft/convolution/uniform_partition.hpp>
+#include <neo/convolution/uniform_partition.hpp>
 #include <neo/testing/testing.hpp>
 
 #include <catch2/catch_approx.hpp>
@@ -15,7 +15,7 @@
 
 #include <tuple>
 
-TEMPLATE_TEST_CASE("neo/fft/convolution: overlap_add", "", float, double)
+TEMPLATE_TEST_CASE("neo/convolution: overlap_add", "", float, double)
 {
     using Float   = TestType;
     using Complex = std::complex<Float>;
@@ -79,7 +79,7 @@ static auto test_overlap() -> void
 }
 
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft/convolution: overlap",
+    "neo/convolution: overlap",
     "",
     (neo::fft::overlap_add, neo::fft::overlap_save),
     (std::complex<float>, std::complex<double>)

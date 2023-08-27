@@ -3,14 +3,14 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-TEST_CASE("neo/fft/transform: detail::num_sftf_frames")
+TEST_CASE("neo/fft: detail::num_sftf_frames")
 {
     REQUIRE(neo::fft::detail::num_sftf_frames(1024, 128, 0) == 8);
     REQUIRE(neo::fft::detail::num_sftf_frames(1024, 256, 0) == 4);
     REQUIRE(neo::fft::detail::num_sftf_frames(1024, 256, 128) == 8);
 }
 
-TEMPLATE_TEST_CASE("neo/fft/transform: stft", "", float, double)
+TEMPLATE_TEST_CASE("neo/fft: stft", "", float, double)
 {
     using Float = TestType;
 

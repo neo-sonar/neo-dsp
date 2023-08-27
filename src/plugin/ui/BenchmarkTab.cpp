@@ -9,8 +9,8 @@
 #include <neo/algorithm/peak_normalize.hpp>
 #include <neo/algorithm/root_mean_squared_error.hpp>
 #include <neo/container/sparse_matrix.hpp>
-#include <neo/fft/transform/fftfreq.hpp>
-#include <neo/fft/transform/stft.hpp>
+#include <neo/fft/fftfreq.hpp>
+#include <neo/fft/stft.hpp>
 #include <neo/math/a_weighting.hpp>
 #include <neo/unit/decibel.hpp>
 

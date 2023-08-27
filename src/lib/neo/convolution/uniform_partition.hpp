@@ -1,7 +1,7 @@
 #pragma once
 
 #include <neo/container/mdspan.hpp>
-#include <neo/fft/transform/stft.hpp>
+#include <neo/fft/stft.hpp>
 #include <neo/math/windowing.hpp>
 
 namespace neo::fft {
