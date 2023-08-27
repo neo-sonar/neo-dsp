@@ -1,13 +1,16 @@
 #include "multiply_add.hpp"
 
+#include <neo/algorithm/add.hpp>
 #include <neo/algorithm/allmatch.hpp>
+#include <neo/algorithm/fill.hpp>
 #include <neo/math/float_equality.hpp>
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 template<typename Float>
-auto test()
+auto test_sparse_matrix()
 {
     auto isZero = [](auto x) { return neo::float_equality::exact(x, Float(0)); };
 
@@ -38,8 +41,53 @@ auto test()
     REQUIRE(neo::allmatch(stdex::submdspan(acc, std::tuple{2, acc.extent(0)}), isZero));
 }
 
-TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", float, double) { test<TestType>(); }
+TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", float, double) { test_sparse_matrix<TestType>(); }
 
 #if defined(NEO_HAS_BUILTIN_FLOAT16)
-TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", _Float16) { test<TestType>(); }
+TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", _Float16) { test_sparse_matrix<TestType>(); }
 #endif
+
+TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(split_complex)", "", float, double)
+{
+    using Float = TestType;
+
+    auto const size = GENERATE(as<std::size_t>{}, 2, 33, 128);
+
+    auto x_buffer   = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{2, size};
+    auto y_buffer   = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{2, size};
+    auto z_buffer   = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{2, size};
+    auto out_buffer = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{2, size};
+
+    auto x = neo::split_complex{
+        stdex::submdspan(x_buffer.to_mdspan(), 0, stdex::full_extent),
+        stdex::submdspan(x_buffer.to_mdspan(), 1, stdex::full_extent),
+    };
+    auto y = neo::split_complex{
+        stdex::submdspan(y_buffer.to_mdspan(), 0, stdex::full_extent),
+        stdex::submdspan(y_buffer.to_mdspan(), 1, stdex::full_extent),
+    };
+    auto z = neo::split_complex{
+        stdex::submdspan(z_buffer.to_mdspan(), 0, stdex::full_extent),
+        stdex::submdspan(z_buffer.to_mdspan(), 1, stdex::full_extent),
+    };
+    auto out = neo::split_complex{
+        stdex::submdspan(out_buffer.to_mdspan(), 0, stdex::full_extent),
+        stdex::submdspan(out_buffer.to_mdspan(), 1, stdex::full_extent),
+    };
+
+    neo::fill(x.real, Float(1));
+    neo::fill(x.imag, Float(2));
+
+    neo::fill(y.real, Float(3));
+    neo::fill(y.imag, Float(4));
+
+    neo::fill(z.real, Float(5));
+    neo::fill(z.imag, Float(6));
+
+    neo::multiply_add(x, y, z, out);
+
+    for (auto i{0}; i < static_cast<int>(out.real.extent(0)); ++i) {
+        REQUIRE(out.real[i] == Catch::Approx(0.0));
+        REQUIRE(out.imag[i] == Catch::Approx(16.0));
+    }
+}
