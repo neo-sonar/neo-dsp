@@ -92,7 +92,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
 }
 
 #if defined(NEO_PLATFORM_APPLE)
-TEMPLATE_TEST_CASE("neo/fft/transform: fft_apple_vdsp_plan", "", neo::complex64, std::complex<float>)
+TEMPLATE_TEST_CASE("neo/fft/transform: fft_apple_vdsp_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
 {
     test_fft_radix2_plan<neo::fft::fft_apple_vdsp_plan<TestType>>();
 }

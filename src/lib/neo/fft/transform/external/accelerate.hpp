@@ -15,12 +15,13 @@
 namespace neo::fft {
 
 template<typename Complex>
-    requires(std::same_as<typename Complex::value_type, float>)
+    requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
 struct fft_apple_vdsp_plan
 {
-    using complex_type = Complex;
-    using real_type    = typename Complex::value_type;
-    using size_type    = std::size_t;
+    using complex_type       = Complex;
+    using real_type          = typename Complex::value_type;
+    using size_type          = std::size_t;
+    using native_handle_type = std::conditional_t<std::same_as<real_type, float>, FFTSetup, FFTSetupD>;
 
     explicit fft_apple_vdsp_plan(size_type order, direction default_direction = direction::forward);
     ~fft_apple_vdsp_plan();
@@ -35,51 +36,65 @@ struct fft_apple_vdsp_plan
 private:
     size_type _order;
     size_type _size{1ULL << _order};
-    FFTSetup _plan{vDSP_create_fftsetup(_order, 2)};
+    native_handle_type _plan;
     stdex::mdarray<real_type, stdex::dextents<size_t, 2>> _input{2, _size};
     stdex::mdarray<real_type, stdex::dextents<size_t, 2>> _output{2, _size};
 };
 
 template<typename Complex>
-    requires(std::same_as<typename Complex::value_type, float>)
-fft_apple_vdsp_plan<Complex>::fft_apple_vdsp_plan(size_type order, direction /*default_direction*/) : _order{order}
+    requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
+fft_apple_vdsp_plan<Complex>::fft_apple_vdsp_plan(size_type order, direction /*default_direction*/)
+    : _order{order}
+    , _plan{[order] {
+        if constexpr (std::same_as<real_type, float>) {
+            return vDSP_create_fftsetup(order, 2);
+        } else {
+            return vDSP_create_fftsetupD(order, 2);
+        }
+    }()}
 {
     assert(_plan != nullptr);
 }
 
 template<typename Complex>
-    requires(std::same_as<typename Complex::value_type, float>)
+    requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
 fft_apple_vdsp_plan<Complex>::~fft_apple_vdsp_plan()
 {
     if (_plan != nullptr) {
-        vDSP_destroy_fftsetup(_plan);
+        if constexpr (std::same_as<real_type, float>) {
+            vDSP_destroy_fftsetup(_plan);
+        } else {
+            vDSP_destroy_fftsetupD(_plan);
+        }
     }
 }
 
 template<typename Complex>
-    requires(std::same_as<typename Complex::value_type, float>)
+    requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
 auto fft_apple_vdsp_plan<Complex>::size() const noexcept -> size_type
 {
     return _size;
 }
 
 template<typename Complex>
-    requires(std::same_as<typename Complex::value_type, float>)
+    requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
 auto fft_apple_vdsp_plan<Complex>::order() const noexcept -> size_type
 {
     return _order;
 }
 
 template<typename Complex>
-    requires(std::same_as<typename Complex::value_type, float>)
+    requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
 template<inout_vector InOutVec>
     requires std::same_as<typename InOutVec::value_type, Complex>
 auto fft_apple_vdsp_plan<Complex>::operator()(InOutVec x, direction dir) noexcept -> void
 {
     assert(std::cmp_equal(x.extent(0), _size));
 
-    auto const in   = DSPSplitComplex{.realp = std::addressof(_input(0, 0)), .imagp = std::addressof(_input(1, 0))};
-    auto const out  = DSPSplitComplex{.realp = std::addressof(_output(0, 0)), .imagp = std::addressof(_output(1, 0))};
+    using split_complex = std::conditional_t<std::same_as<real_type, float>, DSPSplitComplex, DSPDoubleSplitComplex>;
+
+    auto const in   = split_complex{.realp = std::addressof(_input(0, 0)), .imagp = std::addressof(_input(1, 0))};
+    auto const out  = split_complex{.realp = std::addressof(_output(0, 0)), .imagp = std::addressof(_output(1, 0))};
     auto const sign = dir == direction::forward ? kFFTDirection_Forward : kFFTDirection_Inverse;
 
     for (auto i{0}; std::cmp_less(i, x.extent(0)); ++i) {
@@ -87,7 +102,11 @@ auto fft_apple_vdsp_plan<Complex>::operator()(InOutVec x, direction dir) noexcep
         in.imagp[i] = x[i].imag();
     }
 
-    vDSP_fft_zop(_plan, &in, 1, &out, 1, _order, sign);
+    if constexpr (std::same_as<real_type, float>) {
+        vDSP_fft_zop(_plan, &in, 1, &out, 1, _order, sign);
+    } else {
+        vDSP_fft_zopD(_plan, &in, 1, &out, 1, _order, sign);
+    }
 
     for (auto i{0}; std::cmp_less(i, x.extent(0)); ++i) {
         x[i] = Complex{out.realp[i], out.imagp[i]};
