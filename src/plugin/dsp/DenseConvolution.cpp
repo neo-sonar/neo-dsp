@@ -2,6 +2,7 @@
 
 #include "dsp/AudioBuffer.hpp"
 
+#include <neo/convolution/normalize_impulse.hpp>
 #include <neo/convolution/uniform_partition.hpp>
 #include <neo/fft/fftfreq.hpp>
 #include <neo/math/a_weighting.hpp>
@@ -81,8 +82,9 @@ auto DenseConvolution::updateImpulseResponse() -> void
     if (_impulse.has_value()) {
         _convolvers.resize(_spec->numChannels);
         auto resampled = resample(*_impulse, _spec->sampleRate);
-        juce_normalization(resampled.buffer);
-        _filter = uniform_partition(resampled.buffer, _spec->maximumBlockSize);
+        auto matrix    = to_mdarray(resampled.buffer);
+        normalize_impulse(matrix.to_mdspan());
+        _filter = neo::fft::uniform_partition(matrix.to_mdspan(), _spec->maximumBlockSize);
         for (auto ch{0U}; ch < _spec->numChannels; ++ch) {
             auto channel = stdex::submdspan(_filter.to_mdspan(), ch, stdex::full_extent, stdex::full_extent);
             _convolvers[ch].filter(channel);
@@ -108,9 +110,11 @@ auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<fl
 {
     auto const blockSize = 512;
 
-    auto output     = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
-    auto block      = std::vector<float>(size_t(blockSize));
-    auto partitions = uniform_partition(filter, blockSize);
+    auto output = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
+    auto block  = std::vector<float>(size_t(blockSize));
+    auto matrix = to_mdarray(filter);
+    normalize_impulse(matrix.to_mdspan());
+    auto partitions = fft::uniform_partition(matrix.to_mdspan(), blockSize);
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
         auto convolver     = neo::fft::upola_convolver<std::complex<float>>{};
@@ -157,9 +161,11 @@ auto sparse_convolve(
 {
     auto const blockSize = 512;
 
-    auto output     = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
-    auto block      = std::vector<float>(size_t(blockSize));
-    auto partitions = uniform_partition(filter, blockSize);
+    auto output = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
+    auto block  = std::vector<float>(size_t(blockSize));
+    auto matrix = to_mdarray(filter);
+    normalize_impulse(matrix.to_mdspan());
+    auto partitions = fft::uniform_partition(matrix.to_mdspan(), blockSize);
 
     auto const K = neo::bit_ceil((partitions.extent(2) - 1U) * 2U);
 

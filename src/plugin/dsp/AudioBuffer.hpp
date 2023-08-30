@@ -7,8 +7,6 @@
 
 namespace neo {
 
-auto juce_normalization(juce::AudioBuffer<float>& buf) -> void;
-
 template<std::floating_point Float>
 struct BufferWithSampleRate
 {

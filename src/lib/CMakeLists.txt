@@ -32,6 +32,7 @@ target_sources(neo_fft_tests
         "neo/convolution/compressed_fdl_test.cpp"
         "neo/convolution/dense_fdl_test.cpp"
         "neo/convolution/fdl_index_test.cpp"
+        "neo/convolution/normalize_impulse_test.cpp"
         "neo/convolution/overlap_test.cpp"
         "neo/convolution/uniform_partition_test.cpp"
         "neo/convolution/uniform_partitioned_convolver_test.cpp"

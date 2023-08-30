@@ -94,16 +94,13 @@ auto overlap_add<Complex>::operator()(inout_vector auto block, auto callback) ->
     // K-point rfft
     _rfft(real_buffer, complex_buffer);
 
-    // Scale
-    auto const alpha  = 1.0F / static_cast<real_type>(_rfft.size());
-    auto const coeffs = stdex::submdspan(complex_buffer, std::tuple{0, _rfft.size() / 2 + 1});
-    scale(alpha, coeffs);
-
     // Process
+    auto const coeffs = stdex::submdspan(complex_buffer, std::tuple{0, _rfft.size() / 2 + 1});
     callback(coeffs);
 
     // K-point irfft
     _rfft(complex_buffer, real_buffer);
+    scale(1.0F / static_cast<real_type>(_rfft.size()), real_buffer);
 
     // Copy to output
     copy(stdex::submdspan(real_buffer, std::tuple{0, block_size()}), block);

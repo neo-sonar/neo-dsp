@@ -95,17 +95,14 @@ auto overlap_save<Complex>::operator()(inout_vector auto block, auto callback) -
     auto const complex_buf = _complex_buffer.to_mdspan();
     _rfft(window, complex_buf);
 
-    // Scale R2C output
-    auto const num_coeffs = _rfft.size() / 2 + 1;
-    auto const coeffs     = stdex::submdspan(complex_buf, std::tuple{0, num_coeffs});
-    scale(1.0F / static_cast<real_type>(_rfft.size()), coeffs);
-
     // Apply processing
+    auto const coeffs = stdex::submdspan(complex_buf, std::tuple{0, _rfft.size() / 2 + 1});
     callback(coeffs);
 
     // 2B-point C2R-IFFT
     auto const real_buf = _real_buffer.to_mdspan();
     _rfft(complex_buf, real_buf);
+    scale(1.0F / static_cast<real_type>(_rfft.size()), real_buf);
 
     // Copy block_size samples to output
     auto out = stdex::submdspan(real_buf, keep_extents);

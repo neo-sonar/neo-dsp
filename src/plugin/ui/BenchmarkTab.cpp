@@ -173,9 +173,8 @@ auto BenchmarkTab::setImpulseResponseFile(juce::File const& file) -> void
     auto const filterMatrix = to_mdarray(_impulse.buffer);
     _spectrum               = neo::fft::stft(filterMatrix.to_mdspan(), 1024);
 
-    auto normalized = _impulse.buffer;
-    juce_normalization(normalized);
-    auto const impulse = to_mdarray(normalized);
+    auto impulse = to_mdarray(_impulse.buffer);
+    normalize_impulse(impulse.to_mdspan());
 
     auto const blockSize = 512ULL;
     _partitions          = neo::fft::uniform_partition(
@@ -327,7 +326,7 @@ auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
     auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(out);
-    neo::peak_normalize(output.to_mdspan());
+    // neo::peak_normalize(output.to_mdspan());
 
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     juce::MessageManager::callAsync([this, elapsed] {
