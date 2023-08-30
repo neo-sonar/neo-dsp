@@ -4,6 +4,7 @@
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/allmatch.hpp>
 #include <neo/algorithm/copy.hpp>
+#include <neo/algorithm/energy_normalize.hpp>
 #include <neo/algorithm/fill.hpp>
 #include <neo/algorithm/mean.hpp>
 #include <neo/algorithm/mean_squared_error.hpp>
