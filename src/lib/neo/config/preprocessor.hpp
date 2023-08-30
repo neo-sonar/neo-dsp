@@ -28,7 +28,7 @@
     #define NEO_RESTRICT
 #endif
 
-#if defined(__ARM_NEON__)
+#if defined(__ARM_NEON__) or defined(__ARM_NEON)
     #define NEO_HAS_SIMD_NEON 1
 #endif
 
