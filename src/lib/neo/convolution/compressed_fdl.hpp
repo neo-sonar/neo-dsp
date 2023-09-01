@@ -8,7 +8,7 @@
 #include <cmath>
 #include <limits>
 
-namespace neo::fft {
+namespace neo {
 
 template<complex FloatComplex, complex IntComplex>
 struct compressed_fdl
@@ -48,4 +48,4 @@ private:
     stdex::mdarray<IntComplex, stdex::dextents<size_t, 2>> _fdl{};
 };
 
-}  // namespace neo::fft
+}  // namespace neo

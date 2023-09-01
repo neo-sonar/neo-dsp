@@ -4,7 +4,7 @@
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 
-namespace neo::fft {
+namespace neo {
 
 template<typename IndexType = std::size_t>
 struct fdl_index
@@ -37,4 +37,4 @@ private:
     IndexType _write_pos{0};
 };
 
-}  // namespace neo::fft
+}  // namespace neo

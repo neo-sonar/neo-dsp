@@ -177,7 +177,7 @@ auto BenchmarkTab::setImpulseResponseFile(juce::File const& file) -> void
     normalize_impulse(impulse.to_mdspan());
 
     auto const blockSize = 512ULL;
-    _partitions          = neo::fft::uniform_partition(
+    _partitions          = neo::uniform_partition(
         stdex::submdspan(impulse.to_mdspan(), stdex::full_extent, std::tuple{blockSize, impulse.extent(1)}),
         blockSize
     );

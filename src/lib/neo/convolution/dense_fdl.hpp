@@ -4,7 +4,7 @@
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 
-namespace neo::fft {
+namespace neo {
 
 template<typename Complex>
 struct dense_fdl
@@ -29,4 +29,4 @@ private:
     stdex::mdarray<Complex, stdex::dextents<size_t, 2>> _fdl{};
 };
 
-}  // namespace neo::fft
+}  // namespace neo

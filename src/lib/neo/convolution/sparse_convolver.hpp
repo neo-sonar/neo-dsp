@@ -11,7 +11,7 @@
 
 #include <concepts>
 
-namespace neo::fft {
+namespace neo {
 
 template<typename Complex>
 struct sparse_filter
@@ -39,4 +39,4 @@ template<complex Complex>
 using sparse_upola_convolver
     = uniform_partitioned_convolver<overlap_add<Complex>, dense_fdl<Complex>, sparse_filter<Complex>>;
 
-}  // namespace neo::fft
+}  // namespace neo

@@ -14,7 +14,7 @@
 #include <cassert>
 #include <functional>
 
-namespace neo::fft {
+namespace neo {
 
 template<complex Complex>
 struct overlap_save
@@ -35,7 +35,7 @@ struct overlap_save
 private:
     size_type _block_size;
     size_type _filter_size;
-    rfft_radix2_plan<real_type> _rfft{ilog2(bit_ceil(_block_size + _filter_size - 1UL))};
+    fft::rfft_radix2_plan<real_type> _rfft{ilog2(bit_ceil(_block_size + _filter_size - 1UL))};
 
     stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _window{_rfft.size()};
     stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
@@ -109,4 +109,4 @@ auto overlap_save<Complex>::operator()(inout_vector auto block, auto callback) -
     copy(out, block);
 }
 
-}  // namespace neo::fft
+}  // namespace neo

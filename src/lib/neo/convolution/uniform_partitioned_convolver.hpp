@@ -5,7 +5,7 @@
 #include <neo/container/mdspan.hpp>
 #include <neo/convolution/fdl_index.hpp>
 
-namespace neo::fft {
+namespace neo {
 
 template<typename Overlap, typename Fdl, typename Filter>
 struct uniform_partitioned_convolver
@@ -54,4 +54,4 @@ auto uniform_partitioned_convolver<Overlap, Fdl, Filter>::operator()(in_vector a
     });
 }
 
-}  // namespace neo::fft
+}  // namespace neo

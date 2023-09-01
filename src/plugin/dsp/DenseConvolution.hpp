@@ -30,7 +30,7 @@ private:
 
     std::optional<BufferWithSampleRate<float>> _impulse;
     std::optional<juce::dsp::ProcessSpec> _spec;
-    std::vector<neo::fft::upols_convolver<std::complex<float>>> _convolvers;
+    std::vector<neo::upols_convolver<std::complex<float>>> _convolvers;
     stdex::mdarray<std::complex<float>, stdex::dextents<std::size_t, 3>> _filter;
 };
 

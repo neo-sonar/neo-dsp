@@ -8,7 +8,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-TEMPLATE_TEST_CASE("neo/algorithm: normalize_impulse", "", float, double)
+TEMPLATE_TEST_CASE("neo/convolution: normalize_impulse", "", float, double)
 {
     using Float = TestType;
 

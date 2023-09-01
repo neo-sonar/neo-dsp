@@ -14,13 +14,13 @@ convolve(neo::audio_buffer<float> const& signal, neo::audio_buffer<float> const&
 {
     auto impulse_copy = impulse;
     neo::normalize_impulse(impulse_copy.to_mdspan());
-    auto const partitions = neo::fft::uniform_partition(impulse_copy.to_mdspan(), static_cast<size_t>(block_size));
+    auto const partitions = neo::uniform_partition(impulse_copy.to_mdspan(), static_cast<size_t>(block_size));
 
     auto output       = neo::audio_buffer<float>{signal.extent(0), signal.extent(1)};
     auto block_buffer = stdex::mdarray<float, stdex::dextents<size_t, 1>>(size_t(block_size));
 
     for (auto channel{0}; std::cmp_less(channel, signal.extent(0)); ++channel) {
-        auto convolver  = neo::fft::upols_convolver<std::complex<float>>{};
+        auto convolver  = neo::upols_convolver<std::complex<float>>{};
         auto const full = stdex::full_extent;
         convolver.filter(stdex::submdspan(partitions.to_mdspan(), channel, full, full));
 

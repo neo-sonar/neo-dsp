@@ -10,7 +10,7 @@ TEMPLATE_TEST_CASE("neo/convolution: uniform_partition", "", float, double)
     SECTION("mono")
     {
         auto const impulse    = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{1, 4096};
-        auto const partitions = neo::fft::uniform_partition(impulse.to_mdspan(), 128);
+        auto const partitions = neo::uniform_partition(impulse.to_mdspan(), 128);
         REQUIRE(partitions.extent(0) == 1);
         REQUIRE(partitions.extent(1) == 32);
         REQUIRE(partitions.extent(2) == 129);
@@ -19,7 +19,7 @@ TEMPLATE_TEST_CASE("neo/convolution: uniform_partition", "", float, double)
     SECTION("stereo")
     {
         auto const impulse    = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{2, 4096};
-        auto const partitions = neo::fft::uniform_partition(impulse.to_mdspan(), 128);
+        auto const partitions = neo::uniform_partition(impulse.to_mdspan(), 128);
         REQUIRE(partitions.extent(0) == 2);
         REQUIRE(partitions.extent(1) == 32);
         REQUIRE(partitions.extent(2) == 129);
@@ -28,7 +28,7 @@ TEMPLATE_TEST_CASE("neo/convolution: uniform_partition", "", float, double)
     SECTION("stereo - odd")
     {
         auto const impulse    = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{2, 4095};
-        auto const partitions = neo::fft::uniform_partition(impulse.to_mdspan(), 128);
+        auto const partitions = neo::uniform_partition(impulse.to_mdspan(), 128);
         REQUIRE(partitions.extent(0) == 2);
         REQUIRE(partitions.extent(1) == 32);
         REQUIRE(partitions.extent(2) == 129);

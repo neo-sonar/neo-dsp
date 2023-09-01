@@ -11,7 +11,7 @@
 #include <neo/convolution/overlap_save.hpp>
 #include <neo/convolution/uniform_partitioned_convolver.hpp>
 
-namespace neo::fft {
+namespace neo {
 
 template<typename Complex>
 struct dense_filter
@@ -38,4 +38,4 @@ using upols_convolver = uniform_partitioned_convolver<overlap_save<Complex>, den
 template<complex Complex>
 using upola_convolver = uniform_partitioned_convolver<overlap_add<Complex>, dense_fdl<Complex>, dense_filter<Complex>>;
 
-}  // namespace neo::fft
+}  // namespace neo
