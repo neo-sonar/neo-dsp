@@ -14,6 +14,14 @@ using split_upols_convolver = neo::uniform_partitioned_convolver<
     neo::dense_split_fdl<typename Complex::value_type>,
     neo::dense_split_filter<typename Complex::value_type>>;
 
+#if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
+template<neo::complex Complex>
+using split_upola_convolver_f16 = neo::uniform_partitioned_convolver<
+    neo::overlap_add<Complex>,
+    neo::dense_split_fdl<_Float16>,
+    neo::dense_split_filter<_Float16>>;
+#endif
+
 template<typename Convolver>
 [[nodiscard]] static auto
 convolve(neo::audio_buffer<float> const& signal, neo::audio_buffer<float> const& impulse, int block_size = 512)
@@ -105,8 +113,29 @@ auto main(int argc, char** argv) -> int
 
         neo::normalize_peak(output.to_mdspan());
         neo::write_wav_file(output, signal_sr, argv[3]);
-        std::printf("SUPOLS: %.2f sec / %.1f x real-time\n", runtime.count(), output_length_seconds / runtime.count());
+        std::printf(
+            "SPLIT_UPOLS: %.2f sec / %.1f x real-time\n",
+            runtime.count(),
+            output_length_seconds / runtime.count()
+        );
     }
+
+#if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
+    {
+        auto const start   = std::chrono::system_clock::now();
+        auto output        = convolve<split_upola_convolver_f16<std::complex<float>>>(signal, filter);
+        auto const stop    = std::chrono::system_clock::now();
+        auto const runtime = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start);
+
+        neo::normalize_peak(output.to_mdspan());
+        neo::write_wav_file(output, signal_sr, argv[3]);
+        std::printf(
+            "SPLIT_UPOLS_F16: %.2f sec / %.1f x real-time\n",
+            runtime.count(),
+            output_length_seconds / runtime.count()
+        );
+    }
+#endif
 
     return EXIT_SUCCESS;
 }

@@ -47,8 +47,8 @@ struct dense_split_filter
 
         for (auto i{0}; std::cmp_less(i, filter.extent(0)); ++i) {
             for (auto j{0}; std::cmp_less(j, filter.extent(1)); ++j) {
-                reals(i, j) = filter(i, j).real();
-                imags(i, j) = filter(i, j).imag();
+                reals(i, j) = static_cast<Float>(filter(i, j).real());
+                imags(i, j) = static_cast<Float>(filter(i, j).imag());
             }
         }
     }

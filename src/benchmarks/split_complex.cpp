@@ -1,5 +1,6 @@
 #include <neo/algorithm.hpp>
 #include <neo/complex.hpp>
+#include <neo/fft.hpp>
 
 #include <neo/testing/benchmark.hpp>
 #include <neo/testing/testing.hpp>
@@ -75,8 +76,22 @@ struct split_complex_fma
             stdex::submdspan(_out.to_mdspan(), 1, stdex::full_extent),
         };
 
-        neo::multiply_add(x, y, out, out);
+#if defined(NEO_HAS_SIMD_NEON)
+        if constexpr (std::same_as<Float, float>) {
+            auto const a = DSPSplitComplex{.realp = &x.real[0], .imagp = &x.imag[0]};
+            auto const b = DSPSplitComplex{.realp = &y.real[0], .imagp = &y.imag[0]};
+            auto const c = DSPSplitComplex{.realp = &out.real[0], .imagp = &out.imag[0]};
+            vDSP_zvma(&a, 1, &b, 1, &c, 1, &c, 1, x.real.extent(0));
+        } else {
 
+            auto const a = DSPDoubleSplitComplex{.realp = &x.real[0], .imagp = &x.imag[0]};
+            auto const b = DSPDoubleSplitComplex{.realp = &y.real[0], .imagp = &y.imag[0]};
+            auto const c = DSPDoubleSplitComplex{.realp = &out.real[0], .imagp = &out.imag[0]};
+            vDSP_zvmaD(&a, 1, &b, 1, &c, 1, &c, 1, x.real.extent(0));
+        }
+#else
+        neo::multiply_add(x, y, out, out);
+#endif
         neo::do_not_optimize(out.real[0]);
         neo::do_not_optimize(out.imag[0]);
     }
@@ -156,8 +171,8 @@ auto main() -> int
 {
     static constexpr auto N = 131072U;
 
-    timeit("multiply_add(split_complex<float>):  ", 4, N, split_complex_fma<float>{N});
-    timeit("multiply_add(split_complex<double>): ", 8, N, split_complex_fma<double>{N});
+    timeit("multiply_add(split_complex<float>):    ", 4, N, split_complex_fma<float>{N});
+    timeit("multiply_add(split_complex<double>):   ", 8, N, split_complex_fma<double>{N});
     std::printf("\n");
 
 #if defined(NEO_HAS_SIMD_AVX)

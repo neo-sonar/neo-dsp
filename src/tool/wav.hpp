@@ -10,16 +10,20 @@
     #pragma clang diagnostic ignored "-Wcast-align"
     #pragma clang diagnostic ignored "-Wimplicit-int-conversion"
     #pragma clang diagnostic ignored "-Wimplicit-int-float-conversion"
+    #pragma clang diagnostic ignored "-Wshift-sign-overflow"
     #pragma clang diagnostic ignored "-Wsign-conversion"
     #pragma clang diagnostic ignored "-Wswitch-enum"
+    #pragma clang diagnostic ignored "-Wunused-but-set-variable"
     #pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"
 #elif defined(__GNUC__)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"
     #pragma GCC diagnostic ignored "-Wimplicit-int-conversion"
     #pragma GCC diagnostic ignored "-Wimplicit-int-float-conversion"
+    #pragma GCC diagnostic ignored "-Wshift-sign-overflow"
     #pragma GCC diagnostic ignored "-Wsign-conversion"
     #pragma GCC diagnostic ignored "-Wswitch-enum"
+    #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
     #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif
 
@@ -53,7 +57,7 @@ template<std::floating_point Float>
     auto interleaved = audio_buffer<float>{wav_file.channels, wav_file.totalPCMFrameCount};
     auto const read  = drwav_read_pcm_frames_f32(&wav_file, wav_file.totalPCMFrameCount, interleaved.data());
     if (read != interleaved.extent(1)) {
-        std::printf("Frames read size mismatch, expected: %llu actual: %llu\n", interleaved.extent(1), read);
+        std::printf("Frames read size mismatch, expected: %d actual: %d\n", int(interleaved.extent(1)), int(read));
         drwav_uninit(&wav_file);
         return {};
     }

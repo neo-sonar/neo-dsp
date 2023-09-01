@@ -385,7 +385,7 @@ private:
 
 auto main() -> int
 {
-    static constexpr auto N = 131072U / 16U;
+    static constexpr auto N = 131072U / 4U;
 
     timeit("mul(q7):     ", 1, N, fixed_point_mul<neo::q7, N>{});
     timeit("mul(q15):    ", 2, N, fixed_point_mul<neo::q15, N>{});
@@ -393,7 +393,7 @@ auto main() -> int
 #if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
     timeit("mul(f16f32): ", 2, N, float16_mul_bench<N>{});
 #endif
-#if defined(NEO_HAS_SIMD_F16C)
+#if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
     timeit("mul(_Float16): ", 2, N, float_mul<_Float16, N>{});
 #endif
 
@@ -406,7 +406,7 @@ auto main() -> int
     // timeit("cmul(complex<cf8>):         ", 2, N, cfloat_mul<neo::complex64, neo::scalar_complex<int8_t>, N>{});
     // timeit("cmul(complex<cf16>):        ", 4, N, cfloat_mul<neo::complex64, neo::scalar_complex<int16_t>, N>{});
 
-#if defined(NEO_HAS_SIMD_F16C)
+#if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
     timeit("cmul(complex32):            ", 4, N, float_mul<neo::scalar_complex<_Float16>, N>{});
 #endif
 
@@ -420,7 +420,7 @@ auto main() -> int
     // timeit("cmulp(q15):      ", 4, N, cmulp<neo::q15, N>{});
     // timeit("cmulp(fxp_14):   ", 4, N, cmulp<neo::fixed_point<int16_t, 14>, N>{});
 
-#if defined(NEO_HAS_SIMD_F16C)
+#if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
     timeit("cmulp(_Float16): ", 4, N, cmulp<_Float16, N>{});
 #endif
     timeit("cmulp(float):    ", 8, N, cmulp<float, N>{});

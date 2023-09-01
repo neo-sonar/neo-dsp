@@ -21,6 +21,7 @@ using split_upola_convolver = neo::uniform_partitioned_convolver<
     neo::dense_split_fdl<typename Complex::value_type>,
     neo::dense_split_filter<typename Complex::value_type>>;
 
+
 template<neo::complex Complex>
 using split_upols_convolver = neo::uniform_partitioned_convolver<
     neo::overlap_save<Complex>,
@@ -58,6 +59,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     using Float     = typename Complex::value_type;
 
     auto const block_size = GENERATE(as<std::size_t>{}, 128, 256, 512, 1024);
+    CAPTURE(block_size);
 
     auto const filter = neo::generate_identity_impulse<Float>(block_size, 3);
     REQUIRE(filter.extent(0) == 3);
