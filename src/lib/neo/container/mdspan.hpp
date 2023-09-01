@@ -99,6 +99,16 @@ namespace detail {
     return ((ref.extents() == others.extents()) and ...);
 }
 
+template<auto Stride>
+[[nodiscard]] constexpr auto strides_equal_to(in_vector auto... vecs) noexcept -> bool
+{
+    return ((vecs.stride(0) == Stride) and ...);
+}
+
+template<in_object First, in_object... Objs>
+inline constexpr auto all_same_value_type_v
+    = (std::same_as<typename First::value_type, typename Objs::value_type> and ...);
+
 }  // namespace detail
 
 }  // namespace neo
