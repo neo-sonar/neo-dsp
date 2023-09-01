@@ -39,6 +39,9 @@ TEMPLATE_TEST_CASE("neo/algorithm: normalize_impulse", "", float, double)
 
     SECTION("matrix")
     {
+        auto no_channels = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{0, size * 2};
+        neo::normalize_impulse(no_channels.to_mdspan());
+
         auto mat = set1_matrix(Float(2));
         neo::normalize_impulse(mat.to_mdspan());
         REQUIRE(mat(0, 0) == Catch::Approx(1.0));

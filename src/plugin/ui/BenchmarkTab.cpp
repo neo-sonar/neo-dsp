@@ -6,7 +6,7 @@
 #include "dsp/DenseConvolution.hpp"
 #include "dsp/Spectrum.hpp"
 
-#include <neo/algorithm/peak_normalize.hpp>
+#include <neo/algorithm/normalize_peak.hpp>
 #include <neo/algorithm/root_mean_squared_error.hpp>
 #include <neo/container/sparse_matrix.hpp>
 #include <neo/fft/fftfreq.hpp>
@@ -326,7 +326,7 @@ auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
     auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(out);
-    // neo::peak_normalize(output.to_mdspan());
+    // neo::normalize_peak(output.to_mdspan());
 
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     juce::MessageManager::callAsync([this, elapsed] {
@@ -372,7 +372,7 @@ auto BenchmarkTab::runDenseConvolutionBenchmark() -> void
 
     auto file   = getBenchmarkResultsDirectory().getNonexistentChildFile("tconv2", ".wav");
     auto output = to_mdarray(out);
-    neo::peak_normalize(output.to_mdspan());
+    neo::normalize_peak(output.to_mdspan());
     writeToWavFile(file, output, _spec.sampleRate, 32);
 }
 
@@ -383,7 +383,7 @@ auto BenchmarkTab::runDenseConvolverBenchmark() -> void
     auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(result);
-    neo::peak_normalize(output.to_mdspan());
+    neo::normalize_peak(output.to_mdspan());
 
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
@@ -407,7 +407,7 @@ auto BenchmarkTab::runSparseConvolverBenchmark() -> void
     auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(result);
-    neo::peak_normalize(output.to_mdspan());
+    neo::normalize_peak(output.to_mdspan());
 
     auto const elapsed       = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     auto const thresholdText = juce::String(juce::roundToInt(std::abs(thresholdDB) * 100));
@@ -435,7 +435,7 @@ auto BenchmarkTab::runSparseQualityTests() -> void
 
     auto const dense = [this] {
         auto result = to_mdarray(neo::dense_convolve(_signal.buffer, _impulse.buffer));
-        neo::peak_normalize(result.to_mdspan());
+        neo::normalize_peak(result.to_mdspan());
         return result;
     }();
 
@@ -447,7 +447,7 @@ auto BenchmarkTab::runSparseQualityTests() -> void
         auto sparse = to_mdarray(
             neo::sparse_convolve(_signal.buffer, _impulse.buffer, _impulse.sampleRate, -dynamicRange, numBinsToKeep)
         );
-        neo::peak_normalize(sparse.to_mdspan());
+        neo::normalize_peak(sparse.to_mdspan());
 
         auto stft             = neo::fft::stft_plan<double>{stftOptions};
         auto sparseSpectogram = stft(sparse.to_mdspan());

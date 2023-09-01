@@ -14,44 +14,37 @@ namespace neo {
 
 template<in_object InObj>
     requires std::floating_point<typename InObj::value_type>
-[[nodiscard]] auto peak_normalization_factor(InObj obj) noexcept
+[[nodiscard]] auto normalize_energy_factor(InObj obj) noexcept
 {
     using Float = typename InObj::value_type;
 
-    auto absMax = Float(0);
+    auto energy = Float(0);
     if constexpr (InObj::rank() == 1) {
-        if (obj.extent(0) == 0) {
-            return Float(1);
-        }
-
         for (decltype(obj.extent(0)) i{0}; i < obj.extent(0); ++i) {
-            absMax = std::max(absMax, std::abs(obj[i]));
+            energy += obj[i] * obj[i];
         }
 
     } else {
-        if (obj.extent(0) == 0 and obj.extent(1) == 0) {
-            return Float(1);
-        }
-
         for (decltype(obj.extent(0)) i{0}; i < obj.extent(0); ++i) {
             for (decltype(obj.extent(1)) j{0}; j < obj.extent(1); ++j) {
-                absMax = std::max(absMax, std::abs(obj(i, j)));
+                energy += obj(i, j) * obj(i, j);
             }
         }
     }
 
-    if (float_equality::exact(absMax, Float(0))) {
+    if (float_equality::exact(energy, Float(0))) {
         return Float(1);
     }
 
-    return Float(1) / std::abs(absMax);
+    return Float(1) / std::sqrt(energy);
 }
 
-// normalized_sample = sample / max(abs(buffer))
+// energy = sum(obj^2)
+// return obj / sqrt(energy)
 template<inout_object InOutObj>
-auto peak_normalize(InOutObj obj) noexcept -> void
+auto normalize_energy(InOutObj obj) noexcept -> void
 {
-    scale(peak_normalization_factor(obj), obj);
+    scale(normalize_energy_factor(obj), obj);
 }
 
 }  // namespace neo

@@ -1,4 +1,4 @@
-#include "energy_normalize.hpp"
+#include "normalize_energy.hpp"
 
 #include <neo/algorithm/fill.hpp>
 #include <neo/complex/scalar_complex.hpp>
@@ -8,7 +8,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-TEMPLATE_TEST_CASE("neo/algorithm: energy_normalize", "", float, double)
+TEMPLATE_TEST_CASE("neo/algorithm: normalize_energy", "", float, double)
 {
     using Float = TestType;
 
@@ -26,36 +26,36 @@ TEMPLATE_TEST_CASE("neo/algorithm: energy_normalize", "", float, double)
 
     SECTION("vector")
     {
-        REQUIRE(neo::energy_normalization_factor(set1_vector(Float(0)).to_mdspan()) == Catch::Approx(1.0));
-        REQUIRE(neo::energy_normalization_factor(set1_vector(Float(1)).to_mdspan()) == Catch::Approx(1.0));
-        REQUIRE(neo::energy_normalization_factor(set1_vector(Float(2)).to_mdspan()) == Catch::Approx(0.5));
+        REQUIRE(neo::normalize_energy_factor(set1_vector(Float(0)).to_mdspan()) == Catch::Approx(1.0));
+        REQUIRE(neo::normalize_energy_factor(set1_vector(Float(1)).to_mdspan()) == Catch::Approx(1.0));
+        REQUIRE(neo::normalize_energy_factor(set1_vector(Float(2)).to_mdspan()) == Catch::Approx(0.5));
 
         auto vec = set1_vector(Float(2));
-        neo::energy_normalize(vec.to_mdspan());
+        neo::normalize_energy(vec.to_mdspan());
         REQUIRE(vec(0) == Catch::Approx(1.0));
 
         vec(0) = Float(2);
         vec(1) = Float(2);
-        REQUIRE(neo::energy_normalization_factor(vec.to_mdspan()) == Catch::Approx(0.353553391));
-        neo::energy_normalize(vec.to_mdspan());
+        REQUIRE(neo::normalize_energy_factor(vec.to_mdspan()) == Catch::Approx(0.353553391));
+        neo::normalize_energy(vec.to_mdspan());
         REQUIRE(vec(0) == Catch::Approx(0.707106782));
         REQUIRE(vec(1) == Catch::Approx(0.707106782));
     }
 
     SECTION("matrix")
     {
-        REQUIRE(neo::energy_normalization_factor(set1_matrix(Float(0)).to_mdspan()) == Catch::Approx(1.0));
-        REQUIRE(neo::energy_normalization_factor(set1_matrix(Float(1)).to_mdspan()) == Catch::Approx(1.0));
-        REQUIRE(neo::energy_normalization_factor(set1_matrix(Float(2)).to_mdspan()) == Catch::Approx(0.5));
+        REQUIRE(neo::normalize_energy_factor(set1_matrix(Float(0)).to_mdspan()) == Catch::Approx(1.0));
+        REQUIRE(neo::normalize_energy_factor(set1_matrix(Float(1)).to_mdspan()) == Catch::Approx(1.0));
+        REQUIRE(neo::normalize_energy_factor(set1_matrix(Float(2)).to_mdspan()) == Catch::Approx(0.5));
 
         auto mat = set1_matrix(Float(2));
-        neo::energy_normalize(mat.to_mdspan());
+        neo::normalize_energy(mat.to_mdspan());
         REQUIRE(mat(0, 0) == Catch::Approx(1.0));
 
         mat(0, 0) = Float(2);
         mat(0, 1) = Float(2);
-        REQUIRE(neo::energy_normalization_factor(mat.to_mdspan()) == Catch::Approx(0.353553391));
-        neo::energy_normalize(mat.to_mdspan());
+        REQUIRE(neo::normalize_energy_factor(mat.to_mdspan()) == Catch::Approx(0.353553391));
+        neo::normalize_energy(mat.to_mdspan());
         REQUIRE(mat(0, 0) == Catch::Approx(0.707106782));
         REQUIRE(mat(0, 1) == Catch::Approx(0.707106782));
     }
