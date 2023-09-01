@@ -8,6 +8,13 @@
 #include <cstdio>
 #include <cstdlib>
 
+template<neo::complex Complex>
+using split_upols_convolver = neo::uniform_partitioned_convolver<
+    neo::overlap_save<Complex>,
+    neo::dense_split_fdl<typename Complex::value_type>,
+    neo::dense_split_filter<typename Complex::value_type>>;
+
+template<typename Convolver>
 [[nodiscard]] static auto
 convolve(neo::audio_buffer<float> const& signal, neo::audio_buffer<float> const& impulse, int block_size = 512)
     -> neo::audio_buffer<float>
@@ -20,7 +27,7 @@ convolve(neo::audio_buffer<float> const& signal, neo::audio_buffer<float> const&
     auto block_buffer = stdex::mdarray<float, stdex::dextents<size_t, 1>>(size_t(block_size));
 
     for (auto channel{0}; std::cmp_less(channel, signal.extent(0)); ++channel) {
-        auto convolver  = neo::upols_convolver<std::complex<float>>{};
+        auto convolver  = Convolver{};
         auto const full = stdex::full_extent;
         convolver.filter(stdex::submdspan(partitions.to_mdspan(), channel, full, full));
 
@@ -79,14 +86,27 @@ auto main(int argc, char** argv) -> int
         static_cast<int>(signal_sr)
     );
 
-    auto const start   = std::chrono::system_clock::now();
-    auto output        = convolve(signal, filter);
-    auto const stop    = std::chrono::system_clock::now();
-    auto const runtime = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start);
+    {
+        auto const start   = std::chrono::system_clock::now();
+        auto output        = convolve<neo::upols_convolver<std::complex<float>>>(signal, filter);
+        auto const stop    = std::chrono::system_clock::now();
+        auto const runtime = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start);
 
-    neo::normalize_peak(output.to_mdspan());
-    neo::write_wav_file(output, signal_sr, argv[3]);
-    std::printf("Runtime: %.2f sec / %.1f x real-time\n", runtime.count(), output_length_seconds / runtime.count());
+        neo::normalize_peak(output.to_mdspan());
+        neo::write_wav_file(output, signal_sr, argv[3]);
+        std::printf("UPOLS: %.2f sec / %.1f x real-time\n", runtime.count(), output_length_seconds / runtime.count());
+    }
+
+    {
+        auto const start   = std::chrono::system_clock::now();
+        auto output        = convolve<split_upols_convolver<std::complex<float>>>(signal, filter);
+        auto const stop    = std::chrono::system_clock::now();
+        auto const runtime = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start);
+
+        neo::normalize_peak(output.to_mdspan());
+        neo::write_wav_file(output, signal_sr, argv[3]);
+        std::printf("SUPOLS: %.2f sec / %.1f x real-time\n", runtime.count(), output_length_seconds / runtime.count());
+    }
 
     return EXIT_SUCCESS;
 }

@@ -1,5 +1,7 @@
 #include "dense_fdl.hpp"
 
+#include <neo/complex/scalar_complex.hpp>
+
 #include <catch2/catch_template_test_macros.hpp>
 
 TEMPLATE_TEST_CASE(

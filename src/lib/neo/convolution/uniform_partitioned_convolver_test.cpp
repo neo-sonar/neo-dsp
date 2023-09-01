@@ -14,6 +14,19 @@
 #include <span>
 
 namespace {
+
+template<neo::complex Complex>
+using split_upola_convolver = neo::uniform_partitioned_convolver<
+    neo::overlap_add<Complex>,
+    neo::dense_split_fdl<typename Complex::value_type>,
+    neo::dense_split_filter<typename Complex::value_type>>;
+
+template<neo::complex Complex>
+using split_upols_convolver = neo::uniform_partitioned_convolver<
+    neo::overlap_save<Complex>,
+    neo::dense_split_fdl<typename Complex::value_type>,
+    neo::dense_split_filter<typename Complex::value_type>>;
+
 template<typename T>
 static constexpr auto is_sparse_convolver = false;
 
@@ -31,7 +44,12 @@ static_assert(is_sparse_convolver<neo::sparse_upola_convolver<std::complex<float
 TEMPLATE_PRODUCT_TEST_CASE(
     "neo/convolution: convolver",
     "",
-    (neo::upola_convolver, neo::upols_convolver, neo::sparse_upola_convolver, neo::sparse_upols_convolver),
+    (neo::upola_convolver,
+     neo::upols_convolver,
+     split_upola_convolver,
+     split_upols_convolver,
+     neo::sparse_upola_convolver,
+     neo::sparse_upols_convolver),
     (std::complex<float>, std::complex<double>)
 )
 {

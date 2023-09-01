@@ -13,7 +13,7 @@ struct uniform_partitioned_convolver
     using overlap_type     = Overlap;
     using fdl_type         = Fdl;
     using filter_type      = Filter;
-    using value_type       = typename Filter::value_type;
+    using value_type       = typename Overlap::value_type;
     using accumulator_type = typename Fdl::accumulator_type;
 
     uniform_partitioned_convolver() = default;
@@ -51,7 +51,13 @@ auto uniform_partitioned_convolver<Overlap, Fdl, Filter>::operator()(in_vector a
         auto multiply = [this](auto fdl, auto filter) { _filter(_fdl(fdl), filter, _accumulator.to_mdspan()); };
         _indexer(insert, multiply);
 
-        copy(_accumulator.to_mdspan(), inout);
+        if constexpr (accumulator_type::rank() == 1) {
+            copy(_accumulator.to_mdspan(), inout);
+        } else {
+            for (auto i{0}; i < static_cast<int>(inout.extent(0)); ++i) {
+                inout[i] = {_accumulator(0, i), _accumulator(1, i)};
+            }
+        }
     });
 }
 
