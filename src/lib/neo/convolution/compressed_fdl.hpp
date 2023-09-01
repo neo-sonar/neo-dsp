@@ -13,8 +13,9 @@ namespace neo {
 template<complex FloatComplex, complex IntComplex>
 struct compressed_fdl
 {
-    using value_type      = FloatComplex;
-    using compressed_type = IntComplex;
+    using value_type       = FloatComplex;
+    using compressed_type  = IntComplex;
+    using accumulator_type = stdex::mdarray<FloatComplex, stdex::dextents<size_t, 1>>;
 
     compressed_fdl() = default;
 

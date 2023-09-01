@@ -9,7 +9,8 @@ namespace neo {
 template<typename Complex>
 struct dense_fdl
 {
-    using value_type = Complex;
+    using value_type       = Complex;
+    using accumulator_type = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>;
 
     dense_fdl() = default;
 
