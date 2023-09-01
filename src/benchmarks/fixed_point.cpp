@@ -27,7 +27,7 @@ auto timeit(std::string_view name, size_t sizeOfT, size_t N, Func func)
     using microseconds = std::chrono::duration<double, std::micro>;
 
     auto const size       = N;
-    auto const iterations = 25'000U;
+    auto const iterations = 50'000U;
     auto const margin     = iterations / 20U;
 
     auto all_runs = std::vector<double>(iterations);
@@ -385,7 +385,7 @@ private:
 
 auto main() -> int
 {
-    static constexpr auto N = 131072U;
+    static constexpr auto N = 131072U / 16U;
 
     timeit("mul(q7):     ", 1, N, fixed_point_mul<neo::q7, N>{});
     timeit("mul(q15):    ", 2, N, fixed_point_mul<neo::q15, N>{});
@@ -437,6 +437,11 @@ auto main() -> int
     timeit("cmulp_batch_fixed_point(q15x16): ", 4, N, cmulp_batch_fixed_point<neo::q15x16, N>{});
 #endif
 
+#if defined(NEO_HAS_SIMD_AVX512BW)
+    timeit("cmulp_batch_fixed_point(q15x32): ", 4, N, cmulp_batch_fixed_point<neo::q15x32, N>{});
+#endif
+    std::printf("\n");
+
 #if defined(NEO_HAS_SIMD_SSE2)
     timeit("cmulp_batch_float(float32x4): ", 8, N, cmulp_batch_float<neo::float32x4, N>{});
     timeit("cmulp_batch_float(float64x2): ", 16, N, cmulp_batch_float<neo::float64x2, N>{});
@@ -445,6 +450,11 @@ auto main() -> int
 #if defined(NEO_HAS_SIMD_AVX)
     timeit("cmulp_batch_float(float32x8): ", 8, N, cmulp_batch_float<neo::float32x8, N>{});
     timeit("cmulp_batch_float(float64x4): ", 16, N, cmulp_batch_float<neo::float64x4, N>{});
+#endif
+
+#if defined(NEO_HAS_SIMD_AVX512F)
+    timeit("cmulp_batch_float(float32x16): ", 8, N, cmulp_batch_float<neo::float32x16, N>{});
+    timeit("cmulp_batch_float(float64x8): ", 16, N, cmulp_batch_float<neo::float64x8, N>{});
 #endif
 
     return EXIT_SUCCESS;

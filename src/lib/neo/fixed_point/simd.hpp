@@ -85,6 +85,19 @@ inline constexpr auto const mul_kernel_avx2_s16 = [](__m256i lhs, __m256i rhs) {
 
 #endif
 
+#if defined(NEO_HAS_SIMD_AVX512BW)
+
+template<int FractionalBits>
+inline constexpr auto const mul_kernel_avx512_s16 = [](__m512i lhs, __m512i rhs) {
+    if constexpr (FractionalBits == 15) {
+        return _mm512_mulhrs_epi16(lhs, rhs);
+    } else {
+        assert(false);
+    }
+};
+
+#endif
+
 }  // namespace detail
 
 #if defined(NEO_HAS_SIMD_SSE2)
@@ -383,6 +396,14 @@ struct alignas(64) q15x32
     NEO_ALWAYS_INLINE friend auto operator-(q15x32 lhs, q15x32 rhs) noexcept -> q15x32
     {
         return _mm512_subs_epi16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator*(q15x32 lhs, q15x32 rhs) noexcept -> q15x32
+    {
+        return detail::mul_kernel_avx512_s16<value_type::fractional_bits>(
+            static_cast<register_type>(lhs),
+            static_cast<register_type>(rhs)
+        );
     }
 
 private:
