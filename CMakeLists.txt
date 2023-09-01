@@ -41,6 +41,14 @@ FetchContent_Declare(
 )
 
 FetchContent_Declare(
+    dr_libs
+    GIT_REPOSITORY "https://github.com/mackron/dr_libs.git"
+    GIT_TAG "master"
+    GIT_PROGRESS TRUE
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_Declare(
     Catch2
     GIT_REPOSITORY "https://github.com/catchorg/Catch2.git"
     GIT_TAG v3.4.0
@@ -50,9 +58,11 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(JUCE)
 FetchContent_MakeAvailable(mdspan)
+FetchContent_MakeAvailable(dr_libs)
 FetchContent_MakeAvailable(Catch2)
 include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 
 add_subdirectory(src/lib)
-add_subdirectory(src/plugin)
 add_subdirectory(src/benchmarks)
+add_subdirectory(src/plugin)
+add_subdirectory(src/tool)

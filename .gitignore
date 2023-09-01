@@ -10,3 +10,4 @@ cmake-build-*
 *.pdf
 /venv
 .env
+*.wav

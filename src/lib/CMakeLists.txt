@@ -59,6 +59,7 @@ target_sources(neo_fft_tests
 )
 
 catch_discover_tests(neo_fft_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 target_link_libraries(neo_fft_tests
     PRIVATE
         neo::fft
