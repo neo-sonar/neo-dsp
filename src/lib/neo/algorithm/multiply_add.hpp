@@ -61,15 +61,16 @@ multiply_add(split_complex<VecX> x, split_complex<VecY> y, split_complex<VecZ> z
         if (detail::strides_equal_to<1>(x.real, x.imag, y.real, y.imag, z.real, z.imag, out.real, out.imag)) {
             using Float = typename VecX::value_type;
             if constexpr (std::same_as<Float, float> or std::same_as<Float, double>) {
-                using split_t  = std::conditional_t<std::same_as<Float, float>, DSPSplitComplex, DSPDoubleSplitComplex>;
-                auto const xsc = split_t{.realp = &x.real[0], .imagp = &x.imag[0]};
-                auto const ysc = split_t{.realp = &y.real[0], .imagp = &y.imag[0]};
-                auto const zsc = split_t{.realp = &out.real[0], .imagp = &out.imag[0]};
+                using split_t = std::conditional_t<std::same_as<Float, float>, DSPSplitComplex, DSPDoubleSplitComplex>;
+                auto xsc = split_t{.realp = const_cast<Float*>(&x.real[0]), .imagp = const_cast<Float*>(&x.imag[0])};
+                auto ysc = split_t{.realp = const_cast<Float*>(&y.real[0]), .imagp = const_cast<Float*>(&y.imag[0])};
+                auto zsc = split_t{.realp = const_cast<Float*>(&z.real[0]), .imagp = const_cast<Float*>(&z.imag[0])};
+                auto osc = split_t{.realp = &out.real[0], .imagp = &out.imag[0]};
 
                 if constexpr (std::same_as<Float, float>) {
-                    vDSP_zvma(&xsc, 1, &ysc, 1, &zsc, 1, &zsc, 1, x.real.extent(0));
+                    vDSP_zvma(&xsc, 1, &ysc, 1, &zsc, 1, &osc, 1, x.real.extent(0));
                 } else {
-                    vDSP_zvmaD(&xsc, 1, &ysc, 1, &zsc, 1, &zsc, 1, x.real.extent(0));
+                    vDSP_zvmaD(&xsc, 1, &ysc, 1, &zsc, 1, &osc, 1, x.real.extent(0));
                 }
 
                 return;

@@ -2,6 +2,7 @@
 
 #include <neo/config.hpp>
 
+#include <neo/algorithm/copy.hpp>
 #include <neo/algorithm/multiply_add.hpp>
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
@@ -20,16 +21,20 @@ struct dense_filter
 
     dense_filter() = default;
 
-    auto filter(in_matrix auto filter) -> void { _filter = filter; }
+    auto filter(in_matrix auto filter) -> void
+    {
+        _filter = stdex::mdarray<Complex, stdex::dextents<size_t, 2>>{filter.extents()};
+        copy(filter, _filter.to_mdspan());
+    }
 
     auto operator()(in_vector auto fdl, std::integral auto filter_index, inout_vector auto accumulator) -> void
     {
-        auto const subfilter = stdex::submdspan(_filter, filter_index, stdex::full_extent);
+        auto const subfilter = stdex::submdspan(_filter.to_mdspan(), filter_index, stdex::full_extent);
         multiply_add(fdl, subfilter, accumulator, accumulator);
     }
 
 private:
-    stdex::mdspan<Complex const, stdex::dextents<size_t, 2>> _filter;
+    stdex::mdarray<Complex, stdex::dextents<size_t, 2>> _filter;
 };
 
 template<typename Float>

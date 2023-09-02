@@ -21,7 +21,6 @@ using split_upola_convolver = neo::uniform_partitioned_convolver<
     neo::dense_split_fdl<typename Complex::value_type>,
     neo::dense_split_filter<typename Complex::value_type>>;
 
-
 template<neo::complex Complex>
 using split_upols_convolver = neo::uniform_partitioned_convolver<
     neo::overlap_save<Complex>,
