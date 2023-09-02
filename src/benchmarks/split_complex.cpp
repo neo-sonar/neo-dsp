@@ -51,8 +51,8 @@ struct split_complex_fma
 {
     explicit split_complex_fma(size_t size) : _x{2, size}, _y{2, size}, _out{2, size}
     {
-        auto const noise_x = neo::generate_noise_signal<std::complex<Float>>(size, std::random_device{}());
-        auto const noise_y = neo::generate_noise_signal<std::complex<Float>>(size, std::random_device{}());
+        auto const noise_x = neo::generate_noise_signal<neo::scalar_complex<Float>>(size, std::random_device{}());
+        auto const noise_y = neo::generate_noise_signal<neo::scalar_complex<Float>>(size, std::random_device{}());
         for (auto i{0U}; i < size; ++i) {
             _x(0, i) = noise_x(i).real();
             _x(1, i) = noise_x(i).imag();
@@ -94,8 +94,8 @@ struct split_complex_fma_avx
 {
     explicit split_complex_fma_avx(size_t size) : _x{2, size}, _y{2, size}, _out{2, size}
     {
-        auto const noise_x = neo::generate_noise_signal<std::complex<Float>>(size, std::random_device{}());
-        auto const noise_y = neo::generate_noise_signal<std::complex<Float>>(size, std::random_device{}());
+        auto const noise_x = neo::generate_noise_signal<neo::scalar_complex<Float>>(size, std::random_device{}());
+        auto const noise_y = neo::generate_noise_signal<neo::scalar_complex<Float>>(size, std::random_device{}());
         for (auto i{0U}; i < size; ++i) {
             _x(0, i) = noise_x(i).real();
             _x(1, i) = noise_x(i).imag();
@@ -157,6 +157,9 @@ auto main() -> int
 {
     static constexpr auto N = 131072U;
 
+#if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
+    timeit("multiply_add(split_complex<_Float16>):    ", 4, N, split_complex_fma<_Float16>{N});
+#endif
     timeit("multiply_add(split_complex<float>):    ", 4, N, split_complex_fma<float>{N});
     timeit("multiply_add(split_complex<double>):   ", 8, N, split_complex_fma<double>{N});
     std::printf("\n");
