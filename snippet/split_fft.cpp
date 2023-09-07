@@ -162,8 +162,24 @@ struct static_dit2_stage
 {
     auto operator()(std::complex<float>* __restrict__ x, std::complex<float> const* __restrict__ twiddles)
     {
-        if constexpr (Stage < Order) {
-            constexpr auto const size         = 1 << Order;
+        constexpr auto const size = 1 << Order;
+
+        if constexpr (Stage == 0) {
+            static constexpr auto const stage_length = 1;  // ipow<2>(0)
+            static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
+
+            for (auto k{0}; k < static_cast<int>(size); k += stride) {
+                auto const i1 = k;
+                auto const i2 = k + stage_length;
+
+                auto const temp = x[i1] + x[i2];
+                x[i2]           = x[i1] - x[i2];
+                x[i1]           = temp;
+            }
+
+            static_dit2_stage<Order, 1>{}(x, twiddles);
+
+        } else if constexpr (Stage < Order) {
             constexpr auto const stage_length = ipow<2>(Stage);
             constexpr auto const stride       = ipow<2>(Stage + 1);
             constexpr auto const tw_stride    = ipow<2>(Order - Stage - 1);
@@ -222,8 +238,30 @@ struct split_fft_radix2_dit
         float const* __restrict__ wim
     )
     {
-        if constexpr (Stage < Order) {
-            constexpr auto const size         = 1 << Order;
+        constexpr auto const size = 1 << Order;
+        if constexpr (Stage == 0) {
+            static constexpr auto const stage_length = 1;  // ipow<2>(0)
+            static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
+
+            for (auto k{0}; k < static_cast<int>(size); k += stride) {
+                auto const i1 = k;
+                auto const i2 = k + stage_length;
+
+                auto const x1 = std::complex{xre[i1], xim[i1]};
+                auto const x2 = std::complex{xre[i2], xim[i2]};
+
+                auto const xn1 = x1 + x2;
+                xre[i1]        = xn1.real();
+                xim[i1]        = xn1.imag();
+
+                auto const xn2 = x1 - x2;
+                xre[i2]        = xn2.real();
+                xim[i2]        = xn2.imag();
+            }
+
+            split_fft_radix2_dit<Order, 1>{}(xre, xim, wre, wim);
+
+        } else if constexpr (Stage < Order) {
             constexpr auto const stage_length = ipow<2>(Stage);
             constexpr auto const stride       = ipow<2>(Stage + 1);
             constexpr auto const tw_stride    = ipow<2>(Order - Stage - 1);
@@ -298,41 +336,48 @@ private:
 template<int Order>
 struct interleave_benchmark
 {
-    interleave_benchmark() = default;
+    interleave_benchmark()
+    {
+        auto const signal = generate_noise_signal<std::complex<float>>(_plan.size(), std::random_device{}());
+        std::copy(signal.begin(), signal.end(), _buffer.begin());
+    }
 
     auto operator()()
     {
-        std::copy(_signal.begin(), _signal.end(), _buffer.begin());
         _plan(_buffer, direction::forward);
         _plan(_buffer, direction::backward);
+
+        auto scale = [f = 1.0F / float(1 << Order)](auto c) { return c * f; };
+        std::transform(_buffer.begin(), _buffer.end(), _buffer.begin(), scale);
     }
 
 private:
     static_fft_plan<Order> _plan;
-    std::vector<std::complex<float>> _signal{
-        generate_noise_signal<std::complex<float>>(_plan.size(), std::random_device{}()),
-    };
     std::vector<std::complex<float>> _buffer{std::vector<std::complex<float>>(_plan.size())};
 };
 
 template<int Order>
 struct split_benchmark
 {
-    split_benchmark() = default;
+    split_benchmark()
+    {
+        auto const signal = generate_noise_signal<std::complex<float>>(_plan.size(), std::random_device{}());
+        std::transform(signal.begin(), signal.end(), _bufre.begin(), [](auto c) { return c.real(); });
+        std::transform(signal.begin(), signal.end(), _bufim.begin(), [](auto c) { return c.imag(); });
+    }
 
     auto operator()()
     {
-        std::transform(_signal.begin(), _signal.end(), _bufre.begin(), [](auto c) { return c.real(); });
-        std::transform(_signal.begin(), _signal.end(), _bufim.begin(), [](auto c) { return c.imag(); });
         _plan(_bufre, _bufim, direction::forward);
         _plan(_bufre, _bufim, direction::backward);
+
+        auto scale = [f = 1.0F / float(1 << Order)](auto c) { return c * f; };
+        std::transform(_bufre.begin(), _bufre.end(), _bufre.begin(), scale);
+        std::transform(_bufim.begin(), _bufim.end(), _bufim.begin(), scale);
     }
 
 private:
     static_split_fft_plan<Order> _plan;
-    std::vector<std::complex<float>> _signal{
-        generate_noise_signal<std::complex<float>>(_plan.size(), std::random_device{}()),
-    };
     std::vector<float> _bufre{std::vector<float>(_plan.size())};
     std::vector<float> _bufim{std::vector<float>(_plan.size())};
 };
