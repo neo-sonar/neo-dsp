@@ -16,8 +16,8 @@
 namespace neo {
 
 // out = x * y + z
-template<in_vector InVecX, in_vector InVecY, in_vector InVecZ, out_vector OutVec>
-constexpr auto multiply_add(InVecX x, InVecY y, InVecZ z, OutVec out) noexcept -> void
+template<in_vector VecX, in_vector VecY, in_vector VecZ, out_vector VecOut>
+constexpr auto multiply_add(VecX x, VecY y, VecZ z, VecOut out) noexcept -> void
 {
     assert(detail::extents_equal(x, y, z, out));
 

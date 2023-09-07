@@ -63,13 +63,6 @@ NEO_ALWAYS_INLINE auto cadd(__m128d lhs, __m128d rhs) noexcept -> __m128d { retu
 
 NEO_ALWAYS_INLINE auto csub(__m128d lhs, __m128d rhs) noexcept -> __m128d { return _mm_sub_pd(lhs, rhs); }
 
-NEO_ALWAYS_INLINE auto cmul(__m128d lhs, __m128d rhs) noexcept -> __m128d
-{
-    auto real = _mm_unpacklo_pd(lhs, rhs);  // Interleave real parts
-    auto imag = _mm_unpackhi_pd(lhs, rhs);  // Interleave imaginary parts
-    return _mm_addsub_pd(_mm_mul_pd(real, real), _mm_mul_pd(imag, imag));
-}
-
 struct alignas(16) float32x4
 {
     using value_type    = float;

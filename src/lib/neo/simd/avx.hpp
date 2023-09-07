@@ -26,13 +26,6 @@ NEO_ALWAYS_INLINE auto cadd(__m256d a, __m256d b) noexcept -> __m256d { return _
 
 NEO_ALWAYS_INLINE auto csub(__m256d a, __m256d b) noexcept -> __m256d { return _mm256_sub_pd(a, b); }
 
-NEO_ALWAYS_INLINE auto cmul(__m256d a, __m256d b) noexcept -> __m256d
-{
-    auto real = _mm256_unpacklo_pd(a, b);  // Interleave real parts
-    auto imag = _mm256_unpackhi_pd(a, b);  // Interleave imaginary parts
-    return _mm256_addsub_pd(_mm256_mul_pd(real, real), _mm256_mul_pd(imag, imag));
-}
-
 #if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
 struct alignas(16) float16x8
 {

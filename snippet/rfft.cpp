@@ -54,22 +54,25 @@ void fft(double* data, int n, int isign)
 
 void fft(float* data, int n, int isign)
 {
-    int nn, mmax, m, j, istep, i;
-    float wtemp, wr, wpr, wpi, wi, theta, tempr, tempi;
+    int nn, mmax, m, istep, i;
+    float wtemp, wr, wpr, wpi, wi, theta;
 
     nn = n << 1;
-    j  = 1;
-    for (i = 1; i < nn; i += 2) {
-        if (j > i) {
-            std::swap(data[j - 1], data[i - 1]);
-            std::swap(data[j], data[i]);
+
+    {
+        auto j = 1;
+        for (i = 1; i < nn; i += 2) {
+            if (j > i) {
+                std::swap(data[j - 1], data[i - 1]);
+                std::swap(data[j], data[i]);
+            }
+            m = n;
+            while (m >= 2 && j > m) {
+                j -= m;
+                m >>= 1;
+            }
+            j += m;
         }
-        m = n;
-        while (m >= 2 && j > m) {
-            j -= m;
-            m >>= 1;
-        }
-        j += m;
     }
 
     mmax = 2;
@@ -83,14 +86,20 @@ void fft(float* data, int n, int isign)
         wi    = 0.0F;
         for (m = 1; m < mmax; m += 2) {
             for (i = m; i <= nn; i += istep) {
-                j           = i + mmax;
-                tempr       = wr * data[j - 1] - wi * data[j];
-                tempi       = wr * data[j] + wi * data[j - 1];
-                data[j - 1] = data[i - 1] - tempr;
-                data[j]     = data[i] - tempi;
-                data[i - 1] += tempr;
+                auto const j   = i + mmax;
+                auto const jn1 = j - 1;
+                auto const in1 = i - 1;
+
+                auto const tempr = wr * data[jn1] - wi * data[j];
+                auto const tempi = wr * data[j] + wi * data[jn1];
+
+                data[jn1] = data[in1] - tempr;
+                data[j]   = data[i] - tempi;
+
+                data[in1] += tempr;
                 data[i] += tempi;
             }
+
             wr = (wtemp = wr) * wpr - wi * wpi + wr;
             wi = wi * wpr + wtemp * wpi + wi;
         }
@@ -218,12 +227,19 @@ void rfft(std::vector<float>& data, int isign)
     }
 }
 
-auto main() -> int
+auto main(int argc, char** argv) -> int
 {
+    auto N = 1024UL;
+    if (argc == 2) {
+        N = std::stoul(argv[1]);
+    }
 
-    for (auto i{0}; i < 1000; ++i) {
-        auto buffer = std::vector(4096UL, 0.0F);
-        buffer[0]   = 1.0F;
+    auto runs = std::vector(10000UL, std::pair{0, 0.0});
+
+    auto buffer = std::vector(N, 0.0F);
+    buffer[0]   = 1.0F;
+
+    for (auto i{0UL}; i < runs.size(); ++i) {
 
         auto const start = std::chrono::system_clock::now();
         rfft(buffer, 1);
@@ -233,29 +249,30 @@ auto main() -> int
         auto const size    = static_cast<double>(buffer.size());
         auto const mflops  = static_cast<int>(std::lround(5.0 * size * std::log2(size) / elapsed.count()));
 
-        std::printf(
-            "Elapsed: %.1f MFLOPS: %d (%.1f)\n",
-            elapsed.count(),
-            mflops,
-            buffer[0] * (2.0 / static_cast<double>(buffer.size()))
-        );
+        runs[i] = {mflops, buffer[0] * (2.0 / static_cast<double>(buffer.size()))};
     }
 
-    auto buffer = std::vector(16UL, 0.0);
-    buffer[0]   = 1.0;
+    std::printf(
+        "MFLOPS: %d min, %d max\n",
+        std::min_element(runs.begin(), runs.end(), [](auto l, auto r) { return l.first < r.first; })->first,
+        std::max_element(runs.begin(), runs.end(), [](auto l, auto r) { return l.first < r.first; })->first
+    );
+
+    auto buf = std::vector(16UL, 0.0F);
+    buf[0]   = 1.0F;
 
     // rfft
-    rfft(buffer, 1);
+    rfft(buf, 1);
     for (auto val :
-         std::span<std::complex<double>>{reinterpret_cast<std::complex<double>*>(buffer.data()), buffer.size() / 2U}) {
+         std::span<std::complex<float>>{reinterpret_cast<std::complex<float>*>(buf.data()), buf.size() / 2U}) {
         std::printf("(%.1f, %.1f) ", val.real(), val.imag());
     }
     std::printf("\n");
 
     // irfft
-    rfft(buffer, -1);
-    for (auto val : buffer) {
-        std::printf("%.1f ", val * (2.0 / static_cast<double>(buffer.size())));
+    rfft(buf, -1);
+    for (auto val : buf) {
+        std::printf("%.1f ", val * (2.0F / static_cast<float>(buf.size())));
     }
     std::printf("\n");
 
