@@ -158,7 +158,7 @@ auto main() -> int
     static constexpr auto N = 131072U;
 
 #if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
-    timeit("multiply_add(split_complex<_Float16>):    ", 4, N, split_complex_fma<_Float16>{N});
+    // timeit("multiply_add(split_complex<_Float16>):    ", 4, N, split_complex_fma<_Float16>{N});
 #endif
     timeit("multiply_add(split_complex<float>):    ", 4, N, split_complex_fma<float>{N});
     timeit("multiply_add(split_complex<double>):   ", 8, N, split_complex_fma<double>{N});

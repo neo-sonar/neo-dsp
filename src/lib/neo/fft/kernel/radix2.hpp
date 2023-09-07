@@ -19,10 +19,25 @@ struct radix2_kernel_v1
         auto const size  = x.size();
         auto const order = static_cast<std::int32_t>(ilog2(size));
 
-        auto stage_length = 1;
-        auto stride       = 2;
+        {
+            // stage 0
+            static constexpr auto const stage_length = 1;  // ipow<2>(0)
+            static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
 
-        for (auto stage = 0; stage < order; ++stage) {
+            for (auto k{0}; k < static_cast<int>(size); k += stride) {
+                auto const i1 = k;
+                auto const i2 = k + stage_length;
+
+                auto const temp = x[i1] + x[i2];
+                x[i2]           = x[i1] - x[i2];
+                x[i1]           = temp;
+            }
+        }
+
+        auto stage_length = 2;
+        auto stride       = 4;
+
+        for (auto stage = 1; stage < order; ++stage) {
             auto const tw_stride = ipow<2>(order - stage - 1);
 
             for (auto k = 0; std::cmp_less(k, size); k += stride) {
@@ -52,7 +67,22 @@ struct radix2_kernel_v2
     {
         auto const size = x.size();
 
-        auto stage_size = 2U;
+        {
+            // stage 0
+            static constexpr auto const stage_length = 1;  // ipow<2>(0)
+            static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
+
+            for (auto k{0}; k < static_cast<int>(size); k += stride) {
+                auto const i1 = k;
+                auto const i2 = k + stage_length;
+
+                auto const temp = x[i1] + x[i2];
+                x[i2]           = x[i1] - x[i2];
+                x[i1]           = temp;
+            }
+        }
+
+        auto stage_size = 4U;
         while (stage_size <= size) {
             auto const halfStage = stage_size / 2;
             auto const k_step    = size / stage_size;
@@ -88,7 +118,22 @@ struct radix2_kernel_v3
         auto const size  = x.size();
         auto const order = ilog2(size);
 
-        for (auto stage{0ULL}; stage < order; ++stage) {
+        {
+            // stage 0
+            static constexpr auto const stage_length = 1;  // ipow<2>(0)
+            static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
+
+            for (auto k{0}; k < static_cast<int>(size); k += stride) {
+                auto const i1 = k;
+                auto const i2 = k + stage_length;
+
+                auto const temp = x[i1] + x[i2];
+                x[i2]           = x[i1] - x[i2];
+                x[i1]           = temp;
+            }
+        }
+
+        for (auto stage{1ULL}; stage < order; ++stage) {
 
             auto const stage_length = ipow<2ULL>(stage);
             auto const stride       = ipow<2ULL>(stage + 1);
@@ -124,19 +169,13 @@ struct radix2_kernel_v4
             static constexpr auto const stage_length = 1;  // ipow<2>(0)
             static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
 
-            auto const tw_stride = ipow<2>(order - 1);
-
             for (auto k{0}; k < size; k += stride) {
-                for (auto pair{0}; pair < stage_length; ++pair) {
-                    auto const tw = twiddles[pair * tw_stride];
+                auto const i1 = k;
+                auto const i2 = k + stage_length;
 
-                    auto const i1 = k + pair;
-                    auto const i2 = k + pair + stage_length;
-
-                    auto const temp = x[i1] + tw * x[i2];
-                    x[i2]           = x[i1] - tw * x[i2];
-                    x[i1]           = temp;
-                }
+                auto const temp = x[i1] + x[i2];
+                x[i2]           = x[i1] - x[i2];
+                x[i1]           = temp;
             }
         }
 

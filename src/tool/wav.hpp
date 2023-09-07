@@ -18,9 +18,6 @@
 #elif defined(__GNUC__)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"
-    #pragma GCC diagnostic ignored "-Wimplicit-int-conversion"
-    #pragma GCC diagnostic ignored "-Wimplicit-int-float-conversion"
-    #pragma GCC diagnostic ignored "-Wshift-sign-overflow"
     #pragma GCC diagnostic ignored "-Wsign-conversion"
     #pragma GCC diagnostic ignored "-Wswitch-enum"
     #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
