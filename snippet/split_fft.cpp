@@ -160,46 +160,53 @@ auto bit_reverse_permutation(std::span<ElementType> xre, std::span<ElementType> 
 template<int Order, int Stage>
 struct static_dit2_stage
 {
-    auto operator()(std::complex<float>* __restrict__ x, std::complex<float> const* __restrict__ twiddles)
+    auto operator()(std::complex<float>* __restrict__ x, std::complex<float> const* __restrict__ twiddles) -> void
+        requires(Stage == 0)
     {
-        constexpr auto const size = 1 << Order;
+        static constexpr auto const size         = 1 << Order;
+        static constexpr auto const stage_length = 1;  // ipow<2>(0)
+        static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
 
-        if constexpr (Stage == 0) {
-            static constexpr auto const stage_length = 1;  // ipow<2>(0)
-            static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
+        for (auto k{0}; k < static_cast<int>(size); k += stride) {
+            auto const i1 = k;
+            auto const i2 = k + stage_length;
 
-            for (auto k{0}; k < static_cast<int>(size); k += stride) {
-                auto const i1 = k;
-                auto const i2 = k + stage_length;
+            auto const temp = x[i1] + x[i2];
+            x[i2]           = x[i1] - x[i2];
+            x[i1]           = temp;
+        }
 
-                auto const temp = x[i1] + x[i2];
-                x[i2]           = x[i1] - x[i2];
+        static_dit2_stage<Order, 1>{}(x, twiddles);
+    }
+
+    auto operator()(std::complex<float>* __restrict__ x, std::complex<float> const* __restrict__ twiddles) -> void
+        requires(Stage != 0 and Stage < Order)
+    {
+        static constexpr auto const size         = 1 << Order;
+        static constexpr auto const stage_length = ipow<2>(Stage);
+        static constexpr auto const stride       = ipow<2>(Stage + 1);
+        static constexpr auto const tw_stride    = ipow<2>(Order - Stage - 1);
+
+        for (auto k{0}; k < size; k += stride) {
+            for (auto pair{0}; pair < stage_length; ++pair) {
+                auto const tw = twiddles[pair * tw_stride];
+
+                auto const i1 = k + pair;
+                auto const i2 = k + pair + stage_length;
+
+                auto const temp = x[i1] + tw * x[i2];
+                x[i2]           = x[i1] - tw * x[i2];
                 x[i1]           = temp;
             }
-
-            static_dit2_stage<Order, 1>{}(x, twiddles);
-
-        } else if constexpr (Stage < Order) {
-            constexpr auto const stage_length = ipow<2>(Stage);
-            constexpr auto const stride       = ipow<2>(Stage + 1);
-            constexpr auto const tw_stride    = ipow<2>(Order - Stage - 1);
-
-            for (auto k{0}; k < size; k += stride) {
-                for (auto pair{0}; pair < stage_length; ++pair) {
-                    auto const tw = twiddles[pair * tw_stride];
-
-                    auto const i1 = k + pair;
-                    auto const i2 = k + pair + stage_length;
-
-                    auto const temp = x[i1] + tw * x[i2];
-                    x[i2]           = x[i1] - tw * x[i2];
-                    x[i1]           = temp;
-                }
-            }
-
-            static_dit2_stage<Order, Stage + 1>{}(x, twiddles);
         }
+
+        static_dit2_stage<Order, Stage + 1>{}(x, twiddles);
     }
+
+    auto operator()(std::complex<float>* __restrict__ /*x*/, std::complex<float> const* __restrict__ /*twiddles*/)
+        -> void
+        requires(Stage == Order)
+    {}
 };
 
 template<int Order>
@@ -236,60 +243,77 @@ struct split_fft_radix2_dit
         float* __restrict__ xim,
         float const* __restrict__ wre,
         float const* __restrict__ wim
-    )
+    ) -> void
+        requires(Stage == 0)
     {
-        constexpr auto const size = 1 << Order;
-        if constexpr (Stage == 0) {
-            static constexpr auto const stage_length = 1;  // ipow<2>(0)
-            static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
+        static constexpr auto const size         = 1 << Order;
+        static constexpr auto const stage_length = 1;  // ipow<2>(0)
+        static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
 
-            for (auto k{0}; k < static_cast<int>(size); k += stride) {
-                auto const i1 = k;
-                auto const i2 = k + stage_length;
+        for (auto k{0}; k < static_cast<int>(size); k += stride) {
+            auto const i1 = k;
+            auto const i2 = k + stage_length;
+
+            auto const x1 = std::complex{xre[i1], xim[i1]};
+            auto const x2 = std::complex{xre[i2], xim[i2]};
+
+            auto const xn1 = x1 + x2;
+            xre[i1]        = xn1.real();
+            xim[i1]        = xn1.imag();
+
+            auto const xn2 = x1 - x2;
+            xre[i2]        = xn2.real();
+            xim[i2]        = xn2.imag();
+        }
+
+        split_fft_radix2_dit<Order, 1>{}(xre, xim, wre, wim);
+    }
+
+    auto operator()(
+        float* __restrict__ xre,
+        float* __restrict__ xim,
+        float const* __restrict__ wre,
+        float const* __restrict__ wim
+    ) -> void
+        requires(Stage != 0 and Stage < Order)
+    {
+        constexpr auto const size         = 1 << Order;
+        constexpr auto const stage_length = ipow<2>(Stage);
+        constexpr auto const stride       = ipow<2>(Stage + 1);
+        constexpr auto const tw_stride    = ipow<2>(Order - Stage - 1);
+
+        for (auto k{0}; k < size; k += stride) {
+            for (auto pair{0}; pair < stage_length; ++pair) {
+                auto const twi = pair * tw_stride;
+                auto const tw  = std::complex{wre[twi], wim[twi]};
+
+                auto const i1 = k + pair;
+                auto const i2 = k + pair + stage_length;
 
                 auto const x1 = std::complex{xre[i1], xim[i1]};
                 auto const x2 = std::complex{xre[i2], xim[i2]};
 
-                auto const xn1 = x1 + x2;
+                auto const xn1 = x1 + tw * x2;
                 xre[i1]        = xn1.real();
                 xim[i1]        = xn1.imag();
 
-                auto const xn2 = x1 - x2;
+                auto const xn2 = x1 - tw * x2;
                 xre[i2]        = xn2.real();
                 xim[i2]        = xn2.imag();
             }
-
-            split_fft_radix2_dit<Order, 1>{}(xre, xim, wre, wim);
-
-        } else if constexpr (Stage < Order) {
-            constexpr auto const stage_length = ipow<2>(Stage);
-            constexpr auto const stride       = ipow<2>(Stage + 1);
-            constexpr auto const tw_stride    = ipow<2>(Order - Stage - 1);
-
-            for (auto k{0}; k < size; k += stride) {
-                for (auto pair{0}; pair < stage_length; ++pair) {
-                    auto const twi = pair * tw_stride;
-                    auto const tw  = std::complex{wre[twi], wim[twi]};
-
-                    auto const i1 = k + pair;
-                    auto const i2 = k + pair + stage_length;
-
-                    auto const x1 = std::complex{xre[i1], xim[i1]};
-                    auto const x2 = std::complex{xre[i2], xim[i2]};
-
-                    auto const xn1 = x1 + tw * x2;
-                    xre[i1]        = xn1.real();
-                    xim[i1]        = xn1.imag();
-
-                    auto const xn2 = x1 - tw * x2;
-                    xre[i2]        = xn2.real();
-                    xim[i2]        = xn2.imag();
-                }
-            }
-
-            split_fft_radix2_dit<Order, Stage + 1>{}(xre, xim, wre, wim);
         }
+
+        split_fft_radix2_dit<Order, Stage + 1>{}(xre, xim, wre, wim);
     }
+
+    auto operator()(
+        float* __restrict__ xre,
+        float* __restrict__ xim,
+        float const* __restrict__ wre,
+        float const* __restrict__ wim
+    ) -> void
+        requires(Stage == Order)
+    {}
 };
 
 template<int Order>
@@ -401,6 +425,9 @@ auto main() -> int
         std::cout << z / float(N) << '\n';
     std::cout << '\n';
 
+    timeit("static_fft_plan<4>", 16, interleave_benchmark<4>{});
+    timeit("static_fft_plan<5>", 32, interleave_benchmark<5>{});
+    timeit("static_fft_plan<6>", 64, interleave_benchmark<6>{});
     timeit("static_fft_plan<7>", 128, interleave_benchmark<7>{});
     timeit("static_fft_plan<8>", 256, interleave_benchmark<8>{});
     timeit("static_fft_plan<9>", 512, interleave_benchmark<9>{});
@@ -409,6 +436,9 @@ auto main() -> int
     timeit("static_fft_plan<12>", 4096, interleave_benchmark<12>{});
     std::cout << '\n';
 
+    timeit("static_split_fft_plan<4>", 16, split_benchmark<4>{});
+    timeit("static_split_fft_plan<5>", 32, split_benchmark<5>{});
+    timeit("static_split_fft_plan<6>", 64, split_benchmark<6>{});
     timeit("static_split_fft_plan<7>", 128, split_benchmark<7>{});
     timeit("static_split_fft_plan<8>", 256, split_benchmark<8>{});
     timeit("static_split_fft_plan<9>", 512, split_benchmark<9>{});
