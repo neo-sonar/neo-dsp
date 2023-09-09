@@ -8,11 +8,11 @@
 
 #include <utility>
 
-namespace neo::fft {
+namespace neo::fft::kernel {
 
-struct radix2_kernel_v1
+struct c2c_dit2_v1
 {
-    radix2_kernel_v1() = default;
+    c2c_dit2_v1() = default;
 
     auto operator()(inout_vector auto x, auto const& twiddles) const noexcept -> void
     {
@@ -59,9 +59,9 @@ struct radix2_kernel_v1
     }
 };
 
-struct radix2_kernel_v2
+struct c2c_dit2_v2
 {
-    radix2_kernel_v2() = default;
+    c2c_dit2_v2() = default;
 
     auto operator()(inout_vector auto x, auto const& twiddles) const noexcept -> void
     {
@@ -109,9 +109,9 @@ struct radix2_kernel_v2
     }
 };
 
-struct radix2_kernel_v3
+struct c2c_dit2_v3
 {
-    radix2_kernel_v3() = default;
+    c2c_dit2_v3() = default;
 
     auto operator()(inout_vector auto x, auto const& twiddles) const noexcept -> void
     {
@@ -155,9 +155,9 @@ struct radix2_kernel_v3
     }
 };
 
-struct radix2_kernel_v4
+struct c2c_dit2_v4
 {
-    radix2_kernel_v4() = default;
+    c2c_dit2_v4() = default;
 
     auto operator()(inout_vector auto x, auto const& twiddles) const noexcept -> void
     {
@@ -216,4 +216,4 @@ struct radix2_kernel_v4
     }
 };
 
-}  // namespace neo::fft
+}  // namespace neo::fft::kernel

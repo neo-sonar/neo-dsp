@@ -5,15 +5,15 @@
 
 namespace neo::fft {
 
-template<typename Float, typename ComplexPlan = fft_radix2_plan<std::complex<Float>>>
-struct rfft_radix2_plan
+template<typename Float, typename ComplexPlan = fft_plan<std::complex<Float>>>
+struct rfft_plan
 {
     using complex_plan_type = ComplexPlan;
     using complex_type      = typename ComplexPlan::complex_type;
     using size_type         = typename ComplexPlan::size_type;
     using real_type         = Float;
 
-    explicit rfft_radix2_plan(size_type order) : _order{order} {}
+    explicit rfft_plan(size_type order) : _order{order} {}
 
     [[nodiscard]] auto size() const noexcept -> size_type { return _size; }
 

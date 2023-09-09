@@ -19,7 +19,7 @@ def precompute_twiddle_factors(n, inverse=False):
 # Function to perform radix-4 DIT FFT in-place with precomputed twiddle factors
 def radix4_fft(data, twiddles, inverse=False):
     n = len(data)
-    
+
     # Check if the input size is a power of 4
     if n == 1:
         return

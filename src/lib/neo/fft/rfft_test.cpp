@@ -20,8 +20,8 @@ template<typename Float, typename Kernel, typename Complex>
 struct tester
 {
     static_assert(std::same_as<Float, typename Complex::value_type>);
-    using complex_plan_type = neo::fft::fft_radix2_plan<Complex, Kernel>;
-    using plan_type         = neo::fft::rfft_radix2_plan<Float, complex_plan_type>;
+    using complex_plan_type = neo::fft::fft_plan<Complex, Kernel>;
+    using plan_type         = neo::fft::rfft_plan<Float, complex_plan_type>;
 };
 
 template<typename Float, typename Kernel>
@@ -35,19 +35,19 @@ using neo_complex = tester<Float, Kernel, neo::scalar_complex<Float>>;
 using namespace neo::fft;
 
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft: rfft_radix2_plan",
+    "neo/fft: rfft_plan",
     "",
     (std_complex, neo_complex),
 
-    ((float, radix2_kernel_v1),
-     (float, radix2_kernel_v2),
-     (float, radix2_kernel_v3),
-     (float, radix2_kernel_v4),
+    ((float, kernel::c2c_dit2_v1),
+     (float, kernel::c2c_dit2_v2),
+     (float, kernel::c2c_dit2_v3),
+     (float, kernel::c2c_dit2_v4),
 
-     (double, radix2_kernel_v1),
-     (double, radix2_kernel_v2),
-     (double, radix2_kernel_v3),
-     (double, radix2_kernel_v4))
+     (double, kernel::c2c_dit2_v1),
+     (double, kernel::c2c_dit2_v2),
+     (double, kernel::c2c_dit2_v3),
+     (double, kernel::c2c_dit2_v4))
 )
 {
     using Plan    = typename TestType::plan_type;
@@ -85,11 +85,11 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: extract_two_real_dfts", "", (std::complex, 
     CAPTURE(size);
     CAPTURE(numCoeffs);
 
-    auto fft = neo::fft::fft_radix2_plan<Complex>{order};
+    auto fft = neo::fft::fft_plan<Complex>{order};
     REQUIRE(fft.size() == size);
     REQUIRE(fft.order() == order);
 
-    auto rfft = neo::fft::rfft_radix2_plan<Float, decltype(fft)>{order};
+    auto rfft = neo::fft::rfft_plan<Float, decltype(fft)>{order};
     REQUIRE(rfft.size() == size);
     REQUIRE(rfft.order() == order);
 

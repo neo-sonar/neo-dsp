@@ -42,13 +42,13 @@ constexpr auto ifft(Plan& plan, InVec input, OutVec output) -> void
     ifft(plan, output);
 }
 
-template<typename Complex, typename Kernel = radix2_kernel_v3>
-struct fft_radix2_plan
+template<typename Complex, typename Kernel = kernel::c2c_dit2_v3>
+struct fft_plan
 {
     using complex_type = Complex;
     using size_type    = std::size_t;
 
-    explicit fft_radix2_plan(size_type order, direction default_direction = direction::forward);
+    explicit fft_plan(size_type order, direction default_direction = direction::forward);
 
     [[nodiscard]] auto order() const noexcept -> size_type;
     [[nodiscard]] auto size() const noexcept -> size_type;
@@ -68,19 +68,19 @@ private:
 };
 
 template<typename Complex, typename Kernel>
-fft_radix2_plan<Complex, Kernel>::fft_radix2_plan(size_type order, direction default_direction)
+fft_plan<Complex, Kernel>::fft_plan(size_type order, direction default_direction)
     : _order{order}
     , _default_direction{default_direction}
 {}
 
 template<typename Complex, typename Kernel>
-auto fft_radix2_plan<Complex, Kernel>::size() const noexcept -> size_type
+auto fft_plan<Complex, Kernel>::size() const noexcept -> size_type
 {
     return _size;
 }
 
 template<typename Complex, typename Kernel>
-auto fft_radix2_plan<Complex, Kernel>::order() const noexcept -> size_type
+auto fft_plan<Complex, Kernel>::order() const noexcept -> size_type
 {
     return _order;
 }
@@ -88,7 +88,7 @@ auto fft_radix2_plan<Complex, Kernel>::order() const noexcept -> size_type
 template<typename Complex, typename Kernel>
 template<inout_vector InOutVec>
     requires std::same_as<typename InOutVec::value_type, Complex>
-auto fft_radix2_plan<Complex, Kernel>::operator()(InOutVec vec, direction dir) noexcept -> void
+auto fft_plan<Complex, Kernel>::operator()(InOutVec vec, direction dir) noexcept -> void
 {
     assert(std::cmp_equal(vec.size(), _size));
 
