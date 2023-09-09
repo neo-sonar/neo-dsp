@@ -41,6 +41,7 @@ target_sources(neo_fft_tests
         "neo/fft/fftfreq_test.cpp"
         "neo/fft/fft_test.cpp"
         "neo/fft/rfft_test.cpp"
+        "neo/fft/static_fft_test.cpp"
         "neo/fft/stft_test.cpp"
         "neo/fft/twiddle_test.cpp"
 
