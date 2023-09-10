@@ -5,10 +5,10 @@
 #include <neo/algorithm/copy.hpp>
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
+#include <neo/fft/bitrevorder.hpp>
 #include <neo/fft/conjugate_view.hpp>
 #include <neo/fft/direction.hpp>
 #include <neo/fft/kernel/radix2.hpp>
-#include <neo/fft/reorder.hpp>
 #include <neo/fft/twiddle.hpp>
 
 #include <cassert>
@@ -16,8 +16,8 @@
 
 namespace neo::fft {
 
-template<typename Plan, inout_vector InOutVec>
-constexpr auto fft(Plan& plan, InOutVec inout) -> void
+template<typename Plan, inout_vector Vec>
+constexpr auto fft(Plan& plan, Vec inout) -> void
 {
     plan(inout, direction::forward);
 }
@@ -29,8 +29,8 @@ constexpr auto fft(Plan& plan, InVec input, OutVec output) -> void
     fft(plan, output);
 }
 
-template<typename Plan, inout_vector InOutVec>
-constexpr auto ifft(Plan& plan, InOutVec inout) -> void
+template<typename Plan, inout_vector Vec>
+constexpr auto ifft(Plan& plan, Vec inout) -> void
 {
     plan(inout, direction::backward);
 }
@@ -53,15 +53,15 @@ struct fft_plan
     [[nodiscard]] auto order() const noexcept -> size_type;
     [[nodiscard]] auto size() const noexcept -> size_type;
 
-    template<inout_vector InOutVec>
-        requires std::same_as<typename InOutVec::value_type, Complex>
-    auto operator()(InOutVec vec, direction dir) noexcept -> void;
+    template<inout_vector Vec>
+        requires std::same_as<typename Vec::value_type, Complex>
+    auto operator()(Vec vec, direction dir) noexcept -> void;
 
 private:
     size_type _order;
     size_type _size{1ULL << _order};
     direction _default_direction;
-    std::vector<size_type> _index_table{make_bitrevorder_table(_size)};
+    bitrevorder_plan _reorder{_order};
     stdex::mdarray<Complex, stdex::dextents<size_type, 1>> _twiddles{
         make_radix2_twiddles<Complex>(_size, _default_direction),
     };
@@ -86,22 +86,22 @@ auto fft_plan<Complex, Kernel>::order() const noexcept -> size_type
 }
 
 template<typename Complex, typename Kernel>
-template<inout_vector InOutVec>
-    requires std::same_as<typename InOutVec::value_type, Complex>
-auto fft_plan<Complex, Kernel>::operator()(InOutVec vec, direction dir) noexcept -> void
+template<inout_vector Vec>
+    requires std::same_as<typename Vec::value_type, Complex>
+auto fft_plan<Complex, Kernel>::operator()(Vec x, direction dir) noexcept -> void
 {
-    assert(std::cmp_equal(vec.size(), _size));
+    assert(std::cmp_equal(x.size(), _size));
 
-    bitrevorder(vec, _index_table);
+    _reorder(x);
 
     if (auto const kernel = Kernel{}; dir == _default_direction) {
-        kernel(vec, _twiddles.to_mdspan());
+        kernel(x, _twiddles.to_mdspan());
     } else {
-        kernel(vec, conjugate_view{_twiddles.to_mdspan()});
+        kernel(x, conjugate_view{_twiddles.to_mdspan()});
     }
 }
 
-inline constexpr auto execute_radix2_kernel = [](auto kernel, inout_vector auto x, auto const& twiddles) -> void {
+inline constexpr auto execute_dit2_kernel = [](auto kernel, inout_vector auto x, auto const& twiddles) -> void {
     bitrevorder(x);
     kernel(x, twiddles);
 };

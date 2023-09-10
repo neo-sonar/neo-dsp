@@ -135,8 +135,8 @@ static auto test_complex_batch_roundtrip_fft()
     auto const forward_twiddles  = make_twiddles(size, neo::fft::direction::forward);
     auto const backward_twiddles = make_twiddles(size, neo::fft::direction::backward);
 
-    neo::fft::execute_radix2_kernel(Kernel{}, inout.to_mdspan(), forward_twiddles.to_mdspan());
-    neo::fft::execute_radix2_kernel(Kernel{}, inout.to_mdspan(), backward_twiddles.to_mdspan());
+    neo::fft::execute_dit2_kernel(Kernel{}, inout.to_mdspan(), forward_twiddles.to_mdspan());
+    neo::fft::execute_dit2_kernel(Kernel{}, inout.to_mdspan(), backward_twiddles.to_mdspan());
 
     for (auto i{0U}; i < inout.extent(0); ++i) {
         auto const real_batch = inout(i).real();
@@ -240,8 +240,8 @@ TEMPLATE_TEST_CASE("neo/fft: radix2_kernel(simd_batch)", "", neo::pcomplex32x8, 
         auto const forward_twiddles  = make_twiddles(size, neo::fft::direction::forward);
         auto const backward_twiddles = make_twiddles(size, neo::fft::direction::backward);
 
-        neo::fft::execute_radix2_kernel(kernel, inout.to_mdspan(), forward_twiddles.to_mdspan());
-        neo::fft::execute_radix2_kernel(kernel, inout.to_mdspan(), backward_twiddles.to_mdspan());
+        neo::fft::execute_dit2_kernel(kernel, inout.to_mdspan(), forward_twiddles.to_mdspan());
+        neo::fft::execute_dit2_kernel(kernel, inout.to_mdspan(), backward_twiddles.to_mdspan());
 
         for (auto i{0U}; i < inout.extent(0); ++i) {
             auto const real_batch = inout(i).real();

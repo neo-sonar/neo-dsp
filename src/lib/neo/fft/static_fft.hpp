@@ -4,9 +4,9 @@
 
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
+#include <neo/fft/bitrevorder.hpp>
 #include <neo/fft/direction.hpp>
 #include <neo/fft/kernel/radix2.hpp>
-#include <neo/fft/reorder.hpp>
 #include <neo/fft/twiddle.hpp>
 
 #include <cassert>
@@ -86,7 +86,7 @@ struct static_fft_plan
         requires std::same_as<typename InOutVec::value_type, Complex>
     auto operator()(InOutVec x, direction dir) noexcept -> void
     {
-        bitrevorder(x, _rev);
+        _reorder(x);
 
         if (dir == direction::forward) {
             detail::static_dit2_stage<Complex, Order, 0>{}(x, _wf.to_mdspan());
@@ -96,7 +96,7 @@ struct static_fft_plan
     }
 
 private:
-    std::vector<std::size_t> _rev{make_bitrevorder_table(size())};
+    bitrevorder_plan _reorder{order()};
     stdex::mdarray<Complex, stdex::extents<std::size_t, size() / 2>> _wf{
         make_radix2_twiddles<Complex, size()>(direction::forward),
     };

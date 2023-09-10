@@ -1,6 +1,7 @@
 #pragma once
 
 #include <neo/container/mdspan.hpp>
+#include <neo/fft/bitrevorder.hpp>
 #include <neo/fft/conjugate_view.hpp>
 #include <neo/fft/direction.hpp>
 #include <neo/fft/fft.hpp>
@@ -13,28 +14,6 @@
 namespace neo::fft::experimental {
 
 namespace detail {
-
-template<inout_vector Vec>
-    requires(std::floating_point<typename Vec::value_type>)
-constexpr auto bitrevorder(Vec x) -> void
-{
-    auto const nn = static_cast<int>(x.extent(0));
-    auto const n  = nn / 2;
-
-    auto j = 1;
-    for (auto i{1}; i < nn; i += 2) {
-        if (j > i) {
-            std::swap(x[j - 1], x[i - 1]);
-            std::swap(x[j], x[i]);
-        }
-        auto m = n;
-        while (m >= 2 && j > m) {
-            j -= m;
-            m >>= 1;
-        }
-        j += m;
-    }
-}
 
 template<neo::inout_vector Vec>
     requires(std::floating_point<typename Vec::value_type>)
@@ -111,9 +90,6 @@ struct rfft_plan
 
         if (dir == direction::forward) {
             detail::fft(x, direction::forward);
-            // detail::bitrevorder(x);
-            // detail::bitrevorder(x, _index_table);
-            // kernel::c2c_dit2_v1{}(x, _twiddles.to_mdspan());
         }
 
         auto wtemp     = std::sin(Float(0.5) * theta);
@@ -151,15 +127,11 @@ struct rfft_plan
             x[0] = c1 * (h1r + x[1]);
             x[1] = c1 * (h1r - x[1]);
             detail::fft(x, direction::backward);
-            // detail::bitrevorder(x);
-            // detail::bitrevorder(x, _index_table);
-            // kernel::c2c_dit2_v1{}(x, conjugate_view{_twiddles.to_mdspan()});
         }
     }
 
 private:
     size_type _order;
-    // std::vector<size_type> _index_table{make_bitrevorder_table(size() / 2U)};
     stdex::mdarray<std::complex<Float>, stdex::dextents<size_type, 1>> _twiddles{
         make_radix2_twiddles<std::complex<Float>>(size() / 2U, direction::forward),
     };
