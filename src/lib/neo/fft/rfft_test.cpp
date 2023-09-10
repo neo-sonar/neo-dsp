@@ -3,6 +3,7 @@
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/scale.hpp>
 #include <neo/complex.hpp>
+#include <neo/fft/experimental/rfft.hpp>
 #include <neo/fft/fft.hpp>
 #include <neo/testing/testing.hpp>
 
@@ -119,4 +120,20 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: extract_two_real_dfts", "", (std::complex, 
 
     REQUIRE(neo::allclose(a_rev.to_mdspan(), ca.to_mdspan()));
     REQUIRE(neo::allclose(b_rev.to_mdspan(), cb.to_mdspan()));
+}
+
+TEST_CASE("neo/fft: experimental::rfft")
+{
+    using namespace neo::fft::experimental;
+
+    auto const order = GENERATE(as<std::size_t>{}, 1, 2, 3, 4, 5, 6, 7, 8);
+    auto const size  = std::size_t(1) << order;
+
+    auto buffer = std::vector(size, 0.0F);
+    buffer[0]   = 1.0F;
+
+    rfft(buffer, 1);
+    rfft(buffer, -1);
+
+    REQUIRE(buffer[0] == Catch::Approx(1.0 * double(size / 2UL)));
 }

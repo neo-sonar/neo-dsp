@@ -15,3 +15,5 @@
 #if defined(NEO_PLATFORM_APPLE)
     #include <neo/fft/external/accelerate.hpp>
 #endif
+
+#include <neo/fft/experimental/rfft.hpp>

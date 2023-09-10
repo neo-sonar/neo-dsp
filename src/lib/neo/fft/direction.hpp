@@ -2,10 +2,10 @@
 
 namespace neo::fft {
 
-enum struct direction
+enum struct direction : int
 {
-    forward,
-    backward,
+    forward  = -1,
+    backward = 1,
 };
 
 }  // namespace neo::fft
