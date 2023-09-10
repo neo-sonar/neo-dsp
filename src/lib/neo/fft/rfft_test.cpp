@@ -120,16 +120,18 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: extract_two_real_dfts", "", (std::complex, 
     REQUIRE(neo::allclose(b_rev.to_mdspan(), cb.to_mdspan()));
 }
 
-TEMPLATE_TEST_CASE("neo/fft: experimental::rfft", "", float, double)
+TEMPLATE_TEST_CASE("neo/fft: experimental::rfft_plan", "", float, double)
 {
     using Float = TestType;
-    using namespace neo::fft::experimental;
 
     auto const order = GENERATE(as<std::size_t>{}, 1, 2, 3, 4, 5, 6, 7, 8);
     auto const size  = std::size_t(1) << order;
-
     CAPTURE(order);
     CAPTURE(size);
+
+    auto plan = neo::fft::experimental::rfft_plan<Float>{order};
+    REQUIRE(plan.order() == order);
+    REQUIRE(plan.size() == size);
 
     SECTION("identity")
     {
@@ -138,7 +140,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::rfft", "", float, double)
         auto buffer = buffer_storage.to_mdspan();
         buffer[0]   = Float(1);
 
-        rfft(buffer, neo::fft::direction::forward);
+        plan(buffer, neo::fft::direction::forward);
         REQUIRE(buffer[0] == Catch::Approx(1.0));
         REQUIRE(buffer[1] == Catch::Approx(1.0));
         for (auto i{2U}; i < buffer.extent(0); i += 2) {
@@ -147,7 +149,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::rfft", "", float, double)
             REQUIRE(buffer[i + 1] == Catch::Approx(0.0));
         }
 
-        rfft(buffer, neo::fft::direction::backward);
+        plan(buffer, neo::fft::direction::backward);
         REQUIRE(buffer[0] == Catch::Approx(1.0 * double(size / 2UL)));
     }
 
@@ -156,8 +158,8 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::rfft", "", float, double)
         auto const signal = neo::generate_noise_signal<Float>(size, Catch::getSeed());
         auto copy         = signal;
 
-        rfft(copy.to_mdspan(), neo::fft::direction::forward);
-        rfft(copy.to_mdspan(), neo::fft::direction::backward);
+        plan(copy.to_mdspan(), neo::fft::direction::forward);
+        plan(copy.to_mdspan(), neo::fft::direction::backward);
 
         for (auto i{0U}; i < signal.extent(0); ++i) {
             CAPTURE(i);

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <neo/container/mdspan.hpp>
+#include <neo/fft/conjugate_view.hpp>
 #include <neo/fft/direction.hpp>
+#include <neo/fft/fft.hpp>
 
 #include <cmath>
 #include <complex>
@@ -9,6 +11,8 @@
 #include <vector>
 
 namespace neo::fft::experimental {
+
+namespace detail {
 
 template<inout_vector Vec>
     requires(std::floating_point<typename Vec::value_type>)
@@ -79,59 +83,86 @@ void fft(Vec x, direction dir)
     }
 }
 
-template<inout_vector Vec>
-auto rfft(Vec x, direction dir) -> void
+}  // namespace detail
+
+template<std::floating_point Float>
+struct rfft_plan
 {
-    using Float = typename Vec::value_type;
+    using value_type = Float;
+    using size_type  = std::size_t;
 
-    auto const n     = x.extent(0);
-    auto const c1    = Float(0.5);
-    auto const c2    = dir == direction::forward ? Float(-0.5) : Float(0.5);
-    auto const theta = [=] {
-        auto const t = static_cast<Float>(std::numbers::pi) / static_cast<Float>(n >> 1);
-        return dir == direction::forward ? t : -t;
-    }();
+    explicit rfft_plan(size_type order) : _order{order} {}
 
-    if (dir == direction::forward) {
-        fft(x, direction::forward);
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
+
+    [[nodiscard]] auto size() const noexcept -> size_type { return size_type(1) << _order; }
+
+    template<inout_vector Vec>
+        requires std::same_as<typename Vec::value_type, Float>
+    auto operator()(Vec x, direction dir) -> void
+    {
+        auto const n     = x.extent(0);
+        auto const c1    = Float(0.5);
+        auto const c2    = dir == direction::forward ? Float(-0.5) : Float(0.5);
+        auto const theta = [=] {
+            auto const t = static_cast<Float>(std::numbers::pi) / static_cast<Float>(n >> 1);
+            return dir == direction::forward ? t : -t;
+        }();
+
+        if (dir == direction::forward) {
+            detail::fft(x, direction::forward);
+            // detail::bit_reverse_permutation(x);
+            // detail::bit_reverse_permutation(x, _index_table);
+            // kernel::c2c_dit2_v1{}(x, _twiddles.to_mdspan());
+        }
+
+        auto wtemp     = std::sin(Float(0.5) * theta);
+        auto const wpr = Float(-2) * wtemp * wtemp;
+        auto const wpi = std::sin(theta);
+        auto wr        = Float(1) + wpr;
+        auto wi        = wpi;
+
+        for (auto i = 1U; i < (n >> 2); i++) {
+            auto const i1 = i + i;
+            auto const i2 = i1 + 1;
+            auto const i3 = n - i1;
+            auto const i4 = i3 + 1;
+
+            auto const h1r = c1 * (x[i1] + x[i3]);
+            auto const h1i = c1 * (x[i2] - x[i4]);
+            auto const h2r = -c2 * (x[i2] + x[i4]);
+            auto const h2i = c2 * (x[i1] - x[i3]);
+
+            x[i1] = h1r + wr * h2r - wi * h2i;
+            x[i2] = h1i + wr * h2i + wi * h2r;
+            x[i3] = h1r - wr * h2r + wi * h2i;
+            x[i4] = -h1i + wr * h2i + wi * h2r;
+
+            auto const tmp = wr;
+            wr             = tmp * wpr - wi * wpi + wr;
+            wi             = wi * wpr + tmp * wpi + wi;
+        }
+
+        auto const h1r = x[0];
+        if (dir == direction::forward) {
+            x[0] = h1r + x[1];
+            x[1] = h1r - x[1];
+        } else {
+            x[0] = c1 * (h1r + x[1]);
+            x[1] = c1 * (h1r - x[1]);
+            detail::fft(x, direction::backward);
+            // detail::bit_reverse_permutation(x);
+            // detail::bit_reverse_permutation(x, _index_table);
+            // kernel::c2c_dit2_v1{}(x, conjugate_view{_twiddles.to_mdspan()});
+        }
     }
 
-    auto wtemp     = std::sin(Float(0.5) * theta);
-    auto const wpr = Float(-2) * wtemp * wtemp;
-    auto const wpi = std::sin(theta);
-    auto wr        = Float(1) + wpr;
-    auto wi        = wpi;
-
-    for (auto i = 1U; i < (n >> 2); i++) {
-        auto const i1 = i + i;
-        auto const i2 = i1 + 1;
-        auto const i3 = n - i1;
-        auto const i4 = i3 + 1;
-
-        auto const h1r = c1 * (x[i1] + x[i3]);
-        auto const h1i = c1 * (x[i2] - x[i4]);
-        auto const h2r = -c2 * (x[i2] + x[i4]);
-        auto const h2i = c2 * (x[i1] - x[i3]);
-
-        x[i1] = h1r + wr * h2r - wi * h2i;
-        x[i2] = h1i + wr * h2i + wi * h2r;
-        x[i3] = h1r - wr * h2r + wi * h2i;
-        x[i4] = -h1i + wr * h2i + wi * h2r;
-
-        auto const tmp = wr;
-        wr             = tmp * wpr - wi * wpi + wr;
-        wi             = wi * wpr + tmp * wpi + wi;
-    }
-
-    auto const h1r = x[0];
-    if (dir == direction::forward) {
-        x[0] = h1r + x[1];
-        x[1] = h1r - x[1];
-    } else {
-        x[0] = c1 * (h1r + x[1]);
-        x[1] = c1 * (h1r - x[1]);
-        fft(x, direction::backward);
-    }
-}
+private:
+    size_type _order;
+    // std::vector<size_type> _index_table{make_bit_reversed_index_table(size() / 2U)};
+    stdex::mdarray<std::complex<Float>, stdex::dextents<size_type, 1>> _twiddles{
+        make_radix2_twiddles<std::complex<Float>>(size() / 2U, direction::forward),
+    };
+};
 
 }  // namespace neo::fft::experimental

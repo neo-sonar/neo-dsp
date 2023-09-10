@@ -2,6 +2,7 @@
 
 #include <neo/config.hpp>
 
+#include <neo/complex/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/math/ilog2.hpp>
 #include <neo/math/ipow.hpp>
@@ -14,7 +15,9 @@ struct c2c_dit2_v1
 {
     c2c_dit2_v1() = default;
 
-    auto operator()(inout_vector auto x, auto const& twiddles) const noexcept -> void
+    template<inout_vector Vec>
+        requires complex<typename Vec::value_type>
+    auto operator()(Vec x, auto const& twiddles) const noexcept -> void
     {
         auto const size  = x.size();
         auto const order = static_cast<std::int32_t>(ilog2(size));
@@ -63,7 +66,9 @@ struct c2c_dit2_v2
 {
     c2c_dit2_v2() = default;
 
-    auto operator()(inout_vector auto x, auto const& twiddles) const noexcept -> void
+    template<inout_vector Vec>
+        requires complex<typename Vec::value_type>
+    auto operator()(Vec x, auto const& twiddles) const noexcept -> void
     {
         auto const size = x.size();
 
@@ -113,7 +118,9 @@ struct c2c_dit2_v3
 {
     c2c_dit2_v3() = default;
 
-    auto operator()(inout_vector auto x, auto const& twiddles) const noexcept -> void
+    template<inout_vector Vec>
+        requires complex<typename Vec::value_type>
+    auto operator()(Vec x, auto const& twiddles) const noexcept -> void
     {
         auto const size  = x.size();
         auto const order = ilog2(size);
