@@ -173,13 +173,11 @@ auto main(int argc, char** argv) -> int
     timeit("fft<complex<float>, v1>", N, fft_bench<fft_plan<std::complex<float>, kernel::c2c_dit2_v1>>{N});
     timeit("fft<complex<float>, v2>", N, fft_bench<fft_plan<std::complex<float>, kernel::c2c_dit2_v2>>{N});
     timeit("fft<complex<float>, v3>", N, fft_bench<fft_plan<std::complex<float>, kernel::c2c_dit2_v3>>{N});
-    timeit("fft<complex<float>, v4>", N, fft_bench<fft_plan<std::complex<float>, kernel::c2c_dit2_v4>>{N});
     std::printf("\n");
 
     timeit("fft<complex64, v1>", N, fft_bench<fft_plan<neo::complex64, kernel::c2c_dit2_v1>>{N});
     timeit("fft<complex64, v2>", N, fft_bench<fft_plan<neo::complex64, kernel::c2c_dit2_v2>>{N});
     timeit("fft<complex64, v3>", N, fft_bench<fft_plan<neo::complex64, kernel::c2c_dit2_v3>>{N});
-    timeit("fft<complex64, v4>", N, fft_bench<fft_plan<neo::complex64, kernel::c2c_dit2_v4>>{N});
     std::printf("\n");
 
 #if defined(NEO_PLATFORM_APPLE)
@@ -192,13 +190,11 @@ auto main(int argc, char** argv) -> int
     timeit("fft<complex<double>, v1>", N, fft_bench<fft_plan<std::complex<double>, kernel::c2c_dit2_v1>>{N});
     timeit("fft<complex<double>, v2>", N, fft_bench<fft_plan<std::complex<double>, kernel::c2c_dit2_v2>>{N});
     timeit("fft<complex<double>, v3>", N, fft_bench<fft_plan<std::complex<double>, kernel::c2c_dit2_v3>>{N});
-    timeit("fft<complex<double>, v4>", N, fft_bench<fft_plan<std::complex<double>, kernel::c2c_dit2_v4>>{N});
     std::printf("\n");
 
     timeit("fft<complex128, v1>", N, fft_bench<fft_plan<neo::complex128, kernel::c2c_dit2_v1>>{N});
     timeit("fft<complex128, v2>", N, fft_bench<fft_plan<neo::complex128, kernel::c2c_dit2_v2>>{N});
     timeit("fft<complex128, v3>", N, fft_bench<fft_plan<neo::complex128, kernel::c2c_dit2_v3>>{N});
-    timeit("fft<complex128, v4>", N, fft_bench<fft_plan<neo::complex128, kernel::c2c_dit2_v4>>{N});
     std::printf("\n");
 
     return EXIT_SUCCESS;

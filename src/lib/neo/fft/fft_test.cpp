@@ -33,9 +33,6 @@ using kernel_v2 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v2>;
 template<typename Complex>
 using kernel_v3 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v3>;
 
-template<typename Complex>
-using kernel_v4 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v4>;
-
 template<typename Plan>
 auto test_fft_plan()
 {
@@ -84,7 +81,7 @@ auto test_fft_plan()
 TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft: fft_plan",
     "",
-    (kernel_v1, kernel_v2, kernel_v3, kernel_v4),
+    (kernel_v1, kernel_v2, kernel_v3),
     (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>)
 )
 {
@@ -180,7 +177,6 @@ TEMPLATE_TEST_CASE("neo/fft: radix2_kernel(simd_batch)", "", neo::pcomplex64x4, 
     test_complex_batch_roundtrip_fft<TestType, neo::fft::kernel::c2c_dit2_v1>();
     test_complex_batch_roundtrip_fft<TestType, neo::fft::kernel::c2c_dit2_v2>();
     test_complex_batch_roundtrip_fft<TestType, neo::fft::kernel::c2c_dit2_v3>();
-    test_complex_batch_roundtrip_fft<TestType, neo::fft::kernel::c2c_dit2_v4>();
 }
 #endif
 
@@ -190,7 +186,6 @@ TEMPLATE_TEST_CASE("neo/fft: radix2_kernel(simd_batch)", "", neo::pcomplex64x8, 
     test_complex_batch_roundtrip_fft<TestType, neo::fft::kernel::c2c_dit2_v1>();
     test_complex_batch_roundtrip_fft<TestType, neo::fft::kernel::c2c_dit2_v2>();
     test_complex_batch_roundtrip_fft<TestType, neo::fft::kernel::c2c_dit2_v3>();
-    test_complex_batch_roundtrip_fft<TestType, neo::fft::kernel::c2c_dit2_v4>();
 }
 #endif
 
@@ -200,7 +195,6 @@ TEMPLATE_TEST_CASE("neo/fft: radix2_kernel(simd_batch)", "", neo::pcomplex64x16,
     test_complex_batch_roundtrip_fft<TestType, neo::fft::kernel::c2c_dit2_v1>();
     test_complex_batch_roundtrip_fft<TestType, neo::fft::kernel::c2c_dit2_v2>();
     test_complex_batch_roundtrip_fft<TestType, neo::fft::kernel::c2c_dit2_v3>();
-    test_complex_batch_roundtrip_fft<TestType, neo::fft::kernel::c2c_dit2_v4>();
 }
 #endif
 
@@ -296,6 +290,5 @@ TEMPLATE_TEST_CASE("neo/fft: radix2_kernel(simd_batch)", "", neo::pcomplex32x8, 
     test(neo::fft::kernel::c2c_dit2_v1{});
     test(neo::fft::kernel::c2c_dit2_v2{});
     test(neo::fft::kernel::c2c_dit2_v3{});
-    test(neo::fft::kernel::c2c_dit2_v4{});
 }
 #endif

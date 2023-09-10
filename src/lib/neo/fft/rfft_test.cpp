@@ -43,12 +43,10 @@ TEMPLATE_PRODUCT_TEST_CASE(
     ((float, kernel::c2c_dit2_v1),
      (float, kernel::c2c_dit2_v2),
      (float, kernel::c2c_dit2_v3),
-     (float, kernel::c2c_dit2_v4),
 
      (double, kernel::c2c_dit2_v1),
      (double, kernel::c2c_dit2_v2),
-     (double, kernel::c2c_dit2_v3),
-     (double, kernel::c2c_dit2_v4))
+     (double, kernel::c2c_dit2_v3))
 )
 {
     using Plan    = typename TestType::plan_type;
