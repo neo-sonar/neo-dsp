@@ -122,18 +122,48 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: extract_two_real_dfts", "", (std::complex, 
     REQUIRE(neo::allclose(b_rev.to_mdspan(), cb.to_mdspan()));
 }
 
-TEST_CASE("neo/fft: experimental::rfft")
+TEMPLATE_TEST_CASE("neo/fft: experimental::rfft", "", float, double)
 {
+    using Float = TestType;
     using namespace neo::fft::experimental;
 
     auto const order = GENERATE(as<std::size_t>{}, 1, 2, 3, 4, 5, 6, 7, 8);
     auto const size  = std::size_t(1) << order;
 
-    auto buffer = std::vector(size, 0.0F);
-    buffer[0]   = 1.0F;
+    CAPTURE(order);
+    CAPTURE(size);
 
-    rfft(buffer, 1);
-    rfft(buffer, -1);
+    SECTION("identity")
+    {
+        auto buffer_storage = stdex::mdarray<Float, stdex::dextents<size_t, 1>>(size);
 
-    REQUIRE(buffer[0] == Catch::Approx(1.0 * double(size / 2UL)));
+        auto buffer = buffer_storage.to_mdspan();
+        buffer[0]   = Float(1);
+
+        rfft(buffer, neo::fft::direction::forward);
+        REQUIRE(buffer[0] == Catch::Approx(1.0));
+        REQUIRE(buffer[1] == Catch::Approx(1.0));
+        for (auto i{2U}; i < buffer.extent(0); i += 2) {
+            CAPTURE(i);
+            REQUIRE(buffer[i] == Catch::Approx(1.0));
+            REQUIRE(buffer[i + 1] == Catch::Approx(0.0));
+        }
+
+        rfft(buffer, neo::fft::direction::backward);
+        REQUIRE(buffer[0] == Catch::Approx(1.0 * double(size / 2UL)));
+    }
+
+    SECTION("random")
+    {
+        auto const signal = neo::generate_noise_signal<Float>(size, Catch::getSeed());
+        auto copy         = signal;
+
+        rfft(copy.to_mdspan(), neo::fft::direction::forward);
+        rfft(copy.to_mdspan(), neo::fft::direction::backward);
+
+        for (auto i{0U}; i < signal.extent(0); ++i) {
+            CAPTURE(i);
+            REQUIRE(copy(i) == Catch::Approx(signal(i) * double(size / 2UL)).scale(double(order)));
+        }
+    }
 }

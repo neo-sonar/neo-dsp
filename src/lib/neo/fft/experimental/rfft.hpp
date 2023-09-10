@@ -10,126 +10,127 @@
 
 namespace neo::fft::experimental {
 
+template<inout_vector Vec>
+    requires(std::floating_point<typename Vec::value_type>)
+constexpr auto bit_reverse_permutation(Vec x) -> void
+{
+    auto const nn = static_cast<int>(x.extent(0));
+    auto const n  = nn / 2;
+
+    auto j = 1;
+    for (auto i{1}; i < nn; i += 2) {
+        if (j > i) {
+            std::swap(x[j - 1], x[i - 1]);
+            std::swap(x[j], x[i]);
+        }
+        auto m = n;
+        while (m >= 2 && j > m) {
+            j -= m;
+            m >>= 1;
+        }
+        j += m;
+    }
+}
+
 template<neo::inout_vector Vec>
     requires(std::floating_point<typename Vec::value_type>)
-void fft(Vec data, int n, int sign)
+void fft(Vec x, direction dir)
 {
     using Float = typename Vec::value_type;
 
-    int nn, mmax, m, istep, i;
-    Float wtemp, wr, wpr, wpi, wi, theta;
+    auto const nn   = static_cast<int>(x.extent(0));
+    auto const sign = dir == direction::forward ? Float(1) : Float(-1);
 
-    nn = n << 1;
+    bit_reverse_permutation(x);
 
-    {
-        auto j = 1;
-        for (i = 1; i < nn; i += 2) {
-            if (j > i) {
-                std::swap(data[j - 1], data[i - 1]);
-                std::swap(data[j], data[i]);
-            }
-            m = n;
-            while (m >= 2 && j > m) {
-                j -= m;
-                m >>= 1;
-            }
-            j += m;
-        }
-    }
-
-    mmax = 2;
+    auto mmax = 2;
     while (nn > mmax) {
-        istep = mmax << 1;
-        theta = Float(sign) * (Float(6.28318530717959) / Float(mmax));
-        wtemp = std::sin(Float(0.5) * theta);
-        wpr   = Float(-2) * wtemp * wtemp;
-        wpi   = std::sin(theta);
-        wr    = Float(1);
-        wi    = Float(0);
-        for (m = 1; m < mmax; m += 2) {
-            for (i = m; i <= nn; i += istep) {
+        auto const step  = mmax << 1;
+        auto const theta = sign * (Float(6.28318530717959) / Float(mmax));
+
+        auto wtemp = std::sin(Float(0.5) * theta);
+        auto wpr   = Float(-2) * wtemp * wtemp;
+        auto wpi   = std::sin(theta);
+        auto wr    = Float(1);
+        auto wi    = Float(0);
+
+        for (auto m{1}; m < mmax; m += 2) {
+            for (auto i{m}; i <= nn; i += step) {
                 auto const j   = i + mmax;
                 auto const jn1 = j - 1;
                 auto const in1 = i - 1;
 
-                auto const tempr = wr * data[jn1] - wi * data[j];
-                auto const tempi = wr * data[j] + wi * data[jn1];
+                auto const tempr = wr * x[jn1] - wi * x[j];
+                auto const tempi = wr * x[j] + wi * x[jn1];
 
-                data[jn1] = data[in1] - tempr;
-                data[j]   = data[i] - tempi;
+                x[jn1] = x[in1] - tempr;
+                x[j]   = x[i] - tempi;
 
-                data[in1] += tempr;
-                data[i] += tempi;
+                x[in1] += tempr;
+                x[i] += tempi;
             }
 
-            wr = (wtemp = wr) * wpr - wi * wpi + wr;
-            wi = wi * wpr + wtemp * wpi + wi;
+            wtemp = wr;
+            wr    = wtemp * wpr - wi * wpi + wr;
+            wi    = wi * wpr + wtemp * wpi + wi;
         }
-        mmax = istep;
+
+        mmax = step;
     }
 }
 
-template<std::floating_point Float>
-inline void fft(std::vector<Float>& data, int sign)
+template<inout_vector Vec>
+auto rfft(Vec x, direction dir) -> void
 {
-    auto const x = stdex::mdspan{&data[0], stdex::extents{data.size()}};
-    fft(x, static_cast<int>(data.size() / 2), sign);
-}
+    using Float = typename Vec::value_type;
 
-template<std::floating_point Float>
-inline void rfft(std::vector<Float>& data, int sign)
-{
-    auto const n  = data.size();
-    auto const c1 = Float(0.5);
-    auto const c2 = sign == 1 ? Float(-0.5) : Float(0.5);
+    auto const n     = x.extent(0);
+    auto const c1    = Float(0.5);
+    auto const c2    = dir == direction::forward ? Float(-0.5) : Float(0.5);
+    auto const theta = [=] {
+        auto const t = static_cast<Float>(std::numbers::pi) / static_cast<Float>(n >> 1);
+        return dir == direction::forward ? t : -t;
+    }();
 
-    Float h1r;
-    Float h1i;
-    Float h2r;
-    Float h2i;
-    Float wr;
-    Float wi;
-    Float wtemp;
-    Float theta = Float(std::numbers::pi) / static_cast<Float>(n >> 1);
-
-    if (sign == 1) {
-        fft(data, 1);
-    } else {
-        theta = -theta;
+    if (dir == direction::forward) {
+        fft(x, direction::forward);
     }
 
-    wtemp          = std::sin(Float(0.5) * theta);
+    auto wtemp     = std::sin(Float(0.5) * theta);
     auto const wpr = Float(-2) * wtemp * wtemp;
     auto const wpi = std::sin(theta);
-    wr             = Float(1) + wpr;
-    wi             = wpi;
+    auto wr        = Float(1) + wpr;
+    auto wi        = wpi;
 
     for (auto i = 1U; i < (n >> 2); i++) {
         auto const i1 = i + i;
-        auto const i2 = 1 + i1;
+        auto const i2 = i1 + 1;
         auto const i3 = n - i1;
-        auto const i4 = 1 + i3;
+        auto const i4 = i3 + 1;
 
-        h1r = c1 * (data[i1] + data[i3]);
-        h1i = c1 * (data[i2] - data[i4]);
-        h2r = -c2 * (data[i2] + data[i4]);
-        h2i = c2 * (data[i1] - data[i3]);
+        auto const h1r = c1 * (x[i1] + x[i3]);
+        auto const h1i = c1 * (x[i2] - x[i4]);
+        auto const h2r = -c2 * (x[i2] + x[i4]);
+        auto const h2i = c2 * (x[i1] - x[i3]);
 
-        data[i1] = h1r + wr * h2r - wi * h2i;
-        data[i2] = h1i + wr * h2i + wi * h2r;
-        data[i3] = h1r - wr * h2r + wi * h2i;
-        data[i4] = -h1i + wr * h2i + wi * h2r;
+        x[i1] = h1r + wr * h2r - wi * h2i;
+        x[i2] = h1i + wr * h2i + wi * h2r;
+        x[i3] = h1r - wr * h2r + wi * h2i;
+        x[i4] = -h1i + wr * h2i + wi * h2r;
 
-        wr = (wtemp = wr) * wpr - wi * wpi + wr;
-        wi = wi * wpr + wtemp * wpi + wi;
+        auto const tmp = wr;
+        wr             = tmp * wpr - wi * wpi + wr;
+        wi             = wi * wpr + tmp * wpi + wi;
     }
-    if (sign == 1) {
-        data[0] = (h1r = data[0]) + data[1];
-        data[1] = h1r - data[1];
+
+    auto const h1r = x[0];
+    if (dir == direction::forward) {
+        x[0] = h1r + x[1];
+        x[1] = h1r - x[1];
     } else {
-        data[0] = c1 * ((h1r = data[0]) + data[1]);
-        data[1] = c1 * (h1r - data[1]);
-        fft(data, -1);
+        x[0] = c1 * (h1r + x[1]);
+        x[1] = c1 * (h1r - x[1]);
+        fft(x, direction::backward);
     }
 }
 
