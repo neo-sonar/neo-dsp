@@ -86,7 +86,7 @@ struct static_fft_plan
         requires std::same_as<typename InOutVec::value_type, Complex>
     auto operator()(InOutVec x, direction dir) noexcept -> void
     {
-        bit_reverse_permutation(x, _rev);
+        bitrevorder(x, _rev);
 
         if (dir == direction::forward) {
             detail::static_dit2_stage<Complex, Order, 0>{}(x, _wf.to_mdspan());
@@ -96,7 +96,7 @@ struct static_fft_plan
     }
 
 private:
-    std::vector<std::size_t> _rev{make_bit_reversed_index_table(size())};
+    std::vector<std::size_t> _rev{make_bitrevorder_table(size())};
     stdex::mdarray<Complex, stdex::extents<std::size_t, size() / 2>> _wf{
         make_radix2_twiddles<Complex, size()>(direction::forward),
     };

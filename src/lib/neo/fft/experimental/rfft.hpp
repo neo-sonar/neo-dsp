@@ -16,7 +16,7 @@ namespace detail {
 
 template<inout_vector Vec>
     requires(std::floating_point<typename Vec::value_type>)
-constexpr auto bit_reverse_permutation(Vec x) -> void
+constexpr auto bitrevorder(Vec x) -> void
 {
     auto const nn = static_cast<int>(x.extent(0));
     auto const n  = nn / 2;
@@ -45,7 +45,7 @@ void fft(Vec x, direction dir)
     auto const nn   = static_cast<int>(x.extent(0));
     auto const sign = dir == direction::forward ? Float(1) : Float(-1);
 
-    bit_reverse_permutation(x);
+    bitrevorder(x);
 
     auto mmax = 2;
     while (nn > mmax) {
@@ -111,8 +111,8 @@ struct rfft_plan
 
         if (dir == direction::forward) {
             detail::fft(x, direction::forward);
-            // detail::bit_reverse_permutation(x);
-            // detail::bit_reverse_permutation(x, _index_table);
+            // detail::bitrevorder(x);
+            // detail::bitrevorder(x, _index_table);
             // kernel::c2c_dit2_v1{}(x, _twiddles.to_mdspan());
         }
 
@@ -151,15 +151,15 @@ struct rfft_plan
             x[0] = c1 * (h1r + x[1]);
             x[1] = c1 * (h1r - x[1]);
             detail::fft(x, direction::backward);
-            // detail::bit_reverse_permutation(x);
-            // detail::bit_reverse_permutation(x, _index_table);
+            // detail::bitrevorder(x);
+            // detail::bitrevorder(x, _index_table);
             // kernel::c2c_dit2_v1{}(x, conjugate_view{_twiddles.to_mdspan()});
         }
     }
 
 private:
     size_type _order;
-    // std::vector<size_type> _index_table{make_bit_reversed_index_table(size() / 2U)};
+    // std::vector<size_type> _index_table{make_bitrevorder_table(size() / 2U)};
     stdex::mdarray<std::complex<Float>, stdex::dextents<size_type, 1>> _twiddles{
         make_radix2_twiddles<std::complex<Float>>(size() / 2U, direction::forward),
     };

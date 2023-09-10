@@ -61,7 +61,7 @@ private:
     size_type _order;
     size_type _size{1ULL << _order};
     direction _default_direction;
-    std::vector<size_type> _index_table{make_bit_reversed_index_table(_size)};
+    std::vector<size_type> _index_table{make_bitrevorder_table(_size)};
     stdex::mdarray<Complex, stdex::dextents<size_type, 1>> _twiddles{
         make_radix2_twiddles<Complex>(_size, _default_direction),
     };
@@ -92,7 +92,7 @@ auto fft_plan<Complex, Kernel>::operator()(InOutVec vec, direction dir) noexcept
 {
     assert(std::cmp_equal(vec.size(), _size));
 
-    bit_reverse_permutation(vec, _index_table);
+    bitrevorder(vec, _index_table);
 
     if (auto const kernel = Kernel{}; dir == _default_direction) {
         kernel(vec, _twiddles.to_mdspan());
@@ -102,7 +102,7 @@ auto fft_plan<Complex, Kernel>::operator()(InOutVec vec, direction dir) noexcept
 }
 
 inline constexpr auto execute_radix2_kernel = [](auto kernel, inout_vector auto x, auto const& twiddles) -> void {
-    bit_reverse_permutation(x);
+    bitrevorder(x);
     kernel(x, twiddles);
 };
 

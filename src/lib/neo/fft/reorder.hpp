@@ -10,7 +10,7 @@
 
 namespace neo::fft {
 
-[[nodiscard]] inline auto make_bit_reversed_index_table(std::size_t size) -> std::vector<std::size_t>
+[[nodiscard]] inline auto make_bitrevorder_table(std::size_t size) -> std::vector<std::size_t>
 {
     auto const order = ilog2(size);
     auto table       = std::vector<std::size_t>(size, 0);
@@ -23,7 +23,7 @@ namespace neo::fft {
 }
 
 template<inout_vector InOutVec>
-constexpr auto bit_reverse_permutation(InOutVec x) -> void
+constexpr auto bitrevorder(InOutVec x) -> void
 {
     // Rearrange the input in bit-reversed order
     std::size_t j = 0;
@@ -41,7 +41,7 @@ constexpr auto bit_reverse_permutation(InOutVec x) -> void
 }
 
 template<inout_vector InOutVec, typename IndexTable>
-auto bit_reverse_permutation(InOutVec x, IndexTable const& index) -> void
+auto bitrevorder(InOutVec x, IndexTable const& index) -> void
 {
     for (auto i{0U}; i < x.extent(0); ++i) {
         if (i < index[i]) {

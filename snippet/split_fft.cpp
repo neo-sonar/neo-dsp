@@ -125,7 +125,7 @@ inline auto make_radix2_twiddles(std::size_t size, direction dir = direction::fo
 }
 
 template<typename ElementType, typename IndexTable>
-auto bit_reverse_permutation(std::span<ElementType> x, IndexTable const& index) -> void
+auto bitrevorder(std::span<ElementType> x, IndexTable const& index) -> void
 {
     for (auto i{0U}; i < x.size(); ++i) {
         if (i < index[i]) {
@@ -135,7 +135,7 @@ auto bit_reverse_permutation(std::span<ElementType> x, IndexTable const& index) 
 }
 
 template<typename ElementType, typename IndexTable>
-auto bit_reverse_permutation(std::span<ElementType> xre, std::span<ElementType> xim, IndexTable const& index) -> void
+auto bitrevorder(std::span<ElementType> xre, std::span<ElementType> xim, IndexTable const& index) -> void
 {
     for (auto i{0U}; i < xre.size(); ++i) {
         if (i < index[i]) {
@@ -145,7 +145,7 @@ auto bit_reverse_permutation(std::span<ElementType> xre, std::span<ElementType> 
     }
 }
 
-[[nodiscard]] inline auto make_bit_reversed_index_table(std::size_t size) -> std::vector<std::size_t>
+[[nodiscard]] inline auto make_bitrevorder_table(std::size_t size) -> std::vector<std::size_t>
 {
     auto const order = ilog2(size);
     auto table       = std::vector<std::size_t>(size, 0);
@@ -220,7 +220,7 @@ struct static_fft_plan
 
     auto operator()(std::span<std::complex<float>> x, direction dir) -> void
     {
-        bit_reverse_permutation(x, _rev);
+        bitrevorder(x, _rev);
 
         if (dir == direction::forward) {
             static_dit2_stage<Order, 0>{}(x.data(), _wf.data());
@@ -232,7 +232,7 @@ struct static_fft_plan
 private:
     std::vector<std::complex<float>> _wf{make_radix2_twiddles(size_t(size()), direction::forward)};
     std::vector<std::complex<float>> _wb{make_radix2_twiddles(size_t(size()), direction::backward)};
-    std::vector<std::size_t> _rev{make_bit_reversed_index_table(size_t(size()))};
+    std::vector<std::size_t> _rev{make_bitrevorder_table(size_t(size()))};
 };
 
 template<int Order, int Stage>
@@ -340,7 +340,7 @@ struct static_split_fft_plan
 
     auto operator()(std::span<float> xre, std::span<float> xim, direction dir) -> void
     {
-        bit_reverse_permutation(xre, xim, _rev);
+        bitrevorder(xre, xim, _rev);
 
         if (dir == direction::forward) {
             split_fft_radix2_dit<Order, 0>{}(xre.data(), xim.data(), _wfre.data(), _wfim.data());
@@ -354,7 +354,7 @@ private:
     std::vector<float> _wfim;
     std::vector<float> _wbre;
     std::vector<float> _wbim;
-    std::vector<std::size_t> _rev{make_bit_reversed_index_table(size_t(size()))};
+    std::vector<std::size_t> _rev{make_bitrevorder_table(size_t(size()))};
 };
 
 template<int Order>
