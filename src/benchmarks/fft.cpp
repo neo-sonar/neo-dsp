@@ -81,6 +81,33 @@ private:
     stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _buffer;
 };
 
+template<typename Plan>
+struct fftr_bench
+{
+    using real_type = typename Plan::value_type;
+
+    explicit fftr_bench(size_t size)
+        : _plan{neo::ilog2(size)}
+        , _buffer(neo::generate_noise_signal<real_type>(_plan.size() * 2U, std::random_device{}()))
+    {}
+
+    auto operator()() -> void
+    {
+        auto const buffer = _buffer.to_mdspan();
+
+        neo::fft::fft(_plan, buffer);
+        neo::fft::ifft(_plan, buffer);
+        neo::scale(real_type(1) / static_cast<real_type>(_plan.size()), buffer);
+
+        neo::do_not_optimize(buffer[0]);
+        neo::do_not_optimize(buffer[buffer.extent(0) - 1]);
+    }
+
+private:
+    Plan _plan;
+    stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _buffer;
+};
+
 #if defined(NEO_PLATFORM_APPLE)
 
 template<std::floating_point Float>
@@ -180,6 +207,9 @@ auto main(int argc, char** argv) -> int
     timeit("fft<complex64, v3>", N, fft_bench<fft_plan<neo::complex64, kernel::c2c_dit2_v3>>{N});
     std::printf("\n");
 
+    timeit("fftr<float>", N, fftr_bench<experimental::fft_plan<float>>{N});
+    std::printf("\n");
+
 #if defined(NEO_PLATFORM_APPLE)
     timeit("apple_vdsp_parallel<double> ", N, vdsp_fft_bench<double>{N});
     timeit("apple_vdsp<complex<double>> ", N, fft_bench<fft_apple_vdsp_plan<std::complex<double>>>{N});
@@ -195,6 +225,9 @@ auto main(int argc, char** argv) -> int
     timeit("fft<complex128, v1>", N, fft_bench<fft_plan<neo::complex128, kernel::c2c_dit2_v1>>{N});
     timeit("fft<complex128, v2>", N, fft_bench<fft_plan<neo::complex128, kernel::c2c_dit2_v2>>{N});
     timeit("fft<complex128, v3>", N, fft_bench<fft_plan<neo::complex128, kernel::c2c_dit2_v3>>{N});
+    std::printf("\n");
+
+    timeit("fftr<double>", N, fftr_bench<experimental::fft_plan<double>>{N});
     std::printf("\n");
 
     return EXIT_SUCCESS;
