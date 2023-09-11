@@ -26,10 +26,39 @@ struct c2c_kernel
         auto const size  = static_cast<int>(x.extent(0) / 2);
         auto const order = static_cast<int>(ilog2(size));
 
-        auto stage_length = 1;
-        auto stride       = 2;
+        {
+            // stage 0
+            static constexpr auto const stage_length = 1;  // ipow<2>(0)
+            static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
 
-        for (auto stage{0}; stage < order; ++stage) {
+            for (auto k{0}; k < static_cast<int>(size); k += stride) {
+                auto const i1 = k;
+                auto const i2 = k + stage_length;
+
+                auto const i1re = i1 * 2;
+                auto const i1im = i1re + 1;
+
+                auto const i2re = i2 * 2;
+                auto const i2im = i2re + 1;
+
+                auto const x1 = std::complex{x[i1re], x[i1im]};
+                auto const x2 = std::complex{x[i2re], x[i2im]};
+
+                auto const xn1 = x1 + x2;
+                auto const xn2 = x1 - x2;
+
+                x[i1re] = xn1.real();
+                x[i1im] = xn1.imag();
+
+                x[i2re] = xn2.real();
+                x[i2im] = xn2.imag();
+            }
+        }
+
+        auto stage_length = 2;
+        auto stride       = 4;
+
+        for (auto stage{1}; stage < order; ++stage) {
             auto const tw_stride = ipow<2>(order - stage - 1);
 
             for (auto k{0}; k < size; k += stride) {

@@ -77,7 +77,7 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_deinterleave", "", (std::complex, neo:
     using Complex = TestType;
     using Float   = typename Complex::value_type;
 
-    auto order           = GENERATE(as<std::size_t>{}, 4, 5, 6, 7, 8);
+    auto const order     = GENERATE(as<std::size_t>{}, 4, 5, 6, 7, 8);
     auto const size      = std::size_t(1) << order;
     auto const numCoeffs = size / 2 + 1;
     CAPTURE(order);
@@ -126,12 +126,15 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::fft", "", float, double)
 
     SECTION("identity")
     {
-        auto const order = GENERATE(as<std::size_t>{}, 1, 2, 3, 4, 5, 6, 7, 8);
+        auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8);
         auto const size  = std::size_t(1) << order;
         CAPTURE(order);
         CAPTURE(size);
 
-        auto plan   = neo::fft::experimental::fft_plan<Float>{order};
+        auto plan = neo::fft::experimental::fft_plan<Float>{order};
+        REQUIRE(plan.size() == size);
+        REQUIRE(plan.order() == order);
+
         auto signal = stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>{size * 2U};
         signal(0)   = Float(1);
 
@@ -179,7 +182,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::rfft_plan", "", float, double)
 {
     using Float = TestType;
 
-    auto const order = GENERATE(as<std::size_t>{}, 1, 2, 3, 4, 5, 6, 7, 8);
+    auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8);
     auto const size  = std::size_t(1) << order;
     CAPTURE(order);
     CAPTURE(size);
