@@ -56,12 +56,12 @@ auto timeit(std::string_view name, size_t N, Func func)
 template<typename Plan>
 struct fft_bench
 {
-    using complex_type = typename Plan::complex_type;
-    using real_type    = typename complex_type::value_type;
+    using value_type = typename Plan::value_type;
+    using real_type  = typename value_type::value_type;
 
     explicit fft_bench(size_t size)
         : _plan{neo::ilog2(size)}
-        , _buffer(neo::generate_noise_signal<complex_type>(_plan.size(), std::random_device{}()))
+        , _buffer(neo::generate_noise_signal<value_type>(_plan.size(), std::random_device{}()))
     {}
 
     auto operator()() -> void
@@ -78,7 +78,7 @@ struct fft_bench
 
 private:
     Plan _plan;
-    stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _buffer;
+    stdex::mdarray<value_type, stdex::dextents<size_t, 1>> _buffer;
 };
 
 template<typename Plan>

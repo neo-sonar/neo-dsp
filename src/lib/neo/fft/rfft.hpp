@@ -9,7 +9,7 @@ template<typename Float, typename ComplexPlan = fft_plan<std::complex<Float>>>
 struct rfft_plan
 {
     using complex_plan_type = ComplexPlan;
-    using complex_type      = typename ComplexPlan::complex_type;
+    using complex_type      = typename ComplexPlan::value_type;
     using size_type         = typename ComplexPlan::size_type;
     using real_type         = Float;
 

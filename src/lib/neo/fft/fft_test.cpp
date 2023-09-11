@@ -36,7 +36,7 @@ using kernel_v3 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v3>;
 template<typename Plan>
 auto test_fft_plan()
 {
-    using Complex = typename Plan::complex_type;
+    using Complex = typename Plan::value_type;
     using Float   = typename Complex::value_type;
 
     auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);

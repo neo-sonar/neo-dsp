@@ -18,7 +18,7 @@ template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
 struct fft_apple_vdsp_plan
 {
-    using complex_type       = Complex;
+    using value_type         = Complex;
     using real_type          = typename Complex::value_type;
     using size_type          = std::size_t;
     using native_handle_type = std::conditional_t<std::same_as<real_type, float>, FFTSetup, FFTSetupD>;

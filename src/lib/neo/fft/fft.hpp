@@ -45,9 +45,8 @@ constexpr auto ifft(Plan& plan, InVec input, OutVec output) -> void
 template<typename Complex, typename Kernel = kernel::c2c_dit2_v3>
 struct fft_plan
 {
-    using complex_type = Complex;
-    using value_type   = Complex;
-    using size_type    = std::size_t;
+    using value_type = Complex;
+    using size_type  = std::size_t;
 
     explicit fft_plan(size_type order, direction default_direction = direction::forward);
 
