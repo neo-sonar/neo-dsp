@@ -120,6 +120,62 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: extract_two_real_dfts", "", (std::complex, 
     REQUIRE(neo::allclose(b_rev.to_mdspan(), cb.to_mdspan()));
 }
 
+TEMPLATE_TEST_CASE("neo/fft: experimental::fft", "", float, double)
+{
+    using Float = TestType;
+
+    SECTION("identity")
+    {
+        auto const order = GENERATE(as<std::size_t>{}, 1, 2, 3, 4, 5, 6, 7, 8);
+        auto const size  = std::size_t(1) << order;
+        CAPTURE(order);
+        CAPTURE(size);
+
+        auto signal = stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>{size * 2U};
+        signal(0)   = Float(1);
+
+        // fft
+        neo::fft::experimental::detail::fft(signal.to_mdspan(), neo::fft::direction::forward);
+        for (auto i{0U}; i < size; ++i) {
+            auto const ire = i * 2U;
+            auto const iim = ire + 1;
+
+            REQUIRE(signal(ire) == Catch::Approx(1.0));
+            REQUIRE(signal(iim) == Catch::Approx(0.0));
+        }
+
+        // ifft
+        neo::fft::experimental::detail::fft(signal.to_mdspan(), neo::fft::direction::forward);
+        REQUIRE(signal(0) == Catch::Approx(1.0 * double(size)));
+        REQUIRE(signal(1) == Catch::Approx(0.0));
+
+        for (auto i{1U}; i < size; ++i) {
+            auto const ire = i * 2U;
+            auto const iim = ire + 1;
+
+            REQUIRE(signal(ire) == Catch::Approx(0.0));
+            REQUIRE(signal(iim) == Catch::Approx(0.0));
+        }
+    }
+
+    SECTION("example")
+    {
+        auto const input    = std::array<Float, 8>{1, 0, 2, 0, 3, 0, 4, 0};
+        auto const expected = std::array<Float, 8>{10, 0, -2, 2, -2, 0, -2, -2};
+
+        auto x = input;
+        neo::fft::experimental::detail::fft(
+            stdex::mdspan{x.data(), stdex::extents{x.size()}},
+            neo::fft::direction::forward
+        );
+
+        for (auto i{0U}; i < expected.size(); ++i) {
+            CAPTURE(i);
+            REQUIRE(x[i] == Catch::Approx(expected[i]));
+        }
+    }
+}
+
 TEMPLATE_TEST_CASE("neo/fft: experimental::rfft_plan", "", float, double)
 {
     using Float = TestType;

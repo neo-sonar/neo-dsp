@@ -22,7 +22,7 @@ void fft(Vec x, direction dir)
     using Float = typename Vec::value_type;
 
     auto const nn   = static_cast<int>(x.extent(0));
-    auto const sign = dir == direction::forward ? Float(1) : Float(-1);
+    auto const sign = dir == direction::forward ? Float(-1) : Float(1);
 
     bitrevorder(x);
 
@@ -132,9 +132,6 @@ struct rfft_plan
 
 private:
     size_type _order;
-    stdex::mdarray<std::complex<Float>, stdex::dextents<size_type, 1>> _twiddles{
-        make_radix2_twiddles<std::complex<Float>>(size() / 2U, direction::forward),
-    };
 };
 
 }  // namespace neo::fft::experimental
