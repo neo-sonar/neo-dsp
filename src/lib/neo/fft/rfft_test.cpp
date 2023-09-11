@@ -72,7 +72,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     REQUIRE(neo::allclose(stdex::mdspan{original.data(), stdex::extents{original.size()}}, real));
 }
 
-TEMPLATE_PRODUCT_TEST_CASE("neo/fft: extract_two_real_dfts", "", (std::complex, neo::scalar_complex), (float, double))
+TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_deinterleave", "", (std::complex, neo::scalar_complex), (float, double))
 {
     using Complex = TestType;
     using Float   = typename Complex::value_type;
@@ -114,7 +114,7 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: extract_two_real_dfts", "", (std::complex, 
 
     auto ca = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{numCoeffs};
     auto cb = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{numCoeffs};
-    neo::fft::extract_two_real_dfts(inout.to_mdspan(), ca.to_mdspan(), cb.to_mdspan());
+    neo::fft::rfft_deinterleave(inout.to_mdspan(), ca.to_mdspan(), cb.to_mdspan());
 
     REQUIRE(neo::allclose(a_rev.to_mdspan(), ca.to_mdspan()));
     REQUIRE(neo::allclose(b_rev.to_mdspan(), cb.to_mdspan()));

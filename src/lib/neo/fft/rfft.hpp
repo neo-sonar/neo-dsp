@@ -60,9 +60,8 @@ private:
 };
 
 template<in_vector InVec, out_vector OutVecA, out_vector OutVecB>
-auto extract_two_real_dfts(InVec dft, OutVecA a, OutVecB b) -> void
+auto rfft_deinterleave(InVec dft, OutVecA a, OutVecB b) -> void
 {
-    using std::conj;
     using Complex = typename InVec::value_type;
     using Float   = typename Complex::value_type;
 
@@ -73,6 +72,7 @@ auto extract_two_real_dfts(InVec dft, OutVecA a, OutVecB b) -> void
     b[0] = dft[0].imag();
 
     for (auto k{1U}; k < n / 2 + 1; ++k) {
+        using std::conj;
         a[k] = (dft[k] + conj(dft[n - k])) * Float(0.5);
         b[k] = (i * (dft[k] - conj(dft[n - k]))) * Float(0.5);
     }
