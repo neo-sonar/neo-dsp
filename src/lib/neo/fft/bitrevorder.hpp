@@ -15,11 +15,31 @@ struct bitrevorder_plan
 {
     explicit bitrevorder_plan(std::size_t order) : _table{make(std::size_t(1) << order)} {}
 
-    auto operator()(inout_vector auto x) -> void
+    template<inout_vector Vec>
+        requires complex<typename Vec::value_type>
+    auto operator()(Vec x) -> void
     {
-        for (auto i{0U}; i < x.extent(0); ++i) {
+        for (auto i{0U}; i < _table.size(); ++i) {
             if (i < _table[i]) {
                 std::swap(x[i], x[_table[i]]);
+            }
+        }
+    }
+
+    template<inout_vector Vec>
+        requires std::floating_point<typename Vec::value_type>
+    auto operator()(Vec x) -> void
+    {
+        for (auto i{0U}; i < _table.size(); ++i) {
+            if (i < _table[i]) {
+                auto const src_re = i * 2U;
+                auto const src_im = src_re + 1U;
+
+                auto const dest_re = _table[i] * 2U;
+                auto const dest_im = dest_re + 1U;
+
+                std::swap(x[src_re], x[dest_re]);
+                std::swap(x[src_im], x[dest_im]);
             }
         }
     }

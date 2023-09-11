@@ -116,7 +116,7 @@ struct fft_plan
     {
         assert(std::cmp_equal(x.extent(0) / 2U, size()));
 
-        bitrevorder(x);
+        _rev(x);
 
         if (dir == direction::forward) {
             detail::c2c_kernel{}(x, _w.to_mdspan());
@@ -127,6 +127,7 @@ struct fft_plan
 
 private:
     size_type _order;
+    bitrevorder_plan _rev{_order};
     stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>> _w;
 };
 
