@@ -41,17 +41,17 @@ struct c2c_kernel
                 auto const i2re = i2 * 2;
                 auto const i2im = i2re + 1;
 
-                auto const x1 = std::complex{x[i1re], x[i1im]};
-                auto const x2 = std::complex{x[i2re], x[i2im]};
+                auto const x1re = x[i1re];
+                auto const x1im = x[i1im];
 
-                auto const xn1 = x1 + x2;
-                auto const xn2 = x1 - x2;
+                auto const x2re = x[i2re];
+                auto const x2im = x[i2im];
 
-                x[i1re] = xn1.real();
-                x[i1im] = xn1.imag();
+                x[i1re] = x1re + x2re;
+                x[i1im] = x1im + x2im;
 
-                x[i2re] = xn2.real();
-                x[i2im] = xn2.imag();
+                x[i2re] = x1re - x2re;
+                x[i2im] = x1im - x2im;
             }
         }
 
@@ -69,7 +69,7 @@ struct c2c_kernel
                     auto const i1re = i1 * 2;
                     auto const i1im = i1re + 1;
 
-                    auto const i2   = k + pair + stage_length;
+                    auto const i2   = i1 + stage_length;
                     auto const i2re = i2 * 2;
                     auto const i2im = i2re + 1;
 
