@@ -15,54 +15,91 @@ namespace neo::fft::experimental {
 
 namespace detail {
 
-template<neo::inout_vector Vec>
-    requires(std::floating_point<typename Vec::value_type>)
-void fft(Vec x, direction dir)
+struct c2c_kernel
 {
-    using Float = typename Vec::value_type;
+    c2c_kernel() = default;
 
-    auto const nn   = static_cast<int>(x.extent(0));
-    auto const sign = dir == direction::forward ? Float(-1) : Float(1);
+    template<inout_vector Vec>
+        requires std::floating_point<typename Vec::value_type>
+    auto operator()(Vec x, auto const& twiddles) const noexcept -> void
+    {
+        auto const size  = static_cast<int>(x.extent(0) / 2);
+        auto const order = static_cast<int>(ilog2(size));
 
-    bitrevorder(x);
+        auto stage_length = 1;
+        auto stride       = 2;
 
-    auto mmax = 2;
-    while (nn > mmax) {
-        auto const step  = mmax << 1;
-        auto const theta = sign * (Float(6.28318530717959) / Float(mmax));
+        for (auto stage{0}; stage < order; ++stage) {
+            auto const tw_stride = ipow<2>(order - stage - 1);
 
-        auto wtemp = std::sin(Float(0.5) * theta);
-        auto wpr   = Float(-2) * wtemp * wtemp;
-        auto wpi   = std::sin(theta);
-        auto wr    = Float(1);
-        auto wi    = Float(0);
+            for (auto k{0}; k < size; k += stride) {
+                for (auto pair{0}; pair < stage_length; ++pair) {
+                    auto const tw = twiddles[pair * tw_stride];
 
-        for (auto m{1}; m < mmax; m += 2) {
-            for (auto i{m}; i <= nn; i += step) {
-                auto const j   = i + mmax;
-                auto const jn1 = j - 1;
-                auto const in1 = i - 1;
+                    auto const i1   = k + pair;
+                    auto const i1re = i1 * 2;
+                    auto const i1im = i1re + 1;
 
-                auto const tempr = wr * x[jn1] - wi * x[j];
-                auto const tempi = wr * x[j] + wi * x[jn1];
+                    auto const i2   = k + pair + stage_length;
+                    auto const i2re = i2 * 2;
+                    auto const i2im = i2re + 1;
 
-                x[jn1] = x[in1] - tempr;
-                x[j]   = x[i] - tempi;
+                    auto const x1 = std::complex{x[i1re], x[i1im]};
+                    auto const x2 = std::complex{x[i2re], x[i2im]};
 
-                x[in1] += tempr;
-                x[i] += tempi;
+                    auto const xn1 = x1 + tw * x2;
+                    auto const xn2 = x1 - tw * x2;
+
+                    x[i1re] = xn1.real();
+                    x[i1im] = xn1.imag();
+
+                    x[i2re] = xn2.real();
+                    x[i2im] = xn2.imag();
+                }
             }
 
-            wtemp = wr;
-            wr    = wtemp * wpr - wi * wpi + wr;
-            wi    = wi * wpr + wtemp * wpi + wi;
+            stage_length *= 2;
+            stride *= 2;
         }
-
-        mmax = step;
     }
-}
+};
 
 }  // namespace detail
+
+template<std::floating_point Float>
+struct fft_plan
+{
+    using value_type = Float;
+    using size_type  = std::size_t;
+
+    explicit fft_plan(size_type order)
+        : _order{order}
+        , _w{make_radix2_twiddles<std::complex<Float>>(size(), direction::forward)}
+    {}
+
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
+
+    [[nodiscard]] auto size() const noexcept -> size_type { return size_type(1) << _order; }
+
+    template<inout_vector Vec>
+        requires std::same_as<typename Vec::value_type, Float>
+    auto operator()(Vec x, direction dir) -> void
+    {
+        assert(std::cmp_equal(x.extent(0) / 2U, size()));
+
+        bitrevorder(x);
+
+        if (dir == direction::forward) {
+            detail::c2c_kernel{}(x, _w.to_mdspan());
+        } else {
+            detail::c2c_kernel{}(x, conjugate_view{_w.to_mdspan()});
+        }
+    }
+
+private:
+    size_type _order;
+    stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>> _w;
+};
 
 template<std::floating_point Float>
 struct rfft_plan
@@ -89,7 +126,7 @@ struct rfft_plan
         }();
 
         if (dir == direction::forward) {
-            detail::fft(x, direction::forward);
+            _fft(x, direction::forward);
         }
 
         auto wtemp     = std::sin(Float(0.5) * theta);
@@ -126,12 +163,13 @@ struct rfft_plan
         } else {
             x[0] = c1 * (h1r + x[1]);
             x[1] = c1 * (h1r - x[1]);
-            detail::fft(x, direction::backward);
+            _fft(x, direction::backward);
         }
     }
 
 private:
     size_type _order;
+    fft_plan<Float> _fft{_order - 1U};
 };
 
 }  // namespace neo::fft::experimental

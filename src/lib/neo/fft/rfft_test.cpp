@@ -131,11 +131,12 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::fft", "", float, double)
         CAPTURE(order);
         CAPTURE(size);
 
+        auto plan   = neo::fft::experimental::fft_plan<Float>{order};
         auto signal = stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>{size * 2U};
         signal(0)   = Float(1);
 
         // fft
-        neo::fft::experimental::detail::fft(signal.to_mdspan(), neo::fft::direction::forward);
+        plan(signal.to_mdspan(), neo::fft::direction::forward);
         for (auto i{0U}; i < size; ++i) {
             auto const ire = i * 2U;
             auto const iim = ire + 1;
@@ -145,7 +146,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::fft", "", float, double)
         }
 
         // ifft
-        neo::fft::experimental::detail::fft(signal.to_mdspan(), neo::fft::direction::forward);
+        plan(signal.to_mdspan(), neo::fft::direction::forward);
         REQUIRE(signal(0) == Catch::Approx(1.0 * double(size)));
         REQUIRE(signal(1) == Catch::Approx(0.0));
 
@@ -163,11 +164,9 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::fft", "", float, double)
         auto const input    = std::array<Float, 8>{1, 0, 2, 0, 3, 0, 4, 0};
         auto const expected = std::array<Float, 8>{10, 0, -2, 2, -2, 0, -2, -2};
 
-        auto x = input;
-        neo::fft::experimental::detail::fft(
-            stdex::mdspan{x.data(), stdex::extents{x.size()}},
-            neo::fft::direction::forward
-        );
+        auto x    = input;
+        auto plan = neo::fft::experimental::fft_plan<Float>{neo::ilog2(input.size() / 2)};
+        plan(stdex::mdspan{x.data(), stdex::extents{x.size()}}, neo::fft::direction::forward);
 
         for (auto i{0U}; i < expected.size(); ++i) {
             CAPTURE(i);
