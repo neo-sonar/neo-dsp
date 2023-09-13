@@ -37,6 +37,7 @@ target_sources(neo_fft_tests
         "neo/convolution/uniform_partition_test.cpp"
         "neo/convolution/uniform_partitioned_convolver_test.cpp"
 
+        "neo/fft/dct_test.cpp"
         "neo/fft/dft_test.cpp"
         "neo/fft/fftfreq_test.cpp"
         "neo/fft/fft_test.cpp"
