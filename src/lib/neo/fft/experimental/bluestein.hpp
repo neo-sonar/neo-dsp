@@ -16,16 +16,10 @@ namespace neo::fft::experimental {
 namespace detail {
 
 template<std::floating_point Float>
-auto dft(std::vector<Float>& real, std::vector<Float>& imag) -> void;
+auto radix2(std::span<Float> real, std::span<Float> imag) -> void;
 
 template<std::floating_point Float>
-auto idft(std::vector<Float>& real, std::vector<Float>& imag) -> void;
-
-template<std::floating_point Float>
-auto radix2(std::vector<Float>& real, std::vector<Float>& imag) -> void;
-
-template<std::floating_point Float>
-auto bluestein(std::vector<Float>& real, std::vector<Float>& imag) -> void;
+auto bluestein(std::span<Float> real, std::span<Float> imag) -> void;
 
 template<std::floating_point Float>
 [[nodiscard]] auto
@@ -33,7 +27,7 @@ convolve(std::vector<Float> xre, std::vector<Float> xim, std::vector<Float> yre,
     -> std::pair<std::vector<Float>, std::vector<Float> >;
 
 template<std::floating_point Float>
-auto radix2(std::vector<Float>& real, std::vector<Float>& imag) -> void
+auto radix2(std::span<Float> real, std::span<Float> imag) -> void
 {
     auto reverseBits = [](std::size_t val, int width) -> std::size_t {
         std::size_t result = 0;
@@ -89,28 +83,7 @@ auto radix2(std::vector<Float>& real, std::vector<Float>& imag) -> void
 }
 
 template<std::floating_point Float>
-auto dft(std::vector<Float>& real, std::vector<Float>& imag) -> void
-{
-    auto const n = real.size();
-    if (n == 0) {
-        return;
-    }
-
-    if ((n & (n - 1)) == 0) {
-        radix2(real, imag);
-    } else {
-        bluestein(real, imag);
-    }
-}
-
-template<std::floating_point Float>
-auto idft(std::vector<Float>& real, std::vector<Float>& imag) -> void
-{
-    dft(imag, real);
-}
-
-template<std::floating_point Float>
-auto bluestein(std::vector<Float>& real, std::vector<Float>& imag) -> void
+auto bluestein(std::span<Float> real, std::span<Float> imag) -> void
 {
     // Find a power-of-2 convolution length m such that m >= n * 2 + 1
     auto const n = real.size();
@@ -163,8 +136,8 @@ auto convolve(std::vector<Float> xre, std::vector<Float> xim, std::vector<Float>
 {
     auto const n = xre.size();
 
-    radix2(xre, xim);
-    radix2(yre, yim);
+    radix2(std::span{xre}, std::span{xim});
+    radix2(std::span{yre}, std::span{yim});
 
     for (std::size_t i = 0; i < n; ++i) {
         Float temp = xre[i] * yre[i] - xim[i] * yim[i];
@@ -172,11 +145,12 @@ auto convolve(std::vector<Float> xre, std::vector<Float> xim, std::vector<Float>
         xre[i]     = temp;
     }
 
-    radix2(xim, xre);
+    radix2(std::span{xim}, std::span{xre});
 
+    auto const scale = Float(1) / static_cast<Float>(n);
     for (std::size_t i = 0; i < n; ++i) {
-        xre[i] /= static_cast<Float>(n);
-        xim[i] /= static_cast<Float>(n);
+        xre[i] *= scale;
+        xim[i] *= scale;
     }
 
     return std::make_pair(std::move(xre), std::move(xim));
@@ -200,28 +174,19 @@ struct bluestein_plan
     {
         assert(std::cmp_equal(x.extent(0), size()));
 
-        if (dir == direction::forward) {
-            for (size_type i{0}; i < size(); ++i) {
-                _real[i] = x[i].real();
-                _imag[i] = x[i].imag();
-            }
-        } else {
-            for (size_type i{0}; i < size(); ++i) {
-                _real[i] = x[i].imag();
-                _imag[i] = x[i].real();
-            }
+        for (size_type i{0}; i < size(); ++i) {
+            _real[i] = x[i].real();
+            _imag[i] = x[i].imag();
         }
 
-        detail::bluestein(_real, _imag);
-
         if (dir == direction::forward) {
-            for (size_type i{0}; i < size(); ++i) {
-                x[i] = Complex{_real[i], _imag[i]};
-            }
+            detail::bluestein(std::span{_real}, std::span{_imag});
         } else {
-            for (size_type i{0}; i < size(); ++i) {
-                x[i] = Complex{_imag[i], _real[i]};
-            }
+            detail::bluestein(std::span{_imag}, std::span{_real});
+        }
+
+        for (size_type i{0}; i < size(); ++i) {
+            x[i] = Complex{_real[i], _imag[i]};
         }
     }
 

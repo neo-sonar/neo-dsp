@@ -1,6 +1,9 @@
 #include "bluestein.hpp"
 
+#include <neo/testing/testing.hpp>
+
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
@@ -11,7 +14,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::bluestein_plan", "", std::complex<flo
     using Float   = typename Complex::value_type;
     using Plan    = neo::fft::experimental::bluestein_plan<Complex>;
 
-    auto const size = GENERATE(range(std::size_t(3), std::size_t(16)));
+    auto const size = GENERATE(range(std::size_t(2), std::size_t(16)));
     CAPTURE(size);
 
     auto plan = Plan{size};
@@ -32,5 +35,22 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::bluestein_plan", "", std::complex<flo
 
         plan(x, neo::fft::direction::backward);
         REQUIRE(x[0].real() == Catch::Approx(Float(1) * Float(size)));
+    }
+
+    SECTION("random")
+    {
+        auto const signal = neo::generate_noise_signal<Complex>(size, Catch::getSeed());
+
+        auto x_buf = signal;
+        auto x     = x_buf.to_mdspan();
+
+        plan(x, neo::fft::direction::forward);
+        plan(x, neo::fft::direction::backward);
+
+        for (auto i{0U}; i < x.extent(0); ++i) {
+            CAPTURE(i);
+            REQUIRE(x[i].real() == Catch::Approx(signal(i).real() * double(size)).scale(neo::ilog2(size)));
+            REQUIRE(x[i].imag() == Catch::Approx(signal(i).imag() * double(size)).scale(neo::ilog2(size)));
+        }
     }
 }
