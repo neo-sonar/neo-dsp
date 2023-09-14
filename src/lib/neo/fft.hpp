@@ -17,4 +17,5 @@
     #include <neo/fft/external/accelerate.hpp>
 #endif
 
+#include <neo/fft/experimental/bluestein.hpp>
 #include <neo/fft/experimental/rfft.hpp>
