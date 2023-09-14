@@ -1,170 +1,43 @@
 #pragma once
 
+#include <neo/algorithm/fill.hpp>
+#include <neo/algorithm/multiply.hpp>
+#include <neo/algorithm/scale.hpp>
 #include <neo/complex/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/fft.hpp>
 #include <neo/math/bit_ceil.hpp>
 #include <neo/math/ilog2.hpp>
 
-#include <cmath>
+#include <complex>
 #include <concepts>
 #include <cstddef>
 #include <numbers>
 
 namespace neo::fft::experimental {
 
-namespace detail {
-
-template<std::floating_point Float>
-auto radix2(std::span<Float> real, std::span<Float> imag) -> void;
-
-template<std::floating_point Float>
-auto bluestein(std::span<Float> real, std::span<Float> imag) -> void;
-
-template<std::floating_point Float>
-[[nodiscard]] auto
-convolve(std::vector<Float> xre, std::vector<Float> xim, std::vector<Float> yre, std::vector<Float> yim)
-    -> std::pair<std::vector<Float>, std::vector<Float> >;
-
-template<std::floating_point Float>
-auto radix2(std::span<Float> real, std::span<Float> imag) -> void
-{
-    auto reverseBits = [](std::size_t val, int width) -> std::size_t {
-        std::size_t result = 0;
-        for (int i = 0; i < width; ++i, val >>= 1)
-            result = (result << 1) | (val & 1U);
-        return result;
-    };
-
-    // Length variables
-    auto const n     = real.size();
-    auto const order = static_cast<int>(ilog2(n));
-    auto const twoPi = static_cast<Float>(std::numbers::pi * 2.0);
-
-    // Trigonometric tables
-    auto cosTable = std::vector<Float>(n / 2);
-    auto sinTable = std::vector<Float>(n / 2);
-    for (std::size_t i = 0; i < n / 2; ++i) {
-        auto const x = twoPi * static_cast<Float>(i) / static_cast<Float>(n);
-        cosTable[i]  = std::cos(x);
-        sinTable[i]  = std::sin(x);
-    }
-
-    // Bit-reversed addressing permutation
-    for (std::size_t i = 0; i < n; ++i) {
-        std::size_t j = reverseBits(i, order);
-        if (j > i) {
-            std::swap(real[i], real[j]);
-            std::swap(imag[i], imag[j]);
-        }
-    }
-
-    // Cooley-Tukey decimation-in-time radix-2 FFT
-    for (std::size_t size = 2; size <= n; size *= 2) {
-        std::size_t halfsize  = size / 2;
-        std::size_t tablestep = n / size;
-        for (std::size_t i = 0; i < n; i += size) {
-            for (std::size_t j = i, k = 0; j < i + halfsize; j++, k += tablestep) {
-                std::size_t l = j + halfsize;
-                Float tpre    = real[l] * cosTable[k] + imag[l] * sinTable[k];
-                Float tpim    = -real[l] * sinTable[k] + imag[l] * cosTable[k];
-                real[l]       = real[j] - tpre;
-                imag[l]       = imag[j] - tpim;
-                real[j] += tpre;
-                imag[j] += tpim;
-            }
-        }
-
-        // Prevent overflow in 'size *= 2'
-        if (size == n) {
-            break;
-        }
-    }
-}
-
-template<std::floating_point Float>
-auto bluestein(std::span<Float> real, std::span<Float> imag) -> void
-{
-    // Find a power-of-2 convolution length m such that m >= n * 2 + 1
-    auto const n = real.size();
-    auto const m = bit_ceil(n * 2U + 1U);
-
-    // Trigonometric tables
-    auto cosTable = std::vector<Float>(n);
-    auto sinTable = std::vector<Float>(n);
-    for (std::size_t i = 0; i < n; ++i) {
-        auto temp = static_cast<std::uintmax_t>(i) * i;
-        temp %= static_cast<std::uintmax_t>(n) * 2;
-
-        auto const pi    = static_cast<Float>(std::numbers::pi);
-        auto const angle = pi * static_cast<Float>(temp) / static_cast<Float>(n);
-
-        cosTable[i] = std::cos(angle);
-        sinTable[i] = std::sin(angle);
-    }
-
-    // Temporary vectors and preprocessing
-    auto areal = std::vector<Float>(m);
-    auto aimag = std::vector<Float>(m);
-    for (std::size_t i = 0; i < n; ++i) {
-        areal[i] = real[i] * cosTable[i] + imag[i] * sinTable[i];
-        aimag[i] = -real[i] * sinTable[i] + imag[i] * cosTable[i];
-    }
-
-    auto breal = std::vector<Float>(m);
-    auto bimag = std::vector<Float>(m);
-    breal[0]   = cosTable[0];
-    bimag[0]   = sinTable[0];
-    for (std::size_t i = 1; i < n; ++i) {
-        breal[i] = breal[m - i] = cosTable[i];
-        bimag[i] = bimag[m - i] = sinTable[i];
-    }
-
-    // Convolution
-    auto [creal, cimag] = convolve(areal, aimag, breal, bimag);
-
-    // Postprocessing
-    for (std::size_t i = 0; i < n; ++i) {
-        real[i] = creal[i] * cosTable[i] + cimag[i] * sinTable[i];
-        imag[i] = -creal[i] * sinTable[i] + cimag[i] * cosTable[i];
-    }
-}
-
-template<std::floating_point Float>
-auto convolve(std::vector<Float> xre, std::vector<Float> xim, std::vector<Float> yre, std::vector<Float> yim)
-    -> std::pair<std::vector<Float>, std::vector<Float> >
-{
-    auto const n = xre.size();
-
-    radix2(std::span{xre}, std::span{xim});
-    radix2(std::span{yre}, std::span{yim});
-
-    for (std::size_t i = 0; i < n; ++i) {
-        Float temp = xre[i] * yre[i] - xim[i] * yim[i];
-        xim[i]     = xim[i] * yre[i] + xre[i] * yim[i];
-        xre[i]     = temp;
-    }
-
-    radix2(std::span{xim}, std::span{xre});
-
-    auto const scale = Float(1) / static_cast<Float>(n);
-    for (std::size_t i = 0; i < n; ++i) {
-        xre[i] *= scale;
-        xim[i] *= scale;
-    }
-
-    return std::make_pair(std::move(xre), std::move(xim));
-}
-
-}  // namespace detail
-
-template<typename Complex>
+template<complex Complex>
 struct bluestein_plan
 {
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    explicit bluestein_plan(size_type size) : _size{size}, _real(size), _imag(size) {}
+    explicit bluestein_plan(size_type size) : _size{size}
+    {
+        auto const wf = _wf.to_mdspan();
+        auto const wb = _wb.to_mdspan();
+
+        auto const n             = static_cast<Float>(size);
+        auto const coef_forward  = static_cast<Float>(std::numbers::pi) / n * Float(-1);
+        auto const coef_backward = static_cast<Float>(std::numbers::pi) / n * Float(1);
+
+        for (std::size_t i{0}; i < size; ++i) {
+            auto const j = static_cast<Float>((i * i) % (size * 2));
+
+            wf[i] = std::polar(Float(1), j * coef_forward);
+            wb[i] = std::polar(Float(1), j * coef_backward);
+        }
+    }
 
     [[nodiscard]] auto size() const noexcept -> size_type { return _size; }
 
@@ -174,29 +47,46 @@ struct bluestein_plan
     {
         assert(std::cmp_equal(x.extent(0), size()));
 
-        for (size_type i{0}; i < size(); ++i) {
-            _real[i] = x[i].real();
-            _imag[i] = x[i].imag();
+        auto const w = dir == direction::forward ? _wf.to_mdspan() : _wb.to_mdspan();
+        auto const a = _a.to_mdspan();
+        auto const b = _b.to_mdspan();
+
+        // pre-processing
+        fill(a, Float(0));
+        fill(b, Float(0));
+        multiply(x, w, stdex::submdspan(a, std::tuple{0, size()}));
+        b[0] = w[0];
+        for (std::size_t i{1}; i < size(); ++i) {
+            auto const m = b.extent(0);
+            auto const c = std::conj(w[i]);
+
+            b[i]     = c;
+            b[m - i] = c;
         }
 
-        if (dir == direction::forward) {
-            detail::bluestein(std::span{_real}, std::span{_imag});
-        } else {
-            detail::bluestein(std::span{_imag}, std::span{_real});
-        }
+        // convolution
+        _fft(a, direction::forward);
+        _fft(b, direction::forward);
+        multiply(a, b, a);
 
-        for (size_type i{0}; i < size(); ++i) {
-            x[i] = Complex{_real[i], _imag[i]};
-        }
+        _fft(a, direction::backward);
+        scale(Float(1) / Float(_fft.size()), a);
+
+        // post-processing
+        multiply(stdex::submdspan(a, std::tuple{0, size()}), w, x);
     }
 
 private:
-    using real_type = typename Complex::value_type;
+    using Float = typename Complex::value_type;
 
     size_type _size;
-    fft_plan<Complex> _fft{bit_ceil(_size)};
-    std::vector<real_type> _real;
-    std::vector<real_type> _imag;
+    fft_plan<Complex> _fft{ilog2(bit_ceil(_size * size_type(2) + size_type(1)))};
+
+    stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _wf{size()};
+    stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _wb{size()};
+
+    stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _a{_fft.size()};
+    stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _b{_fft.size()};
 };
 
 }  // namespace neo::fft::experimental

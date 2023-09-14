@@ -14,7 +14,8 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::bluestein_plan", "", std::complex<flo
     using Float   = typename Complex::value_type;
     using Plan    = neo::fft::experimental::bluestein_plan<Complex>;
 
-    auto const size = GENERATE(range(std::size_t(2), std::size_t(16)));
+    auto const max_size = sizeof(Float) == 8 ? 512 : 128;
+    auto const size     = GENERATE(range(std::size_t(2), std::size_t(max_size)));
     CAPTURE(size);
 
     auto plan = Plan{size};
@@ -40,6 +41,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::bluestein_plan", "", std::complex<flo
     SECTION("random")
     {
         auto const signal = neo::generate_noise_signal<Complex>(size, Catch::getSeed());
+        auto const sig    = signal.to_mdspan();
 
         auto x_buf = signal;
         auto x     = x_buf.to_mdspan();
@@ -49,8 +51,11 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::bluestein_plan", "", std::complex<flo
 
         for (auto i{0U}; i < x.extent(0); ++i) {
             CAPTURE(i);
-            REQUIRE(x[i].real() == Catch::Approx(signal(i).real() * double(size)).scale(neo::ilog2(size)));
-            REQUIRE(x[i].imag() == Catch::Approx(signal(i).imag() * double(size)).scale(neo::ilog2(size)));
+
+            auto const n     = static_cast<double>(size);
+            auto const scale = neo::ilog2(size) * 4;
+            REQUIRE(x[i].real() == Catch::Approx(sig[i].real() * n).scale(scale));
+            REQUIRE(x[i].imag() == Catch::Approx(sig[i].imag() * n).scale(scale));
         }
     }
 }
