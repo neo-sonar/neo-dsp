@@ -1,45 +1,36 @@
 #include "bluestein.hpp"
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
-#include <catch2/matchers/catch_matchers_floating_point.hpp>
-
-TEST_CASE("neo/fft: experimental::bluestein")
-{
-    auto const margin = 0.000001;
-    auto const size   = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13);
-    CAPTURE(size);
-
-    auto re = std::vector<double>(size);
-    auto im = std::vector<double>(size);
-    re[0]   = 1.0;
-
-    // forward
-    neo::fft::experimental::bluestein(re, im);
-    for (auto i{0U}; i < size; ++i) {
-        REQUIRE_THAT(re[i], Catch::Matchers::WithinAbs(1.0, margin));
-        REQUIRE_THAT(std::abs(im[i]), Catch::Matchers::WithinAbs(0.0, margin));
-    }
-
-    // backward
-    neo::fft::experimental::bluestein(im, re);
-    REQUIRE_THAT(re[0], Catch::Matchers::WithinAbs(1.0 * double(size), margin));
-    REQUIRE_THAT(std::abs(im[0]), Catch::Matchers::WithinAbs(0.0, margin));
-
-    for (auto i{1U}; i < size; ++i) {
-        REQUIRE_THAT(re[i], Catch::Matchers::WithinAbs(0.0, margin));
-        REQUIRE_THAT(std::abs(im[i]), Catch::Matchers::WithinAbs(0.0, margin));
-    }
-}
+#include <catch2/generators/catch_generators_range.hpp>
 
 TEMPLATE_TEST_CASE("neo/fft: experimental::bluestein_plan", "", std::complex<float>, std::complex<double>)
 {
     using Complex = TestType;
+    using Float   = typename Complex::value_type;
     using Plan    = neo::fft::experimental::bluestein_plan<Complex>;
 
-    auto const size = GENERATE(as<std::size_t>{}, 4, 5, 6, 7, 8);
+    auto const size = GENERATE(range(std::size_t(3), std::size_t(16)));
     CAPTURE(size);
 
-    auto const plan = Plan{size};
+    auto plan = Plan{size};
     REQUIRE(plan.size() == size);
+
+    SECTION("identity")
+    {
+        auto x_buf = stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>>{size};
+        auto x     = x_buf.to_mdspan();
+        x[0]       = Float(1);
+
+        plan(x, neo::fft::direction::forward);
+
+        for (auto i{0U}; i < size; ++i) {
+            CAPTURE(i);
+            REQUIRE(x[i].real() == Catch::Approx(Float(1)));
+        }
+
+        plan(x, neo::fft::direction::backward);
+        REQUIRE(x[0].real() == Catch::Approx(Float(1) * Float(size)));
+    }
 }
