@@ -3,6 +3,7 @@
 #include <neo/config.hpp>
 
 #include <neo/fft/bitrevorder.hpp>
+#include <neo/fft/bluestein.hpp>
 #include <neo/fft/conjugate_view.hpp>
 #include <neo/fft/dct.hpp>
 #include <neo/fft/dft.hpp>
@@ -17,5 +18,4 @@
     #include <neo/fft/external/accelerate.hpp>
 #endif
 
-#include <neo/fft/experimental/bluestein.hpp>
 #include <neo/fft/experimental/rfft.hpp>

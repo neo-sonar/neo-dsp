@@ -37,6 +37,7 @@ target_sources(neo_fft_tests
         "neo/convolution/uniform_partition_test.cpp"
         "neo/convolution/uniform_partitioned_convolver_test.cpp"
 
+        "neo/fft/bluestein_test.cpp"
         "neo/fft/dct_test.cpp"
         "neo/fft/dft_test.cpp"
         "neo/fft/fftfreq_test.cpp"
@@ -46,7 +47,6 @@ target_sources(neo_fft_tests
         "neo/fft/stft_test.cpp"
         "neo/fft/twiddle_test.cpp"
 
-        "neo/fft/experimental/bluestein_test.cpp"
 
         "neo/fixed_point/fixed_point_test.cpp"
 

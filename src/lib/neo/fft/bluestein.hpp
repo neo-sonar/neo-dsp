@@ -14,7 +14,7 @@
 #include <cstddef>
 #include <numbers>
 
-namespace neo::fft::experimental {
+namespace neo::fft {
 
 template<complex Complex>
 struct bluestein_plan
@@ -89,4 +89,4 @@ private:
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _b{_fft.size()};
 };
 
-}  // namespace neo::fft::experimental
+}  // namespace neo::fft

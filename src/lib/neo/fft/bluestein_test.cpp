@@ -8,11 +8,11 @@
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
-TEMPLATE_TEST_CASE("neo/fft: experimental::bluestein_plan", "", std::complex<float>, std::complex<double>)
+TEMPLATE_TEST_CASE("neo/fft: bluestein_plan", "", std::complex<float>, std::complex<double>)
 {
     using Complex = TestType;
     using Float   = typename Complex::value_type;
-    using Plan    = neo::fft::experimental::bluestein_plan<Complex>;
+    using Plan    = neo::fft::bluestein_plan<Complex>;
 
     auto const max_size = sizeof(Float) == 8 ? 512 : 128;
     auto const size     = GENERATE(range(std::size_t(2), std::size_t(max_size)));
