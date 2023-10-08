@@ -55,7 +55,7 @@ struct fft_plan
 
     template<inout_vector Vec>
         requires std::same_as<typename Vec::value_type, Complex>
-    auto operator()(Vec vec, direction dir) noexcept -> void;
+    auto operator()(Vec x, direction dir) noexcept -> void;
 
 private:
     size_type _order;

@@ -25,9 +25,9 @@ namespace detail {
 template<std::floating_point Float>
 struct stft_options
 {
-    int frame_length;
-    int transform_size;
-    int overlap_length;
+    int frame_length{};
+    int transform_size{};
+    int overlap_length{};
     std::function<Float(int, int)> window{hann_window<Float>{}};
 };
 

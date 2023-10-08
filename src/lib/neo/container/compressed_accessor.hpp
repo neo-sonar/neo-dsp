@@ -17,7 +17,7 @@ struct compressed_accessor
     using data_handle_type = typename NestedAccessor::data_handle_type;
     using offset_policy    = compressed_accessor<ElementType, typename NestedAccessor::offset_policy>;
 
-    constexpr compressed_accessor(NestedAccessor const& a) : _nested_accessor{a} {}
+    constexpr explicit compressed_accessor(NestedAccessor const& a) : _nested_accessor{a} {}
 
     [[nodiscard]] constexpr auto access(data_handle_type p, size_t i) const noexcept -> reference
     {

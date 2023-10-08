@@ -48,7 +48,7 @@ struct fixed_point
     constexpr fixed_point([[maybe_unused]] underlying_value_t tag, storage_type val) noexcept : _value{val} {}
 
     template<std::floating_point Float>
-    [[nodiscard]] constexpr operator Float() const noexcept
+    [[nodiscard]] constexpr explicit operator Float() const noexcept
     {
         return static_cast<float>(_value) * inv_scale;
     }

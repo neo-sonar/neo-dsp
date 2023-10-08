@@ -46,7 +46,7 @@ private:
 
     PluginProcessor& _processor;
     juce::AudioFormatManager& _formatManager;
-    juce::dsp::ProcessSpec _spec;
+    juce::dsp::ProcessSpec _spec{};
 
     juce::TextButton _selectSignalFile{"Select Signal File"};
     juce::TextButton _render{"Render"};

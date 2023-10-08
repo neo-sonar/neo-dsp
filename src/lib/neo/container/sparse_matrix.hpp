@@ -41,9 +41,9 @@ struct sparse_matrix
 
     auto insert(index_type row, index_type col, T value) -> void;
 
-    auto value_container() const noexcept -> value_container_type const&;
-    auto column_container() const noexcept -> index_container_type const&;
-    auto row_container() const noexcept -> index_container_type const&;
+    [[nodiscard]] auto value_container() const noexcept -> value_container_type const&;
+    [[nodiscard]] auto column_container() const noexcept -> index_container_type const&;
+    [[nodiscard]] auto row_container() const noexcept -> index_container_type const&;
 
 private:
     stdex::dextents<index_type, 2> _extents;
