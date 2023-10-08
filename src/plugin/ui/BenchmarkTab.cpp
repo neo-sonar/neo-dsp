@@ -22,23 +22,17 @@ namespace {
 
 struct JuceConvolver
 {
-    explicit JuceConvolver(juce::File impulse, juce::dsp::ProcessSpec const& spec)
-        : _impulse{std::move(impulse)}
-        , _spec{spec}
+    explicit JuceConvolver(juce::File impulse) : _impulse{std::move(impulse)} {}
+
+    auto prepare(juce::dsp::ProcessSpec const& spec) -> void
     {
         auto const trim      = juce::dsp::Convolution::Trim::no;
         auto const stereo    = juce::dsp::Convolution::Stereo::yes;
         auto const normalize = juce::dsp::Convolution::Normalise::no;
 
-        _convolver.prepare(spec);
         _convolver.loadImpulseResponse(_impulse, stereo, trim, 0, normalize);
-
-        // impulse is loaded on background thread, may not have loaded fast enough in
-        // unit-tests
-        std::this_thread::sleep_for(std::chrono::milliseconds{2000});
+        _convolver.prepare(spec);
     }
-
-    auto prepare(juce::dsp::ProcessSpec const& spec) -> void { jassertquiet(_spec == spec); }
 
     auto reset() -> void { _convolver.reset(); }
 
@@ -52,7 +46,6 @@ private:
     juce::File _impulse;
     juce::dsp::ConvolutionMessageQueue _queue;
     juce::dsp::Convolution _convolver{juce::dsp::Convolution::Latency{0}, _queue};
-    juce::dsp::ProcessSpec _spec;
 };
 
 struct FrequencySpectrumWeighting
@@ -317,7 +310,7 @@ auto BenchmarkTab::runWeightingTests() -> void
 
 auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
 {
-    auto proc = JuceConvolver{_impulseFile, _spec};
+    auto proc = JuceConvolver{_impulseFile};
     auto out  = juce::AudioBuffer<float>{_signal.buffer.getNumChannels(), _signal.buffer.getNumSamples()};
     auto file = getBenchmarkResultsDirectory().getNonexistentChildFile("jconv", ".wav");
 
@@ -326,7 +319,7 @@ auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
     auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(out);
-    // neo::normalize_peak(output.to_mdspan());
+    neo::normalize_peak(output.to_mdspan());
 
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     juce::MessageManager::callAsync([this, elapsed] {
