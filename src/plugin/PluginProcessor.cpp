@@ -16,7 +16,7 @@ PluginProcessor::PluginProcessor()
 
 PluginProcessor::~PluginProcessor() = default;
 
-auto PluginProcessor::getName() const -> const juce::String { return JucePlugin_Name; }
+auto PluginProcessor::getName() const -> juce::String const { return JucePlugin_Name; }
 
 auto PluginProcessor::acceptsMidi() const -> bool { return false; }
 
@@ -32,7 +32,7 @@ auto PluginProcessor::getCurrentProgram() -> int { return 0; }
 
 auto PluginProcessor::setCurrentProgram(int index) -> void { juce::ignoreUnused(index); }
 
-auto PluginProcessor::getProgramName(int index) -> const juce::String
+auto PluginProcessor::getProgramName(int index) -> juce::String const
 {
     juce::ignoreUnused(index);
     return {};

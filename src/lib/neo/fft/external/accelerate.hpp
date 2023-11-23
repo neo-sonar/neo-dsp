@@ -46,12 +46,12 @@ template<typename Complex>
 fft_apple_vdsp_plan<Complex>::fft_apple_vdsp_plan(size_type order, direction /*default_direction*/)
     : _order{order}
     , _plan{[order] {
-        if constexpr (std::same_as<real_type, float>) {
-            return vDSP_create_fftsetup(order, 2);
-        } else {
-            return vDSP_create_fftsetupD(order, 2);
-        }
-    }()}
+    if constexpr (std::same_as<real_type, float>) {
+        return vDSP_create_fftsetup(order, 2);
+    } else {
+        return vDSP_create_fftsetupD(order, 2);
+    }
+}()}
 {
     assert(_plan != nullptr);
 }

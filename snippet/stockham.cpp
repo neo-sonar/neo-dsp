@@ -108,12 +108,12 @@ struct complex_t
     double Re, Im;
 };
 
-__m256d mulpz2(const __m256d ab,
-               const __m256d xy)  // Multiplication of complex numbers
+__m256d mulpz2(__m256d const ab,
+               __m256d const xy)  // Multiplication of complex numbers
 {
-    const __m256d aa = _mm256_unpacklo_pd(ab, ab);
-    const __m256d bb = _mm256_unpackhi_pd(ab, ab);
-    const __m256d yx = _mm256_shuffle_pd(xy, xy, 5);
+    __m256d const aa = _mm256_unpacklo_pd(ab, ab);
+    __m256d const bb = _mm256_unpackhi_pd(ab, ab);
+    __m256d const yx = _mm256_shuffle_pd(xy, xy, 5);
     return _mm256_addsub_pd(_mm256_mul_pd(aa, xy), _mm256_mul_pd(bb, yx));
 }
 
@@ -132,16 +132,16 @@ void fft0(int n, int s, bool eo, complex_t* x, complex_t* y)
         if (s == 1) {
             double* xd      = &x->Re;
             double* zd      = &z->Re;
-            const __m128d a = _mm_load_pd(xd + 2 * 0);
-            const __m128d b = _mm_load_pd(xd + 2 * 1);
+            __m128d const a = _mm_load_pd(xd + 2 * 0);
+            __m128d const b = _mm_load_pd(xd + 2 * 1);
             _mm_store_pd(zd + 2 * 0, _mm_add_pd(a, b));
             _mm_store_pd(zd + 2 * 1, _mm_sub_pd(a, b));
         } else {
             for (int q = 0; q < s; q += 2) {
                 double* xd      = &(x + q)->Re;
                 double* zd      = &(z + q)->Re;
-                const __m256d a = _mm256_load_pd(xd + 2 * 0);
-                const __m256d b = _mm256_load_pd(xd + 2 * s);
+                __m256d const a = _mm256_load_pd(xd + 2 * 0);
+                __m256d const b = _mm256_load_pd(xd + 2 * s);
                 _mm256_store_pd(zd + 2 * 0, _mm256_add_pd(a, b));
                 _mm256_store_pd(zd + 2 * s, _mm256_sub_pd(a, b));
             }
@@ -155,15 +155,15 @@ void fft0(int n, int s, bool eo, complex_t* x, complex_t* y)
                 auto const sn0   = p0.imag();
                 auto const cs1   = p1.real();
                 auto const sn1   = p1.imag();
-                const __m256d wp = _mm256_setr_pd(cs0, -sn0, cs1, -sn1);
+                __m256d const wp = _mm256_setr_pd(cs0, -sn0, cs1, -sn1);
                 double* xd       = &(x + p)->Re;
                 double* yd       = &(y + 2 * p)->Re;
-                const __m256d a  = _mm256_load_pd(xd + 2 * 0);
-                const __m256d b  = _mm256_load_pd(xd + 2 * m);
-                const __m256d aA = _mm256_add_pd(a, b);
-                const __m256d bB = mulpz2(wp, _mm256_sub_pd(a, b));
-                const __m256d ab = _mm256_permute2f128_pd(aA, bB, 0x20);
-                const __m256d AB = _mm256_permute2f128_pd(aA, bB, 0x31);
+                __m256d const a  = _mm256_load_pd(xd + 2 * 0);
+                __m256d const b  = _mm256_load_pd(xd + 2 * m);
+                __m256d const aA = _mm256_add_pd(a, b);
+                __m256d const bB = mulpz2(wp, _mm256_sub_pd(a, b));
+                __m256d const ab = _mm256_permute2f128_pd(aA, bB, 0x20);
+                __m256d const AB = _mm256_permute2f128_pd(aA, bB, 0x31);
                 _mm256_store_pd(yd + 2 * 0, ab);
                 _mm256_store_pd(yd + 2 * 2, AB);
             }
@@ -172,12 +172,12 @@ void fft0(int n, int s, bool eo, complex_t* x, complex_t* y)
                 auto const p0    = std::polar(1.0, p * theta0);
                 double const cs  = p0.real();
                 double const sn  = p0.imag();
-                const __m256d wp = _mm256_setr_pd(cs, -sn, cs, -sn);
+                __m256d const wp = _mm256_setr_pd(cs, -sn, cs, -sn);
                 for (int q = 0; q < s; q += 2) {
                     double* xd      = &(x + q)->Re;
                     double* yd      = &(y + q)->Re;
-                    const __m256d a = _mm256_load_pd(xd + 2 * s * (p + 0));
-                    const __m256d b = _mm256_load_pd(xd + 2 * s * (p + m));
+                    __m256d const a = _mm256_load_pd(xd + 2 * s * (p + 0));
+                    __m256d const b = _mm256_load_pd(xd + 2 * s * (p + m));
                     _mm256_store_pd(yd + 2 * s * (2 * p + 0), _mm256_add_pd(a, b));
                     _mm256_store_pd(yd + 2 * s * (2 * p + 1), mulpz2(wp, _mm256_sub_pd(a, b)));
                 }

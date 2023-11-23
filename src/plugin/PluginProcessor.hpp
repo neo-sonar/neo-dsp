@@ -20,7 +20,7 @@ struct PluginProcessor final : juce::AudioProcessor
     PluginProcessor();
     ~PluginProcessor() override;
 
-    auto getName() const -> const juce::String override;
+    auto getName() const -> juce::String const override;
 
     auto prepareToPlay(double sampleRate, int samplesPerBlock) -> void override;
     auto processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) -> void override;
@@ -40,7 +40,7 @@ struct PluginProcessor final : juce::AudioProcessor
     auto getNumPrograms() -> int override;
     auto getCurrentProgram() -> int override;
     void setCurrentProgram(int index) override;
-    auto getProgramName(int index) -> const juce::String override;
+    auto getProgramName(int index) -> juce::String const override;
     void changeProgramName(int index, juce::String const& newName) override;
 
     auto getStateInformation(juce::MemoryBlock& destData) -> void override;

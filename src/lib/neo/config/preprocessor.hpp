@@ -110,19 +110,19 @@ namespace config {
 #if defined(NEO_HAS_SIMD_NEON)
 inline constexpr auto has_simd_neon = true;
 #else
-inline constexpr auto has_simd_neon  = false;
+inline constexpr auto has_simd_neon = false;
 #endif
 
 #if defined(NEO_HAS_SIMD_SSE2)
 inline constexpr auto has_simd_sse2 = true;
 #else
-inline constexpr auto has_simd_sse2  = false;
+inline constexpr auto has_simd_sse2 = false;
 #endif
 
 #if defined(NEO_HAS_SIMD_SSE3)
 inline constexpr auto has_simd_sse3 = true;
 #else
-inline constexpr auto has_simd_sse3  = false;
+inline constexpr auto has_simd_sse3 = false;
 #endif
 
 #if defined(NEO_HAS_SIMD_SSE41)
@@ -134,25 +134,25 @@ inline constexpr auto has_simd_sse41 = false;
 #if defined(NEO_HAS_SIMD_AVX)
 inline constexpr auto has_simd_avx = true;
 #else
-inline constexpr auto has_simd_avx   = false;
+inline constexpr auto has_simd_avx = false;
 #endif
 
 #if defined(NEO_HAS_SIMD_AVX2)
 inline constexpr auto has_simd_avx2 = true;
 #else
-inline constexpr auto has_simd_avx2  = false;
+inline constexpr auto has_simd_avx2 = false;
 #endif
 
 #if defined(NEO_HAS_SIMD_F16C)
 inline constexpr auto has_simd_f16c = true;
 #else
-inline constexpr auto has_simd_f16c  = false;
+inline constexpr auto has_simd_f16c = false;
 #endif
 
 #if defined(NEO_HAS_BUILTIN_FLOAT16)
 inline constexpr auto has_float16 = true;
 #else
-inline constexpr auto has_float16    = false;
+inline constexpr auto has_float16 = false;
 #endif
 
 }  // namespace config
