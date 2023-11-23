@@ -19,7 +19,7 @@ template<in_object InObj>
         return std::nullopt;
     }
 
-    auto const avg = mean(x).value();
+    auto const avg = mean_unchecked(x);
 
     auto deviation = Float(0);
 

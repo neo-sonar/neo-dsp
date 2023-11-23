@@ -9,13 +9,9 @@
 namespace neo {
 
 template<in_object InObj>
-[[nodiscard]] constexpr auto mean(InObj x) noexcept -> std::optional<typename InObj::value_type>
+[[nodiscard]] constexpr auto mean_unchecked(InObj x) noexcept -> typename InObj::value_type
 {
     using Float = typename InObj::value_type;
-
-    if (std::cmp_less(x.size(), 1)) {
-        return std::nullopt;
-    }
 
     auto sum = Float(0);
 
@@ -32,6 +28,15 @@ template<in_object InObj>
     }
 
     return sum / static_cast<Float>(x.size());
+}
+
+template<in_object InObj>
+[[nodiscard]] constexpr auto mean(InObj x) noexcept -> std::optional<typename InObj::value_type>
+{
+    if (std::cmp_less(x.size(), 1)) {
+        return std::nullopt;
+    }
+    return mean_unchecked(x);
 }
 
 }  // namespace neo
