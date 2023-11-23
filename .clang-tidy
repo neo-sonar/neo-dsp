@@ -17,7 +17,6 @@ Checks: >
   concurrency-*,
 
   cppcoreguidelines-*,
-  -cppcoreguidelines-avoid-const-or-ref-data-members,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-pro-bounds-constant-array-index,
