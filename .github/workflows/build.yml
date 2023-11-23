@@ -20,7 +20,7 @@ jobs:
       matrix:
         include:
           - name: Linux
-            os: ubuntu-22.04
+            os: ubuntu-20.04
             build_type: Release
             cmake_flags: ""
             cmake_targets: all
@@ -56,7 +56,7 @@ jobs:
             cmake_targets: neo_fft_tests
 
           - name: Sanitizers
-            os: ubuntu-22.04
+            os: ubuntu-20.04
             build_type: Debug
             cmake_flags: '-D CMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -march=ivybridge"'
             cmake_targets: neo_fft_tests
