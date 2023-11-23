@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <concepts>
-#include <cstdio>
 #include <random>
 #include <vector>
 

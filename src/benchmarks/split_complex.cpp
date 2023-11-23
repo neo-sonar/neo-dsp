@@ -12,7 +12,6 @@
 #include <chrono>
 #include <cmath>
 #include <cstddef>
-#include <cstdio>
 #include <numeric>
 #include <string_view>
 #include <utility>

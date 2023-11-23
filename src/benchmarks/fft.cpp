@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
-#include <cstdio>
 #include <iterator>
 #include <string_view>
 
