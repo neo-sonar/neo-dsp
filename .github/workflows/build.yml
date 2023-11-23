@@ -9,7 +9,7 @@ concurrency:
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 3
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  MACOSX_DEPLOYMENT_TARGET: 10.15
+  MACOSX_DEPLOYMENT_TARGET: "10.15"
 
 jobs:
   build:
@@ -75,8 +75,8 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Install dependencies ( Clang)
-        if: runner.os == ' Clang'
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
         run: >
           sudo apt update &&
           sudo apt install
