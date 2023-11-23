@@ -22,42 +22,49 @@ jobs:
           - name: Linux
             os: ubuntu-20.04
             build_type: Release
+            clang_version: 15
             cmake_flags: ""
             cmake_targets: all
 
           - name: macOS
             os: macos-13
             build_type: Release
+            clang_version: ""
             cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
             cmake_targets: all
 
           - name: Windows
             os: windows-latest
             build_type: Release
+            clang_version: latest
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native"'
             cmake_targets: all
 
           - name: Coverage Native
             os: ubuntu-22.04
             build_type: Debug
+            clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native"'
             cmake_targets: neo_fft_tests
 
           - name: Coverage SSE41
             os: ubuntu-22.04
             build_type: Debug
+            clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem"'
             cmake_targets: neo_fft_tests
 
           - name: Coverage SSE2
             os: ubuntu-22.04
             build_type: Debug
+            clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2"'
             cmake_targets: neo_fft_tests
 
           - name: Sanitizers
             os: ubuntu-20.04
             build_type: Debug
+            clang_version: 15
             cmake_flags: '-D CMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -march=ivybridge"'
             cmake_targets: neo_fft_tests
 
@@ -97,6 +104,8 @@ jobs:
       - name: Install clang
         if: runner.os != 'macOS' && !contains(matrix.name, 'Coverage')
         uses: egor-tensin/setup-clang@v1
+        with:
+          version: ${{ matrix.clang_version }}
 
       - name: Install ccache
         uses: hendrikmuhs/ccache-action@main
