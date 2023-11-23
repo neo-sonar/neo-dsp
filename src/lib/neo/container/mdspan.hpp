@@ -29,8 +29,8 @@ using Kokkos::layout_left;
 using Kokkos::layout_right;
 using Kokkos::layout_stride;
 using Kokkos::mdspan;
+using Kokkos::submdspan;
 using Kokkos::Experimental::mdarray;
-using Kokkos::Experimental::submdspan;
 }  // namespace stdex
 
 namespace neo {
