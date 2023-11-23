@@ -7,12 +7,14 @@
 #include <neo/testing/benchmark.hpp>
 #include <neo/testing/testing.hpp>
 
+#include <fmt/format.h>
+#include <fmt/os.h>
+
 #include <algorithm>
 #include <cfloat>
 #include <chrono>
 #include <cmath>
 #include <cstddef>
-#include <cstdio>
 #include <functional>
 #include <numeric>
 #include <random>
@@ -49,7 +51,7 @@ auto timeit(std::string_view name, size_t sizeOfT, size_t N, Func func)
     auto const avg  = std::reduce(runs.begin(), runs.end(), 0.0) / double(runs.size());
     auto const itemsPerSec     = static_cast<int>(std::lround(double(size) / avg));
     auto const megaBytesPerSec = std::round(double(size * sizeOfT) / avg) / 1000.0;
-    std::printf("%-32s avg: %.1fus - GB/sec: %.2f - N/usec: %d\n", name.data(), avg, megaBytesPerSec, itemsPerSec);
+    fmt::println("{:<32} avg: {:.1f}us - GB/sec: {:.2f} - N/usec: {}", name.data(), avg, megaBytesPerSec, itemsPerSec);
 }
 
 template<typename FloatOrComplex, std::size_t Size>
@@ -402,7 +404,7 @@ auto main() -> int
     timeit("mul(double):   ", 8, N, float_mul<double, N>{});
     timeit("mul(cf8):      ", 1, N, cfloat_mul<float, int8_t, N>{});
     timeit("mul(cf16):     ", 2, N, cfloat_mul<float, int16_t, N>{});
-    std::printf("\n");
+    std::puts("\n");
 
     // timeit("cmul(complex<cf8>):         ", 2, N, cfloat_mul<neo::complex64, neo::scalar_complex<int8_t>, N>{});
     // timeit("cmul(complex<cf16>):        ", 4, N, cfloat_mul<neo::complex64, neo::scalar_complex<int16_t>, N>{});
@@ -415,7 +417,7 @@ auto main() -> int
     timeit("cmul(complex128):           ", 16, N, float_mul<neo::complex128, N>{});
     timeit("cmul(std::complex<float>):  ", 8, N, float_mul<std::complex<float>, N>{});
     timeit("cmul(std::complex<double>): ", 16, N, float_mul<std::complex<double>, N>{});
-    std::printf("\n");
+    std::puts("\n");
 
     // timeit("cmulp(q7):       ", 2, N, cmulp<neo::q7, N>{});
     // timeit("cmulp(q15):      ", 4, N, cmulp<neo::q15, N>{});
@@ -426,7 +428,7 @@ auto main() -> int
 #endif
     timeit("cmulp(float):    ", 8, N, cmulp<float, N>{});
     timeit("cmulp(double):   ", 16, N, cmulp<double, N>{});
-    std::printf("\n");
+    std::puts("\n");
 
 #if defined(NEO_HAS_SIMD_SSE41)
     timeit("cmulp_batch_fixed_point(q7x16):  ", 2, N, cmulp_batch_fixed_point<neo::q7x16, N>{});
@@ -441,7 +443,7 @@ auto main() -> int
 #if defined(NEO_HAS_SIMD_AVX512BW)
     timeit("cmulp_batch_fixed_point(q15x32): ", 4, N, cmulp_batch_fixed_point<neo::q15x32, N>{});
 #endif
-    std::printf("\n");
+    std::puts("\n");
 
 #if defined(NEO_HAS_SIMD_SSE2)
     timeit("cmulp_batch_float(float32x4): ", 8, N, cmulp_batch_float<neo::float32x4, N>{});

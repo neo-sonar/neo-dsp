@@ -159,14 +159,14 @@ auto main(int argc, char** argv) -> int
          std::span<std::complex<float>>{reinterpret_cast<std::complex<float>*>(buf.data()), buf.size() / 2U}) {
         std::printf("(%.1f, %.1f) ", val.real(), val.imag());
     }
-    std::printf("\n");
+    std::puts("\n");
 
     // irfft
     rfft(buf, -1);
     for (auto val : buf) {
         std::printf("%.1f ", val * (2.0F / static_cast<float>(buf.size())));
     }
-    std::printf("\n");
+    std::puts("\n");
 
     return 0;
 }

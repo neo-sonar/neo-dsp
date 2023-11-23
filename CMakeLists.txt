@@ -41,8 +41,16 @@ FetchContent_Declare(
 )
 
 FetchContent_Declare(
+    fmt
+    GIT_REPOSITORY "https://github.com/fmtlib/fmt"
+    GIT_TAG "10.1.1"
+    GIT_PROGRESS TRUE
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_Declare(
     dr_libs
-    GIT_REPOSITORY "https://github.com/mackron/dr_libs.git"
+    GIT_REPOSITORY "https://github.com/mackron/dr_libs"
     GIT_TAG "master"
     GIT_PROGRESS TRUE
     GIT_SHALLOW TRUE
@@ -50,7 +58,7 @@ FetchContent_Declare(
 
 FetchContent_Declare(
     Catch2
-    GIT_REPOSITORY "https://github.com/catchorg/Catch2.git"
+    GIT_REPOSITORY "https://github.com/catchorg/Catch2"
     GIT_TAG devel
     GIT_PROGRESS TRUE
     GIT_SHALLOW TRUE
@@ -58,6 +66,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(JUCE)
 FetchContent_MakeAvailable(mdspan)
+FetchContent_MakeAvailable(fmt)
 FetchContent_MakeAvailable(dr_libs)
 FetchContent_MakeAvailable(Catch2)
 include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)

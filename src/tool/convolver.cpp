@@ -5,7 +5,9 @@
 #include <neo/convolution.hpp>
 #include <neo/math.hpp>
 
-#include <cstdio>
+#include <fmt/format.h>
+#include <fmt/os.h>
+
 #include <cstdlib>
 
 template<neo::complex Complex>
@@ -62,7 +64,7 @@ auto main(int argc, char** argv) -> int
     auto const args = std::span<char const* const>{argv, size_t(argc)};
 
     if (args.size() != 4) {
-        std::printf("Usage: ./neo_dsp_convolver path/to/signal.wav path/to/filter.wav path/to/output.wav\n");
+        fmt::println("Usage: ./neo_dsp_convolver path/to/signal.wav path/to/filter.wav path/to/output.wav");
         return EXIT_FAILURE;
     }
 
@@ -72,24 +74,24 @@ auto main(int argc, char** argv) -> int
     auto const output_length_seconds = static_cast<double>(output_length) / signal_sr;
 
     if (signal.extent(0) != filter.extent(0)) {
-        std::printf("Channel mismatch: signal = %d filter = %d\n", int(signal.extent(0)), int(filter.extent(0)));
+        fmt::println("Channel mismatch: signal = {} filter = {}", int(signal.extent(0)), int(filter.extent(0)));
         return EXIT_FAILURE;
     }
     if (not neo::float_equality::exact(signal_sr, filter_sr)) {
-        std::printf("Sample-rate mismatch: signal = %d filter = %d\n", int(signal_sr), int(filter_sr));
+        fmt::println("Sample-rate mismatch: signal = {} filter = {}", int(signal_sr), int(filter_sr));
         return EXIT_FAILURE;
     }
 
-    std::printf(
-        "Filter: %d channels %d frames (%.2f sec) at %d kHz\n",
+    fmt::println(
+        "Filter: {} channels {} frames ({:.2f} sec) at {} kHz",
         static_cast<int>(filter.extent(0)),
         static_cast<int>(filter.extent(1)),
         static_cast<double>(filter.extent(1)) / filter_sr,
         static_cast<int>(filter_sr)
     );
 
-    std::printf(
-        "Signal: %d channels %d frames (%.2f sec) at %d kHz\n",
+    fmt::println(
+        "Signal: {} channels {} frames ({:.2f} sec) at {} kHz",
         static_cast<int>(signal.extent(0)),
         static_cast<int>(signal.extent(1)),
         static_cast<double>(signal.extent(1)) / signal_sr,
@@ -104,7 +106,11 @@ auto main(int argc, char** argv) -> int
 
         neo::normalize_peak(output.to_mdspan());
         neo::write_wav_file(output, signal_sr, args[3]);
-        std::printf("UPOLS: %.2f sec / %.1f x real-time\n", runtime.count(), output_length_seconds / runtime.count());
+        fmt::println(
+            "UPOLS: {:.2f} sec / {:.1f} x real-time",
+            runtime.count(),
+            output_length_seconds / runtime.count()
+        );
     }
 
     {
@@ -115,29 +121,12 @@ auto main(int argc, char** argv) -> int
 
         neo::normalize_peak(output.to_mdspan());
         neo::write_wav_file(output, signal_sr, args[3]);
-        std::printf(
-            "SPLIT_UPOLS: %.2f sec / %.1f x real-time\n",
+        fmt::println(
+            "SPLIT_UPOLS: {:.2f} sec / {:.1f} x real-time",
             runtime.count(),
             output_length_seconds / runtime.count()
         );
     }
-
-    // #if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
-    //     {
-    //         auto const start   = std::chrono::system_clock::now();
-    //         auto output        = convolve<split_upola_convolver_f16<std::complex<float>>>(signal, filter);
-    //         auto const stop    = std::chrono::system_clock::now();
-    //         auto const runtime = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start);
-
-    // neo::normalize_peak(output.to_mdspan());
-    // neo::write_wav_file(output, signal_sr, args[3]);
-    // std::printf(
-    //     "SPLIT_UPOLS_F16: %.2f sec / %.1f x real-time\n",
-    //     runtime.count(),
-    //     output_length_seconds / runtime.count()
-    // );
-    // }
-    // #endif
 
     return EXIT_SUCCESS;
 }

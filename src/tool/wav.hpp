@@ -32,6 +32,9 @@
     #pragma GCC diagnostic pop
 #endif
 
+#include <fmt/format.h>
+#include <fmt/os.h>
+
 #include <filesystem>
 #include <stdexcept>
 #include <utility>
@@ -47,14 +50,14 @@ template<std::floating_point Float>
     auto path_str = path.string();
     auto wav_file = drwav{};
     if (not drwav_init_file(&wav_file, path_str.c_str(), nullptr)) {
-        std::printf("Could not open wav-file at: %s\n", path_str.c_str());
+        fmt::println("Could not open wav-file at: {}", path_str.c_str());
         return {};
     }
 
     auto interleaved = audio_buffer<float>{wav_file.channels, wav_file.totalPCMFrameCount};
     auto const read  = drwav_read_pcm_frames_f32(&wav_file, wav_file.totalPCMFrameCount, interleaved.data());
     if (read != interleaved.extent(1)) {
-        std::printf("Frames read size mismatch, expected: %d actual: %d\n", int(interleaved.extent(1)), int(read));
+        fmt::println("Frames read size mismatch, expected: {} actual: {}", int(interleaved.extent(1)), int(read));
         drwav_uninit(&wav_file);
         return {};
     }

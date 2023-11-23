@@ -5,6 +5,9 @@
 #include <neo/testing/benchmark.hpp>
 #include <neo/testing/testing.hpp>
 
+#include <fmt/format.h>
+#include <fmt/os.h>
+
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -44,7 +47,7 @@ auto timeit(std::string_view name, size_t sizeOfT, size_t N, Func func)
     auto const avg  = std::reduce(runs.begin(), runs.end(), 0.0) / double(runs.size());
     auto const itemsPerSec     = static_cast<int>(std::lround(double(size) / avg));
     auto const megaBytesPerSec = std::round(double(size * sizeOfT) / avg) / 1000.0;
-    std::printf("%-32s avg: %.1fus - GB/sec: %.2f - N/usec: %d\n", name.data(), avg, megaBytesPerSec, itemsPerSec);
+    fmt::println("{:<32} avg: {:.1f}us - GB/sec: {:.2f} - N/usec: {}", name.data(), avg, megaBytesPerSec, itemsPerSec);
 }
 
 template<typename Float>
@@ -163,7 +166,7 @@ auto main() -> int
 #endif
     timeit("multiply_add(split_complex<float>):    ", 4, N, split_complex_fma<float>{N});
     timeit("multiply_add(split_complex<double>):   ", 8, N, split_complex_fma<double>{N});
-    std::printf("\n");
+    std::puts("\n");
 
 #if defined(NEO_HAS_SIMD_AVX)
     timeit("multiply_add(split_complex<float>):  ", 4, N, split_complex_fma_avx<float>{N});

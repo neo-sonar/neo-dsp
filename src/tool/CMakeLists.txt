@@ -16,7 +16,7 @@ target_include_directories(neo_dsp_convolver
 target_link_libraries(neo_dsp_convolver
     PRIVATE
         neo::fft
-        juce::juce_recommended_warning_flags
+        fmt::fmt-header-only
 )
 
 if(APPLE)
