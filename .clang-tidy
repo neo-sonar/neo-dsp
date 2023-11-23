@@ -5,6 +5,7 @@ Checks: >
   bugprone-*,
   -bugprone-macro-parentheses,
   -bugprone-misplaced-widening-cast,
+  -bugprone-exception-escape,
   -bugprone-signed-char-misuse,
 
   cert-*,
@@ -45,7 +46,6 @@ Checks: >
   -*-magic-numbers,
   -*-non-private-member-variables-in-classes,
   -*-special-member-functions,
-  -*-vararg,
 
 WarningsAsErrors: "*"
 FormatStyle: none
