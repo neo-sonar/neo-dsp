@@ -36,17 +36,22 @@ auto timeit(std::string_view name, size_t N, Func func)
 
     auto const runs   = stdex::submdspan(all_runs.to_mdspan(), std::tuple{padding, all_runs.extent(0) - padding});
     auto const dsize  = static_cast<double>(N);
-    auto const avg    = neo::mean(runs).value();
-    auto const stddev = neo::standard_deviation(runs).value();
-    auto const mflops = static_cast<int>(std::lround(5.0 * dsize * std::log2(dsize) / avg)) * 2;
+    auto const avg    = neo::mean(runs);
+    auto const stddev = neo::standard_deviation(runs);
+    if (not avg or not stddev) {
+        std::puts("failed benchmark\n");
+        return;
+    }
+
+    auto const mflops = static_cast<int>(std::lround(5.0 * dsize * std::log2(dsize) / *avg)) * 2;
 
     std::printf(
         "%-32s N: %-5zu - runs: %zu - avg: %.1fus - stddev: %.1fus - min: %.1fus - max: %.1fus - mflops: %d\n",
         name.data(),
         N,
         all_runs.extent(0),
-        avg,
-        stddev,
+        *avg,
+        *stddev,
         runs[0],
         runs[runs.extent(0) - 1U],
         mflops
