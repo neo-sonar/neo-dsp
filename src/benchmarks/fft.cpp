@@ -32,7 +32,7 @@ auto timeit(std::string_view name, size_t N, Func func)
         all_runs(i) = std::chrono::duration_cast<microseconds>(stop - start).count();
     }
 
-    std::sort(all_runs.data(), std::next(all_runs.data(), all_runs.size()));
+    std::sort(all_runs.data(), std::next(all_runs.data(), ptrdiff_t(all_runs.size())));
 
     auto const runs   = stdex::submdspan(all_runs.to_mdspan(), std::tuple{padding, all_runs.extent(0) - padding});
     auto const dsize  = static_cast<double>(N);
@@ -185,9 +185,11 @@ auto main(int argc, char** argv) -> int
 {
     using namespace neo::fft;
 
+    auto const args = std::span<char const* const>{argv, size_t(argc)};
+
     auto N = 1024UL;
-    if (argc == 2) {
-        N = std::stoul(argv[1]);
+    if (args.size() == 2) {
+        N = std::stoul(args[1]);
     }
 
 #if defined(NEO_PLATFORM_APPLE)

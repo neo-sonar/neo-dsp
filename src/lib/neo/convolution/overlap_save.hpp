@@ -105,8 +105,7 @@ auto overlap_save<Complex>::operator()(inout_vector auto block, auto callback) -
     scale(1.0F / static_cast<real_type>(_rfft.size()), real_buf);
 
     // Copy block_size samples to output
-    auto out = stdex::submdspan(real_buf, keep_extents);
-    copy(out, block);
+    copy(stdex::submdspan(real_buf, keep_extents), block);
 }
 
 }  // namespace neo

@@ -208,7 +208,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::rfft_plan", "", float, double)
         }
 
         plan(buffer, neo::fft::direction::backward);
-        REQUIRE(buffer[0] == Catch::Approx(1.0 * double(size / 2UL)));
+        REQUIRE(buffer[0] == Catch::Approx(1.0 * double(size) / 2.0));
     }
 
     SECTION("random")
@@ -221,7 +221,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::rfft_plan", "", float, double)
 
         for (auto i{0U}; i < signal.extent(0); ++i) {
             CAPTURE(i);
-            REQUIRE(copy(i) == Catch::Approx(signal(i) * double(size / 2UL)).scale(double(order)));
+            REQUIRE(copy(i) == Catch::Approx(signal(i) * double(size) / 2.0).scale(double(order)));
         }
     }
 }

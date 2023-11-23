@@ -4,9 +4,12 @@ Checks: >
 
   bugprone-*,
   -bugprone-macro-parentheses,
+  -bugprone-misplaced-widening-cast,
+  -bugprone-signed-char-misuse,
 
   cert-*,
   -cert-err58-cpp,
+  -cert-str34-c,
 
   clang-analyzer-*,
   clang-diagnostics-*,
@@ -17,13 +20,17 @@ Checks: >
   -cppcoreguidelines-avoid-const-or-ref-data-members,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-type-reinterpret-cast,
 
   hicpp-*,
   -hicpp-explicit-conversions,
+  -hicpp-signed-bitwise,
 
   misc-*,
   -misc-use-anonymous-namespace,
+  -misc-const-correctness,
 
   modernize-*,
 
@@ -35,9 +42,11 @@ Checks: >
   -readability-identifier-length,
   -readability-identifier-naming,
 
+  -*-avoid-c-arrays,
   -*-magic-numbers,
   -*-non-private-member-variables-in-classes,
-  -*-special-member-functions
+  -*-special-member-functions,
+  -*-vararg,
 
 WarningsAsErrors: "*"
 FormatStyle: none

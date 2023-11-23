@@ -59,13 +59,15 @@ convolve(neo::audio_buffer<float> const& signal, neo::audio_buffer<float> const&
 
 auto main(int argc, char** argv) -> int
 {
-    if (argc != 4) {
+    auto const args = std::span<char const* const>{argv, size_t(argc)};
+
+    if (args.size() != 4) {
         std::printf("Usage: ./neo_dsp_convolver path/to/signal.wav path/to/filter.wav path/to/output.wav\n");
         return EXIT_FAILURE;
     }
 
-    auto const [signal, signal_sr]   = neo::load_wav_file<float>(argv[1]);
-    auto const [filter, filter_sr]   = neo::load_wav_file<float>(argv[2]);
+    auto const [signal, signal_sr]   = neo::load_wav_file<float>(args[1]);
+    auto const [filter, filter_sr]   = neo::load_wav_file<float>(args[2]);
     auto const output_length         = signal.extent(1);
     auto const output_length_seconds = static_cast<double>(output_length) / signal_sr;
 
@@ -101,7 +103,7 @@ auto main(int argc, char** argv) -> int
         auto const runtime = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start);
 
         neo::normalize_peak(output.to_mdspan());
-        neo::write_wav_file(output, signal_sr, argv[3]);
+        neo::write_wav_file(output, signal_sr, args[3]);
         std::printf("UPOLS: %.2f sec / %.1f x real-time\n", runtime.count(), output_length_seconds / runtime.count());
     }
 
@@ -112,7 +114,7 @@ auto main(int argc, char** argv) -> int
         auto const runtime = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start);
 
         neo::normalize_peak(output.to_mdspan());
-        neo::write_wav_file(output, signal_sr, argv[3]);
+        neo::write_wav_file(output, signal_sr, args[3]);
         std::printf(
             "SPLIT_UPOLS: %.2f sec / %.1f x real-time\n",
             runtime.count(),
@@ -128,7 +130,7 @@ auto main(int argc, char** argv) -> int
     //         auto const runtime = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start);
 
     // neo::normalize_peak(output.to_mdspan());
-    // neo::write_wav_file(output, signal_sr, argv[3]);
+    // neo::write_wav_file(output, signal_sr, args[3]);
     // std::printf(
     //     "SPLIT_UPOLS_F16: %.2f sec / %.1f x real-time\n",
     //     runtime.count(),

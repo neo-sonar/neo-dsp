@@ -28,10 +28,10 @@ using split_upols_convolver = neo::uniform_partitioned_convolver<
     neo::dense_split_filter<typename Complex::value_type>>;
 
 template<typename T>
-static constexpr auto is_sparse_convolver = false;
+constexpr auto is_sparse_convolver = false;
 
 template<typename Complex, typename Overlap, typename Fdl>
-static constexpr auto is_sparse_convolver<neo::uniform_partitioned_convolver<Overlap, Fdl, neo::sparse_filter<Complex>>>
+constexpr auto is_sparse_convolver<neo::uniform_partitioned_convolver<Overlap, Fdl, neo::sparse_filter<Complex>>>
     = true;
 
 }  // namespace

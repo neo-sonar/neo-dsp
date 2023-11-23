@@ -77,6 +77,7 @@ auto multiply(
     assert(lhs.size() == rhs.size());
     assert(lhs.size() == out.size());
 
+    // NOLINTBEGIN(bugprone-branch-clone)
     if constexpr (std::same_as<Int, std::int8_t>) {
 #if defined(NEO_HAS_SIMD_SSE41)
         simd::apply_kernel<Int>(lhs, rhs, out, std::multiplies{}, detail::mul_kernel_s8<FractionalBits>);
@@ -93,6 +94,7 @@ auto multiply(
         }
 #endif
     }
+    // NOLINTEND(bugprone-branch-clone)
 
     for (auto i{0U}; i < lhs.size(); ++i) {
         out[i] = std::multiplies{}(lhs[i], rhs[i]);

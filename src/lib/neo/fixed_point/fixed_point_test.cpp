@@ -18,6 +18,8 @@
     return std::abs(a - b) < tolerance;
 }
 
+// NOLINTBEGIN(*-braces-around-statements,readability-misleading-indentation)
+
 template<typename T>
 static constexpr auto tolerance = [] {
     if constexpr (std::same_as<T, neo::q7>) {
@@ -30,6 +32,8 @@ static constexpr auto tolerance = [] {
         return 0.03F;
     }
 }();
+
+// NOLINTEND(*-braces-around-statements,readability-misleading-indentation)
 
 TEMPLATE_TEST_CASE(
     "neo/fixed_point: to_float",
