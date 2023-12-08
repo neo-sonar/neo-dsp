@@ -47,7 +47,6 @@ target_sources(neo_fft_tests
         "neo/fft/stft_test.cpp"
         "neo/fft/twiddle_test.cpp"
 
-
         "neo/fixed_point/fixed_point_test.cpp"
 
         "neo/math/a_weighting_test.cpp"

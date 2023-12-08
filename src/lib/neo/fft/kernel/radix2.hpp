@@ -45,10 +45,10 @@ struct c2c_dit2_v1
 
             for (auto k = 0; std::cmp_less(k, size); k += stride) {
                 for (auto pair = 0; pair < stage_length; ++pair) {
-                    auto const tw = twiddles[static_cast<std::size_t>(pair * tw_stride)];
+                    auto const tw = twiddles[pair * tw_stride];
 
-                    auto const i1 = static_cast<std::size_t>(k + pair);
-                    auto const i2 = static_cast<std::size_t>(k + pair + stage_length);
+                    auto const i1 = k + pair;
+                    auto const i2 = i1 + stage_length;
 
                     auto const temp = x[i1] + tw * x[i2];
                     x[i2]           = x[i1] - tw * x[i2];
