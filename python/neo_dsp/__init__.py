@@ -36,3 +36,11 @@ def ifft(x, n=None, norm="backward") -> np.ndarray:
     """Compute the 1-D inverse discrete Fourier Transform.
     """
     return _core.ifft(x, n, NORM_MODE[norm])
+
+
+def amplitude_to_db(x, precision="accurate") -> np.ndarray:
+    """Convert an amplitude to dB-Scale.
+    """
+    if precision == "estimate":
+        return _core.amplitude_to_db_estimate(x)
+    return _core.amplitude_to_db(x)

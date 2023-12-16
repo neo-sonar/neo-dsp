@@ -2,6 +2,7 @@
 #include <neo/complex.hpp>
 #include <neo/fft.hpp>
 #include <neo/math.hpp>
+#include <neo/unit.hpp>
 
 #include <pybind11/complex.h>
 #include <pybind11/numpy.h>
@@ -157,6 +158,18 @@ auto fft(py::array_t<Complex, 0> array, std::optional<std::size_t> n, neo::fft::
     });
 }
 
+template<std::floating_point Float>
+[[nodiscard]] auto to_decibels(Float amplitude) -> Float
+{
+    return neo::amplitude_to_db<neo::precision::accurate, Float>(amplitude);
+}
+
+template<std::floating_point Float>
+[[nodiscard]] auto to_decibels_estimate(Float amplitude) -> Float
+{
+    return neo::amplitude_to_db<neo::precision::estimate, Float>(amplitude);
+}
+
 PYBIND11_MODULE(_core, m)
 {
 
@@ -170,6 +183,12 @@ PYBIND11_MODULE(_core, m)
 
     m.def("ifft", &fft<std::complex<float>, neo::fft::direction::backward>);
     m.def("ifft", &fft<std::complex<double>, neo::fft::direction::backward>);
+
+    m.def("amplitude_to_db", py::vectorize(to_decibels<float>));
+    m.def("amplitude_to_db", py::vectorize(to_decibels<double>));
+
+    m.def("amplitude_to_db_estimate", py::vectorize(to_decibels_estimate<float>));
+    m.def("amplitude_to_db_estimate", py::vectorize(to_decibels_estimate<double>));
 
     m.def("a_weighting", py::vectorize(neo::a_weighting<float>));
     m.def("a_weighting", py::vectorize(neo::a_weighting<double>));
