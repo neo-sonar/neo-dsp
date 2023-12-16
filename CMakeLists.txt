@@ -83,6 +83,6 @@ FetchContent_MakeAvailable(benchmark)
 include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 
 add_subdirectory(src)
-add_subdirectory(benchmarks)
+add_subdirectory(benchmark)
 add_subdirectory(plugin)
 add_subdirectory(tool)
