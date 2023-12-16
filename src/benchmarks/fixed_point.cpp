@@ -388,7 +388,7 @@ private:
 
 auto main() -> int
 {
-    static constexpr auto N = 131072U * 2U;
+    static constexpr auto N = 131072U;
 
     timeit("mul(q7):     ", 1, N, fixed_point_mul<neo::q7, N>{});
     timeit("mul(q15):    ", 2, N, fixed_point_mul<neo::q15, N>{});

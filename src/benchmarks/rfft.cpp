@@ -6,16 +6,17 @@
 
 namespace {
 
-template<neo::complex Complex>
+template<typename Plan>
 auto bench_c2c(benchmark::State& state) -> void
 {
-    using Real = typename Complex::value_type;
+    using Complex = typename Plan::value_type;
+    using Real    = typename Complex::value_type;
 
     auto const len   = static_cast<std::size_t>(state.range(0));
     auto const order = neo::ilog2(len);
     auto const noise = neo::generate_noise_signal<Complex>(len, std::random_device{}());
 
-    auto plan = neo::fft::fft_plan<Complex>{order};
+    auto plan = Plan{order};
     auto work = noise;
 
     for (auto _ : state) {
@@ -36,10 +37,13 @@ auto bench_c2c(benchmark::State& state) -> void
 
 }  // namespace
 
-BENCHMARK(bench_c2c<std::complex<float>>)->RangeMultiplier(2)->Range(1 << 10, 1 << 15);
-BENCHMARK(bench_c2c<std::complex<double>>)->RangeMultiplier(2)->Range(1 << 10, 1 << 15);
+BENCHMARK(bench_c2c<neo::fft::fft_plan<std::complex<float>>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(bench_c2c<neo::fft::fft_plan<std::complex<double>>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
 
-BENCHMARK(bench_c2c<neo::complex64>)->RangeMultiplier(2)->Range(1 << 10, 1 << 15);
-BENCHMARK(bench_c2c<neo::complex128>)->RangeMultiplier(2)->Range(1 << 10, 1 << 15);
+#if defined(NEO_PLATFORM_APPLE)
 
+BENCHMARK(bench_c2c<neo::fft::fft_apple_vdsp_plan<std::complex<float>>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(bench_c2c<neo::fft::fft_apple_vdsp_plan<std::complex<double>>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+
+#endif
 BENCHMARK_MAIN();
