@@ -13,3 +13,4 @@ cmake-build-*
 *.wav
 
 __pycache__
+.coverage

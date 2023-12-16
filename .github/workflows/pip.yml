@@ -26,4 +26,10 @@ jobs:
         run: pip install --verbose .[test]
 
       - name: Test
-        run: pytest
+        run: pytest --cov=neo_dsp --cov-branch python/test/*
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true

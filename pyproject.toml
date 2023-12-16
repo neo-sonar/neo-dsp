@@ -27,7 +27,7 @@ Homepage = "https://github.com/neo-sonar/neo-dsp"
 Issues = "https://github.com/neo-sonar/neo-dsp/issues"
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = ["pytest", "pytest-cov"]
 
 [tool.scikit-build]
 cmake.source-dir = "python"
