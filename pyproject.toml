@@ -23,8 +23,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/neo-sonar/plugin-perceptual-convolution"
-Issues = "https://github.com/neo-sonar/plugin-perceptual-convolution/issues"
+Homepage = "https://github.com/neo-sonar/neo-dsp"
+Issues = "https://github.com/neo-sonar/neo-dsp/issues"
 
 [project.optional-dependencies]
 test = ["pytest"]
