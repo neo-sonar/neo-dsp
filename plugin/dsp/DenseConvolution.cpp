@@ -176,7 +176,7 @@ auto sparse_convolve(
         std::fill(w.begin(), std::next(w.begin(), lowBinsToKeep), 100.0F);
 
         for (auto i{lowBinsToKeep}; i < std::ssize(w); ++i) {
-            auto const frequency = neo::fftfreq<float>(K, i, sampleRate);
+            auto const frequency = neo::fftfreq<float>(K, i, 1.0 / sampleRate);
             auto const weight    = neo::a_weighting(frequency);
 
             w[static_cast<std::size_t>(i)] = weight;

@@ -5,9 +5,9 @@
 namespace neo {
 
 template<std::floating_point T>
-[[nodiscard]] constexpr auto fftfreq(std::integral auto windowSize, std::integral auto index, double sampleRate) -> T
+[[nodiscard]] constexpr auto fftfreq(std::integral auto size, std::integral auto index, double inverseSampleRate) -> T
 {
-    return static_cast<T>(index) * static_cast<T>(sampleRate) / static_cast<T>(windowSize);
+    return static_cast<T>(index) / static_cast<T>(inverseSampleRate) / static_cast<T>(size);
 }
 
 }  // namespace neo

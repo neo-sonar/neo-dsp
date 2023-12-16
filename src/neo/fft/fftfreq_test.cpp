@@ -11,6 +11,6 @@ TEMPLATE_TEST_CASE("neo/fft: fftfreq", "", float, double)
     auto const windowSize = GENERATE(128, 256, 512, 1024);
     auto const sampleRate = GENERATE(44'100.0, 48'000.0, 88'200.0, 96'000.0);
 
-    REQUIRE(neo::fftfreq<Float>(windowSize, 0, sampleRate) == Catch::Approx(0.0));
-    REQUIRE(neo::fftfreq<Float>(windowSize, windowSize / 2, sampleRate) == Catch::Approx(sampleRate / 2.0));
+    REQUIRE(neo::fftfreq<Float>(windowSize, 0, 1.0 / sampleRate) == Catch::Approx(0.0));
+    REQUIRE(neo::fftfreq<Float>(windowSize, windowSize / 2, 1.0 / sampleRate) == Catch::Approx(sampleRate / 2.0));
 }

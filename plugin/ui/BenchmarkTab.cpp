@@ -54,7 +54,7 @@ struct FrequencySpectrumWeighting
     {
         _weights.resize(static_cast<size_t>(size));
         for (auto i{0UL}; i < static_cast<size_t>(size); ++i) {
-            auto frequency = neo::fftfreq<float>(size, i, sr);
+            auto frequency = neo::fftfreq<float>(size, i, 1.0 / sr);
             _weights[i]    = juce::exactlyEqual(frequency, 0.0F) ? 0.0F : neo::a_weighting(frequency);
         }
     }
