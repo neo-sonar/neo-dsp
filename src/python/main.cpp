@@ -112,8 +112,23 @@ auto convolve(py::array_t<T, 0> array) -> void
     });
 }
 
-PYBIND11_MODULE(neo_dsp, m)
+PYBIND11_MODULE(_core, m)
 {
+    m.doc() = R"pbdoc(
+        neo-sonar dsp library
+        -----------------------
+
+        .. currentmodule:: neo_dsp
+
+        .. autosummary::
+           :toctree: _generate
+
+           a_weighting
+           convolve
+           fast_log2
+           fast_log10
+    )pbdoc";
+
     m.def("fast_log2", py::vectorize(neo::fast_log2));
     m.def("fast_log10", py::vectorize(neo::fast_log10));
     m.def("a_weighting", py::vectorize(neo::a_weighting<float>));
@@ -123,4 +138,10 @@ PYBIND11_MODULE(neo_dsp, m)
     m.def("convolve", &convolve<double>);
     m.def("convolve", &convolve<std::complex<float>>);
     m.def("convolve", &convolve<std::complex<double>>);
+
+#ifdef VERSION_INFO
+    m.attr("__version__") = NEO_STRINGIFY(VERSION_INFO);
+#else
+    m.attr("__version__") = "dev";
+#endif
 }
