@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build with PIP
+    name: ${{ matrix.platform }} - ${{ matrix.python-version }}
     runs-on: ${{ matrix.platform }}
     strategy:
       fail-fast: false
