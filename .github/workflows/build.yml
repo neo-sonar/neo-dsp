@@ -31,7 +31,7 @@ jobs:
             build_type: Debug
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -march=ivybridge"'
-            cmake_targets: neo_fft_tests
+            cmake_targets: neo_dsp_tests
 
           - name: macOS
             os: macos-13
@@ -52,21 +52,21 @@ jobs:
             build_type: Debug
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native"'
-            cmake_targets: neo_fft_tests
+            cmake_targets: neo_dsp_tests
 
           - name: Coverage SSE41
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem"'
-            cmake_targets: neo_fft_tests
+            cmake_targets: neo_dsp_tests
 
           - name: Coverage SSE2
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2"'
-            cmake_targets: neo_fft_tests
+            cmake_targets: neo_dsp_tests
 
     steps:
       - name: Checkout code
