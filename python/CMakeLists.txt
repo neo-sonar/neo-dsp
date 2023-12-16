@@ -17,14 +17,10 @@ FetchContent_MakeAvailable(mdspan)
 
 add_subdirectory(../src ${CMAKE_BINARY_DIR}/neo_dsp)
 
-# set(PYBIND11_NEWPYTHON ON)
-# find_package(pybind11 CONFIG REQUIRED)
-
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(pybind11 CONFIG REQUIRED)
 
-# pybind11_add_module(_core main.cpp)
-python_add_library(_core MODULE main.cpp WITH_SOABI)
+pybind11_add_module(_core main.cpp)
 target_link_libraries(_core PRIVATE pybind11::headers)
 target_compile_definitions(_core PRIVATE VERSION_INFO=${PROJECT_VERSION})
 target_link_libraries(_core PRIVATE neo::dsp)
