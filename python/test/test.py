@@ -30,12 +30,21 @@ def test_fast_log10(float):
     assert neo.fast_log10(values) == approx(np.log10(values))
 
 
-# @pytest.mark.parametrize("float", [np.float32, np.float64])
-# def test_amplitude_to_db(float):
-#     values = np.array([0.125, 0.25, 0.5, 0.75, 0.9, 1.0], dtype=float)
-#     accurate = neo.amplitude_to_db(values, precision="accurate")
-#     estimate = neo.amplitude_to_db(values, precision="estimate")
-#     assert accurate == approx(estimate)
+@pytest.mark.parametrize("float", [np.float32, np.float64])
+@pytest.mark.parametrize("val, expected", [(1.0, 0.0), (0.5, -6.02059991328)])
+def test_amplitude_to_db(float, val, expected):
+    val = np.array([val], dtype=float)
+    expected = np.array([expected], dtype=float)
+    assert neo.amplitude_to_db(val) == approx(expected)
+
+
+@pytest.mark.parametrize("float", [np.float32, np.float64])
+@pytest.mark.parametrize("val, expected", [(0.5, -6.02059991328)])
+def test_amplitude_to_db_estimate(float, val, expected):
+    val = np.array([val], dtype=float)
+    expected = np.array([expected], dtype=float)
+    assert neo.amplitude_to_db(
+        val, precision="estimate") == approx(expected, rel=1e-4)
 
 
 def test_a_weighting():
