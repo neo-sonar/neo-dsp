@@ -73,7 +73,7 @@ template<size_t Dim, typename T, int Flags>
 }
 
 template<std::size_t Dim, typename T, int Flags>
-auto to_mdspan_layout_right_unchecked(py::array_t<T, Flags> buf)
+auto to_mdspan_layout_right(py::array_t<T, Flags> buf)
 {
     auto const extents = stdex::dextents<size_t, Dim>{make_extents<Dim>(buf)};
     auto const mapping = stdex::layout_right::mapping<stdex::dextents<size_t, Dim>>{extents};
@@ -84,23 +84,39 @@ auto to_mdspan_layout_right_unchecked(py::array_t<T, Flags> buf)
 }
 
 template<std::size_t Dim, typename T, int Flags>
+auto to_mdspan_layout_stride(py::array_t<T, Flags> buf)
+{
+    auto const strides = make_strides<Dim>(buf);
+    auto const extents = stdex::dextents<size_t, Dim>{make_extents<Dim>(buf)};
+    auto const mapping = stdex::layout_stride::mapping<stdex::dextents<size_t, Dim>>{extents, strides};
+    return stdex::mdspan<T, stdex::dextents<size_t, Dim>, stdex::layout_stride>{
+        buf.mutable_data(),
+        mapping,
+    };
+}
+
+template<std::size_t Dim, typename T, int Flags>
 auto as_mdspan_impl(py::array_t<T, Flags> buf, auto func)
 {
     auto const extents = stdex::dextents<size_t, Dim>{make_extents<Dim>(buf)};
 
-    auto const map_right = stdex::layout_right::mapping<stdex::dextents<size_t, Dim>>{extents};
-    if (is_layout_right(buf) and strides_match(buf, map_right)) {
-        return func(stdex::mdspan<T, stdex::dextents<size_t, Dim>, stdex::layout_right>{buf.mutable_data(), map_right});
+    auto const mapping_right = stdex::layout_right::mapping<stdex::dextents<size_t, Dim>>{extents};
+    if (is_layout_right(buf) and strides_match(buf, mapping_right)) {
+        return func(stdex::mdspan<T, stdex::dextents<size_t, Dim>, stdex::layout_right>{
+            buf.mutable_data(),
+            mapping_right,
+        });
     }
 
-    auto const map_left = stdex::layout_left::mapping<stdex::dextents<size_t, Dim>>{extents};
-    if (is_layout_left(buf) and strides_match(buf, map_left)) {
-        return func(stdex::mdspan<T, stdex::dextents<size_t, Dim>, stdex::layout_left>{buf.mutable_data(), map_left});
+    auto const mapping_left = stdex::layout_left::mapping<stdex::dextents<size_t, Dim>>{extents};
+    if (is_layout_left(buf) and strides_match(buf, mapping_left)) {
+        return func(stdex::mdspan<T, stdex::dextents<size_t, Dim>, stdex::layout_left>{
+            buf.mutable_data(),
+            mapping_left,
+        });
     }
 
-    auto const strides = make_strides<Dim>(buf);
-    auto const map     = stdex::layout_stride::mapping<stdex::dextents<size_t, Dim>>{extents, strides};
-    return func(stdex::mdspan<T, stdex::dextents<size_t, Dim>, stdex::layout_stride>{buf.mutable_data(), map});
+    return func(to_mdspan_layout_stride<Dim>(buf));
 }
 
 template<typename T, int Flags>
@@ -110,17 +126,12 @@ auto as_mdspan(py::array_t<T, Flags> buf, auto func)
         case 1: return as_mdspan_impl<1>(buf, func);
         case 2: return as_mdspan_impl<2>(buf, func);
         case 3: return as_mdspan_impl<3>(buf, func);
-        case 4: return as_mdspan_impl<4>(buf, func);
-        case 5: return as_mdspan_impl<5>(buf, func);
-        case 6: return as_mdspan_impl<6>(buf, func);
-        case 7: return as_mdspan_impl<7>(buf, func);
-        case 8: return as_mdspan_impl<8>(buf, func);
         default: throw std::runtime_error("unsupported ndim: " + std::to_string(buf.ndim()));
     }
 }
 
 template<neo::complex Complex, neo::fft::direction Dir>
-auto fft(py::array_t<Complex, 0> array, std::optional<std::size_t> n, neo::fft::norm norm) -> py::array_t<Complex>
+auto fft(py::array_t<Complex> array, std::optional<std::size_t> n, neo::fft::norm norm) -> py::array_t<Complex>
 {
     using Float = typename Complex::value_type;
 
@@ -134,7 +145,7 @@ auto fft(py::array_t<Complex, 0> array, std::optional<std::size_t> n, neo::fft::
 
             auto plan   = neo::fft::fft_plan<Complex>{order, Dir};
             auto result = py::array_t<Complex>(static_cast<py::ssize_t>(size));
-            auto out    = to_mdspan_layout_right_unchecked<1>(result);
+            auto out    = to_mdspan_layout_right<1>(result);
             if constexpr (Dir == neo::fft::direction::forward) {
                 neo::fft::fft(plan, input, out);
                 if (norm == neo::fft::norm::forward) {
@@ -173,13 +184,12 @@ template<std::floating_point Float>
 [[nodiscard]] auto fftfreq(std::size_t n, double invSampleRate) -> py::array_t<double>
 {
     auto out = py::array_t<double>(static_cast<py::ssize_t>(n));
-    neo::fftfreq(to_mdspan_layout_right_unchecked<1>(out), invSampleRate);
+    neo::fftfreq(to_mdspan_layout_right<1>(out), invSampleRate);
     return out;
 }
 
 PYBIND11_MODULE(_core, m)
 {
-
     py::enum_<neo::fft::norm>(m, "norm")
         .value("backward", neo::fft::norm::backward)
         .value("ortho", neo::fft::norm::ortho)
