@@ -10,7 +10,7 @@
 namespace neo {
 
 template<precision Precision = precision::estimate, std::floating_point Float>
-[[nodiscard]] auto to_decibels(Float gain, Float infinity = Float(-144)) noexcept -> Float
+[[nodiscard]] auto amplitude_to_db(Float gain, Float infinity = Float(-144)) noexcept -> Float
 {
     if (gain <= Float(0)) {
         return infinity;

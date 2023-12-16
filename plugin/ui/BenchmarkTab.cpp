@@ -294,7 +294,7 @@ auto BenchmarkTab::runWeightingTests() -> void
             for (auto ch{0U}; ch < _partitions.extent(0); ++ch) {
                 auto const bin   = std::abs(_partitions(ch, f, b));
                 auto const power = bin * bin;
-                auto const dB    = neo::to_decibels(power * scale, -144.0F) * 0.5F + weight;
+                auto const dB    = neo::amplitude_to_db(power * scale, -144.0F) * 0.5F + weight;
                 count += static_cast<int>(dB > threshold);
             }
         }
@@ -453,7 +453,7 @@ auto BenchmarkTab::runSparseQualityTests() -> void
         auto const range = juce::jmap(static_cast<double>(i), 1.0, 180.0, 1.0, 90.0);
         auto const rmse  = calculateErrorsForDynamicRange(static_cast<float>(range));
         auto const text  = "SPARSE-QUALITY(" + juce::String{range} + "): rmse = " + juce::String{rmse, 7}
-                        + " rmse(dB) = " + juce::String{to_decibels(rmse)} + "\n";
+                        + " rmse(dB) = " + juce::String{amplitude_to_db(rmse)} + "\n";
 
         juce::MessageManager::callAsync([this, text] { _fileInfo.insertTextAtCaret(text); });
     }
