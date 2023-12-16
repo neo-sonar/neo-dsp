@@ -64,11 +64,22 @@ FetchContent_Declare(
     GIT_SHALLOW TRUE
 )
 
+FetchContent_Declare(
+    benchmark
+    GIT_REPOSITORY "https://github.com/google/benchmark"
+    GIT_TAG "v1.8.3"
+    GIT_PROGRESS TRUE
+    GIT_SHALLOW TRUE
+)
+
+set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable Google benchmark tests")
+
 FetchContent_MakeAvailable(JUCE)
 FetchContent_MakeAvailable(mdspan)
 FetchContent_MakeAvailable(fmt)
 FetchContent_MakeAvailable(dr_libs)
 FetchContent_MakeAvailable(Catch2)
+FetchContent_MakeAvailable(benchmark)
 include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 
 add_subdirectory(src/lib)
