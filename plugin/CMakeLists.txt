@@ -75,7 +75,7 @@ target_link_libraries(PerceptualConvolution
         juce::juce_dsp
 
     PUBLIC
-        neo::fft
+        neo::dsp
         juce::juce_recommended_config_flags
         # juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags

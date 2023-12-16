@@ -1,14 +1,18 @@
-project(neo_fft)
+project(neo_dsp)
 
-add_library(neo_fft INTERFACE)
-add_library(neo::fft ALIAS neo_fft)
+add_library(neo_dsp INTERFACE)
+add_library(neo::dsp ALIAS neo_dsp)
 
-target_include_directories(neo_fft INTERFACE ${PROJECT_SOURCE_DIR})
-target_link_libraries(neo_fft INTERFACE std::mdspan)
-target_compile_definitions(neo_fft INTERFACE _CRT_SECURE_NO_WARNINGS=1)
+target_include_directories(neo_dsp INTERFACE ${PROJECT_SOURCE_DIR})
+target_link_libraries(neo_dsp INTERFACE std::mdspan)
+target_compile_definitions(neo_dsp INTERFACE _CRT_SECURE_NO_WARNINGS=1)
 
-add_executable(neo_fft_tests)
-target_sources(neo_fft_tests
+if(NOT TARGET Catch2::Catch2WithMain)
+    return()
+endif()
+
+add_executable(neo_dsp_tests)
+target_sources(neo_dsp_tests
     PRIVATE
         "neo/algorithm/allclose_test.cpp"
         "neo/algorithm/allmatch_test.cpp"
@@ -61,16 +65,16 @@ target_sources(neo_fft_tests
         "neo/unit/mel_test.cpp"
 )
 
-catch_discover_tests(neo_fft_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+catch_discover_tests(neo_dsp_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-target_link_libraries(neo_fft_tests
+target_link_libraries(neo_dsp_tests
     PRIVATE
-        neo::fft
+        neo::dsp
         Catch2::Catch2WithMain
         juce::juce_recommended_warning_flags
 )
 
 if(APPLE)
     find_library(ACCELERATE_LIBRARY Accelerate)
-    target_link_libraries(neo_fft_tests PRIVATE ${ACCELERATE_LIBRARY})
+    target_link_libraries(neo_dsp_tests PRIVATE ${ACCELERATE_LIBRARY})
 endif()
