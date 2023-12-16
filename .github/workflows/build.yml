@@ -119,11 +119,11 @@ jobs:
         with:
           key: perceptual-convolution-build-${{ matrix.name }}
 
-      # - name: Setup Visual Studio
-      #   if: runner.os == 'Windows'
-      #   uses: egor-tensin/vs-shell@v2
-      #   with:
-      #     arch: x64
+      - name: Setup Visual Studio
+        if: matrix.name == 'Windows MSVC'
+        uses: egor-tensin/vs-shell@v2
+        with:
+          arch: x64
 
       - name: Print native arch flags (GCC)
         if: contains(matrix.name, 'Coverage')
