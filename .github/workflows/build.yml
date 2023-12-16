@@ -144,7 +144,7 @@ jobs:
           -e ".*_test\.cpp"
           --exclude-unreachable-branches
           --exclude-throw-branches
-          -r src/lib
+          -r src
           -s build
           -o build/coverage.xml
 

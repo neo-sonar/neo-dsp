@@ -15,7 +15,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(mdspan)
 
-add_subdirectory(../src/lib ${CMAKE_BINARY_DIR}/neo_dsp)
+add_subdirectory(../src ${CMAKE_BINARY_DIR}/neo_dsp)
 
 # set(PYBIND11_NEWPYTHON ON)
 # find_package(pybind11 CONFIG REQUIRED)
