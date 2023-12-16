@@ -15,7 +15,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(mdspan)
 
-add_subdirectory(../lib ${CMAKE_BINARY_DIR}/neo_fft)
+add_subdirectory(../src/lib ${CMAKE_BINARY_DIR}/neo_fft)
 
 # set(PYBIND11_NEWPYTHON ON)
 # find_package(pybind11 CONFIG REQUIRED)

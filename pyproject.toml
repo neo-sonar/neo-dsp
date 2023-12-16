@@ -30,8 +30,8 @@ Issues = "https://github.com/neo-sonar/plugin-perceptual-convolution/issues"
 test = ["pytest"]
 
 [tool.scikit-build]
-cmake.source-dir = "src/python"
-wheel.packages = ["src/python/neo_dsp"]
+cmake.source-dir = "python"
+wheel.packages = ["python/neo_dsp"]
 wheel.expand-macos-universal-tags = true
 
 
@@ -40,4 +40,4 @@ minversion = "7.0"
 addopts = ["-ra", "--strict-markers", "--strict-config"]
 xfail_strict = true
 filterwarnings = ["error"]
-testpaths = ["src/python/test/*"]
+testpaths = ["python/test/*"]
