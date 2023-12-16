@@ -6,7 +6,7 @@ from ._core import (
     __version__,
     a_weighting,
     fast_log2,
-    fast_log10
+    fast_log10,
 )
 
 import numpy as np
@@ -24,6 +24,12 @@ NORM_MODE = {
     "ortho": _core.norm.ortho,
     "forward": _core.norm.forward,
 }
+
+
+def fftfreq(n, d=1.0) -> np.ndarray:
+    """Return the Discrete Fourier Transform sample frequencies.
+    """
+    return _core.fftfreq(n, d)
 
 
 def fft(x, n=None, norm="backward") -> np.ndarray:

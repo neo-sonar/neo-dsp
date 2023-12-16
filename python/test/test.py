@@ -18,33 +18,39 @@ def test_fft(n, complex):
     assert np.allclose(neo.ifft(neo.fft(impulse.copy())), impulse)
 
 
-@pytest.mark.parametrize("float", [np.float32, np.float64])
-def test_fast_log2(float):
-    values = np.array([64.0, 128.0, 512.0, 2048.0], dtype=float)
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_fast_log2(dtype):
+    values = np.array([64.0, 128.0, 512.0, 2048.0], dtype=dtype)
     assert neo.fast_log2(values) == approx(np.log2(values))
 
 
-@pytest.mark.parametrize("float", [np.float32, np.float64])
-def test_fast_log10(float):
-    values = np.array([64.0, 128.0, 512.0, 2048.0], dtype=float)
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_fast_log10(dtype):
+    values = np.array([64.0, 128.0, 512.0, 2048.0], dtype=dtype)
     assert neo.fast_log10(values) == approx(np.log10(values))
 
 
-@pytest.mark.parametrize("float", [np.float32, np.float64])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("val, expected", [(1.0, 0.0), (0.5, -6.02059991328)])
-def test_amplitude_to_db(float, val, expected):
-    val = np.array([val], dtype=float)
-    expected = np.array([expected], dtype=float)
+def test_amplitude_to_db(dtype, val, expected):
+    val = np.array([val], dtype=dtype)
+    expected = np.array([expected], dtype=dtype)
     assert neo.amplitude_to_db(val) == approx(expected)
 
 
-@pytest.mark.parametrize("float", [np.float32, np.float64])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("val, expected", [(0.5, -6.02059991328)])
-def test_amplitude_to_db_estimate(float, val, expected):
-    val = np.array([val], dtype=float)
-    expected = np.array([expected], dtype=float)
+def test_amplitude_to_db_estimate(dtype, val, expected):
+    val = np.array([val], dtype=dtype)
+    expected = np.array([expected], dtype=dtype)
     assert neo.amplitude_to_db(
         val, precision="estimate") == approx(expected, rel=1e-4)
+
+
+def test_fftfreq():
+    assert neo.fftfreq(2) == approx([0.0, 0.5])
+    assert neo.fftfreq(2, 1.0 / 20.0) == approx([0.0, 10.0])
+    assert neo.fftfreq(2, 1.0 / 44100.0) == approx([0.0, 22050.0])
 
 
 def test_a_weighting():
