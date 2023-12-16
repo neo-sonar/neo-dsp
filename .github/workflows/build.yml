@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CMAKE_BUILD_PARALLEL_LEVEL: 3
+  CMAKE_GENERATOR: Ninja
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   MACOSX_DEPLOYMENT_TARGET: "10.15"
 
@@ -40,19 +40,19 @@ jobs:
             cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
             cmake_targets: all
 
-          # - name: Windows MSVC
-          #   os: windows-latest
-          #   build_type: Release
-          #   clang_version: ""
-          #   cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2"'
-          #   cmake_targets: all
+          - name: Windows MSVC
+            os: windows-latest
+            build_type: Release
+            clang_version: ""
+            cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2"'
+            cmake_targets: neo_dsp_tests
 
           - name: Windows Clang
             os: windows-latest
             build_type: Release
             clang_version: latest
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native"'
-            cmake_targets: all
+            cmake_targets: neo_dsp_tests
 
           - name: Coverage Native
             os: ubuntu-22.04
