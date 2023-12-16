@@ -15,7 +15,7 @@ target_include_directories(neo_dsp_convolver
 
 target_link_libraries(neo_dsp_convolver
     PRIVATE
-        neo::fft
+        neo::dsp
         fmt::fmt-header-only
 )
 

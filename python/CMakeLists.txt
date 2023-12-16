@@ -15,7 +15,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(mdspan)
 
-add_subdirectory(../src/lib ${CMAKE_BINARY_DIR}/neo_fft)
+add_subdirectory(../src/lib ${CMAKE_BINARY_DIR}/neo_dsp)
 
 # set(PYBIND11_NEWPYTHON ON)
 # find_package(pybind11 CONFIG REQUIRED)
@@ -27,5 +27,5 @@ find_package(pybind11 CONFIG REQUIRED)
 python_add_library(_core MODULE main.cpp WITH_SOABI)
 target_link_libraries(_core PRIVATE pybind11::headers)
 target_compile_definitions(_core PRIVATE VERSION_INFO=${PROJECT_VERSION})
-target_link_libraries(_core PRIVATE neo::fft)
+target_link_libraries(_core PRIVATE neo::dsp)
 install(TARGETS _core LIBRARY DESTINATION neo_dsp)
