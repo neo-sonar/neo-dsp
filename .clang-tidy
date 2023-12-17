@@ -17,7 +17,6 @@ Checks: >
   concurrency-*,
 
   cppcoreguidelines-*,
-  -cppcoreguidelines-avoid-const-or-ref-data-members,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-pro-bounds-constant-array-index,
@@ -36,9 +35,9 @@ Checks: >
   performance-*,
 
   readability-*,
+  readability-identifier-naming,
   -readability-function-cognitive-complexity,
   -readability-identifier-length,
-  -readability-identifier-naming,
 
   -*-avoid-c-arrays,
   -*-magic-numbers,
@@ -51,24 +50,22 @@ CheckOptions:
   - key: cppcoreguidelines-avoid-do-while.IgnoreMacros
     value: true
   - key: readability-identifier-naming.ClassCase
-    value: CamelCase
+    value: lower_case
   - key: readability-identifier-naming.ClassMemberCase
-    value: camelBack
+    value: lower_case
   - key: readability-identifier-naming.ClassConstantCase
-    value: camelBack
+    value: lower_case
   - key: readability-identifier-naming.PrivateMemberPrefix
     value: _
   - key: readability-identifier-naming.EnumCase
-    value: CamelCase
+    value: lower_case
   - key: readability-identifier-naming.FunctionCase
-    value: camelBack
-  - key: readability-identifier-naming.GlobalConstantCase
-    value: CamelCase
+    value: lower_case
   - key: readability-identifier-naming.IgnoreMainLikeFunctions
     value: 1
   - key: readability-identifier-naming.ParameterCase
-    value: camelBack
+    value: lower_case
   - key: readability-identifier-naming.UnionCase
-    value: CamelCase
+    value: lower_case
   - key: readability-identifier-naming.VariableCase
-    value: camelBack
+    value: lower_case

@@ -16,13 +16,13 @@ auto fill_radix2_twiddles(OutVec table, direction dir = direction::forward) noex
     using Complex = typename OutVec::value_type;
     using Float   = typename Complex::value_type;
 
-    auto const tableSize = table.size();
-    auto const fftSize   = tableSize * 2ULL;
-    auto const sign      = dir == direction::forward ? Float(-1) : Float(1);
-    auto const twoPi     = static_cast<Float>(std::numbers::pi * 2.0);
+    auto const table_size = table.size();
+    auto const fft_size   = table_size * 2ULL;
+    auto const sign       = dir == direction::forward ? Float(-1) : Float(1);
+    auto const two_pi     = static_cast<Float>(std::numbers::pi * 2.0);
 
-    for (std::size_t i = 0; i < tableSize; ++i) {
-        auto const angle   = sign * twoPi * Float(i) / Float(fftSize);
+    for (std::size_t i = 0; i < table_size; ++i) {
+        auto const angle   = sign * two_pi * Float(i) / Float(fft_size);
         auto const twiddle = std::polar(Float(1), angle);              // returns std::complex
         table[i]           = Complex{twiddle.real(), twiddle.imag()};  // convert to custom complex (maybe)
     }

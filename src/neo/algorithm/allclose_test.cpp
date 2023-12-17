@@ -24,41 +24,41 @@ TEMPLATE_TEST_CASE(
 
     SECTION("vector")
     {
-        auto const makeVector = [size](Float val) {
+        auto const make_vector = [size](Float val) {
             auto vec = stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>{size};
             neo::fill(vec.to_mdspan(), val);
             return vec;
         };
 
-        auto const zeros      = makeVector(Float(0));
-        auto const ones       = makeVector(Float(1));
-        auto const almostOnes = makeVector(Float(0.95));
+        auto const zeros       = make_vector(Float(0));
+        auto const ones        = make_vector(Float(1));
+        auto const almost_ones = make_vector(Float(0.95));
 
         REQUIRE_FALSE(neo::allclose(ones.to_mdspan(), zeros.to_mdspan()));
-        REQUIRE_FALSE(neo::allclose(ones.to_mdspan(), almostOnes.to_mdspan()));
+        REQUIRE_FALSE(neo::allclose(ones.to_mdspan(), almost_ones.to_mdspan()));
 
         REQUIRE(neo::allclose(zeros.to_mdspan(), zeros.to_mdspan()));
         REQUIRE(neo::allclose(ones.to_mdspan(), ones.to_mdspan()));
-        REQUIRE(neo::allclose(ones.to_mdspan(), almostOnes.to_mdspan(), Float(0.7)));
+        REQUIRE(neo::allclose(ones.to_mdspan(), almost_ones.to_mdspan(), Float(0.7)));
     }
 
     SECTION("matrix")
     {
-        auto const makeMatrix = [size](Float val) {
+        auto const make_matrix = [size](Float val) {
             auto vec = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{size, size * 2UL};
             neo::fill(vec.to_mdspan(), val);
             return vec;
         };
 
-        auto const zeros      = makeMatrix(Float(0));
-        auto const ones       = makeMatrix(Float(1));
-        auto const almostOnes = makeMatrix(Float(0.95));
+        auto const zeros       = make_matrix(Float(0));
+        auto const ones        = make_matrix(Float(1));
+        auto const almost_ones = make_matrix(Float(0.95));
 
         REQUIRE_FALSE(neo::allclose(ones.to_mdspan(), zeros.to_mdspan()));
-        REQUIRE_FALSE(neo::allclose(ones.to_mdspan(), almostOnes.to_mdspan()));
+        REQUIRE_FALSE(neo::allclose(ones.to_mdspan(), almost_ones.to_mdspan()));
 
         REQUIRE(neo::allclose(zeros.to_mdspan(), zeros.to_mdspan()));
         REQUIRE(neo::allclose(ones.to_mdspan(), ones.to_mdspan()));
-        REQUIRE(neo::allclose(ones.to_mdspan(), almostOnes.to_mdspan(), Float(0.7)));
+        REQUIRE(neo::allclose(ones.to_mdspan(), almost_ones.to_mdspan(), Float(0.7)));
     }
 }

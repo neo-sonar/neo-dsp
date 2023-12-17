@@ -8,15 +8,15 @@ TEMPLATE_TEST_CASE("neo/fft: fftfreq", "", float, double)
 {
     using Float = TestType;
 
-    auto const windowSize    = GENERATE(128, 256, 512, 1024);
-    auto const sampleRate    = GENERATE(44'100.0, 48'000.0, 88'200.0, 96'000.0);
-    auto const invSampleRate = 1.0 / sampleRate;
+    auto const window_size     = GENERATE(128, 256, 512, 1024);
+    auto const sample_rate     = GENERATE(44'100.0, 48'000.0, 88'200.0, 96'000.0);
+    auto const inv_sample_rate = 1.0 / sample_rate;
 
-    REQUIRE(neo::fftfreq<Float>(windowSize, 0, invSampleRate) == Catch::Approx(0.0));
-    REQUIRE(neo::fftfreq<Float>(windowSize, windowSize / 2, invSampleRate) == Catch::Approx(sampleRate / 2.0));
+    REQUIRE(neo::fftfreq<Float>(window_size, 0, inv_sample_rate) == Catch::Approx(0.0));
+    REQUIRE(neo::fftfreq<Float>(window_size, window_size / 2, inv_sample_rate) == Catch::Approx(sample_rate / 2.0));
 
     auto freqs = std::array<Float, 2>{};
-    neo::fftfreq(stdex::mdspan{freqs.data(), stdex::extents{freqs.size()}}, invSampleRate);
+    neo::fftfreq(stdex::mdspan{freqs.data(), stdex::extents{freqs.size()}}, inv_sample_rate);
     REQUIRE(freqs[0] == Catch::Approx(0.0));
-    REQUIRE(freqs[1] == Catch::Approx(sampleRate / 2.0));  // TODO: Doesn't match scipy output. Missing negative freqs
+    REQUIRE(freqs[1] == Catch::Approx(sample_rate / 2.0));  // TODO: Doesn't match scipy output. Missing negative freqs
 }

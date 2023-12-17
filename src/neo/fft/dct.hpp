@@ -43,11 +43,11 @@ struct dct2_plan
         _fft(buf, direction::forward);
 
         auto const pi  = static_cast<Float>(std::numbers::pi);
-        auto const N   = static_cast<Float>(len);
+        auto const n   = static_cast<Float>(len);
         auto const one = std::complex{Float(0), Float(-1)};
 
         for (auto i{0U}; i < len; ++i) {
-            auto const scale = Float(2) * std::exp(one * pi * Float(i) / (2 * N));
+            auto const scale = Float(2) * std::exp(one * pi * Float(i) / (2 * n));
             auto const v     = buf[i] * scale;
 
             x[i] = v.real();
