@@ -1,5 +1,8 @@
 project(neo_dsp_benchmarks)
 
+FetchContent_Declare(benchmark GIT_REPOSITORY "https://github.com/google/benchmark" GIT_TAG "v1.8.3" GIT_SHALLOW TRUE)
+FetchContent_MakeAvailable(benchmark)
+
 add_executable(fixed_point_benchmark fixed_point.cpp)
 target_link_libraries(fixed_point_benchmark PRIVATE neo::dsp fmt::fmt-header-only)
 

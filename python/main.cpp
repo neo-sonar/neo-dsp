@@ -188,7 +188,7 @@ template<std::floating_point Float>
     return out;
 }
 
-PYBIND11_MODULE(_core, m)
+PYBIND11_MODULE(_neo_dsp, m)
 {
     py::enum_<neo::fft::norm>(m, "norm")
         .value("backward", neo::fft::norm::backward)
