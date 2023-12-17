@@ -18,17 +18,6 @@
 
 namespace py = pybind11;
 
-namespace neo::fft {
-
-enum struct norm
-{
-    backward,
-    ortho,
-    forward,
-};
-
-}  // namespace neo::fft
-
 template<typename T, int Flags>
 [[nodiscard]] auto is_layout_left(py::array_t<T, Flags> buf) -> bool
 {
