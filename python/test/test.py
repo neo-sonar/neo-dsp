@@ -8,12 +8,12 @@ from pytest import approx
 @pytest.mark.parametrize("n", [4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096])
 @pytest.mark.parametrize("complex", [np.complex64, np.complex128])
 def test_fft(n, complex):
-    assert len(neo.fft(np.zeros(shape=n, dtype=complex)).shape) == 1
-    assert neo.fft(np.zeros(shape=n, dtype=complex)).shape[0] == n
+    assert len(neo.fft.fft(np.zeros(shape=n, dtype=complex)).shape) == 1
+    assert neo.fft.fft(np.zeros(shape=n, dtype=complex)).shape[0] == n
 
     impulse = np.zeros(shape=n, dtype=complex)
     impulse[0] = 1.0
-    assert np.allclose(neo.ifft(neo.fft(impulse.copy())), impulse)
+    assert np.allclose(neo.fft.ifft(neo.fft.fft(impulse.copy())), impulse)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -46,9 +46,9 @@ def test_amplitude_to_db_estimate(dtype, val, expected):
 
 
 def test_rfftfreq():
-    assert neo.rfftfreq(2) == approx([0.0, 0.5])
-    assert neo.rfftfreq(2, 1.0 / 20.0) == approx([0.0, 10.0])
-    assert neo.rfftfreq(2, 1.0 / 44100.0) == approx([0.0, 22050.0])
+    assert neo.fft.rfftfreq(2) == approx([0.0, 0.5])
+    assert neo.fft.rfftfreq(2, 1.0 / 20.0) == approx([0.0, 10.0])
+    assert neo.fft.rfftfreq(2, 1.0 / 44100.0) == approx([0.0, 22050.0])
 
 
 def test_a_weighting():
