@@ -65,6 +65,7 @@ target_sources(neo_dsp_tests
         "src/neo/convolution/dense_fdl_test.cpp"
         "src/neo/convolution/direct_convolve_test.cpp"
         "src/neo/convolution/fdl_index_test.cpp"
+        "src/neo/convolution/fft_convolve_test.cpp"
         "src/neo/convolution/normalize_impulse_test.cpp"
         "src/neo/convolution/overlap_test.cpp"
         "src/neo/convolution/uniform_partition_test.cpp"
