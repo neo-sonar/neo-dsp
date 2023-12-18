@@ -11,8 +11,6 @@ template<in_vector Signal, in_vector Patch, out_vector Output>
     requires(std::same_as<typename Signal::value_type, typename Patch::value_type>)
 auto direct_convolve(Signal signal, Patch patch, Output output) noexcept -> void
 {
-    using Float = typename Signal::value_type;
-
     auto const n  = signal.extent(0);
     auto const l  = patch.extent(0);
     auto const mm = n + l - 1;
@@ -30,7 +28,7 @@ auto direct_convolve(Signal signal, Patch patch, Output output) noexcept -> void
             output[k] = 0.0;
             i++;
             auto const t1   = l + i;
-            auto const tmin = static_cast<Float>(std::min(t1, n));
+            auto const tmin = std::min(t1, n);
             for (auto m = i; m < tmin; m++) {
                 output[k] += signal[m] * patch[k - m];
             }
@@ -49,7 +47,7 @@ auto direct_convolve(Signal signal, Patch patch, Output output) noexcept -> void
         output[k] = 0.0;
         i++;
         auto const t1   = n + i;
-        auto const tmin = static_cast<Float>(std::min(t1, l));
+        auto const tmin = std::min(t1, l);
         for (auto m = i; m < tmin; m++) {
             output[k] += patch[m] * signal[k - m];
         }
