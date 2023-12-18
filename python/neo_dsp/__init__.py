@@ -22,9 +22,9 @@ __all__ = [
 ]
 
 CONVOLUTION_MODE = {
-    "full": _neo_dsp.convolution.full,
-    "valid": _neo_dsp.convolution.valid,
-    "same": _neo_dsp.convolution.same,
+    "full": _neo_dsp.convolution_mode.full,
+    "valid": _neo_dsp.convolution_mode.valid,
+    "same": _neo_dsp.convolution_mode.same,
 }
 
 

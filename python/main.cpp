@@ -165,7 +165,8 @@ auto fft(py::array_t<Complex> array, std::optional<std::size_t> n, neo::fft::nor
 }
 
 template<std::floating_point Float>
-auto direct_convolve(py::array_t<Float> in1, py::array_t<Float> in2, neo::convolution mode) -> py::array_t<Float>
+[[nodiscard]] auto direct_convolve(py::array_t<Float> in1, py::array_t<Float> in2, neo::convolution_mode mode)
+    -> py::array_t<Float>
 {
     if (in1.ndim() != 1 or in1.ndim() != 1) {
         throw std::runtime_error{"unsupported dimension: in1 and in2 must be 1-D"};
@@ -174,7 +175,7 @@ auto direct_convolve(py::array_t<Float> in1, py::array_t<Float> in2, neo::convol
     auto const signal = to_mdspan_layout_stride<1>(in1);
     auto const patch  = to_mdspan_layout_stride<1>(in2);
 
-    if (mode == neo::convolution::full) {
+    if (mode == neo::convolution_mode::full) {
         auto output      = py::array_t<Float>(static_cast<py::ssize_t>(signal.extent(0) + patch.extent(0) - 1));
         auto output_view = to_mdspan_layout_right<1>(output);
 
@@ -216,15 +217,24 @@ template<std::floating_point Float>
 
 PYBIND11_MODULE(_neo_dsp, m)
 {
+    py::enum_<neo::convolution_method>(m, "convolution_method")
+        .value("automatic", neo::convolution_method::automatic)
+        .value("direct", neo::convolution_method::direct)
+        .value("fft", neo::convolution_method::fft)
+        .value("ola", neo::convolution_method::ola)
+        .value("ols", neo::convolution_method::ols)
+        .value("upola", neo::convolution_method::upola)
+        .value("upols", neo::convolution_method::upols);
+
+    py::enum_<neo::convolution_mode>(m, "convolution_mode")
+        .value("full", neo::convolution_mode::full)
+        .value("valid", neo::convolution_mode::valid)
+        .value("same", neo::convolution_mode::same);
+
     py::enum_<neo::fft::norm>(m, "norm")
         .value("backward", neo::fft::norm::backward)
         .value("ortho", neo::fft::norm::ortho)
         .value("forward", neo::fft::norm::forward);
-
-    py::enum_<neo::convolution>(m, "convolution")
-        .value("full", neo::convolution::full)
-        .value("valid", neo::convolution::valid)
-        .value("same", neo::convolution::same);
 
     m.def("rfftfreq", &rfftfreq);
 

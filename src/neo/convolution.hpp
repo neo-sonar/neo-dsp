@@ -3,7 +3,8 @@
 #include <neo/config.hpp>
 
 #include <neo/convolution/compressed_fdl.hpp>
-#include <neo/convolution/convolution.hpp>
+#include <neo/convolution/convolution_method.hpp>
+#include <neo/convolution/convolution_mode.hpp>
 #include <neo/convolution/dense_convolver.hpp>
 #include <neo/convolution/dense_fdl.hpp>
 #include <neo/convolution/direct_convolve.hpp>

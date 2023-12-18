@@ -2,7 +2,7 @@
 
 namespace neo {
 
-enum struct convolution
+enum struct convolution_mode
 {
     full,
     valid,
