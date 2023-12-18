@@ -40,6 +40,5 @@ def convolve(in1: np.ndarray, in2: np.ndarray, mode: str = "full", method: str =
     """Convolve two 1-dimensional arrays.
     """
     if method == "fft":
-        raise NotImplementedError("method 'fft' is not implemented")
-
+        return _neo_dsp.fft_convolve(in1, in2, CONVOLUTION_MODE[mode])
     return _neo_dsp.direct_convolve(in1, in2, CONVOLUTION_MODE[mode])

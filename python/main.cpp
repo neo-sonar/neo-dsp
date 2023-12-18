@@ -164,8 +164,8 @@ auto fft(py::array_t<Complex> array, std::optional<std::size_t> n, neo::fft::nor
     });
 }
 
-template<std::floating_point Float>
-[[nodiscard]] auto direct_convolve(py::array_t<Float> in1, py::array_t<Float> in2, neo::convolution_mode mode)
+template<neo::convolution_method Method, std::floating_point Float>
+[[nodiscard]] auto convolve(py::array_t<Float> in1, py::array_t<Float> in2, neo::convolution_mode mode)
     -> py::array_t<Float>
 {
     if (in1.ndim() != 1 or in1.ndim() != 1) {
@@ -181,7 +181,12 @@ template<std::floating_point Float>
 
         {
             auto no_gil = py::gil_scoped_release{};
-            neo::direct_convolve(signal, patch, output_view);
+            if constexpr (Method == neo::convolution_method::direct) {
+                neo::direct_convolve(signal, patch, output_view);
+            } else if constexpr (Method == neo::convolution_method::fft) {
+                auto out = neo::fft_convolve(signal, patch);
+                neo::copy(out.to_mdspan(), output_view);
+            }
         }
 
         return output;
@@ -244,8 +249,11 @@ PYBIND11_MODULE(_neo_dsp, m)
     m.def("ifft", &fft<std::complex<float>, neo::fft::direction::backward>);
     m.def("ifft", &fft<std::complex<double>, neo::fft::direction::backward>);
 
-    m.def("direct_convolve", &direct_convolve<float>);
-    m.def("direct_convolve", &direct_convolve<double>);
+    m.def("direct_convolve", &convolve<neo::convolution_method::direct, float>);
+    m.def("direct_convolve", &convolve<neo::convolution_method::direct, double>);
+
+    m.def("fft_convolve", &convolve<neo::convolution_method::fft, float>);
+    m.def("fft_convolve", &convolve<neo::convolution_method::fft, double>);
 
     m.def("amplitude_to_db", py::vectorize(to_decibels<float>));
     m.def("amplitude_to_db", py::vectorize(to_decibels<double>));
