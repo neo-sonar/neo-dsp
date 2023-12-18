@@ -133,23 +133,28 @@ auto fft(py::array_t<Complex> array, std::optional<std::size_t> n, neo::fft::nor
                 throw std::runtime_error{"unsupported size: " + std::to_string(size)};
             }
 
-            auto plan   = neo::fft::fft_plan<Complex>{order, Dir};
             auto result = py::array_t<Complex>(static_cast<py::ssize_t>(size));
             auto out    = to_mdspan_layout_right<1>(result);
-            if constexpr (Dir == neo::fft::direction::forward) {
-                neo::fft::fft(plan, input, out);
-                if (norm == neo::fft::norm::forward) {
-                    neo::scale(Float(1) / Float(size), out);
-                }
-            } else {
-                neo::fft::ifft(plan, input, out);
-                if (norm == neo::fft::norm::backward) {
-                    neo::scale(Float(1) / Float(size), out);
-                }
-            }
 
-            if (norm == neo::fft::norm::ortho) {
-                neo::scale(Float(1) / std::sqrt(Float(size)), out);
+            {
+                auto no_gil = py::gil_scoped_release{};
+
+                auto plan = neo::fft::fft_plan<Complex>{order, Dir};
+                if constexpr (Dir == neo::fft::direction::forward) {
+                    neo::fft::fft(plan, input, out);
+                    if (norm == neo::fft::norm::forward) {
+                        neo::scale(Float(1) / Float(size), out);
+                    }
+                } else {
+                    neo::fft::ifft(plan, input, out);
+                    if (norm == neo::fft::norm::backward) {
+                        neo::scale(Float(1) / Float(size), out);
+                    }
+                }
+
+                if (norm == neo::fft::norm::ortho) {
+                    neo::scale(Float(1) / std::sqrt(Float(size)), out);
+                }
             }
 
             return result;
@@ -170,8 +175,14 @@ auto direct_convolve(py::array_t<Float> in1, py::array_t<Float> in2, neo::convol
     auto const patch  = to_mdspan_layout_stride<1>(in2);
 
     if (mode == neo::convolution::full) {
-        auto output = py::array_t<Float>(static_cast<py::ssize_t>(signal.extent(0) + patch.extent(0) - 1));
-        neo::direct_convolve(signal, patch, to_mdspan_layout_right<1>(output));
+        auto output      = py::array_t<Float>(static_cast<py::ssize_t>(signal.extent(0) + patch.extent(0) - 1));
+        auto output_view = to_mdspan_layout_right<1>(output);
+
+        {
+            auto no_gil = py::gil_scoped_release{};
+            neo::direct_convolve(signal, patch, output_view);
+        }
+
         return output;
     }
 
@@ -192,8 +203,14 @@ template<std::floating_point Float>
 
 [[nodiscard]] auto rfftfreq(std::size_t n, double invSampleRate) -> py::array_t<double>
 {
-    auto out = py::array_t<double>(static_cast<py::ssize_t>(n));
-    neo::rfftfreq(to_mdspan_layout_right<1>(out), invSampleRate);
+    auto out  = py::array_t<double>(static_cast<py::ssize_t>(n));
+    auto view = to_mdspan_layout_right<1>(out);
+
+    {
+        auto no_gil = py::gil_scoped_release{};
+        neo::rfftfreq(view, invSampleRate);
+    }
+
     return out;
 }
 
