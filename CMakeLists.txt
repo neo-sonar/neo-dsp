@@ -73,7 +73,7 @@ target_sources(neo_dsp_tests
         "src/neo/fft/bluestein_test.cpp"
         "src/neo/fft/dct_test.cpp"
         "src/neo/fft/dft_test.cpp"
-        "src/neo/fft/fftfreq_test.cpp"
+        "src/neo/fft/rfftfreq_test.cpp"
         "src/neo/fft/fft_test.cpp"
         "src/neo/fft/rfft_test.cpp"
         "src/neo/fft/static_fft_test.cpp"

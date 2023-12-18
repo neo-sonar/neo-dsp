@@ -170,10 +170,10 @@ template<std::floating_point Float>
     return neo::amplitude_to_db<neo::precision::estimate, Float>(amplitude);
 }
 
-[[nodiscard]] auto fftfreq(std::size_t n, double invSampleRate) -> py::array_t<double>
+[[nodiscard]] auto rfftfreq(std::size_t n, double invSampleRate) -> py::array_t<double>
 {
     auto out = py::array_t<double>(static_cast<py::ssize_t>(n));
-    neo::fftfreq(to_mdspan_layout_right<1>(out), invSampleRate);
+    neo::rfftfreq(to_mdspan_layout_right<1>(out), invSampleRate);
     return out;
 }
 
@@ -184,7 +184,7 @@ PYBIND11_MODULE(_neo_dsp, m)
         .value("ortho", neo::fft::norm::ortho)
         .value("forward", neo::fft::norm::forward);
 
-    m.def("fftfreq", &fftfreq);
+    m.def("rfftfreq", &rfftfreq);
 
     m.def("fft", &fft<std::complex<float>, neo::fft::direction::forward>);
     m.def("fft", &fft<std::complex<double>, neo::fft::direction::forward>);

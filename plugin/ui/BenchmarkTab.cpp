@@ -9,7 +9,7 @@
 #include <neo/algorithm/normalize_peak.hpp>
 #include <neo/algorithm/root_mean_squared_error.hpp>
 #include <neo/container/sparse_matrix.hpp>
-#include <neo/fft/fftfreq.hpp>
+#include <neo/fft/rfftfreq.hpp>
 #include <neo/fft/stft.hpp>
 #include <neo/math/a_weighting.hpp>
 #include <neo/unit/decibel.hpp>
@@ -54,7 +54,7 @@ struct FrequencySpectrumWeighting
     {
         _weights.resize(static_cast<size_t>(size));
         for (auto i{0UL}; i < static_cast<size_t>(size); ++i) {
-            auto frequency = neo::fftfreq<float>(size, i, 1.0 / sr);
+            auto frequency = neo::rfftfreq<float>(size, i, 1.0 / sr);
             _weights[i]    = juce::exactlyEqual(frequency, 0.0F) ? 0.0F : neo::a_weighting(frequency);
         }
     }

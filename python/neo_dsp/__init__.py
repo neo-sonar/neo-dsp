@@ -26,10 +26,10 @@ NORM_MODE = {
 }
 
 
-def fftfreq(n, d=1.0) -> np.ndarray:
+def rfftfreq(n, d=1.0) -> np.ndarray:
     """Return the Discrete Fourier Transform sample frequencies.
     """
-    return _neo_dsp.fftfreq(n, d)
+    return _neo_dsp.rfftfreq(n, d)
 
 
 def fft(x, n=None, norm="backward") -> np.ndarray:

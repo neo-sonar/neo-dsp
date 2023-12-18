@@ -45,10 +45,10 @@ def test_amplitude_to_db_estimate(dtype, val, expected):
         val, precision="estimate") == approx(expected, rel=1e-4)
 
 
-def test_fftfreq():
-    assert neo.fftfreq(2) == approx([0.0, 0.5])
-    assert neo.fftfreq(2, 1.0 / 20.0) == approx([0.0, 10.0])
-    assert neo.fftfreq(2, 1.0 / 44100.0) == approx([0.0, 22050.0])
+def test_rfftfreq():
+    assert neo.rfftfreq(2) == approx([0.0, 0.5])
+    assert neo.rfftfreq(2, 1.0 / 20.0) == approx([0.0, 10.0])
+    assert neo.rfftfreq(2, 1.0 / 44100.0) == approx([0.0, 22050.0])
 
 
 def test_a_weighting():
