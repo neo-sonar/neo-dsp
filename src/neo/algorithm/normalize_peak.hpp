@@ -18,14 +18,14 @@ template<in_object InObj>
 {
     using Float = typename InObj::value_type;
 
-    auto absMax = Float(0);
+    auto abs_max = Float(0);
     if constexpr (InObj::rank() == 1) {
         if (obj.extent(0) == 0) {
             return Float(1);
         }
 
         for (decltype(obj.extent(0)) i{0}; i < obj.extent(0); ++i) {
-            absMax = std::max(absMax, std::abs(obj[i]));
+            abs_max = std::max(abs_max, std::abs(obj[i]));
         }
 
     } else {
@@ -35,16 +35,16 @@ template<in_object InObj>
 
         for (decltype(obj.extent(0)) i{0}; i < obj.extent(0); ++i) {
             for (decltype(obj.extent(1)) j{0}; j < obj.extent(1); ++j) {
-                absMax = std::max(absMax, std::abs(obj(i, j)));
+                abs_max = std::max(abs_max, std::abs(obj(i, j)));
             }
         }
     }
 
-    if (float_equality::exact(absMax, Float(0))) {
+    if (float_equality::exact(abs_max, Float(0))) {
         return Float(1);
     }
 
-    return Float(1) / std::abs(absMax);
+    return Float(1) / std::abs(abs_max);
 }
 
 // normalized_sample = sample / max(abs(buffer))
