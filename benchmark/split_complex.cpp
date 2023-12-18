@@ -20,11 +20,11 @@
 namespace {
 
 template<typename Func>
-auto timeit(std::string_view name, size_t sizeOfT, size_t N, Func func)
+auto timeit(std::string_view name, size_t size_of_t, size_t n, Func func)
 {
     using microseconds = std::chrono::duration<double, std::micro>;
 
-    auto const size       = N;
+    auto const size       = n;
     auto const iterations = 25'000U;
     auto const margin     = iterations / 20U;
 
@@ -44,9 +44,15 @@ auto timeit(std::string_view name, size_t sizeOfT, size_t N, Func func)
 
     auto const runs = std::span{all_runs}.subspan(margin, all_runs.size() - static_cast<std::size_t>(margin) * 2);
     auto const avg  = std::reduce(runs.begin(), runs.end(), 0.0) / double(runs.size());
-    auto const itemsPerSec     = static_cast<int>(std::lround(double(size) / avg));
-    auto const megaBytesPerSec = std::round(double(size * sizeOfT) / avg) / 1000.0;
-    fmt::println("{:<32} avg: {:.1f}us - GB/sec: {:.2f} - N/usec: {}", name.data(), avg, megaBytesPerSec, itemsPerSec);
+    auto const items_per_sec      = static_cast<int>(std::lround(double(size) / avg));
+    auto const mega_bytes_per_sec = std::round(double(size * size_of_t) / avg) / 1000.0;
+    fmt::println(
+        "{:<32} avg: {:.1f}us - GB/sec: {:.2f} - N/usec: {}",
+        name.data(),
+        avg,
+        mega_bytes_per_sec,
+        items_per_sec
+    );
 }
 
 template<typename Float>
@@ -158,18 +164,18 @@ private:
 
 auto main() -> int
 {
-    static constexpr auto N = 131072U;
+    static constexpr auto n = 131072U;
 
 #if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
-    // timeit("multiply_add(split_complex<_Float16>):    ", 4, N, split_complex_fma<_Float16>{N});
+    // timeit("multiply_add(split_complex<_Float16>):    ", 4, n, split_complex_fma<_Float16>{n});
 #endif
-    timeit("multiply_add(split_complex<float>):    ", 4, N, split_complex_fma<float>{N});
-    timeit("multiply_add(split_complex<double>):   ", 8, N, split_complex_fma<double>{N});
+    timeit("multiply_add(split_complex<float>):    ", 4, n, split_complex_fma<float>{n});
+    timeit("multiply_add(split_complex<double>):   ", 8, n, split_complex_fma<double>{n});
     std::puts("\n");
 
 #if defined(NEO_HAS_SIMD_AVX)
-    timeit("multiply_add(split_complex<float>):  ", 4, N, split_complex_fma_avx<float>{N});
-    // timeit("multiply_add(split_complex<double>): ", 8, N, split_complex_fma_avx<double>{N});
+    timeit("multiply_add(split_complex<float>):  ", 4, n, split_complex_fma_avx<float>{n});
+    // timeit("multiply_add(split_complex<double>): ", 8, n, split_complex_fma_avx<double>{n});
 #endif
     return EXIT_SUCCESS;
 }

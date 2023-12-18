@@ -17,7 +17,7 @@
 namespace {
 
 template<typename Func>
-auto timeit(std::string_view name, size_t N, Func func)
+auto timeit(std::string_view name, size_t n, Func func)
 {
     using microseconds = std::chrono::duration<double, std::micro>;
 
@@ -37,7 +37,7 @@ auto timeit(std::string_view name, size_t N, Func func)
     std::sort(all_runs.data(), std::next(all_runs.data(), ptrdiff_t(all_runs.size())));
 
     auto const runs   = stdex::submdspan(all_runs.to_mdspan(), std::tuple{padding, all_runs.extent(0) - padding});
-    auto const dsize  = static_cast<double>(N);
+    auto const dsize  = static_cast<double>(n);
     auto const avg    = neo::mean(runs);
     auto const stddev = neo::standard_deviation(runs);
     if (not avg or not stddev) {
@@ -50,7 +50,7 @@ auto timeit(std::string_view name, size_t N, Func func)
     fmt::println(
         "{:<32} N: {:<5} - runs: {} - avg: {:.1f}us - stddev: {:.1f}us - min: {:.1f}us - max: {:.1f}us - mflops: {}",
         name.data(),
-        N,
+        n,
         all_runs.extent(0),
         *avg,
         *stddev,
@@ -194,49 +194,49 @@ auto main(int argc, char** argv) -> int
 
     auto const args = std::span<char const* const>{argv, size_t(argc)};
 
-    auto N = 1024UL;
+    auto n = 1024UL;
     if (args.size() == 2) {
-        N = std::stoul(args[1]);
+        n = std::stoul(args[1]);
     }
 
 #if defined(NEO_PLATFORM_APPLE)
-    timeit("apple_vdsp_parallel<float>  ", N, vdsp_fft_bench<float>{N});
-    timeit("apple_vdsp<complex<float>>  ", N, fft_bench<fft_apple_vdsp_plan<std::complex<float>>>{N});
-    timeit("apple_vdsp<complex64>       ", N, fft_bench<fft_apple_vdsp_plan<neo::complex64>>{N});
+    timeit("apple_vdsp_parallel<float>  ", n, vdsp_fft_bench<float>{n});
+    timeit("apple_vdsp<complex<float>>  ", n, fft_bench<fft_apple_vdsp_plan<std::complex<float>>>{n});
+    timeit("apple_vdsp<complex64>       ", n, fft_bench<fft_apple_vdsp_plan<neo::complex64>>{n});
     std::puts("\n");
 #endif
 
-    timeit("fft<complex<float>, v1>", N, fft_bench<fft_plan<std::complex<float>, kernel::c2c_dit2_v1>>{N});
-    timeit("fft<complex<float>, v2>", N, fft_bench<fft_plan<std::complex<float>, kernel::c2c_dit2_v2>>{N});
-    timeit("fft<complex<float>, v3>", N, fft_bench<fft_plan<std::complex<float>, kernel::c2c_dit2_v3>>{N});
+    timeit("fft<complex<float>, v1>", n, fft_bench<fft_plan<std::complex<float>, kernel::c2c_dit2_v1>>{n});
+    timeit("fft<complex<float>, v2>", n, fft_bench<fft_plan<std::complex<float>, kernel::c2c_dit2_v2>>{n});
+    timeit("fft<complex<float>, v3>", n, fft_bench<fft_plan<std::complex<float>, kernel::c2c_dit2_v3>>{n});
     std::puts("\n");
 
-    timeit("fft<complex64, v1>", N, fft_bench<fft_plan<neo::complex64, kernel::c2c_dit2_v1>>{N});
-    timeit("fft<complex64, v2>", N, fft_bench<fft_plan<neo::complex64, kernel::c2c_dit2_v2>>{N});
-    timeit("fft<complex64, v3>", N, fft_bench<fft_plan<neo::complex64, kernel::c2c_dit2_v3>>{N});
+    timeit("fft<complex64, v1>", n, fft_bench<fft_plan<neo::complex64, kernel::c2c_dit2_v1>>{n});
+    timeit("fft<complex64, v2>", n, fft_bench<fft_plan<neo::complex64, kernel::c2c_dit2_v2>>{n});
+    timeit("fft<complex64, v3>", n, fft_bench<fft_plan<neo::complex64, kernel::c2c_dit2_v3>>{n});
     std::puts("\n");
 
-    timeit("fftr<float>", N, fftr_bench<experimental::fft_plan<float>>{N});
+    timeit("fftr<float>", n, fftr_bench<experimental::fft_plan<float>>{n});
     std::puts("\n");
 
 #if defined(NEO_PLATFORM_APPLE)
-    timeit("apple_vdsp_parallel<double> ", N, vdsp_fft_bench<double>{N});
-    timeit("apple_vdsp<complex<double>> ", N, fft_bench<fft_apple_vdsp_plan<std::complex<double>>>{N});
-    timeit("apple_vdsp<complex128>      ", N, fft_bench<fft_apple_vdsp_plan<neo::complex128>>{N});
+    timeit("apple_vdsp_parallel<double> ", n, vdsp_fft_bench<double>{n});
+    timeit("apple_vdsp<complex<double>> ", n, fft_bench<fft_apple_vdsp_plan<std::complex<double>>>{n});
+    timeit("apple_vdsp<complex128>      ", n, fft_bench<fft_apple_vdsp_plan<neo::complex128>>{n});
     std::puts("\n");
 #endif
 
-    timeit("fft<complex<double>, v1>", N, fft_bench<fft_plan<std::complex<double>, kernel::c2c_dit2_v1>>{N});
-    timeit("fft<complex<double>, v2>", N, fft_bench<fft_plan<std::complex<double>, kernel::c2c_dit2_v2>>{N});
-    timeit("fft<complex<double>, v3>", N, fft_bench<fft_plan<std::complex<double>, kernel::c2c_dit2_v3>>{N});
+    timeit("fft<complex<double>, v1>", n, fft_bench<fft_plan<std::complex<double>, kernel::c2c_dit2_v1>>{n});
+    timeit("fft<complex<double>, v2>", n, fft_bench<fft_plan<std::complex<double>, kernel::c2c_dit2_v2>>{n});
+    timeit("fft<complex<double>, v3>", n, fft_bench<fft_plan<std::complex<double>, kernel::c2c_dit2_v3>>{n});
     std::puts("\n");
 
-    timeit("fft<complex128, v1>", N, fft_bench<fft_plan<neo::complex128, kernel::c2c_dit2_v1>>{N});
-    timeit("fft<complex128, v2>", N, fft_bench<fft_plan<neo::complex128, kernel::c2c_dit2_v2>>{N});
-    timeit("fft<complex128, v3>", N, fft_bench<fft_plan<neo::complex128, kernel::c2c_dit2_v3>>{N});
+    timeit("fft<complex128, v1>", n, fft_bench<fft_plan<neo::complex128, kernel::c2c_dit2_v1>>{n});
+    timeit("fft<complex128, v2>", n, fft_bench<fft_plan<neo::complex128, kernel::c2c_dit2_v2>>{n});
+    timeit("fft<complex128, v3>", n, fft_bench<fft_plan<neo::complex128, kernel::c2c_dit2_v3>>{n});
     std::puts("\n");
 
-    timeit("fftr<double>", N, fftr_bench<experimental::fft_plan<double>>{N});
+    timeit("fftr<double>", n, fftr_bench<experimental::fft_plan<double>>{n});
     std::puts("\n");
 
     return EXIT_SUCCESS;
