@@ -196,13 +196,13 @@ template<neo::convolution_method Method, std::floating_point Float>
 }
 
 template<std::floating_point Float>
-[[nodiscard]] auto to_decibels(Float amplitude) -> Float
+[[nodiscard]] auto amplitude_to_db(Float amplitude) -> Float
 {
     return neo::amplitude_to_db<neo::precision::accurate, Float>(amplitude);
 }
 
 template<std::floating_point Float>
-[[nodiscard]] auto to_decibels_estimate(Float amplitude) -> Float
+[[nodiscard]] auto amplitude_to_db_estimate(Float amplitude) -> Float
 {
     return neo::amplitude_to_db<neo::precision::estimate, Float>(amplitude);
 }
@@ -255,11 +255,11 @@ PYBIND11_MODULE(_neo_dsp, m)
     m.def("fft_convolve", &convolve<neo::convolution_method::fft, float>);
     m.def("fft_convolve", &convolve<neo::convolution_method::fft, double>);
 
-    m.def("amplitude_to_db", py::vectorize(to_decibels<float>));
-    m.def("amplitude_to_db", py::vectorize(to_decibels<double>));
+    m.def("amplitude_to_db", py::vectorize(amplitude_to_db<float>));
+    m.def("amplitude_to_db", py::vectorize(amplitude_to_db<double>));
 
-    m.def("amplitude_to_db_estimate", py::vectorize(to_decibels_estimate<float>));
-    m.def("amplitude_to_db_estimate", py::vectorize(to_decibels_estimate<double>));
+    m.def("amplitude_to_db_estimate", py::vectorize(amplitude_to_db_estimate<float>));
+    m.def("amplitude_to_db_estimate", py::vectorize(amplitude_to_db_estimate<double>));
 
     m.def("a_weighting", py::vectorize(neo::a_weighting<float>));
     m.def("a_weighting", py::vectorize(neo::a_weighting<double>));
