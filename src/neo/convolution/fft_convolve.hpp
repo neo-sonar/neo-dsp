@@ -1,6 +1,7 @@
 #pragma once
 
 #include <neo/algorithm/copy.hpp>
+#include <neo/algorithm/fill.hpp>
 #include <neo/algorithm/multiply.hpp>
 #include <neo/algorithm/scale.hpp>
 #include <neo/container/mdspan.hpp>
@@ -30,25 +31,33 @@ auto fft_convolve(Signal signal, Patch patch)
 
     auto plan = fft::rfft_plan<Float>{fft_order};
 
-    auto output_padded   = stdex::mdarray<Float, stdex::dextents<size_t, 1>>{fft_size};
-    auto signal_padded   = stdex::mdarray<Float, stdex::dextents<size_t, 1>>{fft_size};
-    auto patch_padded    = stdex::mdarray<Float, stdex::dextents<size_t, 1>>{fft_size};
+    auto tmp_buf = stdex::mdarray<Float, stdex::dextents<size_t, 1>>{fft_size};
+    auto tmp     = tmp_buf.to_mdspan();
+
     auto signal_spectrum = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>>{num_coeff};
     auto patch_spectrum  = stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>>{num_coeff};
 
-    copy(signal, stdex::submdspan(signal_padded.to_mdspan(), std::tuple{0, signal.extent(0)}));
-    copy(patch, stdex::submdspan(patch_padded.to_mdspan(), std::tuple{0, patch.extent(0)}));
+    // Signal R2C
+    copy(signal, stdex::submdspan(tmp, std::tuple{0, signal.extent(0)}));
+    fill(stdex::submdspan(tmp, std::tuple{signal.extent(0), tmp.extent(0)}), Float(0));
+    rfft(plan, tmp, signal_spectrum.to_mdspan());
 
-    rfft(plan, signal_padded.to_mdspan(), signal_spectrum.to_mdspan());
-    rfft(plan, patch_padded.to_mdspan(), patch_spectrum.to_mdspan());
+    // Patch R2C
+    copy(patch, stdex::submdspan(tmp, std::tuple{0, patch.extent(0)}));
+    fill(stdex::submdspan(tmp, std::tuple{patch.extent(0), tmp.extent(0)}), Float(0));
+    rfft(plan, tmp, patch_spectrum.to_mdspan());
 
+    // Convolve
     multiply(signal_spectrum.to_mdspan(), patch_spectrum.to_mdspan(), signal_spectrum.to_mdspan());
 
-    irfft(plan, signal_spectrum.to_mdspan(), output_padded.to_mdspan());
-    scale(Float(1) / Float(fft_size), output_padded.to_mdspan());
+    // C2R
+    fill(tmp, Float(0));
+    irfft(plan, signal_spectrum.to_mdspan(), tmp);
+    scale(Float(1) / Float(fft_size), tmp);
 
+    // Copy to output
     auto output = stdex::mdarray<Float, stdex::dextents<size_t, 1>>{size};
-    copy(stdex::submdspan(output_padded.to_mdspan(), std::tuple{0, size}), output.to_mdspan());
+    copy(stdex::submdspan(tmp, std::tuple{0, size}), output.to_mdspan());
     return output;
 }
 

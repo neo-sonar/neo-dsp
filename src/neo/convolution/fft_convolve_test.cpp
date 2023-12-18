@@ -12,6 +12,12 @@ TEMPLATE_TEST_CASE("neo/convolution: fft_convolve", "", float, double)
 {
     using Float = TestType;
 
+    auto const empty = stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>{0};
+    auto const one   = stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>{0};
+    REQUIRE(neo::fft_convolve(empty.to_mdspan(), empty.to_mdspan()).extent(0) == 0);
+    REQUIRE(neo::fft_convolve(one.to_mdspan(), empty.to_mdspan()).extent(0) == 0);
+    REQUIRE(neo::fft_convolve(empty.to_mdspan(), one.to_mdspan()).extent(0) == 0);
+
     auto const signal_size = GENERATE(as<std::size_t>{}, 8, 9, 10, 64, 78, 143, 256, 444, 666, 1024);
     auto const patch_size  = GENERATE(as<std::size_t>{}, 4, 8, 9, 10, 64, 78, 143, 256, 444, 666, 1024);
 
