@@ -17,6 +17,29 @@ def test_fft(n, complex):
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("signal_size", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+@pytest.mark.parametrize("patch_size", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+def test_convolve(dtype, signal_size, patch_size):
+    signal = np.random.rand(signal_size).astype(dtype)
+    patch = np.zeros(patch_size, dtype=dtype)
+    patch[0] = 1.0
+
+    convolved = neo.convolve(signal, patch)
+
+    assert convolved.shape[0] == signal.shape[0] + patch.shape[0] - 1
+    assert convolved[:signal_size] == approx(signal)
+
+    with pytest.raises(RuntimeError):
+        neo.convolve(signal, patch, mode="valid")
+
+    with pytest.raises(RuntimeError):
+        neo.convolve(signal, patch, mode="same")
+
+    with pytest.raises(NotImplementedError):
+        neo.convolve(signal, patch, method="fft")
+
+
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_fast_log2(dtype):
     values = np.array([64.0, 128.0, 512.0, 2048.0], dtype=dtype)
     assert neo.fast_log2(values) == approx(np.log2(values))

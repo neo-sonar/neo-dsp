@@ -21,6 +21,12 @@ __all__ = [
     "fft",
 ]
 
+CONVOLUTION_MODE = {
+    "full": _neo_dsp.convolution.full,
+    "valid": _neo_dsp.convolution.valid,
+    "same": _neo_dsp.convolution.same,
+}
+
 
 def amplitude_to_db(x, precision="accurate") -> np.ndarray:
     """Convert an amplitude to dB-Scale.
@@ -28,3 +34,12 @@ def amplitude_to_db(x, precision="accurate") -> np.ndarray:
     if precision == "estimate":
         return _neo_dsp.amplitude_to_db_estimate(x)
     return _neo_dsp.amplitude_to_db(x)
+
+
+def convolve(in1: np.ndarray, in2: np.ndarray, mode: str = "full", method: str = "auto") -> np.ndarray:
+    """Convolve two 1-dimensional arrays.
+    """
+    if method == "fft":
+        raise NotImplementedError("method 'fft' is not implemented")
+
+    return _neo_dsp.direct_convolve(in1, in2, CONVOLUTION_MODE[mode])

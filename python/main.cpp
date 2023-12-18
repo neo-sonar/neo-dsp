@@ -1,5 +1,6 @@
 #include <neo/algorithm.hpp>
 #include <neo/complex.hpp>
+#include <neo/convolution.hpp>
 #include <neo/fft.hpp>
 #include <neo/math.hpp>
 #include <neo/unit.hpp>
@@ -159,6 +160,25 @@ auto fft(py::array_t<Complex> array, std::optional<std::size_t> n, neo::fft::nor
 }
 
 template<std::floating_point Float>
+auto direct_convolve(py::array_t<Float> in1, py::array_t<Float> in2, neo::convolution mode) -> py::array_t<Float>
+{
+    if (in1.ndim() != 1 or in1.ndim() != 1) {
+        throw std::runtime_error{"unsupported dimension: in1 and in2 must be 1-D"};
+    }
+
+    auto const signal = to_mdspan_layout_stride<1>(in1);
+    auto const patch  = to_mdspan_layout_stride<1>(in2);
+
+    if (mode == neo::convolution::full) {
+        auto output = py::array_t<Float>(static_cast<py::ssize_t>(signal.extent(0) + patch.extent(0) - 1));
+        neo::direct_convolve(signal, patch, to_mdspan_layout_right<1>(output));
+        return output;
+    }
+
+    throw std::runtime_error{"unsupported convolution mode"};
+}
+
+template<std::floating_point Float>
 [[nodiscard]] auto to_decibels(Float amplitude) -> Float
 {
     return neo::amplitude_to_db<neo::precision::accurate, Float>(amplitude);
@@ -184,6 +204,11 @@ PYBIND11_MODULE(_neo_dsp, m)
         .value("ortho", neo::fft::norm::ortho)
         .value("forward", neo::fft::norm::forward);
 
+    py::enum_<neo::convolution>(m, "convolution")
+        .value("full", neo::convolution::full)
+        .value("valid", neo::convolution::valid)
+        .value("same", neo::convolution::same);
+
     m.def("rfftfreq", &rfftfreq);
 
     m.def("fft", &fft<std::complex<float>, neo::fft::direction::forward>);
@@ -191,6 +216,9 @@ PYBIND11_MODULE(_neo_dsp, m)
 
     m.def("ifft", &fft<std::complex<float>, neo::fft::direction::backward>);
     m.def("ifft", &fft<std::complex<double>, neo::fft::direction::backward>);
+
+    m.def("direct_convolve", &direct_convolve<float>);
+    m.def("direct_convolve", &direct_convolve<double>);
 
     m.def("amplitude_to_db", py::vectorize(to_decibels<float>));
     m.def("amplitude_to_db", py::vectorize(to_decibels<double>));
