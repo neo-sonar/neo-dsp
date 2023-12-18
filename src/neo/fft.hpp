@@ -9,8 +9,9 @@
 #include <neo/fft/dft.hpp>
 #include <neo/fft/direction.hpp>
 #include <neo/fft/fft.hpp>
-#include <neo/fft/fftfreq.hpp>
+#include <neo/fft/norm.hpp>
 #include <neo/fft/rfft.hpp>
+#include <neo/fft/rfftfreq.hpp>
 #include <neo/fft/stft.hpp>
 #include <neo/fft/twiddle.hpp>
 

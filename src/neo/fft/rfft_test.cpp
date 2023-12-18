@@ -77,12 +77,12 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_deinterleave", "", (std::complex, neo:
     using Complex = TestType;
     using Float   = typename Complex::value_type;
 
-    auto const order     = GENERATE(as<std::size_t>{}, 4, 5, 6, 7, 8);
-    auto const size      = std::size_t(1) << order;
-    auto const numCoeffs = size / 2 + 1;
+    auto const order      = GENERATE(as<std::size_t>{}, 4, 5, 6, 7, 8);
+    auto const size       = std::size_t(1) << order;
+    auto const num_coeffs = size / 2 + 1;
     CAPTURE(order);
     CAPTURE(size);
-    CAPTURE(numCoeffs);
+    CAPTURE(num_coeffs);
 
     auto fft = neo::fft::fft_plan<Complex>{order};
     REQUIRE(fft.size() == size);
@@ -101,8 +101,8 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_deinterleave", "", (std::complex, neo:
     std::generate(a.data(), a.data() + a.size(), random);
     std::generate(b.data(), b.data() + b.size(), random);
 
-    auto a_rev = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{numCoeffs};
-    auto b_rev = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{numCoeffs};
+    auto a_rev = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{num_coeffs};
+    auto b_rev = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{num_coeffs};
     rfft(a.to_mdspan(), a_rev.to_mdspan());
     rfft(b.to_mdspan(), b_rev.to_mdspan());
 
@@ -112,8 +112,8 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_deinterleave", "", (std::complex, neo:
 
     fft(inout.to_mdspan(), neo::fft::direction::forward);
 
-    auto ca = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{numCoeffs};
-    auto cb = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{numCoeffs};
+    auto ca = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{num_coeffs};
+    auto cb = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{num_coeffs};
     neo::fft::rfft_deinterleave(inout.to_mdspan(), ca.to_mdspan(), cb.to_mdspan());
 
     REQUIRE(neo::allclose(a_rev.to_mdspan(), ca.to_mdspan()));

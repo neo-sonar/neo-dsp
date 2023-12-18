@@ -20,16 +20,16 @@ auto dft(InVec in, OutVec out, direction dir = direction::forward) -> void
 
     assert(detail::extents_equal(in, out));
 
-    static constexpr auto const pi = static_cast<Float>(std::numbers::pi);
-    auto const sign                = dir == direction::forward ? Float(-1) : Float(1);
+    static constexpr auto const two_pi = static_cast<Float>(std::numbers::pi * 2.0);
 
-    auto const N = in.extent(0);
-    for (std::size_t k = 0; k < N; ++k) {
+    auto const sign = dir == direction::forward ? Float(-1) : Float(1);
+    auto const size = in.extent(0);
+
+    for (std::size_t k = 0; k < size; ++k) {
         auto tmp = Complex{};
-        for (std::size_t n = 0; n < N; ++n) {
-            using std::polar;
+        for (std::size_t n = 0; n < size; ++n) {
             auto const input = in(n);
-            auto const w     = std::polar(Float(1), sign * Float(2) * pi * Float(n) * Float(k) / Float(N));
+            auto const w     = std::polar(Float(1), sign * two_pi * Float(n) * Float(k) / Float(size));
             tmp += input * w;
         }
         out(k) = tmp;

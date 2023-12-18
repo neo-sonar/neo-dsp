@@ -65,10 +65,10 @@ sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(InMat
     : sparse_matrix{matrix.extent(0), matrix.extent(1)}
 {
     auto count = 0UL;
-    for (auto rowIdx{0UL}; rowIdx < matrix.extent(0); ++rowIdx) {
-        auto const row = stdex::submdspan(matrix, rowIdx, stdex::full_extent);
+    for (auto row_idx{0UL}; row_idx < matrix.extent(0); ++row_idx) {
+        auto const row = stdex::submdspan(matrix, row_idx, stdex::full_extent);
         for (auto col{0UL}; col < matrix.extent(1); ++col) {
-            if (filter(rowIdx, col, row(col))) {
+            if (filter(row_idx, col, row(col))) {
                 ++count;
             }
         }
@@ -78,12 +78,12 @@ sparse_matrix<T, IndexType, ValueContainer, IndexContainer>::sparse_matrix(InMat
     _columIndices.resize(count);
 
     auto idx = 0UL;
-    for (auto rowIdx{0UL}; rowIdx < matrix.extent(0); ++rowIdx) {
-        auto const row      = stdex::submdspan(matrix, rowIdx, stdex::full_extent);
-        _rowIndices[rowIdx] = idx;
+    for (auto row_idx{0UL}; row_idx < matrix.extent(0); ++row_idx) {
+        auto const row       = stdex::submdspan(matrix, row_idx, stdex::full_extent);
+        _rowIndices[row_idx] = idx;
 
         for (auto col{0UL}; col < matrix.extent(1); ++col) {
-            if (auto const& val = row(col); filter(rowIdx, col, val)) {
+            if (auto const& val = row(col); filter(row_idx, col, val)) {
                 _values[idx]       = val;
                 _columIndices[idx] = col;
                 ++idx;

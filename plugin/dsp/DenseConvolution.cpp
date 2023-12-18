@@ -4,7 +4,7 @@
 
 #include <neo/convolution/normalize_impulse.hpp>
 #include <neo/convolution/uniform_partition.hpp>
-#include <neo/fft/fftfreq.hpp>
+#include <neo/fft/rfftfreq.hpp>
 #include <neo/math/a_weighting.hpp>
 #include <neo/math/bit_ceil.hpp>
 #include <neo/unit/decibel.hpp>
@@ -176,7 +176,7 @@ auto sparse_convolve(
         std::fill(w.begin(), std::next(w.begin(), lowBinsToKeep), 100.0F);
 
         for (auto i{lowBinsToKeep}; i < std::ssize(w); ++i) {
-            auto const frequency = neo::fftfreq<float>(K, i, sampleRate);
+            auto const frequency = neo::rfftfreq<float>(K, i, 1.0 / sampleRate);
             auto const weight    = neo::a_weighting(frequency);
 
             w[static_cast<std::size_t>(i)] = weight;
@@ -195,7 +195,7 @@ auto sparse_convolve(
         auto const isAboveThreshold = [thresholdDB, scale, &weights](auto /*row*/, auto col, auto bin) {
             auto const gain  = std::abs(bin);
             auto const power = gain * gain;
-            auto const dB    = to_decibels(power * scale) * 0.5F + weights[col];
+            auto const dB    = amplitude_to_db(power * scale) * 0.5F + weights[col];
             return dB > thresholdDB;
         };
 

@@ -89,16 +89,16 @@ struct c2c_dit2_v2
 
         auto stage_size = 4U;
         while (stage_size <= size) {
-            auto const halfStage = stage_size / 2;
-            auto const k_step    = size / stage_size;
+            auto const half_stage = stage_size / 2;
+            auto const k_step     = size / stage_size;
 
             for (auto i{0U}; i < size; i += stage_size) {
-                for (auto k{i}; k < i + halfStage; ++k) {
+                for (auto k{i}; k < i + half_stage; ++k) {
                     auto const index = k - i;
                     auto const tw    = twiddles[index * k_step];
 
                     auto const idx1 = k;
-                    auto const idx2 = k + halfStage;
+                    auto const idx2 = k + half_stage;
 
                     auto const even = x[idx1];
                     auto const odd  = x[idx2];

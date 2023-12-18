@@ -151,15 +151,15 @@ namespace simd {
 
 template<typename ScalarType>
 inline constexpr auto apply_kernel = [](auto lhs, auto rhs, auto out, auto scalar_kernel, auto vector_kernel) {
-    static constexpr auto valueSizeBits = sizeof(ScalarType) * 8UL;
-    static constexpr auto vectorSize    = static_cast<ptrdiff_t>(128 / valueSizeBits);
-    auto const remainder                = static_cast<ptrdiff_t>(lhs.size()) % vectorSize;
+    static constexpr auto value_size_bits = sizeof(ScalarType) * 8UL;
+    static constexpr auto vector_size     = static_cast<ptrdiff_t>(128 / value_size_bits);
+    auto const remainder                  = static_cast<ptrdiff_t>(lhs.size()) % vector_size;
 
     for (auto i{0}; i < remainder; ++i) {
         out[static_cast<size_t>(i)] = scalar_kernel(lhs[static_cast<size_t>(i)], rhs[static_cast<size_t>(i)]);
     }
 
-    for (auto i{remainder}; i < std::ssize(lhs); i += vectorSize) {
+    for (auto i{remainder}; i < std::ssize(lhs); i += vector_size) {
         auto const left  = _mm_loadu_si128(reinterpret_cast<__m128i const*>(std::next(lhs.data(), i)));
         auto const right = _mm_loadu_si128(reinterpret_cast<__m128i const*>(std::next(rhs.data(), i)));
         _mm_storeu_si128(reinterpret_cast<__m128i*>(std::next(out.data(), i)), vector_kernel(left, right));

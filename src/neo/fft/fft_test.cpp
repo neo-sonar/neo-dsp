@@ -62,11 +62,11 @@ auto test_fft_plan()
 
     SECTION("copy")
     {
-        auto tmpBuf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
-        auto outBuf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
+        auto tmp_buf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
+        auto out_buf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
 
-        auto tmp = tmpBuf.to_mdspan();
-        auto out = outBuf.to_mdspan();
+        auto tmp = tmp_buf.to_mdspan();
+        auto out = out_buf.to_mdspan();
 
         neo::fft::fft(plan, noise.to_mdspan(), tmp);
         neo::fft::ifft(plan, tmp, out);

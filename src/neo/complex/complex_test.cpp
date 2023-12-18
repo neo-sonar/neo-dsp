@@ -57,32 +57,6 @@ TEST_CASE("neo/complex: complex")
     STATIC_REQUIRE(not neo::complex<unsigned long long>);
 }
 
-TEST_CASE("neo/complex: float_or_complex")
-{
-    STATIC_REQUIRE(neo::float_or_complex<float>);
-    STATIC_REQUIRE(neo::float_or_complex<double>);
-    STATIC_REQUIRE(neo::float_or_complex<long double>);
-
-    STATIC_REQUIRE(neo::float_or_complex<std::complex<float>>);
-    STATIC_REQUIRE(neo::float_or_complex<std::complex<double>>);
-    STATIC_REQUIRE(neo::float_or_complex<std::complex<long double>>);
-
-    STATIC_REQUIRE(neo::float_or_complex<neo::complex64>);
-    STATIC_REQUIRE(neo::float_or_complex<neo::complex128>);
-
-    STATIC_REQUIRE(not neo::float_or_complex<signed char>);
-    STATIC_REQUIRE(not neo::float_or_complex<signed short>);
-    STATIC_REQUIRE(not neo::float_or_complex<signed int>);
-    STATIC_REQUIRE(not neo::float_or_complex<signed long>);
-    STATIC_REQUIRE(not neo::float_or_complex<signed long long>);
-
-    STATIC_REQUIRE(not neo::float_or_complex<unsigned char>);
-    STATIC_REQUIRE(not neo::float_or_complex<unsigned short>);
-    STATIC_REQUIRE(not neo::float_or_complex<unsigned int>);
-    STATIC_REQUIRE(not neo::float_or_complex<unsigned long>);
-    STATIC_REQUIRE(not neo::float_or_complex<unsigned long long>);
-}
-
 TEST_CASE("neo/complex: real_or_complex_value_t")
 {
     using neo::real_or_complex_value_t;

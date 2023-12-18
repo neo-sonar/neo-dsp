@@ -14,28 +14,28 @@ TEMPLATE_TEST_CASE("neo/algorithm: copy", "", float, double, std::complex<float>
 
     SECTION("vector")
     {
-        auto const makeVector = [size](Float val) {
+        auto const make_vector = [size](Float val) {
             auto vec = stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>{size};
             neo::fill(vec.to_mdspan(), val);
             return vec;
         };
 
-        auto out      = makeVector(Float(0));
-        auto const in = makeVector(Float(1));
+        auto out      = make_vector(Float(0));
+        auto const in = make_vector(Float(1));
         neo::copy(in.to_mdspan(), out.to_mdspan());
         REQUIRE(neo::allclose(in.to_mdspan(), out.to_mdspan()));
     }
 
     SECTION("matrix")
     {
-        auto const makeMatrix = [size](Float val) {
+        auto const make_matrix = [size](Float val) {
             auto vec = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{size, size};
             neo::fill(vec.to_mdspan(), val);
             return vec;
         };
 
-        auto out      = makeMatrix(Float(0));
-        auto const in = makeMatrix(Float(1));
+        auto out      = make_matrix(Float(0));
+        auto const in = make_matrix(Float(1));
         neo::copy(in.to_mdspan(), out.to_mdspan());
         REQUIRE(neo::allclose(in.to_mdspan(), out.to_mdspan()));
     }

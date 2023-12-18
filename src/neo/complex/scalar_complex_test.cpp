@@ -15,7 +15,6 @@ auto test_floating_point(TestType tolerance)
 
     STATIC_REQUIRE(neo::is_complex<neo::scalar_complex<Float>>);
     STATIC_REQUIRE(neo::complex<neo::scalar_complex<Float>>);
-    STATIC_REQUIRE(neo::float_or_complex<neo::scalar_complex<Float>>);
     STATIC_REQUIRE(std::same_as<neo::real_or_complex_value_t<neo::scalar_complex<Float>>, Float>);
     STATIC_REQUIRE(std::same_as<typename Complex::value_type, Float>);
 
@@ -61,7 +60,6 @@ auto test_fixed_point()
 
     STATIC_REQUIRE(neo::is_complex<neo::scalar_complex<FixedPoint>>);
     STATIC_REQUIRE(neo::complex<neo::scalar_complex<FixedPoint>>);
-    STATIC_REQUIRE(neo::float_or_complex<neo::scalar_complex<FixedPoint>>);
     STATIC_REQUIRE(std::same_as<neo::real_or_complex_value_t<neo::scalar_complex<FixedPoint>>, FixedPoint>);
     STATIC_REQUIRE(std::same_as<typename Complex::value_type, FixedPoint>);
 

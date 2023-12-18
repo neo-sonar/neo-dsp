@@ -29,7 +29,7 @@ auto powerSpectrumImage(
         auto const weight     = weighting(static_cast<std::size_t>(y));
         auto const power      = bin * bin;
         auto const normalized = power * scale;
-        auto const dB         = neo::to_decibels(normalized, -144.0F) * 0.5F + weight;
+        auto const dB         = neo::amplitude_to_db(normalized, -144.0F) * 0.5F + weight;
         auto const color      = dB < threshold ? juce::Colours::white : juce::Colours::black;
         img.setPixelAt(x, y, color);
     };
@@ -74,7 +74,7 @@ auto powerHistogram(
             auto const bin        = std::abs(spectogram(frameIdx, binIdx));
             auto const power      = bin * bin;
             auto const normalized = power * scale;
-            auto const dB         = neo::to_decibels(normalized, -144.0F) * 0.5F + weight;
+            auto const dB         = neo::amplitude_to_db(normalized, -144.0F) * 0.5F + weight;
             auto const dBClamped  = std::clamp(dB, -143.0F, 0.0F);
             auto const index      = static_cast<std::size_t>(juce::roundToInt(std::abs(dBClamped)));
             histogram[index] += 1;

@@ -1,12 +1,20 @@
+#include <neo/algorithm.hpp>
+#include <neo/complex.hpp>
+#include <neo/convolution.hpp>
 #include <neo/fft.hpp>
 #include <neo/math.hpp>
+#include <neo/unit.hpp>
 
+#include <pybind11/complex.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
+#include <bit>
 #include <complex>
 #include <cstdio>
 #include <iostream>
+#include <optional>
 #include <typeindex>
 
 namespace py = pybind11;
@@ -55,89 +63,209 @@ template<size_t Dim, typename T, int Flags>
 }
 
 template<std::size_t Dim, typename T, int Flags>
-auto as_mdspan_impl(py::array_t<T, Flags> buf, auto callback)
+auto to_mdspan_layout_right(py::array_t<T, Flags> buf)
+{
+    auto const extents = stdex::dextents<size_t, Dim>{make_extents<Dim>(buf)};
+    auto const mapping = stdex::layout_right::mapping<stdex::dextents<size_t, Dim>>{extents};
+    return stdex::mdspan<T, stdex::dextents<size_t, Dim>, stdex::layout_right>{
+        buf.mutable_data(),
+        mapping,
+    };
+}
+
+template<std::size_t Dim, typename T, int Flags>
+auto to_mdspan_layout_stride(py::array_t<T, Flags> buf)
+{
+    auto const strides = make_strides<Dim>(buf);
+    auto const extents = stdex::dextents<size_t, Dim>{make_extents<Dim>(buf)};
+    auto const mapping = stdex::layout_stride::mapping<stdex::dextents<size_t, Dim>>{extents, strides};
+    return stdex::mdspan<T, stdex::dextents<size_t, Dim>, stdex::layout_stride>{
+        buf.mutable_data(),
+        mapping,
+    };
+}
+
+template<std::size_t Dim, typename T, int Flags>
+auto as_mdspan_impl(py::array_t<T, Flags> buf, auto func)
 {
     auto const extents = stdex::dextents<size_t, Dim>{make_extents<Dim>(buf)};
 
-    auto const map_right = stdex::layout_right::mapping<stdex::dextents<size_t, Dim>>{extents};
-    if (is_layout_right(buf) and strides_match(buf, map_right)) {
-        callback(stdex::mdspan<T, stdex::dextents<size_t, Dim>, stdex::layout_right>{buf.mutable_data(), map_right});
-        return;
+    auto const mapping_right = stdex::layout_right::mapping<stdex::dextents<size_t, Dim>>{extents};
+    if (is_layout_right(buf) and strides_match(buf, mapping_right)) {
+        return func(stdex::mdspan<T, stdex::dextents<size_t, Dim>, stdex::layout_right>{
+            buf.mutable_data(),
+            mapping_right,
+        });
     }
 
-    auto const map_left = stdex::layout_left::mapping<stdex::dextents<size_t, Dim>>{extents};
-    if (is_layout_left(buf) and strides_match(buf, map_left)) {
-        callback(stdex::mdspan<T, stdex::dextents<size_t, Dim>, stdex::layout_left>{buf.mutable_data(), map_left});
-        return;
+    auto const mapping_left = stdex::layout_left::mapping<stdex::dextents<size_t, Dim>>{extents};
+    if (is_layout_left(buf) and strides_match(buf, mapping_left)) {
+        return func(stdex::mdspan<T, stdex::dextents<size_t, Dim>, stdex::layout_left>{
+            buf.mutable_data(),
+            mapping_left,
+        });
     }
 
-    auto const strides = make_strides<Dim>(buf);
-    auto const map     = stdex::layout_stride::mapping<stdex::dextents<size_t, Dim>>{extents, strides};
-    callback(stdex::mdspan<T, stdex::dextents<size_t, Dim>, stdex::layout_stride>{buf.mutable_data(), map});
+    return func(to_mdspan_layout_stride<Dim>(buf));
 }
 
 template<typename T, int Flags>
-auto as_mdspan(py::array_t<T, Flags> buf, auto callback)
+auto as_mdspan(py::array_t<T, Flags> buf, auto func)
 {
     switch (buf.ndim()) {
-        case 1: as_mdspan_impl<1>(buf, callback); return;
-        case 2: as_mdspan_impl<2>(buf, callback); return;
-        case 3: as_mdspan_impl<3>(buf, callback); return;
-        case 4: as_mdspan_impl<4>(buf, callback); return;
-        case 5: as_mdspan_impl<5>(buf, callback); return;
-        case 6: as_mdspan_impl<6>(buf, callback); return;
-        case 7: as_mdspan_impl<7>(buf, callback); return;
-        case 8: as_mdspan_impl<8>(buf, callback); return;
+        case 1: return as_mdspan_impl<1>(buf, func);
+        case 2: return as_mdspan_impl<2>(buf, func);
+        case 3: return as_mdspan_impl<3>(buf, func);
         default: throw std::runtime_error("unsupported ndim: " + std::to_string(buf.ndim()));
     }
 }
 
-template<typename T>
-auto convolve(py::array_t<T, 0> array) -> void
+template<neo::complex Complex, neo::fft::direction Dir>
+auto fft(py::array_t<Complex> array, std::optional<std::size_t> n, neo::fft::norm norm) -> py::array_t<Complex>
 {
-    std::cout << typeid(T).name() << '\n';
+    using Float = typename Complex::value_type;
 
-    as_mdspan(array, []<typename Obj>(Obj obj) {
-        if constexpr (std::same_as<typename Obj::layout_type, stdex::layout_left>) {
-            std::printf("layout_left_%zud\n", obj.rank());
-        }
-        if constexpr (std::same_as<typename Obj::layout_type, stdex::layout_right>) {
-            std::printf("layout_right_%zud\n", obj.rank());
-        }
-        if constexpr (std::same_as<typename Obj::layout_type, stdex::layout_stride>) {
-            std::printf("layout_stride_%zud\n", obj.rank());
-        }
+    return as_mdspan(array, [n, norm]<typename Vec>(Vec input) -> py::array_t<Complex> {
+        if constexpr (Vec::rank() == 1) {
+            auto const size  = n.value_or(input.extent(0));
+            auto const order = neo::ilog2(size);
+            if (not std::has_single_bit(size)) {
+                throw std::runtime_error{"unsupported size: " + std::to_string(size)};
+            }
 
-        std::printf("size: %zu\n", obj.size());
+            auto result = py::array_t<Complex>(static_cast<py::ssize_t>(size));
+            auto out    = to_mdspan_layout_right<1>(result);
+
+            {
+                auto no_gil = py::gil_scoped_release{};
+
+                auto plan = neo::fft::fft_plan<Complex>{order, Dir};
+                if constexpr (Dir == neo::fft::direction::forward) {
+                    neo::fft::fft(plan, input, out);
+                    if (norm == neo::fft::norm::forward) {
+                        neo::scale(Float(1) / Float(size), out);
+                    }
+                } else {
+                    neo::fft::ifft(plan, input, out);
+                    if (norm == neo::fft::norm::backward) {
+                        neo::scale(Float(1) / Float(size), out);
+                    }
+                }
+
+                if (norm == neo::fft::norm::ortho) {
+                    neo::scale(Float(1) / std::sqrt(Float(size)), out);
+                }
+            }
+
+            return result;
+        } else {
+            throw std::runtime_error{"unsupported rank: " + std::to_string(input.rank())};
+        }
     });
 }
 
-PYBIND11_MODULE(_core, m)
+template<neo::convolution_method Method, std::floating_point Float>
+[[nodiscard]] auto convolve(py::array_t<Float> in1, py::array_t<Float> in2, neo::convolution_mode mode)
+    -> py::array_t<Float>
 {
-    m.doc() = R"pbdoc(
-        neo-sonar dsp library
-        -----------------------
+    if (in1.ndim() != 1 or in1.ndim() != 1) {
+        throw std::runtime_error{"unsupported dimension: in1 and in2 must be 1-D"};
+    }
 
-        .. currentmodule:: neo_dsp
+    auto const signal = to_mdspan_layout_stride<1>(in1);
+    auto const patch  = to_mdspan_layout_stride<1>(in2);
 
-        .. autosummary::
-           :toctree: _generate
+    if (mode == neo::convolution_mode::full) {
+        auto output      = py::array_t<Float>(static_cast<py::ssize_t>(signal.extent(0) + patch.extent(0) - 1));
+        auto output_view = to_mdspan_layout_right<1>(output);
 
-           a_weighting
-           convolve
-           fast_log2
-           fast_log10
-    )pbdoc";
+        {
+            auto no_gil = py::gil_scoped_release{};
+            if constexpr (Method == neo::convolution_method::direct) {
+                neo::direct_convolve(signal, patch, output_view);
+            } else if constexpr (Method == neo::convolution_method::fft) {
+                auto out = neo::fft_convolve(signal, patch);
+                neo::copy(out.to_mdspan(), output_view);
+            }
+        }
 
-    m.def("fast_log2", py::vectorize(neo::fast_log2));
-    m.def("fast_log10", py::vectorize(neo::fast_log10));
+        return output;
+    }
+
+    throw std::runtime_error{"unsupported convolution mode"};
+}
+
+template<std::floating_point Float>
+[[nodiscard]] auto amplitude_to_db(Float amplitude) -> Float
+{
+    return neo::amplitude_to_db<neo::precision::accurate, Float>(amplitude);
+}
+
+template<std::floating_point Float>
+[[nodiscard]] auto amplitude_to_db_estimate(Float amplitude) -> Float
+{
+    return neo::amplitude_to_db<neo::precision::estimate, Float>(amplitude);
+}
+
+[[nodiscard]] auto rfftfreq(std::size_t n, double invSampleRate) -> py::array_t<double>
+{
+    auto out  = py::array_t<double>(static_cast<py::ssize_t>(n));
+    auto view = to_mdspan_layout_right<1>(out);
+
+    {
+        auto no_gil = py::gil_scoped_release{};
+        neo::rfftfreq(view, invSampleRate);
+    }
+
+    return out;
+}
+
+PYBIND11_MODULE(_neo_dsp, m)
+{
+    py::enum_<neo::convolution_method>(m, "convolution_method")
+        .value("automatic", neo::convolution_method::automatic)
+        .value("direct", neo::convolution_method::direct)
+        .value("fft", neo::convolution_method::fft)
+        .value("ola", neo::convolution_method::ola)
+        .value("ols", neo::convolution_method::ols)
+        .value("upola", neo::convolution_method::upola)
+        .value("upols", neo::convolution_method::upols);
+
+    py::enum_<neo::convolution_mode>(m, "convolution_mode")
+        .value("full", neo::convolution_mode::full)
+        .value("valid", neo::convolution_mode::valid)
+        .value("same", neo::convolution_mode::same);
+
+    py::enum_<neo::fft::norm>(m, "norm")
+        .value("backward", neo::fft::norm::backward)
+        .value("ortho", neo::fft::norm::ortho)
+        .value("forward", neo::fft::norm::forward);
+
+    m.def("rfftfreq", &rfftfreq);
+
+    m.def("fft", &fft<std::complex<float>, neo::fft::direction::forward>);
+    m.def("fft", &fft<std::complex<double>, neo::fft::direction::forward>);
+
+    m.def("ifft", &fft<std::complex<float>, neo::fft::direction::backward>);
+    m.def("ifft", &fft<std::complex<double>, neo::fft::direction::backward>);
+
+    m.def("direct_convolve", &convolve<neo::convolution_method::direct, float>);
+    m.def("direct_convolve", &convolve<neo::convolution_method::direct, double>);
+
+    m.def("fft_convolve", &convolve<neo::convolution_method::fft, float>);
+    m.def("fft_convolve", &convolve<neo::convolution_method::fft, double>);
+
+    m.def("amplitude_to_db", py::vectorize(amplitude_to_db<float>));
+    m.def("amplitude_to_db", py::vectorize(amplitude_to_db<double>));
+
+    m.def("amplitude_to_db_estimate", py::vectorize(amplitude_to_db_estimate<float>));
+    m.def("amplitude_to_db_estimate", py::vectorize(amplitude_to_db_estimate<double>));
+
     m.def("a_weighting", py::vectorize(neo::a_weighting<float>));
     m.def("a_weighting", py::vectorize(neo::a_weighting<double>));
 
-    m.def("convolve", &convolve<float>);
-    m.def("convolve", &convolve<double>);
-    m.def("convolve", &convolve<std::complex<float>>);
-    m.def("convolve", &convolve<std::complex<double>>);
+    m.def("fast_log2", py::vectorize(neo::fast_log2));
+    m.def("fast_log10", py::vectorize(neo::fast_log10));
 
 #ifdef VERSION_INFO
     m.attr("__version__") = NEO_STRINGIFY(VERSION_INFO);

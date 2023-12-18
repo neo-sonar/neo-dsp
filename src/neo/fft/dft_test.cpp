@@ -18,11 +18,11 @@ TEMPLATE_TEST_CASE("neo/fft: dft", "", float, double)
 
     auto const original = neo::generate_noise_signal<Complex>(size, Catch::getSeed());
 
-    auto inBuf  = original;
-    auto outBuf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{inBuf.size()};
+    auto in_buf  = original;
+    auto out_buf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{in_buf.size()};
 
-    auto const in  = inBuf.to_mdspan();
-    auto const out = outBuf.to_mdspan();
+    auto const in  = in_buf.to_mdspan();
+    auto const out = out_buf.to_mdspan();
 
     neo::fft::dft(in, out, neo::fft::direction::forward);
     neo::fft::dft(out, in, neo::fft::direction::backward);

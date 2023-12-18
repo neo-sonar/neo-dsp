@@ -12,7 +12,7 @@ TEMPLATE_TEST_CASE("neo/container: sparse_matrix", "", float, double, std::compl
     using Scalar = TestType;
     using Float  = neo::real_or_complex_value_t<Scalar>;
 
-    auto greaterEqualToX = [](auto x) {
+    auto greater_equal_to_x = [](auto x) {
         return [x](auto, auto, auto v) {
             if constexpr (neo::complex<Scalar>) {
                 return v.real() >= Float(x);
@@ -22,8 +22,8 @@ TEMPLATE_TEST_CASE("neo/container: sparse_matrix", "", float, double, std::compl
         };
     };
 
-    auto greaterEqualOne = greaterEqualToX(Float(1));
-    auto greaterEqualTwo = greaterEqualToX(Float(2));
+    auto greater_equal_one = greater_equal_to_x(Float(1));
+    auto greater_equal_two = greater_equal_to_x(Float(2));
 
     SECTION("insert")
     {
@@ -44,7 +44,7 @@ TEMPLATE_TEST_CASE("neo/container: sparse_matrix", "", float, double, std::compl
     auto dense = stdex::mdarray<Scalar, stdex::dextents<std::size_t, 2>>{16, 32};
     neo::fill(dense.to_mdspan(), Scalar(Float(1)));
 
-    auto sparse = neo::sparse_matrix<Scalar>{dense.to_mdspan(), greaterEqualOne};
+    auto sparse = neo::sparse_matrix<Scalar>{dense.to_mdspan(), greater_equal_one};
     REQUIRE(sparse.rows() == dense.extent(0));
     REQUIRE(sparse.columns() == dense.extent(1));
     REQUIRE(sparse.extent(0) == dense.extent(0));
@@ -53,7 +53,7 @@ TEMPLATE_TEST_CASE("neo/container: sparse_matrix", "", float, double, std::compl
     REQUIRE(sparse.extents() == dense.extents());
     REQUIRE(sparse.value_container().size() == dense.size());
 
-    sparse = neo::sparse_matrix<Scalar>{dense.to_mdspan(), greaterEqualTwo};
+    sparse = neo::sparse_matrix<Scalar>{dense.to_mdspan(), greater_equal_two};
     REQUIRE(sparse.rows() == dense.extent(0));
     REQUIRE(sparse.columns() == dense.extent(1));
     REQUIRE(sparse.size() == dense.size());

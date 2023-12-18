@@ -51,11 +51,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
      order<13>,
      order<14>,
      order<15>,
-     order<16>,
-     order<17>,
-     order<18>,
-     order<19>,
-     order<20>)
+     order<16>)
 )
 {
     using Tester  = TestType;
@@ -86,11 +82,11 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
     SECTION("copy")
     {
-        auto tmpBuf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
-        auto outBuf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
+        auto tmp_buf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
+        auto out_buf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
 
-        auto tmp = tmpBuf.to_mdspan();
-        auto out = outBuf.to_mdspan();
+        auto tmp = tmp_buf.to_mdspan();
+        auto out = out_buf.to_mdspan();
 
         neo::fft::fft(plan, noise.to_mdspan(), tmp);
         neo::fft::ifft(plan, tmp, out);

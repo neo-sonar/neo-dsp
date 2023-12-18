@@ -10,18 +10,18 @@ namespace neo {
 
 template<in_object InObj, out_object OutObj>
     requires(InObj::rank() == OutObj::rank())
-constexpr auto copy(InObj inObj, OutObj outObj) noexcept -> void
+constexpr auto copy(InObj in_obj, OutObj out_obj) noexcept -> void
 {
-    assert(detail::extents_equal(inObj, outObj));
+    assert(detail::extents_equal(in_obj, out_obj));
 
     if constexpr (InObj::rank() == 1) {
-        for (auto i{0ULL}; i < inObj.extent(0); ++i) {
-            outObj[i] = inObj[i];
+        for (auto i{0ULL}; i < in_obj.extent(0); ++i) {
+            out_obj[i] = in_obj[i];
         }
     } else {
-        for (auto i{0ULL}; i < inObj.extent(0); ++i) {
-            for (auto j{0ULL}; j < inObj.extent(1); ++j) {
-                outObj(i, j) = inObj(i, j);
+        for (auto i{0ULL}; i < in_obj.extent(0); ++i) {
+            for (auto j{0ULL}; j < in_obj.extent(1); ++j) {
+                out_obj(i, j) = in_obj(i, j);
             }
         }
     }
