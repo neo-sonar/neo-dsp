@@ -1,4 +1,4 @@
-#include "fft_convolve.hpp"
+#include "fft_convolver.hpp"
 
 #include <neo/algorithm.hpp>
 #include <neo/testing/testing.hpp>
