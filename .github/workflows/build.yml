@@ -149,7 +149,7 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt update
           sudo -E apt-cache pkgnames intel | sort | grep ipp
-          sudo apt install intel-oneapi-ipp-devel
+          sudo apt install intel-oneapi-ipp-devel intel-basekit intel-hpckit
 
       - name: Install ccache
         uses: hendrikmuhs/ccache-action@main
