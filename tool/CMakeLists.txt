@@ -21,4 +21,3 @@ target_link_libraries(neo_dsp_convolver
         neo::dsp
         fmt::fmt-header-only
 )
-
