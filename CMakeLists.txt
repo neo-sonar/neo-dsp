@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15...3.27)
+cmake_minimum_required(VERSION 3.23...3.27)
 project(neo-dsp-dev VERSION 0.1.0)
 
 find_program(CCACHE ccache)
