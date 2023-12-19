@@ -10,14 +10,14 @@
 #include <catch2/generators/catch_generators.hpp>
 
 template<typename Float>
-auto test_sparse_matrix()
+auto test_csr_matrix()
 {
     auto is_zero = [](auto x) { return neo::float_equality::exact(x, Float(0)); };
 
     auto lhs = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{16, 32};
     std::fill(lhs.data(), std::next(lhs.data(), std::ssize(lhs)), Float(1));
 
-    auto rhs = neo::sparse_matrix<Float>{16, 32};
+    auto rhs = neo::csr_matrix<Float>{16, 32};
     REQUIRE(rhs.rows() == 16);
     REQUIRE(rhs.columns() == 32);
 
@@ -41,10 +41,10 @@ auto test_sparse_matrix()
     REQUIRE(neo::allmatch(stdex::submdspan(acc, std::tuple{2, acc.extent(0)}), is_zero));
 }
 
-TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", float, double) { test_sparse_matrix<TestType>(); }
+TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(csr_matrix)", "", float, double) { test_csr_matrix<TestType>(); }
 
 #if defined(NEO_HAS_BUILTIN_FLOAT16)
-TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(sparse_matrix)", "", _Float16) { test_sparse_matrix<TestType>(); }
+TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(csr_matrix)", "", _Float16) { test_csr_matrix<TestType>(); }
 #endif
 
 TEMPLATE_TEST_CASE("neo/algorithm: multiply_add(split_complex)", "", float, double)

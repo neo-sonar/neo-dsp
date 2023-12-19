@@ -8,7 +8,6 @@
 
 #include <neo/algorithm/normalize_peak.hpp>
 #include <neo/algorithm/root_mean_squared_error.hpp>
-#include <neo/container/sparse_matrix.hpp>
 #include <neo/fft/rfftfreq.hpp>
 #include <neo/fft/stft.hpp>
 #include <neo/math/a_weighting.hpp>

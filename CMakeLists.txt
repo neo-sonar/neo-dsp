@@ -59,7 +59,7 @@ target_sources(neo_dsp_tests
         "src/neo/complex/split_complex_test.cpp"
 
         "src/neo/container/compressed_accessor_test.cpp"
-        "src/neo/container/sparse_matrix_test.cpp"
+        "src/neo/container/csr_matrix_test.cpp"
 
         "src/neo/convolution/compressed_fdl_test.cpp"
         "src/neo/convolution/dense_fdl_test.cpp"

@@ -11,7 +11,7 @@ Uniformly partitioned overlap-save convolver with a sparse frequency delay line 
 ## Frequency Delay Line
 
 - dense `(mdarray)`
-- sparse `(sparse_matrix)`
-- sparse static mixed bit-depth `(Nx sparse_matrix, fixed non-overlapping slices)`
-- sparse dynamic mixed bit-depth `(Nx sparse_matrix, overlapping slices)`
+- sparse `(csr_matrix)`
+- sparse static mixed bit-depth `(Nx csr_matrix, fixed non-overlapping slices)`
+- sparse dynamic mixed bit-depth `(Nx csr_matrix, overlapping slices)`
 - sparse adaptive dynamic-depth `(individual scalar for each FDL row)`
