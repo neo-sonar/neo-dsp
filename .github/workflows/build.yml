@@ -27,7 +27,7 @@ jobs:
             os: ubuntu-20.04
             build_type: Release
             clang_version: 15
-            cmake_flags: "-D NEO_ENABLE_INTEL_IPP=OFF"
+            cmake_flags: "-D NEO_ENABLE_INTEL_IPP=ON"
             cmake_targets: all
 
           - name: Linux GCC
@@ -62,21 +62,21 @@ jobs:
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native" -D NEO_ENABLE_INTEL_IPP=OFF'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native" -D NEO_ENABLE_INTEL_IPP=ON'
             cmake_targets: neo_dsp_tests
 
           - name: Coverage SSE41
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem" -D NEO_ENABLE_INTEL_IPP=OFF'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem" -D NEO_ENABLE_INTEL_IPP=ON'
             cmake_targets: neo_dsp_tests
 
           - name: Coverage SSE2
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2" -D NEO_ENABLE_INTEL_IPP=OFF'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2" -D NEO_ENABLE_INTEL_IPP=ON'
             cmake_targets: neo_dsp_tests
 
     steps:
@@ -148,7 +148,8 @@ jobs:
           wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
           echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt update
-          sudo -E apt-cache pkgnames intel
+          sudo -E apt-cache pkgnames intel | sort | grep ipp
+          sudo apt install intel-oneapi-ipp-devel
 
       - name: Install ccache
         uses: hendrikmuhs/ccache-action@main
