@@ -134,15 +134,18 @@ jobs:
         with:
           version: ${{ matrix.clang_version }}
 
-      # - name: Install IPP (Linux)
-      #   if: runner.os == 'Linux'
-      #   shell: bash
-      #   run: |
-      #     wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
-      #     echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-      #     sudo apt update
-      #     sudo -E apt-cache pkgnames intel | sort | grep ipp
-      #     sudo apt install intel-oneapi-ipp-devel
+      - name: Install IPP (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt update
+          sudo apt install intel-oneapi-ipp-devel
+          ls -la /opt/intel/oneapi/ipp/latest
+          ls -la /opt/intel/oneapi/ipp/latest/include
+          ls -la /opt/intel/oneapi/ipp/latest/lib
+          ls -la /opt/intel/oneapi/ipp/latest/lib/cmake
 
       - name: Install ccache
         uses: hendrikmuhs/ccache-action@main
