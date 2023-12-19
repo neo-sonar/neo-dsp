@@ -19,4 +19,8 @@
     #include <neo/fft/external/accelerate.hpp>
 #endif
 
+#if defined(NEO_HAS_INTEL_IPP)
+    #include <neo/fft/external/ipp.hpp>
+#endif
+
 #include <neo/fft/experimental/rfft.hpp>

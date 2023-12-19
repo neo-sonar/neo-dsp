@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.23...3.27)
 project(neo-dsp-dev VERSION 0.1.0)
 
+option(NEO_ENABLE_INTEL_IPP "Link against Intel IPP" OFF)
+
 find_program(CCACHE ccache)
 if (CCACHE)
     set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE})

@@ -7,7 +7,7 @@
 namespace {
 
 template<typename Plan>
-auto bench_c2c(benchmark::State& state) -> void
+auto c2c(benchmark::State& state) -> void
 {
     using Complex = typename Plan::value_type;
     using Real    = typename Complex::value_type;
@@ -31,19 +31,23 @@ auto bench_c2c(benchmark::State& state) -> void
     }
 
     auto const items = static_cast<int64_t>(state.iterations()) * state.range(0);
-    state.SetItemsProcessed(items);
     state.SetBytesProcessed(items * sizeof(Complex));
+    // state.SetItemsProcessed(items);
 }
 
 }  // namespace
 
-BENCHMARK(bench_c2c<neo::fft::fft_plan<std::complex<float>>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
-BENCHMARK(bench_c2c<neo::fft::fft_plan<std::complex<double>>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(c2c<neo::fft::fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(c2c<neo::fft::fft_plan<neo::complex128>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+
+#if defined(NEO_HAS_INTEL_IPP)
+BENCHMARK(c2c<neo::fft::intel_ipp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(c2c<neo::fft::intel_ipp_fft_plan<neo::complex128>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+#endif
 
 #if defined(NEO_PLATFORM_APPLE)
-
-BENCHMARK(bench_c2c<neo::fft::apple_vdsp_fft_plan<std::complex<float>>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
-BENCHMARK(bench_c2c<neo::fft::apple_vdsp_fft_plan<std::complex<double>>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
-
+BENCHMARK(c2c<neo::fft::apple_vdsp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(c2c<neo::fft::apple_vdsp_fft_plan<neo::complex128>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
 #endif
+
 BENCHMARK_MAIN();

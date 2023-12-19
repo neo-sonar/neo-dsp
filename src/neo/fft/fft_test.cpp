@@ -95,6 +95,13 @@ TEMPLATE_TEST_CASE("neo/fft: apple_vdsp_fft_plan", "", neo::complex64, std::comp
 }
 #endif
 
+#if defined(NEO_HAS_INTEL_IPP)
+TEMPLATE_TEST_CASE("neo/fft: intel_ipp_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
+{
+    test_fft_plan<neo::fft::intel_ipp_fft_plan<TestType>>();
+}
+#endif
+
 template<typename ComplexBatch, typename Kernel>
 static auto test_complex_batch_roundtrip_fft()
 {
