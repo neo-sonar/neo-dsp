@@ -7,8 +7,7 @@
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/direction.hpp>
 
-#include <ippcore.h>
-#include <ipps.h>
+#include <ipp.h>
 
 #include <memory>
 
