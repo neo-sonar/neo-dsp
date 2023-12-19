@@ -23,14 +23,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Linux Clang
+          - name: Linux-Clang
             os: ubuntu-20.04
             build_type: Release
             clang_version: 15
             cmake_flags: "-D NEO_ENABLE_INTEL_IPP=ON"
             cmake_targets: all
 
-          - name: Linux GCC
+          - name: Linux-GCC
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
@@ -44,35 +44,35 @@ jobs:
             cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
             cmake_targets: all
 
-          - name: Windows MSVC
+          - name: Windows-MSVC
             os: windows-latest
             build_type: Release
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2" -D NEO_ENABLE_INTEL_IPP=ON'
             cmake_targets: neo_dsp_tests
 
-          - name: Windows Clang
+          - name: Windows-Clang
             os: windows-latest
             build_type: Release
             clang_version: latest
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native" -D NEO_ENABLE_INTEL_IPP=ON'
             cmake_targets: neo_dsp_tests
 
-          - name: Coverage Native
+          - name: Coverage-Native
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native" -D NEO_ENABLE_INTEL_IPP=ON'
             cmake_targets: neo_dsp_tests
 
-          - name: Coverage SSE41
+          - name: Coverage-SSE41
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem" -D NEO_ENABLE_INTEL_IPP=ON'
             cmake_targets: neo_dsp_tests
 
-          - name: Coverage SSE2
+          - name: Coverage-SSE2
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
@@ -123,7 +123,7 @@ jobs:
         id: cache-ipp
         uses: actions/cache@v3
         with:
-          key: ipp-v1
+          key: ipp-${{ matrix.name }}
           path: C:\Program Files (x86)\Intel\oneAPI\ipp
 
       - name: Install IPP (Windows)
@@ -138,7 +138,7 @@ jobs:
         if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
         uses: actions/cache/save@v3
         with:
-          key: ipp-v1
+          key: ipp-${{ matrix.name }}
           path: C:\Program Files (x86)\Intel\oneAPI\ipp
 
       - name: Install IPP (Linux)
@@ -157,7 +157,7 @@ jobs:
           key: neo-dsp-build-${{ matrix.name }}
 
       - name: Setup Visual Studio
-        if: matrix.name == 'Windows MSVC'
+        if: matrix.name == 'Windows-MSVC'
         uses: egor-tensin/vs-shell@v2
         with:
           arch: x64
