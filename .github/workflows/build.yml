@@ -27,7 +27,7 @@ jobs:
             os: ubuntu-20.04
             build_type: Release
             clang_version: 15
-            cmake_flags: ""
+            cmake_flags: "-D NEO_ENABLE_INTEL_IPP=ON"
             cmake_targets: all
 
           - name: Linux GCC
@@ -48,35 +48,35 @@ jobs:
             os: windows-latest
             build_type: Release
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2"'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2" -D NEO_ENABLE_INTEL_IPP=ON'
             cmake_targets: neo_dsp_tests
 
           - name: Windows Clang
             os: windows-latest
             build_type: Release
             clang_version: latest
-            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native"'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native" -D NEO_ENABLE_INTEL_IPP=ON'
             cmake_targets: neo_dsp_tests
 
           - name: Coverage Native
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native"'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native" -D NEO_ENABLE_INTEL_IPP=ON'
             cmake_targets: neo_dsp_tests
 
           - name: Coverage SSE41
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem"'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem" -D NEO_ENABLE_INTEL_IPP=ON'
             cmake_targets: neo_dsp_tests
 
           - name: Coverage SSE2
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2"'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2" -D NEO_ENABLE_INTEL_IPP=ON'
             cmake_targets: neo_dsp_tests
 
     steps:
@@ -118,10 +118,14 @@ jobs:
         with:
           version: ${{ matrix.clang_version }}
 
+      - name: Install ipp
+        if: runner.os != 'macOS'
+        run: pip3 install ipp-static
+
       - name: Install ccache
         uses: hendrikmuhs/ccache-action@main
         with:
-          key: perceptual-convolution-build-${{ matrix.name }}
+          key: neo-dsp-build-${{ matrix.name }}
 
       - name: Setup Visual Studio
         if: matrix.name == 'Windows MSVC'
