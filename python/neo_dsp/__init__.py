@@ -18,6 +18,8 @@ __all__ = [
     "a_weighting",
     "fast_log2",
     "fast_log10",
+    "amplitude_to_db",
+    "convolve",
     "fft",
 ]
 
