@@ -6,7 +6,6 @@
 #include <neo/algorithm/multiply_add.hpp>
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
-#include <neo/container/sparse_matrix.hpp>
 #include <neo/convolution/dense_fdl.hpp>
 #include <neo/convolution/overlap_add.hpp>
 #include <neo/convolution/overlap_save.hpp>

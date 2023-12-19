@@ -44,7 +44,7 @@ private:
     stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
     stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
 
-    size_type _overlapWriteIdx{0};
+    size_type _overlap_write_idx{0};
     stdex::mdarray<real_type, stdex::dextents<size_t, 2>> _overlaps;
 };
 
@@ -107,12 +107,12 @@ auto overlap_add<Complex>::operator()(inout_vector auto block, auto callback) ->
 
     // Save overlap for next iteration
     auto const signal = stdex::submdspan(real_buffer, std::tuple{0, _usable_coeffs});
-    auto const save   = stdex::submdspan(_overlaps.to_mdspan(), _overlapWriteIdx, stdex::full_extent);
+    auto const save   = stdex::submdspan(_overlaps.to_mdspan(), _overlap_write_idx, stdex::full_extent);
     copy(signal, save);
 
     // Add older iterations
     for (auto i{1UL}; i < num_overlaps(); ++i) {
-        auto const overlap_idx = (_overlapWriteIdx + num_overlaps() - i) % num_overlaps();
+        auto const overlap_idx = (_overlap_write_idx + num_overlaps() - i) % num_overlaps();
         auto const start_idx   = block_size() * i;
         auto const num_samples = std::min(block_size(), _usable_coeffs - start_idx);
         auto const last_idx    = start_idx + num_samples;
@@ -123,9 +123,9 @@ auto overlap_add<Complex>::operator()(inout_vector auto block, auto callback) ->
     }
 
     // Increment overlap write position
-    ++_overlapWriteIdx;
-    if (_overlapWriteIdx == num_overlaps()) {
-        _overlapWriteIdx = 0;
+    ++_overlap_write_idx;
+    if (_overlap_write_idx == num_overlaps()) {
+        _overlap_write_idx = 0;
     }
 }
 

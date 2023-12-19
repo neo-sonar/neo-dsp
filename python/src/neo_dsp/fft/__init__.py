@@ -17,19 +17,19 @@ NORM_MODE = {
 }
 
 
-def fft(x, n=None, norm="backward") -> np.ndarray:
+def fft(x: np.ndarray, n=None, norm="backward") -> np.ndarray:
     """Compute the 1-D discrete Fourier Transform.
     """
     return _neo_dsp.fft(x, n, NORM_MODE[norm])
 
 
-def ifft(x, n=None, norm="backward") -> np.ndarray:
+def ifft(x: np.ndarray, n=None, norm="backward") -> np.ndarray:
     """Compute the 1-D inverse discrete Fourier Transform.
     """
     return _neo_dsp.ifft(x, n, NORM_MODE[norm])
 
 
-def rfftfreq(n, d=1.0) -> np.ndarray:
+def rfftfreq(n: int, d=1.0) -> np.ndarray:
     """Return the Discrete Fourier Transform sample frequencies.
     """
     return _neo_dsp.rfftfreq(n, d)
