@@ -48,14 +48,14 @@ struct csr_matrix
 private:
     stdex::dextents<index_type, 2> _extents;
     ValueContainer _values;
-    IndexContainer _columIndices;
-    IndexContainer _rowIndices;
+    IndexContainer _colum_indices;
+    IndexContainer _row_indices;
 };
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
 csr_matrix<T, IndexType, ValueContainer, IndexContainer>::csr_matrix(size_type rows, size_type cols)
     : _extents{rows, cols}
-    , _rowIndices(rows + 1UL, 0)
+    , _row_indices(rows + 1UL, 0)
 {}
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
@@ -75,23 +75,23 @@ csr_matrix<T, IndexType, ValueContainer, IndexContainer>::csr_matrix(InMat matri
     }
 
     _values.resize(count);
-    _columIndices.resize(count);
+    _colum_indices.resize(count);
 
     auto idx = 0UL;
     for (auto row_idx{0UL}; row_idx < matrix.extent(0); ++row_idx) {
-        auto const row       = stdex::submdspan(matrix, row_idx, stdex::full_extent);
-        _rowIndices[row_idx] = idx;
+        auto const row        = stdex::submdspan(matrix, row_idx, stdex::full_extent);
+        _row_indices[row_idx] = idx;
 
         for (auto col{0UL}; col < matrix.extent(1); ++col) {
             if (auto const& val = row(col); filter(row_idx, col, val)) {
-                _values[idx]       = val;
-                _columIndices[idx] = col;
+                _values[idx]        = val;
+                _colum_indices[idx] = col;
                 ++idx;
             }
         }
     }
 
-    _rowIndices.back() = idx;
+    _row_indices.back() = idx;
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
@@ -128,8 +128,8 @@ auto csr_matrix<T, IndexType, ValueContainer, IndexContainer>::size() const noex
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
 auto csr_matrix<T, IndexType, ValueContainer, IndexContainer>::operator()(index_type row, index_type col) const -> T
 {
-    for (auto i = _rowIndices[row]; i < _rowIndices[row + 1]; i++) {
-        if (_columIndices[i] == col) {
+    for (auto i = _row_indices[row]; i < _row_indices[row + 1]; i++) {
+        if (_colum_indices[i] == col) {
             return _values[i];
         }
     }
@@ -139,17 +139,17 @@ auto csr_matrix<T, IndexType, ValueContainer, IndexContainer>::operator()(index_
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
 auto csr_matrix<T, IndexType, ValueContainer, IndexContainer>::insert(index_type row, index_type col, T value) -> void
 {
-    auto idx = _rowIndices[row];
-    while (idx < _rowIndices[row + 1] && _columIndices[idx] < col) {
+    auto idx = _row_indices[row];
+    while (idx < _row_indices[row + 1] && _colum_indices[idx] < col) {
         idx++;
     }
 
     auto const pidx = static_cast<std::ptrdiff_t>(idx);
     _values.insert(std::next(_values.begin(), pidx), value);
-    _columIndices.insert(std::next(_columIndices.begin(), pidx), col);
+    _colum_indices.insert(std::next(_colum_indices.begin(), pidx), col);
 
     for (auto i{row + 1}; i <= rows(); ++i) {
-        ++_rowIndices[i];
+        ++_row_indices[i];
     }
 }
 
@@ -164,14 +164,14 @@ template<typename T, typename IndexType, typename ValueContainer, typename Index
 auto csr_matrix<T, IndexType, ValueContainer, IndexContainer>::column_container() const noexcept
     -> index_container_type const&
 {
-    return _columIndices;
+    return _colum_indices;
 }
 
 template<typename T, typename IndexType, typename ValueContainer, typename IndexContainer>
 auto csr_matrix<T, IndexType, ValueContainer, IndexContainer>::row_container() const noexcept
     -> index_container_type const&
 {
-    return _rowIndices;
+    return _row_indices;
 }
 
 }  // namespace neo
