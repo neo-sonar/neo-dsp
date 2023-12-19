@@ -48,7 +48,7 @@ jobs:
             os: windows-latest
             build_type: Release
             clang_version: latest
-            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native" -D NEO_ENABLE_INTEL_IPP=ON'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native"'
             cmake_targets: neo_dsp_tests
 
           - name: Coverage-Native
@@ -110,14 +110,6 @@ jobs:
         uses: egor-tensin/setup-clang@v1
         with:
           version: ${{ matrix.clang_version }}
-
-      - name: Install IPP (Windows)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/irc_nas/19078/w_BaseKit_p_2023.0.0.25940_offline.exe
-          ./oneapi.exe -s -x -f oneapi
-          ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
 
       - name: Install IPP (Linux)
         if: runner.os == 'Linux'
