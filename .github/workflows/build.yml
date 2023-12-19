@@ -105,34 +105,19 @@ jobs:
         shell: bash
         run: choco install ninja ccache
 
-      - name: Cache IPP (Windows)
-        if: runner.os == 'Windows'
-        id: cache-ipp
-        uses: actions/cache@v3
-        with:
-          key: ipp-windows-v1
-          path: C:\Program Files (x86)\Intel\oneAPI\ipp
-
-      - name: Install IPP (Windows)
-        if: (runner.os == 'Windows') && (steps.cache-ipp.outputs.cache-hit != 'true')
-        shell: bash
-        run: |
-          curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/irc_nas/19078/w_BaseKit_p_2023.0.0.25940_offline.exe
-          ./oneapi.exe -s -x -f oneapi
-          ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
-
-      - name: Save IPP cache even on job fail
-        if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
-        uses: actions/cache/save@v3
-        with:
-          path: C:\Program Files (x86)\Intel\oneAPI\ipp
-          key: ipp-windows-v1
-
       - name: Install clang
         if: matrix.clang_version != ''
         uses: egor-tensin/setup-clang@v1
         with:
           version: ${{ matrix.clang_version }}
+
+      - name: Install IPP (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/irc_nas/19078/w_BaseKit_p_2023.0.0.25940_offline.exe
+          ./oneapi.exe -s -x -f oneapi
+          ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
 
       - name: Install IPP (Linux)
         if: runner.os == 'Linux'
@@ -141,7 +126,7 @@ jobs:
           wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
           echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt update
-          sudo apt install intel-oneapi-ipp-devel intel-basekit
+          sudo apt install intel-oneapi-ipp-devel
           ls -la /opt/intel/oneapi/ipp/latest
           ls -la /opt/intel/oneapi/ipp/latest/include
           ls -la /opt/intel/oneapi/ipp/latest/include/ipp
