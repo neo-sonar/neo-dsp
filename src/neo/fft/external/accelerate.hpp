@@ -16,15 +16,15 @@ namespace neo::fft {
 
 template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
-struct fft_apple_vdsp_plan
+struct apple_vdsp_fft_plan
 {
     using value_type         = Complex;
     using real_type          = typename Complex::value_type;
     using size_type          = std::size_t;
     using native_handle_type = std::conditional_t<std::same_as<real_type, float>, FFTSetup, FFTSetupD>;
 
-    explicit fft_apple_vdsp_plan(size_type order, direction default_direction = direction::forward);
-    ~fft_apple_vdsp_plan();
+    explicit apple_vdsp_fft_plan(size_type order, direction default_direction = direction::forward);
+    ~apple_vdsp_fft_plan();
 
     [[nodiscard]] auto order() const noexcept -> size_type;
     [[nodiscard]] auto size() const noexcept -> size_type;
@@ -43,7 +43,7 @@ private:
 
 template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
-fft_apple_vdsp_plan<Complex>::fft_apple_vdsp_plan(size_type order, direction /*default_direction*/)
+apple_vdsp_fft_plan<Complex>::apple_vdsp_fft_plan(size_type order, direction /*default_direction*/)
     : _order{order}
     , _plan{[order] {
     if constexpr (std::same_as<real_type, float>) {
@@ -58,7 +58,7 @@ fft_apple_vdsp_plan<Complex>::fft_apple_vdsp_plan(size_type order, direction /*d
 
 template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
-fft_apple_vdsp_plan<Complex>::~fft_apple_vdsp_plan()
+apple_vdsp_fft_plan<Complex>::~apple_vdsp_fft_plan()
 {
     if (_plan != nullptr) {
         if constexpr (std::same_as<real_type, float>) {
@@ -71,14 +71,14 @@ fft_apple_vdsp_plan<Complex>::~fft_apple_vdsp_plan()
 
 template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
-auto fft_apple_vdsp_plan<Complex>::size() const noexcept -> size_type
+auto apple_vdsp_fft_plan<Complex>::size() const noexcept -> size_type
 {
     return _size;
 }
 
 template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
-auto fft_apple_vdsp_plan<Complex>::order() const noexcept -> size_type
+auto apple_vdsp_fft_plan<Complex>::order() const noexcept -> size_type
 {
     return _order;
 }
@@ -87,7 +87,7 @@ template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
 template<inout_vector InOutVec>
     requires std::same_as<typename InOutVec::value_type, Complex>
-auto fft_apple_vdsp_plan<Complex>::operator()(InOutVec x, direction dir) noexcept -> void
+auto apple_vdsp_fft_plan<Complex>::operator()(InOutVec x, direction dir) noexcept -> void
 {
     assert(std::cmp_equal(x.extent(0), _size));
 

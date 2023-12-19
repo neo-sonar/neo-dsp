@@ -42,8 +42,8 @@ BENCHMARK(bench_c2c<neo::fft::fft_plan<std::complex<double>>>)->RangeMultiplier(
 
 #if defined(NEO_PLATFORM_APPLE)
 
-BENCHMARK(bench_c2c<neo::fft::fft_apple_vdsp_plan<std::complex<float>>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
-BENCHMARK(bench_c2c<neo::fft::fft_apple_vdsp_plan<std::complex<double>>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(bench_c2c<neo::fft::apple_vdsp_fft_plan<std::complex<float>>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(bench_c2c<neo::fft::apple_vdsp_fft_plan<std::complex<double>>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
 
 #endif
 BENCHMARK_MAIN();

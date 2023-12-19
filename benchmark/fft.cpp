@@ -201,8 +201,8 @@ auto main(int argc, char** argv) -> int
 
 #if defined(NEO_PLATFORM_APPLE)
     timeit("apple_vdsp_parallel<float>  ", n, vdsp_fft_bench<float>{n});
-    timeit("apple_vdsp<complex<float>>  ", n, fft_bench<fft_apple_vdsp_plan<std::complex<float>>>{n});
-    timeit("apple_vdsp<complex64>       ", n, fft_bench<fft_apple_vdsp_plan<neo::complex64>>{n});
+    timeit("apple_vdsp<complex<float>>  ", n, fft_bench<apple_vdsp_fft_plan<std::complex<float>>>{n});
+    timeit("apple_vdsp<complex64>       ", n, fft_bench<apple_vdsp_fft_plan<neo::complex64>>{n});
     std::puts("\n");
 #endif
 
@@ -221,8 +221,8 @@ auto main(int argc, char** argv) -> int
 
 #if defined(NEO_PLATFORM_APPLE)
     timeit("apple_vdsp_parallel<double> ", n, vdsp_fft_bench<double>{n});
-    timeit("apple_vdsp<complex<double>> ", n, fft_bench<fft_apple_vdsp_plan<std::complex<double>>>{n});
-    timeit("apple_vdsp<complex128>      ", n, fft_bench<fft_apple_vdsp_plan<neo::complex128>>{n});
+    timeit("apple_vdsp<complex<double>> ", n, fft_bench<apple_vdsp_fft_plan<std::complex<double>>>{n});
+    timeit("apple_vdsp<complex128>      ", n, fft_bench<apple_vdsp_fft_plan<neo::complex128>>{n});
     std::puts("\n");
 #endif
 
