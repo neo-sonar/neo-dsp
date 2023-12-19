@@ -27,7 +27,7 @@ jobs:
             os: ubuntu-20.04
             build_type: Release
             clang_version: 15
-            cmake_flags: "-D NEO_ENABLE_INTEL_IPP=ON"
+            cmake_flags: "-D NEO_ENABLE_INTEL_IPP=OFF"
             cmake_targets: all
 
           - name: Linux GCC
@@ -62,21 +62,21 @@ jobs:
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native" -D NEO_ENABLE_INTEL_IPP=ON'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native" -D NEO_ENABLE_INTEL_IPP=OFF'
             cmake_targets: neo_dsp_tests
 
           - name: Coverage SSE41
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem" -D NEO_ENABLE_INTEL_IPP=ON'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem" -D NEO_ENABLE_INTEL_IPP=OFF'
             cmake_targets: neo_dsp_tests
 
           - name: Coverage SSE2
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2" -D NEO_ENABLE_INTEL_IPP=ON'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2" -D NEO_ENABLE_INTEL_IPP=OFF'
             cmake_targets: neo_dsp_tests
 
     steps:
@@ -118,9 +118,28 @@ jobs:
         with:
           version: ${{ matrix.clang_version }}
 
-      - name: Install ipp
-        if: runner.os != 'macOS'
-        run: pip3 install ipp-static
+      - name: Cache IPP (Windows)
+        if: runner.os == 'Windows'
+        id: cache-ipp
+        uses: actions/cache@v3
+        with:
+          key: ipp-v1
+          path: C:\Program Files (x86)\Intel\oneAPI\ipp
+
+      - name: Install IPP (Windows)
+        if: (runner.os == 'Windows') && (steps.cache-ipp.outputs.cache-hit != 'true')
+        shell: bash
+        run: |
+          curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/irc_nas/19078/w_BaseKit_p_2023.0.0.25940_offline.exe
+          ./oneapi.exe -s -x -f oneapi
+          ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
+
+      - name: Save IPP cache even on job fail
+        if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
+        uses: actions/cache/save@v3
+        with:
+          key: ipp-v1
+          path: C:\Program Files (x86)\Intel\oneAPI\ipp
 
       - name: Install ccache
         uses: hendrikmuhs/ccache-action@main
