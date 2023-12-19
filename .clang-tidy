@@ -57,19 +57,21 @@ CheckOptions:
     value: lower_case
   - key: readability-identifier-naming.ClassConstantCase
     value: lower_case
-  - key: readability-identifier-naming.PrivateMemberCase
-    value: lower_case
-  - key: readability-identifier-naming.PrivateMemberPrefix
-    value: _
-  - key: readability-identifier-naming.PrivateMethodCase
-    value: lower_case
   - key: readability-identifier-naming.EnumCase
     value: lower_case
   - key: readability-identifier-naming.FunctionCase
     value: lower_case
   - key: readability-identifier-naming.IgnoreMainLikeFunctions
     value: 1
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
   - key: readability-identifier-naming.ParameterCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateMemberPrefix
+    value: _
+  - key: readability-identifier-naming.PrivateMethodCase
     value: lower_case
   - key: readability-identifier-naming.UnionCase
     value: lower_case
