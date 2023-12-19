@@ -48,7 +48,7 @@ jobs:
             os: windows-latest
             build_type: Release
             clang_version: latest
-            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native"'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native" -D NEO_ENABLE_INTEL_IPP=ON'
             cmake_targets: neo_dsp_tests
 
           - name: Coverage-Native
