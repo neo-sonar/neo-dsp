@@ -30,7 +30,7 @@ Issues = "https://github.com/neo-sonar/neo-dsp/issues"
 test = ["pytest", "pytest-cov"]
 
 [tool.scikit-build]
-cmake.source-dir = "python"
+cmake.source-dir = "."
 wheel.packages = ["python/neo_dsp"]
 wheel.expand-macos-universal-tags = true
 

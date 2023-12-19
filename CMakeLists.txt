@@ -23,21 +23,21 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 enable_testing()
 include(FetchContent)
 
-set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable Google benchmark tests")
-
 FetchContent_Declare(mdspan GIT_REPOSITORY "https://github.com/kokkos/mdspan" GIT_TAG "stable" GIT_SHALLOW TRUE)
-FetchContent_Declare(fmt GIT_REPOSITORY "https://github.com/fmtlib/fmt" GIT_TAG "10.1.1" GIT_SHALLOW TRUE)
-FetchContent_Declare(dr_libs GIT_REPOSITORY "https://github.com/mackron/dr_libs" GIT_TAG "master" GIT_SHALLOW TRUE)
-FetchContent_Declare(Catch2 GIT_REPOSITORY "https://github.com/catchorg/Catch2" GIT_TAG "devel" GIT_SHALLOW TRUE)
-
 FetchContent_MakeAvailable(mdspan)
-FetchContent_MakeAvailable(fmt dr_libs Catch2)
-include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 
 add_subdirectory(src)
-add_subdirectory(benchmark)
-add_subdirectory(plugin)
-add_subdirectory(tool)
+
+if(DEFINED SKBUILD)
+    add_subdirectory(python)
+    return()
+endif()
+
+set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable Google benchmark tests")
+FetchContent_Declare(fmt GIT_REPOSITORY "https://github.com/fmtlib/fmt" GIT_TAG "10.1.1" GIT_SHALLOW TRUE)
+FetchContent_Declare(Catch2 GIT_REPOSITORY "https://github.com/catchorg/Catch2" GIT_TAG "devel" GIT_SHALLOW TRUE)
+FetchContent_MakeAvailable(fmt Catch2)
+include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 
 add_executable(neo_dsp_tests)
 target_sources(neo_dsp_tests
@@ -104,7 +104,6 @@ target_link_libraries(neo_dsp_tests
         juce::juce_recommended_warning_flags
 )
 
-if(APPLE)
-    find_library(ACCELERATE_LIBRARY Accelerate)
-    target_link_libraries(neo_dsp_tests PRIVATE ${ACCELERATE_LIBRARY})
-endif()
+add_subdirectory(benchmark)
+add_subdirectory(plugin)
+add_subdirectory(tool)

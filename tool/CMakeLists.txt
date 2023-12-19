@@ -1,5 +1,8 @@
 project(neo_dsp_tools)
 
+FetchContent_Declare(dr_libs GIT_REPOSITORY "https://github.com/mackron/dr_libs" GIT_TAG "master" GIT_SHALLOW TRUE)
+FetchContent_MakeAvailable(dr_libs)
+
 add_executable(neo_dsp_convolver)
 target_sources(neo_dsp_convolver
     PRIVATE
@@ -19,7 +22,3 @@ target_link_libraries(neo_dsp_convolver
         fmt::fmt-header-only
 )
 
-if(APPLE)
-    find_library(ACCELERATE_LIBRARY Accelerate)
-    target_link_libraries(neo_dsp_convolver PRIVATE ${ACCELERATE_LIBRARY})
-endif()
