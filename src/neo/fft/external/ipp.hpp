@@ -33,7 +33,7 @@ struct intel_ipp_fft_plan
             assert(false);
         }
 
-        auto* handle        = static_cast<traits::handle_type*>(nullptr);
+        auto* handle        = static_cast<typename traits::handle_type*>(nullptr);
         auto spec_buf       = ipp_buffer{::ippsMalloc_8u(spec_size)};
         auto const init_buf = ipp_buffer{::ippsMalloc_8u(init_size)};
 
@@ -57,7 +57,7 @@ struct intel_ipp_fft_plan
         assert(std::cmp_equal(x.extent(0), size()));
 
         auto transform = dir == direction::forward ? traits::forward : traits::backward;
-        auto buffer    = reinterpret_cast<traits::complex_type*>(_buffer.data());
+        auto buffer    = reinterpret_cast<typename traits::complex_type*>(_buffer.data());
 
         copy(x, _buffer.to_mdspan());
         transform(buffer, _handle, _work_buf.get());
