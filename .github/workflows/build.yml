@@ -39,7 +39,7 @@ jobs:
 
           - name: macOS
             os: macos-13
-            build_type: Release
+            build_type: Debug
             clang_version: ""
             cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
             cmake_targets: all
