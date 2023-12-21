@@ -39,7 +39,7 @@ jobs:
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -march=ivybridge"'
             cmake_prefix_path: ""
-            cmake_targets: all
+            cmake_targets: neo_dsp_tests
 
           - name: macOS
             os: macos-13
