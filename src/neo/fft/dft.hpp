@@ -18,7 +18,7 @@ auto dft(InVec in, OutVec out, direction dir = direction::forward) -> void
     using Complex = typename OutVec::value_type;
     using Float   = typename Complex::value_type;
 
-    assert(detail::extents_equal(in, out));
+    assert(neo::detail::extents_equal(in, out));
 
     static constexpr auto const two_pi = static_cast<Float>(std::numbers::pi * 2.0);
 
