@@ -52,6 +52,24 @@ auto test_fft_plan()
     {
         auto copy = noise;
         auto io   = copy.to_mdspan();
+        STATIC_REQUIRE(neo::has_default_accessor<decltype(io)>);
+        STATIC_REQUIRE(neo::has_layout_left_or_right<decltype(io)>);
+
+        neo::fft::fft(plan, io);
+        neo::fft::ifft(plan, io);
+
+        neo::scale(Float(1) / static_cast<Float>(plan.size()), io);
+        REQUIRE(neo::allclose(noise.to_mdspan(), io));
+    }
+
+    SECTION("inplace strided")
+    {
+        auto buf = stdex::mdarray<Complex, stdex::dextents<size_t, 2>, stdex::layout_left>{2, plan.size()};
+        auto io  = stdex::submdspan(buf.to_mdspan(), 0, stdex::full_extent);
+        neo::copy(noise.to_mdspan(), io);
+
+        STATIC_REQUIRE(neo::has_default_accessor<decltype(io)>);
+        STATIC_REQUIRE_FALSE(neo::has_layout_left_or_right<decltype(io)>);
 
         neo::fft::fft(plan, io);
         neo::fft::ifft(plan, io);
@@ -64,6 +82,10 @@ auto test_fft_plan()
     {
         auto tmp_buf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
         auto out_buf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
+        STATIC_REQUIRE(neo::has_default_accessor<decltype(tmp_buf.to_mdspan())>);
+        STATIC_REQUIRE(neo::has_default_accessor<decltype(out_buf.to_mdspan())>);
+        STATIC_REQUIRE(neo::has_layout_left_or_right<decltype(tmp_buf.to_mdspan())>);
+        STATIC_REQUIRE(neo::has_layout_left_or_right<decltype(out_buf.to_mdspan())>);
 
         auto tmp = tmp_buf.to_mdspan();
         auto out = out_buf.to_mdspan();

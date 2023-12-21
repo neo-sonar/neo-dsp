@@ -57,11 +57,16 @@ struct intel_ipp_fft_plan
         assert(std::cmp_equal(x.extent(0), size()));
 
         auto transform = dir == direction::forward ? traits::forward : traits::backward;
-        auto buffer    = reinterpret_cast<typename traits::complex_type*>(_buffer.data());
 
-        copy(x, _buffer.to_mdspan());
-        transform(buffer, _handle, _work_buf.get());
-        copy(_buffer.to_mdspan(), x);
+        if constexpr (has_layout_left_or_right<InOutVec> and has_default_accessor<InOutVec>) {
+            auto buffer = reinterpret_cast<typename traits::complex_type*>(x.data_handle());
+            transform(buffer, _handle, _work_buf.get());
+        } else {
+            copy(x, _buffer.to_mdspan());
+            auto buffer = reinterpret_cast<typename traits::complex_type*>(_buffer.data());
+            transform(buffer, _handle, _work_buf.get());
+            copy(_buffer.to_mdspan(), x);
+        }
     }
 
 private:
