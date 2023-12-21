@@ -174,9 +174,6 @@ struct intel_ipp_rfft_plan
         requires(std::same_as<typename InVec::value_type, complex_type> and std::same_as<typename OutVec::value_type, Float>)
     auto operator()(InVec in, OutVec out) noexcept -> void
     {
-        assert(std::cmp_equal(in.extent(0), size() / 2 + 1));
-        assert(std::cmp_equal(out.extent(0), size()));
-
         auto buf = _buffer.to_mdspan();
         for (auto i{0U}; i < in.size(); ++i) {
             buf[i * 2]     = real(in[i]);
