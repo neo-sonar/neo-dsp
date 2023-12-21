@@ -67,22 +67,6 @@ auto test_fft_plan()
         REQUIRE(neo::allclose(noise.to_mdspan(), io));
     }
 
-    SECTION("inplace strided")
-    {
-        auto buf = stdex::mdarray<Complex, stdex::dextents<size_t, 2>, stdex::layout_left>{2, plan.size()};
-        auto io  = stdex::submdspan(buf.to_mdspan(), 0, stdex::full_extent);
-        neo::copy(noise.to_mdspan(), io);
-
-        STATIC_REQUIRE(neo::has_default_accessor<decltype(io)>);
-        STATIC_REQUIRE_FALSE(neo::has_layout_left_or_right<decltype(io)>);
-
-        neo::fft::fft(plan, io);
-        neo::fft::ifft(plan, io);
-
-        neo::scale(Float(1) / static_cast<Float>(plan.size()), io);
-        REQUIRE(neo::allclose(noise.to_mdspan(), io));
-    }
-
     SECTION("copy")
     {
         auto tmp_buf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
@@ -101,6 +85,25 @@ auto test_fft_plan()
         neo::scale(Float(1) / static_cast<Float>(plan.size()), out);
         REQUIRE(neo::allclose(noise.to_mdspan(), out));
     }
+
+// Bug in Kokkos::layout_stride no_unique_address_emulation
+#if not defined(NEO_PLATFORM_WINDOWS)
+    SECTION("inplace strided")
+    {
+        auto buf = stdex::mdarray<Complex, stdex::dextents<size_t, 2>, stdex::layout_left>{2, plan.size()};
+        auto io  = stdex::submdspan(buf.to_mdspan(), 0, stdex::full_extent);
+        neo::copy(noise.to_mdspan(), io);
+
+        STATIC_REQUIRE(neo::has_default_accessor<decltype(io)>);
+        STATIC_REQUIRE_FALSE(neo::has_layout_left_or_right<decltype(io)>);
+
+        neo::fft::fft(plan, io);
+        neo::fft::ifft(plan, io);
+
+        neo::scale(Float(1) / static_cast<Float>(plan.size()), io);
+        REQUIRE(neo::allclose(noise.to_mdspan(), io));
+    }
+#endif
 }
 
 }  // namespace
