@@ -53,7 +53,7 @@ jobs:
             os: windows-latest
             build_type: Release
             clang_version: latest
-            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native"'
             cmake_prefix_path: ""
             cmake_targets: neo_dsp_tests
 
@@ -129,13 +129,13 @@ jobs:
           sudo apt update
           sudo apt install intel-oneapi-mkl-devel intel-oneapi-ipp-devel
 
-      - name: Install IPP/MKL (Windows)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/irc_nas/19078/w_BaseKit_p_2023.0.0.25940_offline.exe
-          ./oneapi.exe -s -x -f oneapi
-          ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel:intel.oneapi.win.mkl.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
+      # - name: Install IPP/MKL (Windows)
+      #   if: runner.os == 'Windows'
+      #   shell: bash
+      #   run: |
+      #     curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/irc_nas/19078/w_BaseKit_p_2023.0.0.25940_offline.exe
+      #     ./oneapi.exe -s -x -f oneapi
+      #     ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel:intel.oneapi.win.mkl.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
 
       - name: Install ccache
         uses: hendrikmuhs/ccache-action@main
