@@ -21,7 +21,7 @@ namespace {
 template<typename Complex, typename Kernel>
 struct kernel_tester
 {
-    using plan_type = neo::fft::fft_plan<Complex, Kernel>;
+    using plan_type = neo::fft::fallback_fft_plan<Complex, Kernel>;
 };
 
 template<typename Complex>
@@ -101,7 +101,7 @@ auto test_fft_plan()
 }  // namespace
 
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft: fft_plan",
+    "neo/fft: fallback_fft_plan",
     "",
     (kernel_v1, kernel_v2, kernel_v3),
     (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>)

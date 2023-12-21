@@ -43,12 +43,12 @@ constexpr auto ifft(Plan& plan, InVec input, OutVec output) -> void
 }
 
 template<typename Complex, typename Kernel = kernel::c2c_dit2_v3>
-struct fft_plan
+struct fallback_fft_plan
 {
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    explicit fft_plan(size_type order, direction default_direction = direction::forward);
+    explicit fallback_fft_plan(size_type order, direction default_direction = direction::forward);
 
     [[nodiscard]] auto order() const noexcept -> size_type;
     [[nodiscard]] auto size() const noexcept -> size_type;
@@ -68,19 +68,19 @@ private:
 };
 
 template<typename Complex, typename Kernel>
-fft_plan<Complex, Kernel>::fft_plan(size_type order, direction default_direction)
+fallback_fft_plan<Complex, Kernel>::fallback_fft_plan(size_type order, direction default_direction)
     : _order{order}
     , _default_direction{default_direction}
 {}
 
 template<typename Complex, typename Kernel>
-auto fft_plan<Complex, Kernel>::size() const noexcept -> size_type
+auto fallback_fft_plan<Complex, Kernel>::size() const noexcept -> size_type
 {
     return _size;
 }
 
 template<typename Complex, typename Kernel>
-auto fft_plan<Complex, Kernel>::order() const noexcept -> size_type
+auto fallback_fft_plan<Complex, Kernel>::order() const noexcept -> size_type
 {
     return _order;
 }
@@ -88,7 +88,7 @@ auto fft_plan<Complex, Kernel>::order() const noexcept -> size_type
 template<typename Complex, typename Kernel>
 template<inout_vector Vec>
     requires std::same_as<typename Vec::value_type, Complex>
-auto fft_plan<Complex, Kernel>::operator()(Vec x, direction dir) noexcept -> void
+auto fallback_fft_plan<Complex, Kernel>::operator()(Vec x, direction dir) noexcept -> void
 {
     assert(std::cmp_equal(x.size(), _size));
 

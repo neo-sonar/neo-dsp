@@ -96,12 +96,12 @@ struct c2c_kernel
 }  // namespace detail
 
 template<std::floating_point Float>
-struct fft_plan
+struct fallback_fft_plan
 {
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit fft_plan(size_type order)
+    explicit fallback_fft_plan(size_type order)
         : _order{order}
         , _w{make_radix2_twiddles<std::complex<Float>>(size(), direction::forward)}
     {}
@@ -199,7 +199,7 @@ struct rfft_plan
 
 private:
     size_type _order;
-    fft_plan<Float> _fft{_order - 1U};
+    fallback_fft_plan<Float> _fft{_order - 1U};
 };
 
 }  // namespace neo::fft::experimental

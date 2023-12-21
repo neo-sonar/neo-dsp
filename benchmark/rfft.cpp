@@ -37,8 +37,8 @@ auto c2c(benchmark::State& state) -> void
 
 }  // namespace
 
-BENCHMARK(c2c<neo::fft::fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
-BENCHMARK(c2c<neo::fft::fft_plan<neo::complex128>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(c2c<neo::fft::fallback_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(c2c<neo::fft::fallback_fft_plan<neo::complex128>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
 
 #if defined(NEO_HAS_INTEL_IPP)
 BENCHMARK(c2c<neo::fft::intel_ipp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);

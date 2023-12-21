@@ -19,7 +19,7 @@ constexpr auto irfft(Plan& plan, InVec input, OutVec output)
     return plan(input, output);
 }
 
-template<typename Float, typename ComplexPlan = fft_plan<std::complex<Float>>>
+template<typename Float, typename ComplexPlan = fallback_fft_plan<std::complex<Float>>>
 struct rfft_plan
 {
     using complex_plan_type = ComplexPlan;

@@ -25,7 +25,7 @@ template<typename Float, typename Kernel, typename Complex>
 struct tester
 {
     static_assert(std::same_as<Float, typename Complex::value_type>);
-    using complex_plan_type = neo::fft::fft_plan<Complex, Kernel>;
+    using complex_plan_type = neo::fft::fallback_fft_plan<Complex, Kernel>;
     using plan_type         = neo::fft::rfft_plan<Float, complex_plan_type>;
 };
 
@@ -100,7 +100,7 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_deinterleave", "", (std::complex, neo:
     CAPTURE(size);
     CAPTURE(num_coeffs);
 
-    auto fft = neo::fft::fft_plan<Complex>{order};
+    auto fft = neo::fft::fallback_fft_plan<Complex>{order};
     REQUIRE(fft.size() == size);
     REQUIRE(fft.order() == order);
 
@@ -147,7 +147,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::fft", "", float, double)
         CAPTURE(order);
         CAPTURE(size);
 
-        auto plan = neo::fft::experimental::fft_plan<Float>{order};
+        auto plan = neo::fft::experimental::fallback_fft_plan<Float>{order};
         REQUIRE(plan.size() == size);
         REQUIRE(plan.order() == order);
 
@@ -184,7 +184,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::fft", "", float, double)
         auto const expected = std::array<Float, 8>{10, 0, -2, 2, -2, 0, -2, -2};
 
         auto x    = input;
-        auto plan = neo::fft::experimental::fft_plan<Float>{neo::ilog2(input.size() / 2)};
+        auto plan = neo::fft::experimental::fallback_fft_plan<Float>{neo::ilog2(input.size() / 2)};
         plan(stdex::mdspan{x.data(), stdex::extents{x.size()}}, neo::fft::direction::forward);
 
         for (auto i{0U}; i < expected.size(); ++i) {

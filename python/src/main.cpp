@@ -139,7 +139,7 @@ auto fft(py::array_t<Complex> array, std::optional<std::size_t> n, neo::fft::nor
             {
                 auto no_gil = py::gil_scoped_release{};
 
-                auto plan = neo::fft::fft_plan<Complex>{order, Dir};
+                auto plan = neo::fft::fallback_fft_plan<Complex>{order, Dir};
                 if constexpr (Dir == neo::fft::direction::forward) {
                     neo::fft::fft(plan, input, out);
                     if (norm == neo::fft::norm::forward) {
