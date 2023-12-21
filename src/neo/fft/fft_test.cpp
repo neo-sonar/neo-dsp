@@ -33,6 +33,11 @@ using kernel_v2 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v2>;
 template<typename Complex>
 using kernel_v3 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v3>;
 
+constexpr auto execute_dit2_kernel = [](auto kernel, neo::inout_vector auto x, auto const& twiddles) -> void {
+    neo::fft::bitrevorder(x);
+    kernel(x, twiddles);
+};
+
 template<typename Plan>
 auto test_fft_plan()
 {
@@ -164,8 +169,8 @@ static auto test_complex_batch_roundtrip_fft()
     auto const forward_twiddles  = make_twiddles(size, neo::fft::direction::forward);
     auto const backward_twiddles = make_twiddles(size, neo::fft::direction::backward);
 
-    neo::fft::execute_dit2_kernel(Kernel{}, inout.to_mdspan(), forward_twiddles.to_mdspan());
-    neo::fft::execute_dit2_kernel(Kernel{}, inout.to_mdspan(), backward_twiddles.to_mdspan());
+    execute_dit2_kernel(Kernel{}, inout.to_mdspan(), forward_twiddles.to_mdspan());
+    execute_dit2_kernel(Kernel{}, inout.to_mdspan(), backward_twiddles.to_mdspan());
 
     for (auto i{0U}; i < inout.extent(0); ++i) {
         auto const real_batch = inout(i).real();
@@ -269,8 +274,8 @@ TEMPLATE_TEST_CASE("neo/fft: radix2_kernel(simd_batch)", "", neo::pcomplex32x8, 
         auto const forward_twiddles  = make_twiddles(size, neo::fft::direction::forward);
         auto const backward_twiddles = make_twiddles(size, neo::fft::direction::backward);
 
-        neo::fft::execute_dit2_kernel(kernel, inout.to_mdspan(), forward_twiddles.to_mdspan());
-        neo::fft::execute_dit2_kernel(kernel, inout.to_mdspan(), backward_twiddles.to_mdspan());
+        execute_dit2_kernel(kernel, inout.to_mdspan(), forward_twiddles.to_mdspan());
+        execute_dit2_kernel(kernel, inout.to_mdspan(), backward_twiddles.to_mdspan());
 
         for (auto i{0U}; i < inout.extent(0); ++i) {
             auto const real_batch = inout(i).real();
