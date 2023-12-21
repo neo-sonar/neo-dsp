@@ -26,6 +26,27 @@ struct apple_vdsp_fft_plan
     explicit apple_vdsp_fft_plan(size_type order, direction default_direction = direction::forward);
     ~apple_vdsp_fft_plan();
 
+    apple_vdsp_fft_plan(apple_vdsp_fft_plan const& other)                    = delete;
+    auto operator=(apple_vdsp_fft_plan const& other) -> apple_vdsp_fft_plan& = delete;
+
+    apple_vdsp_fft_plan(apple_vdsp_fft_plan&& other) noexcept
+        : _order{std::exchange(other._order, 0)}
+        , _size{std::exchange(other._size, 0)}
+        , _plan{std::exchange(other._plan, nullptr)}
+        , _input{std::move(other._input)}
+        , _output{std::move(other._output)}
+    {}
+
+    auto operator=(apple_vdsp_fft_plan&& other) noexcept -> apple_vdsp_fft_plan&
+    {
+        _order  = std::exchange(other._order, 0);
+        _size   = std::exchange(other._size, 0);
+        _plan   = std::exchange(other._plan, nullptr);
+        _input  = std::move(other._input);
+        _output = std::move(other._output);
+        return *this;
+    }
+
     [[nodiscard]] auto order() const noexcept -> size_type;
     [[nodiscard]] auto size() const noexcept -> size_type;
 

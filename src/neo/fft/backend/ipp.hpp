@@ -149,6 +149,12 @@ struct intel_ipp_rfft_plan
         _work_buf = detail::ipp_buffer{::ippsMalloc_8u(work_size)};
     }
 
+    intel_ipp_rfft_plan(intel_ipp_rfft_plan const& other)                    = delete;
+    auto operator=(intel_ipp_rfft_plan const& other) -> intel_ipp_rfft_plan& = delete;
+
+    intel_ipp_rfft_plan(intel_ipp_rfft_plan&& other)                    = default;
+    auto operator=(intel_ipp_rfft_plan&& other) -> intel_ipp_rfft_plan& = default;
+
     [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
     [[nodiscard]] auto size() const noexcept -> size_type { return size_type(1) << order(); }
