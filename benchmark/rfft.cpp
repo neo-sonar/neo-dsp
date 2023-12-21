@@ -50,4 +50,7 @@ BENCHMARK(c2c<neo::fft::apple_vdsp_fft_plan<neo::complex64>>)->RangeMultiplier(2
 BENCHMARK(c2c<neo::fft::apple_vdsp_fft_plan<neo::complex128>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
 #endif
 
+BENCHMARK(c2c<neo::fft::fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(c2c<neo::fft::fft_plan<neo::complex128>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+
 BENCHMARK_MAIN();

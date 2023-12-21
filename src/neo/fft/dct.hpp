@@ -55,7 +55,7 @@ struct dct2_plan
     }
 
 private:
-    fallback_fft_plan<std::complex<Float>> _fft;
+    fft_plan<std::complex<Float>> _fft;
     stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>> _buffer{size()};
 };
 

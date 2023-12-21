@@ -80,7 +80,7 @@ private:
     using Float = typename Complex::value_type;
 
     size_type _size;
-    fallback_fft_plan<Complex> _fft{ilog2(bit_ceil(_size * size_type(2) + size_type(1)))};
+    fft_plan<Complex> _fft{ilog2(bit_ceil(_size * size_type(2) + size_type(1)))};
 
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _wf{size()};
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _wb{size()};
