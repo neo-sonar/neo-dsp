@@ -25,7 +25,7 @@ template<typename Float, typename Complex>
     requires(std::same_as<Float, typename Complex::value_type>)
 struct tester
 {
-    using plan_type = neo::fft::rfft_plan<Float, Complex>;
+    using plan_type = neo::fft::fallback_rfft_plan<Float, Complex>;
 };
 
 template<typename Float>
@@ -63,7 +63,7 @@ auto test_rfft()
 
 using namespace neo::fft;
 
-TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_plan", "", (std_complex, neo_complex), (float, double))
+TEMPLATE_PRODUCT_TEST_CASE("neo/fft: fallback_rfft_plan", "", (std_complex, neo_complex), (float, double))
 {
     test_rfft<typename TestType::plan_type>();
 }
@@ -91,7 +91,7 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_deinterleave", "", (std::complex, neo:
     REQUIRE(fft.size() == size);
     REQUIRE(fft.order() == order);
 
-    auto rfft = neo::fft::rfft_plan<Float, Complex>{order};
+    auto rfft = neo::fft::fallback_rfft_plan<Float, Complex>{order};
     REQUIRE(rfft.size() == size);
     REQUIRE(rfft.order() == order);
 

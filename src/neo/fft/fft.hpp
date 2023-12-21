@@ -17,6 +17,17 @@
 
 namespace neo::fft {
 
+#if defined(NEO_PLATFORM_APPLE)
+template<complex Complex>
+using fft_plan = apple_vdsp_fft_plan<Complex>;
+#elif defined(NEO_HAS_INTEL_IPP)
+template<complex Complex>
+using fft_plan = intel_ipp_fft_plan<Complex>;
+#else
+template<complex Complex>
+using fft_plan = fallback_fft_plan<Complex>;
+#endif
+
 template<typename Plan, inout_vector Vec>
 constexpr auto fft(Plan& plan, Vec inout) -> void
 {
@@ -42,16 +53,5 @@ constexpr auto ifft(Plan& plan, InVec input, OutVec output) -> void
     copy(input, output);
     ifft(plan, output);
 }
-
-#if defined(NEO_PLATFORM_APPLE)
-template<complex Complex>
-using fft_plan = apple_vdsp_fft_plan<Complex>;
-#elif defined(NEO_HAS_INTEL_IPP)
-template<complex Complex>
-using fft_plan = intel_ipp_fft_plan<Complex>;
-#else
-template<complex Complex>
-using fft_plan = fallback_fft_plan<Complex>;
-#endif
 
 }  // namespace neo::fft

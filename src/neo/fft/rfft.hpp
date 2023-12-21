@@ -20,13 +20,13 @@ constexpr auto irfft(Plan& plan, InVec input, OutVec output)
 }
 
 template<typename Float, typename Complex = std::complex<Float>>
-struct rfft_plan
+struct fallback_rfft_plan
 {
     using real_type    = Float;
     using complex_type = Complex;
     using size_type    = std::size_t;
 
-    explicit rfft_plan(size_type order) : _order{order} {}
+    explicit fallback_rfft_plan(size_type order) : _order{order} {}
 
     [[nodiscard]] auto size() const noexcept -> size_type { return _size; }
 
@@ -90,5 +90,13 @@ auto rfft_deinterleave(InVec dft, OutVecA a, OutVecB b) -> void
         b[k] = (i * (dft[k] - conj(dft[n - k]))) * Float(0.5);
     }
 }
+
+#if defined(NEO_HAS_INTEL_IPP)
+template<std::floating_point Float, typename Complex = std::complex<Float>>
+using rfft_plan = intel_ipp_rfft_plan<Float, Complex>;
+#else
+template<std::floating_point Float, typename Complex = std::complex<Float>>
+using rfft_plan = fallback_rfft_plan<Float, Complex>;
+#endif
 
 }  // namespace neo::fft
