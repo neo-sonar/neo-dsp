@@ -1,7 +1,7 @@
 #include "rfft.hpp"
 
 #if defined(NEO_HAS_INTEL_IPP)
-    #include <neo/fft/external/ipp.hpp>
+    #include <neo/fft/backend/ipp.hpp>
 #endif
 
 #include <neo/algorithm/allclose.hpp>

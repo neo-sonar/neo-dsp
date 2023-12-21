@@ -16,11 +16,11 @@
 #include <neo/fft/twiddle.hpp>
 
 #if defined(NEO_PLATFORM_APPLE)
-    #include <neo/fft/external/accelerate.hpp>
+    #include <neo/fft/backend/accelerate.hpp>
 #endif
 
 #if defined(NEO_HAS_INTEL_IPP)
-    #include <neo/fft/external/ipp.hpp>
+    #include <neo/fft/backend/ipp.hpp>
 #endif
 
 #include <neo/fft/experimental/rfft.hpp>
