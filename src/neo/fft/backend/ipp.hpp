@@ -21,6 +21,31 @@ struct ipp_free
 
 using ipp_buffer = std::unique_ptr<Ipp8u[], ipp_free>;
 
+template<typename Traits>
+[[nodiscard]] auto make_ipp_handle(std::size_t order)
+    -> std::tuple<typename Traits::handle_type*, ipp_buffer, ipp_buffer>
+{
+    static constexpr auto flag = IPP_FFT_NODIV_BY_ANY;
+    static constexpr auto hint = ippAlgHintNone;
+
+    int spec_size = 0;
+    int init_size = 0;
+    int work_size = 0;
+    if (Traits::get_size(static_cast<int>(order), flag, hint, &spec_size, &init_size, &work_size) != ippStsNoErr) {
+        assert(false);
+    }
+
+    auto* handle        = static_cast<typename Traits::handle_type*>(nullptr);
+    auto spec_buf       = ipp_buffer{::ippsMalloc_8u(spec_size)};
+    auto const init_buf = ipp_buffer{::ippsMalloc_8u(init_size)};
+
+    if (Traits::init(&handle, static_cast<int>(order), flag, hint, spec_buf.get(), init_buf.get()) != ippStsNoErr) {
+        assert(false);
+    }
+
+    return {handle, std::move(spec_buf), ipp_buffer{::ippsMalloc_8u(work_size)}};
+}
+
 }  // namespace detail
 
 template<complex Complex>
@@ -33,27 +58,7 @@ struct intel_ipp_fft_plan
 
     explicit intel_ipp_fft_plan(size_type order, direction /*default_direction*/ = direction::forward) : _order{order}
     {
-        static constexpr auto flag = IPP_FFT_NODIV_BY_ANY;
-        static constexpr auto hint = ippAlgHintNone;
-
-        int spec_size = 0;
-        int init_size = 0;
-        int work_size = 0;
-        if (traits::get_size(static_cast<int>(order), flag, hint, &spec_size, &init_size, &work_size) != ippStsNoErr) {
-            assert(false);
-        }
-
-        auto* handle        = static_cast<typename traits::handle_type*>(nullptr);
-        auto spec_buf       = detail::ipp_buffer{::ippsMalloc_8u(spec_size)};
-        auto const init_buf = detail::ipp_buffer{::ippsMalloc_8u(init_size)};
-
-        if (traits::init(&handle, static_cast<int>(order), flag, hint, spec_buf.get(), init_buf.get()) != ippStsNoErr) {
-            assert(false);
-        }
-
-        _handle   = handle;
-        _spec_buf = std::move(spec_buf);
-        _work_buf = detail::ipp_buffer{::ippsMalloc_8u(work_size)};
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_handle<traits>(order);
     }
 
     intel_ipp_fft_plan(intel_ipp_fft_plan const& other)                    = delete;
@@ -126,27 +131,7 @@ struct intel_ipp_rfft_plan
 
     explicit intel_ipp_rfft_plan(size_type order) : _order{order}
     {
-        static constexpr auto flag = IPP_FFT_NODIV_BY_ANY;
-        static constexpr auto hint = ippAlgHintNone;
-
-        int spec_size = 0;
-        int init_size = 0;
-        int work_size = 0;
-        if (traits::get_size(static_cast<int>(order), flag, hint, &spec_size, &init_size, &work_size) != ippStsNoErr) {
-            assert(false);
-        }
-
-        auto* handle        = static_cast<typename traits::handle_type*>(nullptr);
-        auto spec_buf       = detail::ipp_buffer{::ippsMalloc_8u(spec_size)};
-        auto const init_buf = detail::ipp_buffer{::ippsMalloc_8u(init_size)};
-
-        if (traits::init(&handle, static_cast<int>(order), flag, hint, spec_buf.get(), init_buf.get()) != ippStsNoErr) {
-            assert(false);
-        }
-
-        _handle   = handle;
-        _spec_buf = std::move(spec_buf);
-        _work_buf = detail::ipp_buffer{::ippsMalloc_8u(work_size)};
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_handle<traits>(order);
     }
 
     intel_ipp_rfft_plan(intel_ipp_rfft_plan const& other)                    = delete;
