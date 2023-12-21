@@ -15,9 +15,17 @@ constexpr auto linalg_unary_op(InOutObj obj, Op op) noexcept -> void
             obj(i) = op(obj(i));
         }
     } else {
-        for (index_type i{0}; i < obj.extent(0); ++i) {
-            for (index_type j{0}; j < obj.extent(1); ++j) {
-                obj(i, j) = op(obj(i, j));
+        if constexpr (has_layout_left<InOutObj>) {
+            for (index_type col{0}; col < obj.extent(1); ++col) {
+                for (index_type row{0}; row < obj.extent(0); ++row) {
+                    obj(row, col) = op(obj(row, col));
+                }
+            }
+        } else {
+            for (index_type row{0}; row < obj.extent(0); ++row) {
+                for (index_type col{0}; col < obj.extent(1); ++col) {
+                    obj(row, col) = op(obj(row, col));
+                }
             }
         }
     }

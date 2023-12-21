@@ -118,12 +118,12 @@ inline constexpr auto has_default_accessor
     = std::same_as<typename Obj::accessor_type, stdex::default_accessor<typename Obj::element_type>>;
 
 template<typename Obj>
-inline constexpr auto is_layout_left = std::same_as<typename Obj::layout_type, stdex::layout_left>;
+inline constexpr auto has_layout_left = std::same_as<typename Obj::layout_type, stdex::layout_left>;
 
 template<typename Obj>
-inline constexpr auto is_layout_right = std::same_as<typename Obj::layout_type, stdex::layout_right>;
+inline constexpr auto has_layout_right = std::same_as<typename Obj::layout_type, stdex::layout_right>;
 
 template<typename Obj>
-inline constexpr auto has_layout_left_or_right = is_layout_left<Obj> or is_layout_right<Obj>;
+inline constexpr auto has_layout_left_or_right = has_layout_left<Obj> or has_layout_right<Obj>;
 
 }  // namespace neo
