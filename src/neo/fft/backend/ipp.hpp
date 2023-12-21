@@ -22,7 +22,7 @@ struct ipp_free
 using ipp_buffer = std::unique_ptr<Ipp8u[], ipp_free>;
 
 template<typename Traits>
-[[nodiscard]] auto make_ipp_handle(std::size_t order)
+[[nodiscard]] auto make_ipp_fft_handle(std::size_t order)
     -> std::tuple<typename Traits::handle_type*, ipp_buffer, ipp_buffer>
 {
     static constexpr auto flag = IPP_FFT_NODIV_BY_ANY;
@@ -46,6 +46,32 @@ template<typename Traits>
     return {handle, std::move(spec_buf), ipp_buffer{::ippsMalloc_8u(work_size)}};
 }
 
+template<typename Traits>
+[[nodiscard]] auto make_ipp_dct_handle(std::size_t order)
+    -> std::tuple<typename Traits::handle_type*, ipp_buffer, ipp_buffer>
+{
+    static constexpr auto hint = ippAlgHintNone;
+
+    auto const len = static_cast<int>(size_t(1) << order);
+
+    int spec_size = 0;
+    int init_size = 0;
+    int work_size = 0;
+    if (Traits::get_size(len, hint, &spec_size, &init_size, &work_size) != ippStsNoErr) {
+        assert(false);
+    }
+
+    auto* handle        = static_cast<typename Traits::handle_type*>(nullptr);
+    auto spec_buf       = ipp_buffer{::ippsMalloc_8u(spec_size)};
+    auto const init_buf = ipp_buffer{::ippsMalloc_8u(init_size)};
+
+    if (Traits::init(&handle, len, hint, spec_buf.get(), init_buf.get()) != ippStsNoErr) {
+        assert(false);
+    }
+
+    return {handle, std::move(spec_buf), ipp_buffer{::ippsMalloc_8u(work_size)}};
+}
+
 }  // namespace detail
 
 template<complex Complex>
@@ -58,7 +84,7 @@ struct intel_ipp_fft_plan
 
     explicit intel_ipp_fft_plan(size_type order, direction /*default_direction*/ = direction::forward) : _order{order}
     {
-        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_handle<traits>(order);
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<traits>(order);
     }
 
     intel_ipp_fft_plan(intel_ipp_fft_plan const& other)                    = delete;
@@ -131,7 +157,7 @@ struct intel_ipp_rfft_plan
 
     explicit intel_ipp_rfft_plan(size_type order) : _order{order}
     {
-        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_handle<traits>(order);
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<traits>(order);
     }
 
     intel_ipp_rfft_plan(intel_ipp_rfft_plan const& other)                    = delete;
@@ -204,5 +230,95 @@ private:
     detail::ipp_buffer _spec_buf;
     detail::ipp_buffer _work_buf;
 };
+
+template<std::floating_point Float, direction Direction>
+    requires(std::same_as<Float, float> or std::same_as<Float, double>)
+struct intel_ipp_dct_plan
+{
+    using value_type = Float;
+    using size_type  = std::size_t;
+
+    explicit intel_ipp_dct_plan(size_type order) : _order{order}
+    {
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_dct_handle<traits>(order);
+    }
+
+    intel_ipp_dct_plan(intel_ipp_dct_plan const& other)                    = delete;
+    auto operator=(intel_ipp_dct_plan const& other) -> intel_ipp_dct_plan& = delete;
+
+    intel_ipp_dct_plan(intel_ipp_dct_plan&& other)                    = default;
+    auto operator=(intel_ipp_dct_plan&& other) -> intel_ipp_dct_plan& = default;
+
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
+
+    [[nodiscard]] auto size() const noexcept -> size_type { return size_type(1) << order(); }
+
+    template<inout_vector Vec>
+        requires std::same_as<typename Vec::value_type, Float>
+    auto operator()(Vec x) noexcept -> void
+    {
+        auto const buf = _buffer.to_mdspan();
+        copy(x, buf);
+        traits::transform_inplace(_buffer.data(), _handle, _work_buf.get());
+        copy(buf, x);
+    }
+
+private:
+    struct dct2_traits_f32
+    {
+        using value_type                        = ::Ipp32f;
+        using handle_type                       = ::IppsDCTFwdSpec_32f;
+        static constexpr auto get_size          = ::ippsDCTFwdGetSize_32f;
+        static constexpr auto init              = ::ippsDCTFwdInit_32f;
+        static constexpr auto transform_copy    = ::ippsDCTFwd_32f;
+        static constexpr auto transform_inplace = ::ippsDCTFwd_32f_I;
+    };
+
+    struct dct2_traits_f64
+    {
+        using value_type                        = ::Ipp64f;
+        using handle_type                       = ::IppsDCTFwdSpec_64f;
+        static constexpr auto get_size          = ::ippsDCTFwdGetSize_64f;
+        static constexpr auto init              = ::ippsDCTFwdInit_64f;
+        static constexpr auto transform_copy    = ::ippsDCTFwd_64f;
+        static constexpr auto transform_inplace = ::ippsDCTFwd_64f_I;
+    };
+
+    struct dct3_traits_f32
+    {
+        using value_type                        = ::Ipp32f;
+        using handle_type                       = ::IppsDCTInvSpec_32f;
+        static constexpr auto get_size          = ::ippsDCTInvGetSize_32f;
+        static constexpr auto init              = ::ippsDCTInvInit_32f;
+        static constexpr auto transform_copy    = ::ippsDCTInv_32f;
+        static constexpr auto transform_inplace = ::ippsDCTInv_32f_I;
+    };
+
+    struct dct3_traits_f64
+    {
+        using value_type                        = ::Ipp64f;
+        using handle_type                       = ::IppsDCTInvSpec_64f;
+        static constexpr auto get_size          = ::ippsDCTInvGetSize_64f;
+        static constexpr auto init              = ::ippsDCTInvInit_64f;
+        static constexpr auto transform_copy    = ::ippsDCTInv_64f;
+        static constexpr auto transform_inplace = ::ippsDCTInv_64f_I;
+    };
+
+    using dct2_traits = std::conditional_t<std::same_as<Float, float>, dct2_traits_f32, dct2_traits_f64>;
+    using dct3_traits = std::conditional_t<std::same_as<Float, float>, dct3_traits_f32, dct3_traits_f64>;
+    using traits      = std::conditional_t<Direction == direction::forward, dct2_traits, dct3_traits>;
+
+    size_type _order;
+    stdex::mdarray<typename traits::value_type, stdex::dextents<size_t, 1>> _buffer{size()};
+    typename traits::handle_type* _handle;
+    detail::ipp_buffer _spec_buf;
+    detail::ipp_buffer _work_buf;
+};
+
+template<std::floating_point Float>
+using intel_ipp_dct2_plan = intel_ipp_dct_plan<Float, direction::forward>;
+
+template<std::floating_point Float>
+using intel_ipp_dct3_plan = intel_ipp_dct_plan<Float, direction::backward>;
 
 }  // namespace neo::fft
