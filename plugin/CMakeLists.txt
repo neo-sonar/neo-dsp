@@ -67,6 +67,10 @@ target_compile_definitions(PerceptualConvolution
         JUCE_DISABLE_JUCE_VERSION_PRINTING=1
 )
 
+if(NEO_ENABLE_INTEL_MKL)
+    target_compile_definitions(PerceptualConvolution PUBLIC JUCE_DSP_USE_INTEL_MKL=1)
+endif()
+
 target_include_directories(PerceptualConvolution
     PUBLIC
         ${PROJECT_SOURCE_DIR}
