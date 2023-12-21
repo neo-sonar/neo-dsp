@@ -21,19 +21,18 @@
 
 namespace {
 
-template<typename Float, typename Kernel, typename Complex>
+template<typename Float, typename Complex>
+    requires(std::same_as<Float, typename Complex::value_type>)
 struct tester
 {
-    static_assert(std::same_as<Float, typename Complex::value_type>);
-    using complex_plan_type = neo::fft::fallback_fft_plan<Complex, Kernel>;
-    using plan_type         = neo::fft::rfft_plan<Float, complex_plan_type>;
+    using plan_type = neo::fft::rfft_plan<Float, Complex>;
 };
 
-template<typename Float, typename Kernel>
-using std_complex = tester<Float, Kernel, std::complex<Float>>;
+template<typename Float>
+using std_complex = tester<Float, std::complex<Float>>;
 
-template<typename Float, typename Kernel>
-using neo_complex = tester<Float, Kernel, neo::scalar_complex<Float>>;
+template<typename Float>
+using neo_complex = tester<Float, neo::scalar_complex<Float>>;
 
 template<typename Plan>
 auto test_rfft()
@@ -64,19 +63,7 @@ auto test_rfft()
 
 using namespace neo::fft;
 
-TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft: rfft_plan",
-    "",
-    (std_complex, neo_complex),
-
-    ((float, kernel::c2c_dit2_v1),
-     (float, kernel::c2c_dit2_v2),
-     (float, kernel::c2c_dit2_v3),
-
-     (double, kernel::c2c_dit2_v1),
-     (double, kernel::c2c_dit2_v2),
-     (double, kernel::c2c_dit2_v3))
-)
+TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_plan", "", (std_complex, neo_complex), (float, double))
 {
     test_rfft<typename TestType::plan_type>();
 }
@@ -104,7 +91,7 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_deinterleave", "", (std::complex, neo:
     REQUIRE(fft.size() == size);
     REQUIRE(fft.order() == order);
 
-    auto rfft = neo::fft::rfft_plan<Float, decltype(fft)>{order};
+    auto rfft = neo::fft::rfft_plan<Float, Complex>{order};
     REQUIRE(rfft.size() == size);
     REQUIRE(rfft.order() == order);
 

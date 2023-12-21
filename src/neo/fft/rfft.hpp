@@ -19,13 +19,12 @@ constexpr auto irfft(Plan& plan, InVec input, OutVec output)
     return plan(input, output);
 }
 
-template<typename Float, typename ComplexPlan = fallback_fft_plan<std::complex<Float>>>
+template<typename Float, typename Complex = std::complex<Float>>
 struct rfft_plan
 {
-    using complex_plan_type = ComplexPlan;
-    using complex_type      = typename ComplexPlan::value_type;
-    using size_type         = typename ComplexPlan::size_type;
-    using real_type         = Float;
+    using real_type    = Float;
+    using complex_type = Complex;
+    using size_type    = std::size_t;
 
     explicit rfft_plan(size_type order) : _order{order} {}
 
@@ -34,7 +33,7 @@ struct rfft_plan
     [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
     template<in_vector InVec, out_vector OutVec>
-        requires(std::same_as<typename InVec::value_type, Float> and std::same_as<typename OutVec::value_type, complex_type>)
+        requires(std::same_as<typename InVec::value_type, Float> and std::same_as<typename OutVec::value_type, Complex>)
     auto operator()(InVec in, OutVec out) noexcept -> void
     {
         auto const buf    = _buffer.to_mdspan();
@@ -46,7 +45,7 @@ struct rfft_plan
     }
 
     template<in_vector InVec, out_vector OutVec>
-        requires(std::same_as<typename InVec::value_type, complex_type> and std::same_as<typename OutVec::value_type, Float>)
+        requires(std::same_as<typename InVec::value_type, Complex> and std::same_as<typename OutVec::value_type, Float>)
     auto operator()(InVec in, OutVec out) noexcept -> void
     {
         auto const buf    = _buffer.to_mdspan();
@@ -69,8 +68,8 @@ struct rfft_plan
 private:
     size_type _order;
     size_type _size{1ULL << _order};
-    ComplexPlan _fft{_order};
-    stdex::mdarray<complex_type, stdex::dextents<size_type, 1>> _buffer{_size};
+    fft_plan<Complex> _fft{_order};
+    stdex::mdarray<Complex, stdex::dextents<size_type, 1>> _buffer{_size};
 };
 
 template<in_vector InVec, out_vector OutVecA, out_vector OutVecB>
