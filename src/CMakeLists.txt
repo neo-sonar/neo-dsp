@@ -24,6 +24,7 @@ if(NEO_ENABLE_INTEL_IPP)
 endif()
 
 if(NEO_ENABLE_INTEL_MKL)
+    set(MKL_LINK "static")
     set(MKL_THREADING "sequential")
     find_package(MKL)
     if(MKL_FOUND)
