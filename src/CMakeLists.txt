@@ -8,9 +8,10 @@ target_link_libraries(neo-dsp INTERFACE std::mdspan)
 target_compile_features(neo-dsp INTERFACE cxx_std_20)
 target_include_directories(neo-dsp INTERFACE ${PROJECT_SOURCE_DIR})
 
-if(APPLE)
+if(NEO_ENABLE_APPLE_VDSP AND APPLE)
     find_library(ACCELERATE_LIBRARY Accelerate)
     target_link_libraries(neo-dsp INTERFACE ${ACCELERATE_LIBRARY})
+    target_compile_definitions(neo-dsp INTERFACE NEO_HAS_APPLE_VDSP=1)
     target_compile_definitions(neo-dsp INTERFACE ACCELERATE_NEW_LAPACK=1 ACCELERATE_LAPACK_ILP64=1)
 endif()
 

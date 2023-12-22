@@ -118,7 +118,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     test_fft_plan<typename TestType::plan_type>();
 }
 
-#if defined(NEO_PLATFORM_APPLE)
+#if defined(NEO_HAS_APPLE_VDSP)
 TEMPLATE_TEST_CASE("neo/fft: apple_vdsp_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
 {
     test_fft_plan<neo::fft::apple_vdsp_fft_plan<TestType>>();

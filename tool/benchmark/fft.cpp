@@ -115,7 +115,7 @@ private:
     stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _buffer;
 };
 
-#if defined(NEO_PLATFORM_APPLE)
+#if defined(NEO_HAS_APPLE_VDSP)
 
 template<std::floating_point Float>
 struct vdsp_fft_bench
@@ -199,7 +199,7 @@ auto main(int argc, char** argv) -> int
         n = std::stoul(args[1]);
     }
 
-#if defined(NEO_PLATFORM_APPLE)
+#if defined(NEO_HAS_APPLE_VDSP)
     timeit("apple_vdsp_parallel<float>  ", n, vdsp_fft_bench<float>{n});
     timeit("apple_vdsp<complex<float>>  ", n, fft_bench<apple_vdsp_fft_plan<std::complex<float>>>{n});
     timeit("apple_vdsp<complex64>       ", n, fft_bench<apple_vdsp_fft_plan<neo::complex64>>{n});
@@ -219,7 +219,7 @@ auto main(int argc, char** argv) -> int
     timeit("fftr<float>", n, fftr_bench<experimental::fallback_fft_plan<float>>{n});
     std::puts("\n");
 
-#if defined(NEO_PLATFORM_APPLE)
+#if defined(NEO_HAS_APPLE_VDSP)
     timeit("apple_vdsp_parallel<double> ", n, vdsp_fft_bench<double>{n});
     timeit("apple_vdsp<complex<double>> ", n, fft_bench<apple_vdsp_fft_plan<std::complex<double>>>{n});
     timeit("apple_vdsp<complex128>      ", n, fft_bench<apple_vdsp_fft_plan<neo::complex128>>{n});

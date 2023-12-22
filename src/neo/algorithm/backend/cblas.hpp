@@ -4,7 +4,7 @@
 
 #include <neo/container/mdspan.hpp>
 
-#if defined(NEO_PLATFORM_APPLE)
+#if defined(NEO_HAS_APPLE_VDSP)
     #include <Accelerate/Accelerate.h>
     #define NEO_HAS_CBLAS 1
 #elif defined(NEO_HAS_INTEL_MKL)
@@ -18,7 +18,7 @@
 #if defined(NEO_HAS_CBLAS)
 namespace neo::cblas {
 
-    #if defined(NEO_PLATFORM_APPLE)
+    #if defined(NEO_HAS_APPLE_VDSP)
 using size_type = long;
     #elif defined(NEO_HAS_INTEL_MKL)
 using size_type = MKL_INT;

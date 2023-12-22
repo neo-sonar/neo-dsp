@@ -7,7 +7,7 @@
 #include <neo/fft/backend/fallback.hpp>
 #include <neo/fft/bitrevorder.hpp>
 
-#if defined(NEO_PLATFORM_APPLE)
+#if defined(NEO_HAS_APPLE_VDSP)
     #include <neo/fft/backend/accelerate.hpp>
 #endif
 
@@ -21,7 +21,7 @@
 
 namespace neo::fft {
 
-#if defined(NEO_PLATFORM_APPLE)
+#if defined(NEO_HAS_APPLE_VDSP)
 template<complex Complex>
 using fft_plan = apple_vdsp_fft_plan<Complex>;
 #elif defined(NEO_HAS_INTEL_IPP)
