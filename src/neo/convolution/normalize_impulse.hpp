@@ -22,7 +22,7 @@ auto normalize_impulse(InOutObj obj) noexcept -> void
         auto factor   = normalize_energy_factor(channel0);
         for (Index ch{1}; ch < obj.extent(0); ++ch) {
             auto channel = stdex::submdspan(obj, ch, stdex::full_extent);
-            factor       = (std::min)(factor, normalize_energy_factor(channel));
+            factor       = std::min(factor, normalize_energy_factor(channel));
         }
 
         scale(factor, obj);
