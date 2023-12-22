@@ -15,5 +15,8 @@ target_link_libraries(convolution_benchmark PRIVATE neo::dsp benchmark::benchmar
 add_executable(fft_benchmark fft.cpp)
 target_link_libraries(fft_benchmark PRIVATE neo::dsp benchmark::benchmark)
 
+add_executable(multiply_add_benchmark multiply_add.cpp)
+target_link_libraries(multiply_add_benchmark PRIVATE neo::dsp benchmark::benchmark)
+
 add_executable(rfft_benchmark rfft.cpp)
 target_link_libraries(rfft_benchmark PRIVATE neo::dsp benchmark::benchmark)
