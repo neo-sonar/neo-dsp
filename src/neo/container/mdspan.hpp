@@ -153,4 +153,16 @@ inline constexpr auto has_layout_right = std::same_as<typename Obj::layout_type,
 template<typename Obj>
 inline constexpr auto has_layout_left_or_right = has_layout_left<Obj> or has_layout_right<Obj>;
 
+template<typename... Objs>
+inline constexpr auto have_default_accessor = (has_default_accessor<Objs> and ...);
+
+template<typename... Objs>
+inline constexpr auto have_layout_left = (has_layout_left<Objs> and ...);
+
+template<typename... Objs>
+inline constexpr auto have_layout_right = (has_layout_right<Objs> and ...);
+
+template<typename... Objs>
+inline constexpr auto have_layout_left_or_right = (has_layout_left_or_right<Objs> and ...);
+
 }  // namespace neo

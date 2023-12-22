@@ -36,3 +36,8 @@ if(NEO_ENABLE_INTEL_MKL)
         message(FATAL_ERROR "Intel MKL was not found")
     endif()
 endif()
+
+if(NEO_ENABLE_XSIMD)
+    target_link_libraries(neo-dsp INTERFACE xsimd)
+    target_compile_definitions(neo-dsp INTERFACE NEO_HAS_XSIMD=1)
+endif()

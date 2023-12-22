@@ -10,6 +10,10 @@
     #include <Accelerate/Accelerate.h>
 #endif
 
+#if defined(NEO_HAS_XSIMD)
+    #include <neo/algorithm/backend/xsimd.hpp>
+#endif
+
 #include <cassert>
 #include <utility>
 
@@ -20,6 +24,21 @@ template<in_vector VecX, in_vector VecY, in_vector VecZ, out_vector VecOut>
 constexpr auto multiply_add(VecX x, VecY y, VecZ z, VecOut out) noexcept -> void
 {
     assert(detail::extents_equal(x, y, z, out));
+
+    constexpr auto const default_accessor     = have_default_accessor<VecX, VecY, VecZ, VecOut>;
+    constexpr auto const layout_left_or_right = have_layout_left_or_right<VecX, VecY, VecZ, VecOut>;
+
+    if constexpr (default_accessor and layout_left_or_right) {
+        auto x_ptr   = x.data_handle();
+        auto y_ptr   = y.data_handle();
+        auto z_ptr   = z.data_handle();
+        auto out_ptr = out.data_handle();
+        auto size    = x.extent(0);
+        if constexpr (requires { detail::multiply_add(x_ptr, y_ptr, z_ptr, out_ptr, size); }) {
+            detail::multiply_add(x_ptr, y_ptr, z_ptr, out_ptr, size);
+            return;
+        }
+    }
 
     for (decltype(x.extent(0)) i{0}; i < x.extent(0); ++i) {
         out[i] = x[i] * y[i] + z[i];
