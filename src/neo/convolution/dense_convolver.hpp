@@ -20,13 +20,17 @@ struct dense_filter
 
     dense_filter() = default;
 
-    auto filter(in_matrix auto filter) -> void
+    auto filter(in_matrix_of<Complex> auto filter) -> void
     {
         _filter = stdex::mdarray<Complex, stdex::dextents<size_t, 2>>{filter.extents()};
         copy(filter, _filter.to_mdspan());
     }
 
-    auto operator()(in_vector auto fdl, std::integral auto filter_index, inout_vector auto accumulator) -> void
+    auto operator()(
+        in_vector_of<Complex> auto fdl,
+        std::integral auto filter_index,
+        inout_vector_of<Complex> auto accumulator
+    ) -> void
     {
         auto const subfilter = stdex::submdspan(_filter.to_mdspan(), filter_index, stdex::full_extent);
         multiply_add(fdl, subfilter, accumulator, accumulator);

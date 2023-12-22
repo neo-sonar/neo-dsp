@@ -2,10 +2,10 @@
 
 #include <neo/config.hpp>
 
-#include <neo/algorithm/detail/linalg_unary_op.hpp>
+#include <neo/algorithm/backend/linalg_unary_op.hpp>
 
 #if defined(NEO_HAS_INTEL_MKL)
-    #include <neo/algorithm/detail/blas_mkl.hpp>
+    #include <neo/algorithm/backend/cblas.hpp>
 #endif
 
 namespace neo {

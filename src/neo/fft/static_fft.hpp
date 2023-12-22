@@ -20,7 +20,7 @@ namespace detail {
 template<typename Complex, int Order, int Stage>
 struct static_dit2_stage
 {
-    auto operator()(inout_vector auto x, in_vector auto twiddles) -> void
+    auto operator()(inout_vector_of<Complex> auto x, in_vector_of<Complex> auto twiddles) -> void
         requires(Stage == 0)
     {
         static constexpr auto const size         = 1 << Order;
@@ -39,7 +39,7 @@ struct static_dit2_stage
         static_dit2_stage<Complex, Order, 1>{}(x, twiddles);
     }
 
-    auto operator()(inout_vector auto x, in_vector auto twiddles) -> void
+    auto operator()(inout_vector_of<Complex> auto x, in_vector_of<Complex> auto twiddles) -> void
         requires(Stage != 0 and Stage < Order)
     {
         static constexpr auto const size         = 1 << Order;
@@ -63,7 +63,7 @@ struct static_dit2_stage
         static_dit2_stage<Complex, Order, Stage + 1>{}(x, twiddles);
     }
 
-    auto operator()(inout_vector auto /*x*/, in_vector auto /*twiddles*/) -> void
+    auto operator()(inout_vector_of<Complex> auto /*x*/, in_vector auto /*twiddles*/) -> void
         requires(Stage == Order)
     {}
 };
@@ -82,8 +82,7 @@ struct static_fft_plan
 
     [[nodiscard]] static constexpr auto order() -> std::size_t { return Order; }
 
-    template<inout_vector InOutVec>
-        requires std::same_as<typename InOutVec::value_type, Complex>
+    template<inout_vector_of<Complex> InOutVec>
     auto operator()(InOutVec x, direction dir) noexcept -> void
     {
         _reorder(x);

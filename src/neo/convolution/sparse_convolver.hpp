@@ -20,9 +20,16 @@ struct sparse_filter
 
     sparse_filter() = default;
 
-    auto filter(in_matrix auto filter, auto sparsity) -> void { _filter = csr_matrix<Complex>{filter, sparsity}; }
+    auto filter(in_matrix_of<Complex> auto filter, auto sparsity) -> void
+    {
+        _filter = csr_matrix<Complex>{filter, sparsity};
+    }
 
-    auto operator()(in_vector auto fdl, std::integral auto filter_index, inout_vector auto accumulator) -> void
+    auto operator()(
+        in_vector_of<Complex> auto fdl,
+        std::integral auto filter_index,
+        inout_vector_of<Complex> auto accumulator
+    ) -> void
     {
         multiply_add(fdl, _filter, filter_index, accumulator, accumulator);
     }

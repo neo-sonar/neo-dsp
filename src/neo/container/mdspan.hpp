@@ -94,6 +94,33 @@ concept inout_object =                                                          
     && std::same_as<std::remove_const_t<typename T::element_type>, typename T::element_type>  //
     && T::is_always_unique();                                                                 //
 
+template<typename Vec, typename Value>
+concept in_vector_of = in_vector<Vec> and std::same_as<Value, typename Vec::value_type>;
+
+template<typename Vec, typename Value>
+concept out_vector_of = out_vector<Vec> and std::same_as<Value, typename Vec::value_type>;
+
+template<typename Vec, typename Value>
+concept inout_vector_of = inout_vector<Vec> and std::same_as<Value, typename Vec::value_type>;
+
+template<typename Mat, typename Value>
+concept in_matrix_of = in_matrix<Mat> and std::same_as<Value, typename Mat::value_type>;
+
+template<typename Mat, typename Value>
+concept out_matrix_of = out_matrix<Mat> and std::same_as<Value, typename Mat::value_type>;
+
+template<typename Mat, typename Value>
+concept inout_matrix_of = inout_matrix<Mat> and std::same_as<Value, typename Mat::value_type>;
+
+template<typename Obj, typename Value>
+concept in_object_of = in_object<Obj> and std::same_as<Value, typename Obj::value_type>;
+
+template<typename Obj, typename Value>
+concept out_object_of = out_object<Obj> and std::same_as<Value, typename Obj::value_type>;
+
+template<typename Obj, typename Value>
+concept inout_object_of = inout_object<Obj> and std::same_as<Value, typename Obj::value_type>;
+
 namespace detail {
 
 [[nodiscard]] constexpr auto extents_equal(in_object auto ref, in_object auto... others) noexcept -> bool
