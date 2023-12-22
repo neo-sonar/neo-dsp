@@ -177,9 +177,8 @@ template<std::floating_point Float, complex Complex = std::complex<Float>>
     requires((std::same_as<Float, float> or std::same_as<Float, double>) and std::same_as<typename Complex::value_type, Float>)
 struct intel_ipp_rfft_plan
 {
-    using value_type   = Complex;
-    using complex_type = Complex;
     using real_type    = Float;
+    using complex_type = Complex;
     using size_type    = std::size_t;
 
     explicit intel_ipp_rfft_plan(size_type order) : _order{order}
