@@ -6,43 +6,41 @@
 #include <mkl.h>
 
 #include <complex>
+#include <concepts>
 
-namespace neo::detail {
+namespace neo::cblas {
 
-template<typename T>
-inline constexpr auto const is_blas_type = false;
-
-template<std::floating_point Float>
-inline constexpr auto const is_blas_type<Float> = true;
-
-template<std::floating_point Float>
-inline constexpr auto const is_blas_type<std::complex<Float>> = true;
-
-template<typename>
-struct cblas_traits;
-
-template<>
-struct cblas_traits<float>
+inline auto scal(std::integral auto n, float alpha, float* x, std::integral auto inc_x) noexcept -> void
 {
-    static constexpr auto scale = cblas_sscal;
-};
+    cblas_sscal(static_cast<MKL_INT>(n), alpha, x, static_cast<MKL_INT>(inc_x));
+}
 
-template<>
-struct cblas_traits<double>
+inline auto scal(std::integral auto n, double alpha, double* x, std::integral auto inc_x) noexcept -> void
 {
-    static constexpr auto scale = cblas_dscal;
-};
+    cblas_dscal(static_cast<MKL_INT>(n), alpha, x, static_cast<MKL_INT>(inc_x));
+}
 
-template<>
-struct cblas_traits<std::complex<float>>
+inline auto
+scal(std::integral auto n, std::complex<float> alpha, std::complex<float>* x, std::integral auto inc_x) noexcept -> void
 {
-    static constexpr auto scale = cblas_cscal;
-};
+    cblas_cscal(static_cast<MKL_INT>(n), &alpha, x, static_cast<MKL_INT>(inc_x));
+}
 
-template<>
-struct cblas_traits<std::complex<double>>
+inline auto
+scal(std::integral auto n, std::complex<double> alpha, std::complex<double>* x, std::integral auto inc_x) noexcept
+    -> void
 {
-    static constexpr auto scale = cblas_zscal;
-};
+    cblas_zscal(static_cast<MKL_INT>(n), &alpha, x, static_cast<MKL_INT>(inc_x));
+}
 
-}  // namespace neo::detail
+inline auto scal(std::integral auto n, float alpha, std::complex<float>* x, std::integral auto inc_x) noexcept -> void
+{
+    cblas_csscal(static_cast<MKL_INT>(n), alpha, x, static_cast<MKL_INT>(inc_x));
+}
+
+inline auto scal(std::integral auto n, double alpha, std::complex<double>* x, std::integral auto inc_x) noexcept -> void
+{
+    cblas_zdscal(static_cast<MKL_INT>(n), alpha, x, static_cast<MKL_INT>(inc_x));
+}
+
+}  // namespace neo::cblas
