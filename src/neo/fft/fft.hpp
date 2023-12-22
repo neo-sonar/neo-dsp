@@ -44,8 +44,12 @@ constexpr auto fft(Plan& plan, Vec inout) -> void
 template<typename Plan, in_vector InVec, out_vector OutVec>
 constexpr auto fft(Plan& plan, InVec input, OutVec output) -> void
 {
-    copy(input, output);
-    fft(plan, output);
+    if constexpr (requires { plan(input, output, direction::forward); }) {
+        plan(input, output, direction::forward);
+    } else {
+        copy(input, output);
+        fft(plan, output);
+    }
 }
 
 template<typename Plan, inout_vector Vec>
@@ -57,8 +61,12 @@ constexpr auto ifft(Plan& plan, Vec inout) -> void
 template<typename Plan, in_vector InVec, out_vector OutVec>
 constexpr auto ifft(Plan& plan, InVec input, OutVec output) -> void
 {
-    copy(input, output);
-    ifft(plan, output);
+    if constexpr (requires { plan(input, output, direction::backward); }) {
+        plan(input, output, direction::backward);
+    } else {
+        copy(input, output);
+        ifft(plan, output);
+    }
 }
 
 }  // namespace neo::fft

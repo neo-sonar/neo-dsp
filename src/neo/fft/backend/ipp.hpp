@@ -103,7 +103,7 @@ struct intel_ipp_fft_plan
     {
         assert(std::cmp_equal(x.extent(0), size()));
 
-        auto transform = dir == direction::forward ? traits::forward : traits::backward;
+        auto transform = dir == direction::forward ? traits::forward_inplace : traits::backward_inplace;
 
         if constexpr (has_layout_left_or_right<InOutVec> and has_default_accessor<InOutVec>) {
             auto buffer = reinterpret_cast<typename traits::complex_type*>(x.data_handle());
@@ -116,25 +116,52 @@ struct intel_ipp_fft_plan
         }
     }
 
+    template<in_vector InVec, out_vector OutVec>
+        requires(std::same_as<typename InVec::value_type, Complex> and std::same_as<typename OutVec::value_type, Complex>)
+    auto operator()(InVec input, OutVec output, direction dir) noexcept -> void
+    {
+        assert(std::cmp_equal(input.extent(0), size()));
+        assert(std::cmp_equal(output.extent(0), size()));
+
+        if constexpr (has_default_accessor<InVec> and has_default_accessor<OutVec>) {
+            if constexpr (has_layout_left_or_right<InVec> and has_layout_left_or_right<OutVec>) {
+                auto const* in = reinterpret_cast<typename traits::complex_type const*>(input.data_handle());
+                auto* out      = reinterpret_cast<typename traits::complex_type*>(output.data_handle());
+                auto transform = dir == direction::forward ? traits::forward_copy : traits::backward_copy;
+                transform(in, out, _handle, _work_buf.get());
+                return;
+            }
+        }
+
+        auto buf = _buffer.to_mdspan();
+        copy(input, buf);
+        (*this)(buf, dir);
+        copy(buf, output);
+    }
+
 private:
     struct traits_f32
     {
-        using complex_type             = ::Ipp32fc;
-        using handle_type              = ::IppsFFTSpec_C_32fc;
-        static constexpr auto get_size = ::ippsFFTGetSize_C_32fc;
-        static constexpr auto init     = ::ippsFFTInit_C_32fc;
-        static constexpr auto forward  = ::ippsFFTFwd_CToC_32fc_I;
-        static constexpr auto backward = ::ippsFFTInv_CToC_32fc_I;
+        using complex_type                     = ::Ipp32fc;
+        using handle_type                      = ::IppsFFTSpec_C_32fc;
+        static constexpr auto get_size         = ::ippsFFTGetSize_C_32fc;
+        static constexpr auto init             = ::ippsFFTInit_C_32fc;
+        static constexpr auto forward_copy     = ::ippsFFTFwd_CToC_32fc;
+        static constexpr auto backward_copy    = ::ippsFFTInv_CToC_32fc;
+        static constexpr auto forward_inplace  = ::ippsFFTFwd_CToC_32fc_I;
+        static constexpr auto backward_inplace = ::ippsFFTInv_CToC_32fc_I;
     };
 
     struct traits_f64
     {
-        using complex_type             = ::Ipp64fc;
-        using handle_type              = ::IppsFFTSpec_C_64fc;
-        static constexpr auto get_size = ::ippsFFTGetSize_C_64fc;
-        static constexpr auto init     = ::ippsFFTInit_C_64fc;
-        static constexpr auto forward  = ::ippsFFTFwd_CToC_64fc_I;
-        static constexpr auto backward = ::ippsFFTInv_CToC_64fc_I;
+        using complex_type                     = ::Ipp64fc;
+        using handle_type                      = ::IppsFFTSpec_C_64fc;
+        static constexpr auto get_size         = ::ippsFFTGetSize_C_64fc;
+        static constexpr auto init             = ::ippsFFTInit_C_64fc;
+        static constexpr auto forward_copy     = ::ippsFFTFwd_CToC_64fc;
+        static constexpr auto backward_copy    = ::ippsFFTInv_CToC_64fc;
+        static constexpr auto forward_inplace  = ::ippsFFTFwd_CToC_64fc_I;
+        static constexpr auto backward_inplace = ::ippsFFTInv_CToC_64fc_I;
     };
 
     using traits = std::conditional_t<std::same_as<real_type, float>, traits_f32, traits_f64>;
