@@ -2,18 +2,15 @@
 
 #include <neo/config.hpp>
 
+#include <neo/algorithm/backend/cblas.hpp>
 #include <neo/algorithm/backend/linalg_unary_op.hpp>
-
-#if defined(NEO_HAS_INTEL_MKL)
-    #include <neo/algorithm/backend/cblas.hpp>
-#endif
 
 namespace neo {
 
 template<typename Scalar, inout_object InOutObj>
 constexpr auto scale(Scalar alpha, InOutObj obj) -> void
 {
-#if defined(NEO_HAS_INTEL_MKL)
+#if defined(NEO_HAS_CBLAS)
     if constexpr (InOutObj::rank() == 1 and has_default_accessor<InOutObj>) {
         auto const n      = obj.extent(0);
         auto const stride = obj.stride(0);

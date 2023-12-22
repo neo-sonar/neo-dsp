@@ -11,6 +11,7 @@ target_include_directories(neo-dsp INTERFACE ${PROJECT_SOURCE_DIR})
 if(APPLE)
     find_library(ACCELERATE_LIBRARY Accelerate)
     target_link_libraries(neo-dsp INTERFACE ${ACCELERATE_LIBRARY})
+    target_compile_definitions(neo-dsp INTERFACE ACCELERATE_NEW_LAPACK=1 ACCELERATE_LAPACK_ILP64=1)
 endif()
 
 if(NEO_ENABLE_INTEL_IPP)
