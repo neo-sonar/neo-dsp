@@ -107,6 +107,6 @@ target_link_libraries(neo_dsp_tests
         juce::juce_recommended_warning_flags
 )
 
-add_subdirectory(benchmark)
-add_subdirectory(plugin)
-add_subdirectory(tool)
+add_subdirectory(tool/benchmark)
+add_subdirectory(tool/cli)
+add_subdirectory(tool/plugin)
