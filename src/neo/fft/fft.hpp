@@ -8,7 +8,7 @@
 #include <neo/fft/bitrevorder.hpp>
 
 #if defined(NEO_HAS_APPLE_VDSP)
-    #include <neo/fft/backend/accelerate.hpp>
+    #include <neo/fft/backend/vdsp.hpp>
 #endif
 
 #if defined(NEO_HAS_INTEL_IPP)
