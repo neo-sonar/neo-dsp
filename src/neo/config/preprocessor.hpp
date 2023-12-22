@@ -69,7 +69,18 @@
 #endif
 
 #if defined(__APPLE__)
+    #if !defined(CF_EXCLUDE_CSTD_HEADERS)
+        #define CF_EXCLUDE_CSTD_HEADERS                     1
+        #define NEO_CF_EXCLUDE_CSTD_HEADERS_WAS_NOT_DEFINED 1
+    #endif
+
+    #include <AvailabilityMacros.h>
     #include <TargetConditionals.h>
+
+    #if defined(NEO_CF_EXCLUDE_CSTD_HEADERS_WAS_NOT_DEFINED)
+        #undef CF_EXCLUDE_CSTD_HEADERS
+    #endif
+
     #define NEO_PLATFORM_APPLE 1
     #if TARGET_OS_MAC == 1
         #define NEO_PLATFORM_MACOS
