@@ -15,6 +15,10 @@
     #include <neo/fft/backend/ipp.hpp>
 #endif
 
+#if defined(NEO_HAS_INTEL_MKL)
+    #include <neo/fft/backend/mkl.hpp>
+#endif
+
 namespace neo::fft {
 
 #if defined(NEO_PLATFORM_APPLE)
@@ -23,6 +27,9 @@ using fft_plan = apple_vdsp_fft_plan<Complex>;
 #elif defined(NEO_HAS_INTEL_IPP)
 template<complex Complex>
 using fft_plan = intel_ipp_fft_plan<Complex>;
+#elif defined(NEO_HAS_INTEL_MKL)
+template<complex Complex>
+using fft_plan = intel_mkl_fft_plan<Complex>;
 #else
 template<complex Complex>
 using fft_plan = fallback_fft_plan<Complex>;
