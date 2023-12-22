@@ -105,19 +105,17 @@ auto DenseConvolution::updateImpulseResponse() -> void
     }
 }
 
-auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)
+auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter, int blockSize)
     -> juce::AudioBuffer<float>
 {
-    auto const blockSize = 512;
-
     auto output = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
     auto block  = std::vector<float>(size_t(blockSize));
     auto matrix = to_mdarray(filter);
     normalize_impulse(matrix.to_mdspan());
-    auto partitions = uniform_partition(matrix.to_mdspan(), blockSize);
+    auto partitions = uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
-        auto convolver     = neo::upola_convolver<std::complex<float>>{};
+        auto convolver     = neo::upols_convolver<std::complex<float>>{};
         auto const channel = static_cast<size_t>(ch);
         auto const full    = stdex::full_extent;
         convolver.filter(stdex::submdspan(partitions.to_mdspan(), channel, full, full));
@@ -154,18 +152,17 @@ normalization_factor(stdex::mdspan<std::complex<float> const, stdex::dextents<si
 auto sparse_convolve(
     juce::AudioBuffer<float> const& signal,
     juce::AudioBuffer<float> const& filter,
+    int blockSize,
     double sampleRate,
     float thresholdDB,
     int lowBinsToKeep
 ) -> juce::AudioBuffer<float>
 {
-    auto const blockSize = 512;
-
     auto output = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
     auto block  = std::vector<float>(size_t(blockSize));
     auto matrix = to_mdarray(filter);
     normalize_impulse(matrix.to_mdspan());
-    auto partitions = uniform_partition(matrix.to_mdspan(), blockSize);
+    auto partitions = uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
 
     auto const K = neo::bit_ceil((partitions.extent(2) - 1U) * 2U);
 

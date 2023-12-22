@@ -314,7 +314,7 @@ auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
     auto file = getBenchmarkResultsDirectory().getNonexistentChildFile("jconv", ".wav");
 
     auto const start = std::chrono::system_clock::now();
-    processBlocks(proc, _signal.buffer, out, _spec.maximumBlockSize, _spec.sampleRate);
+    processBlocks(proc, _signal.buffer, out, 4096, _spec.sampleRate);
     auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(out);
@@ -371,7 +371,7 @@ auto BenchmarkTab::runDenseConvolutionBenchmark() -> void
 auto BenchmarkTab::runDenseConvolverBenchmark() -> void
 {
     auto start     = std::chrono::system_clock::now();
-    auto result    = neo::dense_convolve(_signal.buffer, _impulse.buffer);
+    auto result    = neo::dense_convolve(_signal.buffer, _impulse.buffer, 4096);
     auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(result);
@@ -395,7 +395,7 @@ auto BenchmarkTab::runSparseConvolverBenchmark() -> void
 
     auto const start = std::chrono::system_clock::now();
     auto const result
-        = neo::sparse_convolve(_signal.buffer, _impulse.buffer, _impulse.sampleRate, thresholdDB, numBinsToKeep);
+        = neo::sparse_convolve(_signal.buffer, _impulse.buffer, 4096, _impulse.sampleRate, thresholdDB, numBinsToKeep);
     auto const end = std::chrono::system_clock::now();
 
     auto output = to_mdarray(result);
@@ -426,7 +426,7 @@ auto BenchmarkTab::runSparseQualityTests() -> void
     auto stftPlan = neo::fft::stft_plan<double>{stftOptions};
 
     auto const dense = [this] {
-        auto result = to_mdarray(neo::dense_convolve(_signal.buffer, _impulse.buffer));
+        auto result = to_mdarray(neo::dense_convolve(_signal.buffer, _impulse.buffer, 4096));
         neo::normalize_peak(result.to_mdspan());
         return result;
     }();
@@ -436,9 +436,14 @@ auto BenchmarkTab::runSparseQualityTests() -> void
     auto const numBinsToKeep = static_cast<int>(_binsToKeep.getValue());
 
     auto calculateErrorsForDynamicRange = [=, this](auto dynamicRange) {
-        auto sparse = to_mdarray(
-            neo::sparse_convolve(_signal.buffer, _impulse.buffer, _impulse.sampleRate, -dynamicRange, numBinsToKeep)
-        );
+        auto sparse = to_mdarray(neo::sparse_convolve(
+            _signal.buffer,
+            _impulse.buffer,
+            4096,
+            _impulse.sampleRate,
+            -dynamicRange,
+            numBinsToKeep
+        ));
         neo::normalize_peak(sparse.to_mdspan());
 
         auto stft             = neo::fft::stft_plan<double>{stftOptions};

@@ -34,12 +34,14 @@ private:
     stdex::mdarray<std::complex<float>, stdex::dextents<std::size_t, 3>> _filter;
 };
 
-[[nodiscard]] auto dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter)
+[[nodiscard]] auto
+dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> const& filter, int blockSize)
     -> juce::AudioBuffer<float>;
 
 [[nodiscard]] auto sparse_convolve(
     juce::AudioBuffer<float> const& signal,
     juce::AudioBuffer<float> const& filter,
+    int blockSize,
     double sampleRate,
     float thresholdDB,
     int lowBinsToKeep
