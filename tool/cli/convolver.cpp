@@ -128,6 +128,7 @@ auto main(int argc, char** argv) -> int
         );
     }
 
+#if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
     {
         auto const start   = std::chrono::system_clock::now();
         auto output        = convolve<split_upola_convolver_f16<std::complex<float>>>(signal, filter);
@@ -142,6 +143,7 @@ auto main(int argc, char** argv) -> int
             output_length_seconds / runtime.count()
         );
     }
+#endif
 
     return EXIT_SUCCESS;
 }
