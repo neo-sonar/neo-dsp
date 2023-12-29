@@ -25,8 +25,8 @@ constexpr auto multiply_add(VecX x, VecY y, VecZ z, VecOut out) noexcept -> void
 {
     assert(detail::extents_equal(x, y, z, out));
 
-    constexpr auto const default_accessor     = have_default_accessor<VecX, VecY, VecZ, VecOut>;
-    constexpr auto const layout_left_or_right = have_layout_left_or_right<VecX, VecY, VecZ, VecOut>;
+    constexpr auto const default_accessor     = has_default_accessor<VecX, VecY, VecZ, VecOut>;
+    constexpr auto const layout_left_or_right = has_layout_left_or_right<VecX, VecY, VecZ, VecOut>;
 
     if constexpr (default_accessor and layout_left_or_right) {
         auto x_ptr   = x.data_handle();

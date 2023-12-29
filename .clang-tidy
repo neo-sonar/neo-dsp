@@ -6,6 +6,7 @@ Checks: >
   -bugprone-macro-parentheses,
   -bugprone-exception-escape,
   -bugprone-signed-char-misuse,
+  -bugprone-unchecked-optional-access,
 
   cert-*,
   -cert-err58-cpp,
@@ -28,6 +29,7 @@ Checks: >
   -hicpp-signed-bitwise,
 
   misc-*,
+  -misc-include-cleaner,
   -misc-use-anonymous-namespace,
 
   modernize-*,

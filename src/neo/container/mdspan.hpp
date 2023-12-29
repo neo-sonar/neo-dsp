@@ -140,29 +140,17 @@ inline constexpr auto all_same_value_type_v
 
 }  // namespace detail
 
-template<typename Obj>
+template<typename... Objs>
 inline constexpr auto has_default_accessor
-    = std::same_as<typename Obj::accessor_type, stdex::default_accessor<typename Obj::element_type>>;
-
-template<typename Obj>
-inline constexpr auto has_layout_left = std::same_as<typename Obj::layout_type, stdex::layout_left>;
-
-template<typename Obj>
-inline constexpr auto has_layout_right = std::same_as<typename Obj::layout_type, stdex::layout_right>;
-
-template<typename Obj>
-inline constexpr auto has_layout_left_or_right = has_layout_left<Obj> or has_layout_right<Obj>;
+    = (std::same_as<typename Objs::accessor_type, stdex::default_accessor<typename Objs::element_type>> and ...);
 
 template<typename... Objs>
-inline constexpr auto have_default_accessor = (has_default_accessor<Objs> and ...);
+inline constexpr auto has_layout_left = (std::same_as<typename Objs::layout_type, stdex::layout_left> and ...);
 
 template<typename... Objs>
-inline constexpr auto have_layout_left = (has_layout_left<Objs> and ...);
+inline constexpr auto has_layout_right = (std::same_as<typename Objs::layout_type, stdex::layout_right> and ...);
 
 template<typename... Objs>
-inline constexpr auto have_layout_right = (has_layout_right<Objs> and ...);
-
-template<typename... Objs>
-inline constexpr auto have_layout_left_or_right = (has_layout_left_or_right<Objs> and ...);
+inline constexpr auto has_layout_left_or_right = ((has_layout_left<Objs> or has_layout_right<Objs>)and...);
 
 }  // namespace neo
