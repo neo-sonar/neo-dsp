@@ -44,16 +44,13 @@ auto multiply_add(benchmark::State& state) -> void
 BENCHMARK(multiply_add<float>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 BENCHMARK(multiply_add<double>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
-BENCHMARK(multiply_add<neo::q7>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(multiply_add<neo::q15>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+// BENCHMARK(multiply_add<neo::q7>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+// BENCHMARK(multiply_add<neo::q15>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
-// BENCHMARK(multiply_add<neo::q15x8>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-// BENCHMARK(multiply_add<neo::q15x16>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+// BENCHMARK(multiply_add<std::complex<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+// BENCHMARK(multiply_add<std::complex<double>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
-BENCHMARK(multiply_add<std::complex<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(multiply_add<std::complex<double>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-
-BENCHMARK(multiply_add<neo::complex64>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(multiply_add<neo::complex128>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+// BENCHMARK(multiply_add<neo::complex64>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+// BENCHMARK(multiply_add<neo::complex128>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
 BENCHMARK_MAIN();
