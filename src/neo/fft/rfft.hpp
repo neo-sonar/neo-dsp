@@ -32,8 +32,7 @@ struct fallback_rfft_plan
 
     [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
-    template<in_vector InVec, out_vector OutVec>
-        requires(std::same_as<typename InVec::value_type, Float> and std::same_as<typename OutVec::value_type, Complex>)
+    template<in_vector_of<Float> InVec, out_vector_of<Complex> OutVec>
     auto operator()(InVec in, OutVec out) noexcept -> void
     {
         auto const buf    = _buffer.to_mdspan();
@@ -44,8 +43,7 @@ struct fallback_rfft_plan
         copy(stdex::submdspan(buf, std::tuple{0ULL, coeffs}), stdex::submdspan(out, std::tuple{0ULL, coeffs}));
     }
 
-    template<in_vector InVec, out_vector OutVec>
-        requires(std::same_as<typename InVec::value_type, Complex> and std::same_as<typename OutVec::value_type, Float>)
+    template<in_vector_of<Complex> InVec, out_vector_of<Float> OutVec>
     auto operator()(InVec in, OutVec out) noexcept -> void
     {
         auto const buf    = _buffer.to_mdspan();

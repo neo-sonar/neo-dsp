@@ -50,8 +50,7 @@ struct apple_vdsp_fft_plan
     [[nodiscard]] auto order() const noexcept -> size_type;
     [[nodiscard]] auto size() const noexcept -> size_type;
 
-    template<inout_vector InOutVec>
-        requires std::same_as<typename InOutVec::value_type, Complex>
+    template<inout_vector_of<Complex> InOutVec>
     auto operator()(InOutVec x, direction dir) noexcept -> void;
 
 private:
@@ -106,8 +105,7 @@ auto apple_vdsp_fft_plan<Complex>::order() const noexcept -> size_type
 
 template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
-template<inout_vector InOutVec>
-    requires std::same_as<typename InOutVec::value_type, Complex>
+template<inout_vector_of<Complex> InOutVec>
 auto apple_vdsp_fft_plan<Complex>::operator()(InOutVec x, direction dir) noexcept -> void
 {
     assert(std::cmp_equal(x.extent(0), _size));

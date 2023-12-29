@@ -97,8 +97,7 @@ struct intel_ipp_fft_plan
 
     [[nodiscard]] auto size() const noexcept -> size_type { return size_type(1) << order(); }
 
-    template<inout_vector InOutVec>
-        requires std::same_as<typename InOutVec::value_type, Complex>
+    template<inout_vector_of<Complex> InOutVec>
     auto operator()(InOutVec x, direction dir) noexcept -> void
     {
         assert(std::cmp_equal(x.extent(0), size()));
@@ -116,8 +115,7 @@ struct intel_ipp_fft_plan
         }
     }
 
-    template<in_vector InVec, out_vector OutVec>
-        requires(std::same_as<typename InVec::value_type, Complex> and std::same_as<typename OutVec::value_type, Complex>)
+    template<in_vector_of<Complex> InVec, out_vector_of<Complex> OutVec>
     auto operator()(InVec input, OutVec output, direction dir) noexcept -> void
     {
         assert(std::cmp_equal(input.extent(0), size()));
@@ -196,8 +194,7 @@ struct intel_ipp_rfft_plan
 
     [[nodiscard]] auto size() const noexcept -> size_type { return size_type(1) << order(); }
 
-    template<in_vector InVec, out_vector OutVec>
-        requires(std::same_as<typename InVec::value_type, Float> and std::same_as<typename OutVec::value_type, complex_type>)
+    template<in_vector_of<Float> InVec, out_vector_of<complex_type> OutVec>
     auto operator()(InVec in, OutVec out) noexcept -> void
     {
         assert(std::cmp_equal(in.extent(0), size()));
@@ -213,8 +210,7 @@ struct intel_ipp_rfft_plan
         }
     }
 
-    template<in_vector InVec, out_vector OutVec>
-        requires(std::same_as<typename InVec::value_type, complex_type> and std::same_as<typename OutVec::value_type, Float>)
+    template<in_vector_of<complex_type> InVec, out_vector_of<Float> OutVec>
     auto operator()(InVec in, OutVec out) noexcept -> void
     {
         auto buf = _buffer.to_mdspan();
