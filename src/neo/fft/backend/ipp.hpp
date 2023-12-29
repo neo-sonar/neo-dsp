@@ -122,14 +122,12 @@ struct intel_ipp_fft_plan
         assert(std::cmp_equal(input.extent(0), size()));
         assert(std::cmp_equal(output.extent(0), size()));
 
-        if constexpr (has_default_accessor<InVec> and has_default_accessor<OutVec>) {
-            if constexpr (has_layout_left_or_right<InVec> and has_layout_left_or_right<OutVec>) {
-                auto const* in = reinterpret_cast<typename traits::complex_type const*>(input.data_handle());
-                auto* out      = reinterpret_cast<typename traits::complex_type*>(output.data_handle());
-                auto transform = dir == direction::forward ? traits::forward_copy : traits::backward_copy;
-                transform(in, out, _handle, _work_buf.get());
-                return;
-            }
+        if constexpr (has_default_accessor<InVec, OutVec> and has_layout_left_or_right<InVec, OutVec>) {
+            auto const* in = reinterpret_cast<typename traits::complex_type const*>(input.data_handle());
+            auto* out      = reinterpret_cast<typename traits::complex_type*>(output.data_handle());
+            auto transform = dir == direction::forward ? traits::forward_copy : traits::backward_copy;
+            transform(in, out, _handle, _work_buf.get());
+            return;
         }
 
         auto buf = _buffer.to_mdspan();
@@ -201,7 +199,7 @@ struct intel_ipp_split_fft_plan
         assert(std::cmp_equal(x.real.extent(0), size()));
         assert(neo::detail::extents_equal(x.real, x.imag));
 
-        auto transform = dir == direction::forward ? traits::split_forward_inplace : traits::split_backward_inplace;
+        auto transform = dir == direction::forward ? traits::forward_inplace : traits::backward_inplace;
 
         if constexpr (has_layout_left_or_right<InOutVec> and has_default_accessor<InOutVec>) {
             transform(x.real.data_handle(), x.imag.data_handle(), _handle, _work_buf.get());
@@ -216,7 +214,7 @@ struct intel_ipp_split_fft_plan
         assert(std::cmp_equal(in.real.extent(0), size()));
         assert(neo::detail::extents_equal(in.real, in.imag, out.real, out.imag));
 
-        auto transform = dir == direction::forward ? traits::split_forward_copy : traits::split_backward_copy;
+        auto transform = dir == direction::forward ? traits::forward_copy : traits::backward_copy;
 
         static constexpr auto in_traits  = has_layout_left_or_right<InVec> and has_default_accessor<InVec>;
         static constexpr auto out_traits = has_layout_left_or_right<OutVec> and has_default_accessor<OutVec>;
@@ -238,24 +236,24 @@ struct intel_ipp_split_fft_plan
 private:
     struct traits_f32
     {
-        using handle_type                            = ::IppsFFTSpec_C_32f;
-        static constexpr auto get_size               = ::ippsFFTGetSize_C_32f;
-        static constexpr auto init                   = ::ippsFFTInit_C_32f;
-        static constexpr auto split_forward_copy     = ::ippsFFTFwd_CToC_32f;
-        static constexpr auto split_backward_copy    = ::ippsFFTInv_CToC_32f;
-        static constexpr auto split_forward_inplace  = ::ippsFFTFwd_CToC_32f_I;
-        static constexpr auto split_backward_inplace = ::ippsFFTInv_CToC_32f_I;
+        using handle_type                      = ::IppsFFTSpec_C_32f;
+        static constexpr auto get_size         = ::ippsFFTGetSize_C_32f;
+        static constexpr auto init             = ::ippsFFTInit_C_32f;
+        static constexpr auto forward_copy     = ::ippsFFTFwd_CToC_32f;
+        static constexpr auto backward_copy    = ::ippsFFTInv_CToC_32f;
+        static constexpr auto forward_inplace  = ::ippsFFTFwd_CToC_32f_I;
+        static constexpr auto backward_inplace = ::ippsFFTInv_CToC_32f_I;
     };
 
     struct traits_f64
     {
-        using handle_type                            = ::IppsFFTSpec_C_64f;
-        static constexpr auto get_size               = ::ippsFFTGetSize_C_64f;
-        static constexpr auto init                   = ::ippsFFTInit_C_64f;
-        static constexpr auto split_forward_copy     = ::ippsFFTFwd_CToC_64f;
-        static constexpr auto split_backward_copy    = ::ippsFFTInv_CToC_64f;
-        static constexpr auto split_forward_inplace  = ::ippsFFTFwd_CToC_64f_I;
-        static constexpr auto split_backward_inplace = ::ippsFFTInv_CToC_64f_I;
+        using handle_type                      = ::IppsFFTSpec_C_64f;
+        static constexpr auto get_size         = ::ippsFFTGetSize_C_64f;
+        static constexpr auto init             = ::ippsFFTInit_C_64f;
+        static constexpr auto forward_copy     = ::ippsFFTFwd_CToC_64f;
+        static constexpr auto backward_copy    = ::ippsFFTInv_CToC_64f;
+        static constexpr auto forward_inplace  = ::ippsFFTFwd_CToC_64f_I;
+        static constexpr auto backward_inplace = ::ippsFFTInv_CToC_64f_I;
     };
 
     using traits = std::conditional_t<std::same_as<Float, float>, traits_f32, traits_f64>;
