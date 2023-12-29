@@ -9,6 +9,7 @@
 
 #include <ipp.h>
 
+#include <cassert>
 #include <memory>
 
 namespace neo::fft {
@@ -198,7 +199,7 @@ struct intel_ipp_split_fft_plan
     auto operator()(split_complex<InOutVec> x, direction dir) noexcept -> void
     {
         assert(std::cmp_equal(x.real.extent(0), size()));
-        assert(detail::extents_equal(x.real, x.imag));
+        assert(neo::detail::extents_equal(x.real, x.imag));
 
         auto transform = dir == direction::forward ? traits::split_forward_inplace : traits::split_backward_inplace;
 
@@ -212,8 +213,8 @@ struct intel_ipp_split_fft_plan
     template<in_vector_of<Float> InVec, out_vector_of<Float> OutVec>
     auto operator()(split_complex<InVec> in, split_complex<OutVec> out, direction dir) noexcept -> void
     {
-        assert(std::cmp_equal(x.real.extent(0), size()));
-        assert(detail::extents_equal(in.real, in.imag, out.real, out.imag));
+        assert(std::cmp_equal(in.real.extent(0), size()));
+        assert(neo::detail::extents_equal(in.real, in.imag, out.real, out.imag));
 
         auto transform = dir == direction::forward ? traits::split_forward_copy : traits::split_backward_copy;
 
