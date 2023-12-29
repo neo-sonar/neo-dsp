@@ -21,7 +21,8 @@
 // NOLINTBEGIN(-bugprone-branch-clone,-*-braces-around-statements)
 
 template<typename T>
-static constexpr auto tolerance = [] {
+constexpr auto get_tolerance()
+{
     if constexpr (std::same_as<T, neo::q7>) {
         return 0.01F;
     } else if constexpr (std::same_as<T, neo::q15>) {
@@ -31,7 +32,10 @@ static constexpr auto tolerance = [] {
     } else {
         return 0.03F;
     }
-}();
+}
+
+template<typename T>
+static constexpr auto tolerance = get_tolerance<T>();
 
 // NOLINTEND(-bugprone-branch-clone,-*-braces-around-statements)
 

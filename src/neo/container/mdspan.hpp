@@ -151,6 +151,6 @@ template<typename... Objs>
 inline constexpr auto has_layout_right = (std::same_as<typename Objs::layout_type, stdex::layout_right> and ...);
 
 template<typename... Objs>
-inline constexpr auto has_layout_left_or_right = ((has_layout_left<Objs> or has_layout_right<Objs>)and...);
+inline constexpr auto has_layout_left_or_right = has_layout_left<Objs...> or has_layout_right<Objs...>;
 
 }  // namespace neo
