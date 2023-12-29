@@ -87,7 +87,6 @@ target_sources(neo_dsp_tests
         "src/neo/fft/rfftfreq_test.cpp"
         "src/neo/fft/fft_test.cpp"
         "src/neo/fft/rfft_test.cpp"
-        "src/neo/fft/static_fft_test.cpp"
         "src/neo/fft/stft_test.cpp"
         "src/neo/fft/twiddle_test.cpp"
 
