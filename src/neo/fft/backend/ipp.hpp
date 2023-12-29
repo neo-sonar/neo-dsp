@@ -171,6 +171,101 @@ private:
     detail::ipp_buffer _work_buf;
 };
 
+template<std::floating_point Float>
+    requires(std::same_as<Float, float> or std::same_as<Float, double>)
+struct intel_ipp_split_fft_plan
+{
+    using value_type = Float;
+    using size_type  = std::size_t;
+
+    explicit intel_ipp_split_fft_plan(size_type order, direction /*default_direction*/ = direction::forward)
+        : _order{order}
+    {
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<traits>(order);
+    }
+
+    intel_ipp_split_fft_plan(intel_ipp_split_fft_plan const& other)                    = delete;
+    auto operator=(intel_ipp_split_fft_plan const& other) -> intel_ipp_split_fft_plan& = delete;
+
+    intel_ipp_split_fft_plan(intel_ipp_split_fft_plan&& other)                    = default;
+    auto operator=(intel_ipp_split_fft_plan&& other) -> intel_ipp_split_fft_plan& = default;
+
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
+
+    [[nodiscard]] auto size() const noexcept -> size_type { return size_type(1) << order(); }
+
+    template<inout_vector_of<Float> InOutVec>
+    auto operator()(split_complex<InOutVec> x, direction dir) noexcept -> void
+    {
+        assert(std::cmp_equal(x.real.extent(0), size()));
+        assert(detail::extents_equal(x.real, x.imag));
+
+        auto transform = dir == direction::forward ? traits::split_forward_inplace : traits::split_backward_inplace;
+
+        if constexpr (has_layout_left_or_right<InOutVec> and has_default_accessor<InOutVec>) {
+            transform(x.real.data_handle(), x.imag.data_handle(), _handle, _work_buf.get());
+        } else {
+            always_false<InOutVec>;
+        }
+    }
+
+    template<in_vector_of<Float> InVec, out_vector_of<Float> OutVec>
+    auto operator()(split_complex<InVec> in, split_complex<OutVec> out, direction dir) noexcept -> void
+    {
+        assert(std::cmp_equal(x.real.extent(0), size()));
+        assert(detail::extents_equal(in.real, in.imag, out.real, out.imag));
+
+        auto transform = dir == direction::forward ? traits::split_forward_copy : traits::split_backward_copy;
+
+        static constexpr auto in_traits  = has_layout_left_or_right<InVec> and has_default_accessor<InVec>;
+        static constexpr auto out_traits = has_layout_left_or_right<OutVec> and has_default_accessor<OutVec>;
+
+        if constexpr (in_traits and out_traits) {
+            transform(
+                in.real.data_handle(),
+                in.imag.data_handle(),
+                out.real.data_handle(),
+                out.imag.data_handle(),
+                _handle,
+                _work_buf.get()
+            );
+        } else {
+            always_false<InVec>;
+        }
+    }
+
+private:
+    struct traits_f32
+    {
+        using handle_type                            = ::IppsFFTSpec_C_32f;
+        static constexpr auto get_size               = ::ippsFFTGetSize_C_32f;
+        static constexpr auto init                   = ::ippsFFTInit_C_32f;
+        static constexpr auto split_forward_copy     = ::ippsFFTFwd_CToC_32f;
+        static constexpr auto split_backward_copy    = ::ippsFFTInv_CToC_32f;
+        static constexpr auto split_forward_inplace  = ::ippsFFTFwd_CToC_32f_I;
+        static constexpr auto split_backward_inplace = ::ippsFFTInv_CToC_32f_I;
+    };
+
+    struct traits_f64
+    {
+        using handle_type                            = ::IppsFFTSpec_C_64f;
+        static constexpr auto get_size               = ::ippsFFTGetSize_C_64f;
+        static constexpr auto init                   = ::ippsFFTInit_C_64f;
+        static constexpr auto split_forward_copy     = ::ippsFFTFwd_CToC_64f;
+        static constexpr auto split_backward_copy    = ::ippsFFTInv_CToC_64f;
+        static constexpr auto split_forward_inplace  = ::ippsFFTFwd_CToC_64f_I;
+        static constexpr auto split_backward_inplace = ::ippsFFTInv_CToC_64f_I;
+    };
+
+    using traits = std::conditional_t<std::same_as<Float, float>, traits_f32, traits_f64>;
+
+    size_type _order;
+    stdex::mdarray<Float, stdex::dextents<size_t, 2>> _buffer{2, size()};
+    typename traits::handle_type* _handle;
+    detail::ipp_buffer _spec_buf;
+    detail::ipp_buffer _work_buf;
+};
+
 template<std::floating_point Float, complex Complex = std::complex<Float>>
     requires((std::same_as<Float, float> or std::same_as<Float, double>) and std::same_as<typename Complex::value_type, Float>)
 struct intel_ipp_rfft_plan

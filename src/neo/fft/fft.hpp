@@ -53,6 +53,20 @@ constexpr auto fft(Plan& plan, InVec input, OutVec output) -> void
 }
 
 template<typename Plan, inout_vector Vec>
+    requires std::floating_point<typename Vec::value_type>
+constexpr auto fft(Plan& plan, split_complex<Vec> inout) -> void
+{
+    plan(inout, direction::forward);
+}
+
+template<typename Plan, in_vector InVec, out_vector OutVec>
+    requires std::same_as<typename InVec::value_type, typename OutVec::value_type>
+constexpr auto fft(Plan& plan, split_complex<InVec> in, split_complex<OutVec> out) -> void
+{
+    plan(in, out, direction::forward);
+}
+
+template<typename Plan, inout_vector Vec>
 constexpr auto ifft(Plan& plan, Vec inout) -> void
 {
     plan(inout, direction::backward);
@@ -67,6 +81,20 @@ constexpr auto ifft(Plan& plan, InVec input, OutVec output) -> void
         copy(input, output);
         ifft(plan, output);
     }
+}
+
+template<typename Plan, inout_vector Vec>
+    requires std::floating_point<typename Vec::value_type>
+constexpr auto ifft(Plan& plan, split_complex<Vec> inout) -> void
+{
+    plan(inout, direction::backward);
+}
+
+template<typename Plan, in_vector InVec, out_vector OutVec>
+    requires std::same_as<typename InVec::value_type, typename OutVec::value_type>
+constexpr auto ifft(Plan& plan, split_complex<InVec> in, split_complex<OutVec> out) -> void
+{
+    plan(in, out, direction::backward);
 }
 
 }  // namespace neo::fft
