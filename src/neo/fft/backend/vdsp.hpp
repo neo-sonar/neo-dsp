@@ -23,7 +23,7 @@ struct apple_vdsp_fft_plan
     using size_type          = std::size_t;
     using native_handle_type = std::conditional_t<std::same_as<real_type, float>, FFTSetup, FFTSetupD>;
 
-    explicit apple_vdsp_fft_plan(size_type order, direction default_direction = direction::forward);
+    explicit apple_vdsp_fft_plan(size_type order);
     ~apple_vdsp_fft_plan();
 
     apple_vdsp_fft_plan(apple_vdsp_fft_plan const& other)                    = delete;
@@ -63,7 +63,7 @@ private:
 
 template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
-apple_vdsp_fft_plan<Complex>::apple_vdsp_fft_plan(size_type order, direction /*default_direction*/)
+apple_vdsp_fft_plan<Complex>::apple_vdsp_fft_plan(size_type order)
     : _order{order}
     , _plan{[order] {
     if constexpr (std::same_as<real_type, float>) {
@@ -140,7 +140,7 @@ struct apple_vdsp_split_fft_plan
     using size_type          = std::size_t;
     using native_handle_type = std::conditional_t<std::same_as<Float, float>, FFTSetup, FFTSetupD>;
 
-    explicit apple_vdsp_split_fft_plan(size_type order, direction default_direction = direction::forward);
+    explicit apple_vdsp_split_fft_plan(size_type order);
     ~apple_vdsp_split_fft_plan();
 
     apple_vdsp_split_fft_plan(apple_vdsp_split_fft_plan const& other)                    = delete;
@@ -183,7 +183,7 @@ private:
 
 template<std::floating_point Float>
     requires(std::same_as<Float, float> or std::same_as<Float, double>)
-apple_vdsp_split_fft_plan<Float>::apple_vdsp_split_fft_plan(size_type order, direction /*default_direction*/)
+apple_vdsp_split_fft_plan<Float>::apple_vdsp_split_fft_plan(size_type order)
     : _order{order}
     , _plan{[order] {
     if constexpr (std::same_as<Float, float>) {

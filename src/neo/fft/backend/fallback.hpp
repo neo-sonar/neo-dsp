@@ -48,7 +48,7 @@ struct fallback_fft_plan
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    explicit fallback_fft_plan(size_type order, direction default_direction = direction::forward);
+    explicit fallback_fft_plan(size_type order);
 
     [[nodiscard]] auto order() const noexcept -> size_type;
     [[nodiscard]] auto size() const noexcept -> size_type;
@@ -60,17 +60,14 @@ struct fallback_fft_plan
 private:
     size_type _order;
     size_type _size{1ULL << _order};
-    direction _default_direction;
     bitrevorder_plan _reorder{_order};
     stdex::mdarray<Complex, stdex::dextents<size_type, 1>> _twiddles{
-        detail::make_radix2_twiddles<Complex>(_size, _default_direction),
+        detail::make_radix2_twiddles<Complex>(_size, direction::forward),
     };
 };
 
 template<typename Complex, typename Kernel>
-fallback_fft_plan<Complex, Kernel>::fallback_fft_plan(size_type order, direction default_direction)
-    : _order{order}
-    , _default_direction{default_direction}
+fallback_fft_plan<Complex, Kernel>::fallback_fft_plan(size_type order) : _order{order}
 {}
 
 template<typename Complex, typename Kernel>
@@ -94,7 +91,7 @@ auto fallback_fft_plan<Complex, Kernel>::operator()(Vec x, direction dir) noexce
 
     _reorder(x);
 
-    if (auto const kernel = Kernel{}; dir == _default_direction) {
+    if (auto const kernel = Kernel{}; dir == direction::forward) {
         kernel(x, _twiddles.to_mdspan());
     } else {
         kernel(x, conjugate_view{_twiddles.to_mdspan()});

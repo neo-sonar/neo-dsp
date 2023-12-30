@@ -83,7 +83,7 @@ struct intel_ipp_fft_plan
     using real_type  = typename Complex::value_type;
     using size_type  = std::size_t;
 
-    explicit intel_ipp_fft_plan(size_type order, direction /*default_direction*/ = direction::forward) : _order{order}
+    explicit intel_ipp_fft_plan(size_type order) : _order{order}
     {
         std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<traits>(order);
     }
@@ -177,8 +177,7 @@ struct intel_ipp_split_fft_plan
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit intel_ipp_split_fft_plan(size_type order, direction /*default_direction*/ = direction::forward)
-        : _order{order}
+    explicit intel_ipp_split_fft_plan(size_type order) : _order{order}
     {
         std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<traits>(order);
     }

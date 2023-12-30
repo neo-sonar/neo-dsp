@@ -19,10 +19,7 @@ struct intel_mkl_fft_plan
     using real_type  = typename Complex::value_type;
     using size_type  = std::size_t;
 
-    explicit intel_mkl_fft_plan(size_type order, direction /*default_direction*/ = direction::forward)
-        : _order{order}
-        , _handle{make(order)}
-    {}
+    explicit intel_mkl_fft_plan(size_type order) : _order{order}, _handle{make(order)} {}
 
     ~intel_mkl_fft_plan() noexcept
     {
