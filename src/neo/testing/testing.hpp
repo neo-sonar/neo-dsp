@@ -48,7 +48,7 @@ template<typename FloatOrComplex, typename URNG = std::mt19937>
         return buf;
     } else {
         using Float = real_or_complex_value_t<FloatOrComplex>;
-#if defined(NEO_HAS_BUILTIN_FLOAT16)
+#if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
         using StandardFloat = std::conditional_t<std::same_as<Float, _Float16>, float, Float>;
 #else
         using StandardFloat = Float;

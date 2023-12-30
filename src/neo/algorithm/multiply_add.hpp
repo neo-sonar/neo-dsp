@@ -25,10 +25,7 @@ constexpr auto multiply_add(VecX x, VecY y, VecZ z, VecOut out) noexcept -> void
 {
     assert(detail::extents_equal(x, y, z, out));
 
-    constexpr auto const default_accessor     = has_default_accessor<VecX, VecY, VecZ, VecOut>;
-    constexpr auto const layout_left_or_right = has_layout_left_or_right<VecX, VecY, VecZ, VecOut>;
-
-    if constexpr (default_accessor and layout_left_or_right) {
+    if constexpr (has_default_accessor<VecX, VecY, VecZ, VecOut> and has_layout_left_or_right<VecX, VecY, VecZ, VecOut>) {
         auto x_ptr   = x.data_handle();
         auto y_ptr   = y.data_handle();
         auto z_ptr   = z.data_handle();
@@ -97,6 +94,25 @@ multiply_add(split_complex<VecX> x, split_complex<VecY> y, split_complex<VecZ> z
         }
     }
 #endif
+
+    if constexpr (has_default_accessor<VecX, VecY, VecZ, VecOut> and has_layout_left_or_right<VecX, VecY, VecZ, VecOut>) {
+        auto const size = x.real.extent(0);
+
+        auto const* xre = x.real.data_handle();
+        auto const* xim = x.imag.data_handle();
+        auto const* yre = y.real.data_handle();
+        auto const* yim = y.imag.data_handle();
+        auto const* zre = z.real.data_handle();
+        auto const* zim = z.imag.data_handle();
+
+        auto* ore = out.real.data_handle();
+        auto* oim = out.imag.data_handle();
+
+        if constexpr (requires { detail::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size); }) {
+            detail::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size);
+            return;
+        }
+    }
 
     for (auto i{0}; i < static_cast<int>(x.real.extent(0)); ++i) {
         auto const xre = x.real[i];
