@@ -8,6 +8,7 @@
 #include <neo/fft/direction.hpp>
 
 #include <cassert>
+#include <numbers>
 
 namespace neo::fft {
 
