@@ -22,6 +22,13 @@ struct ipp_free
 
 using ipp_buffer = std::unique_ptr<Ipp8u[], ipp_free>;
 
+auto ipp_check(auto status) -> void
+{
+    if (status != ippStsNoErr) {
+        assert(false);
+    }
+}
+
 template<typename Traits>
 [[nodiscard]] auto make_ipp_fft_handle(std::size_t order)
     -> std::tuple<typename Traits::handle_type*, ipp_buffer, ipp_buffer>
@@ -32,17 +39,32 @@ template<typename Traits>
     int spec_size = 0;
     int init_size = 0;
     int work_size = 0;
-    if (Traits::get_size(static_cast<int>(order), flag, hint, &spec_size, &init_size, &work_size) != ippStsNoErr) {
-        assert(false);
-    }
+    ipp_check(Traits::get_size(static_cast<int>(order), flag, hint, &spec_size, &init_size, &work_size));
 
     auto* handle        = static_cast<typename Traits::handle_type*>(nullptr);
     auto spec_buf       = ipp_buffer{::ippsMalloc_8u(spec_size)};
     auto const init_buf = ipp_buffer{::ippsMalloc_8u(init_size)};
+    ipp_check(Traits::init(&handle, static_cast<int>(order), flag, hint, spec_buf.get(), init_buf.get()));
 
-    if (Traits::init(&handle, static_cast<int>(order), flag, hint, spec_buf.get(), init_buf.get()) != ippStsNoErr) {
-        assert(false);
-    }
+    return {handle, std::move(spec_buf), ipp_buffer{::ippsMalloc_8u(work_size)}};
+}
+
+template<typename Traits>
+[[nodiscard]] auto make_ipp_dft_handle(std::size_t size)
+    -> std::tuple<typename Traits::handle_type*, ipp_buffer, ipp_buffer>
+{
+    static constexpr auto flag = IPP_FFT_NODIV_BY_ANY;
+    static constexpr auto hint = ippAlgHintNone;
+
+    auto spec_size = 0;
+    auto init_size = 0;
+    auto work_size = 0;
+    ipp_check(Traits::get_size(static_cast<int>(size), flag, hint, &spec_size, &init_size, &work_size));
+
+    auto const init_buf = ipp_buffer{::ippsMalloc_8u(init_size)};
+    auto spec_buf       = ipp_buffer{::ippsMalloc_8u(spec_size)};
+    auto* handle        = reinterpret_cast<typename Traits::handle_type*>(spec_buf.get());
+    ipp_check(Traits::init(static_cast<int>(size), flag, hint, handle, init_buf.get()));
 
     return {handle, std::move(spec_buf), ipp_buffer{::ippsMalloc_8u(work_size)}};
 }
@@ -58,17 +80,12 @@ template<typename Traits>
     int spec_size = 0;
     int init_size = 0;
     int work_size = 0;
-    if (Traits::get_size(len, hint, &spec_size, &init_size, &work_size) != ippStsNoErr) {
-        assert(false);
-    }
+    ipp_check(Traits::get_size(len, hint, &spec_size, &init_size, &work_size));
 
     auto* handle        = static_cast<typename Traits::handle_type*>(nullptr);
     auto spec_buf       = ipp_buffer{::ippsMalloc_8u(spec_size)};
     auto const init_buf = ipp_buffer{::ippsMalloc_8u(init_size)};
-
-    if (Traits::init(&handle, len, hint, spec_buf.get(), init_buf.get()) != ippStsNoErr) {
-        assert(false);
-    }
+    ipp_check(Traits::init(&handle, len, hint, spec_buf.get(), init_buf.get()));
 
     return {handle, std::move(spec_buf), ipp_buffer{::ippsMalloc_8u(work_size)}};
 }
@@ -165,6 +182,89 @@ private:
 
     size_type _order;
     stdex::mdarray<Complex, stdex::dextents<size_t, 1>> _buffer{size()};
+    typename traits::handle_type* _handle;
+    detail::ipp_buffer _spec_buf;
+    detail::ipp_buffer _work_buf;
+};
+
+template<complex Complex>
+    requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
+struct intel_ipp_dft_plan
+{
+    using value_type = Complex;
+    using size_type  = std::size_t;
+
+    explicit intel_ipp_dft_plan(size_type size) : _size{size}
+    {
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_dft_handle<traits>(size);
+    }
+
+    intel_ipp_dft_plan(intel_ipp_dft_plan const& other)                    = delete;
+    auto operator=(intel_ipp_dft_plan const& other) -> intel_ipp_dft_plan& = delete;
+
+    intel_ipp_dft_plan(intel_ipp_dft_plan&& other)                    = default;
+    auto operator=(intel_ipp_dft_plan&& other) -> intel_ipp_dft_plan& = default;
+
+    [[nodiscard]] auto size() const noexcept -> size_type { return _size; }
+
+    template<inout_vector_of<Complex> InOutVec>
+    auto operator()(InOutVec x, direction dir) noexcept -> void
+    {
+        assert(std::cmp_equal(x.extent(0), size()));
+
+        copy(x, _tmp_in.to_mdspan());
+        (*this)(_tmp_in.to_mdspan(), _tmp_out.to_mdspan(), dir);
+        copy(_tmp_out.to_mdspan(), x);
+    }
+
+    template<in_vector_of<Complex> InVec, out_vector_of<Complex> OutVec>
+    auto operator()(InVec input, OutVec output, direction dir) noexcept -> void
+    {
+        assert(std::cmp_equal(input.extent(0), size()));
+        assert(std::cmp_equal(output.extent(0), size()));
+
+        auto run = [this, dir](auto const* in_ptr, auto* out_ptr) {
+            auto const* in = reinterpret_cast<typename traits::complex_type const*>(in_ptr);
+            auto* out      = reinterpret_cast<typename traits::complex_type*>(out_ptr);
+            auto transform = dir == direction::forward ? traits::forward : traits::backward;
+            transform(in, out, _handle, _work_buf.get());
+        };
+
+        if constexpr (has_default_accessor<InVec, OutVec> and has_layout_left_or_right<InVec, OutVec>) {
+            run(input.data_handle(), output.data_handle());
+        } else {
+            copy(input, _tmp_in.to_mdspan());
+            run(_tmp_in.data(), _tmp_out.data());
+            copy(_tmp_out.to_mdspan(), output);
+        }
+    }
+
+private:
+    struct traits_f32
+    {
+        using complex_type             = ::Ipp32fc;
+        using handle_type              = ::IppsDFTSpec_C_32fc;
+        static constexpr auto get_size = ::ippsDFTGetSize_C_32fc;
+        static constexpr auto init     = ::ippsDFTInit_C_32fc;
+        static constexpr auto forward  = ::ippsDFTFwd_CToC_32fc;
+        static constexpr auto backward = ::ippsDFTInv_CToC_32fc;
+    };
+
+    struct traits_f64
+    {
+        using complex_type             = ::Ipp64fc;
+        using handle_type              = ::IppsDFTSpec_C_64fc;
+        static constexpr auto get_size = ::ippsDFTGetSize_C_64fc;
+        static constexpr auto init     = ::ippsDFTInit_C_64fc;
+        static constexpr auto forward  = ::ippsDFTFwd_CToC_64fc;
+        static constexpr auto backward = ::ippsDFTInv_CToC_64fc;
+    };
+
+    using traits = std::conditional_t<std::same_as<typename Complex::value_type, float>, traits_f32, traits_f64>;
+
+    size_type _size;
+    stdex::mdarray<Complex, stdex::dextents<size_t, 1>> _tmp_in{size()};
+    stdex::mdarray<Complex, stdex::dextents<size_t, 1>> _tmp_out{size()};
     typename traits::handle_type* _handle;
     detail::ipp_buffer _spec_buf;
     detail::ipp_buffer _work_buf;

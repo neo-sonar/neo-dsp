@@ -7,10 +7,22 @@
 #include <neo/fft/backend/bluestein.hpp>
 #include <neo/fft/direction.hpp>
 
+#if defined(NEO_HAS_INTEL_IPP)
+    #include <neo/fft/backend/ipp.hpp>
+#endif
+
 #include <cassert>
 #include <numbers>
 
 namespace neo::fft {
+
+#if defined(NEO_HAS_INTEL_IPP)
+template<complex Complex>
+using dft_plan = intel_ipp_dft_plan<Complex>;
+#else
+template<complex Complex>
+using dft_plan = bluestein_plan<Complex>;
+#endif
 
 template<in_vector InVec, out_vector OutVec>
     requires std::same_as<typename InVec::value_type, typename OutVec::value_type>

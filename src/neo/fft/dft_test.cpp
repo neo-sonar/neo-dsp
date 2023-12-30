@@ -11,33 +11,13 @@
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
-TEMPLATE_TEST_CASE("neo/fft: dft", "", float, double)
+namespace {
+
+template<typename Plan>
+auto test_dft_plan()
 {
-    using Float   = TestType;
-    using Complex = std::complex<Float>;
-
-    auto const size = GENERATE(as<std::size_t>{}, 4, 16, 21);
-
-    auto const original = neo::generate_noise_signal<Complex>(size, Catch::getSeed());
-
-    auto in_buf  = original;
-    auto out_buf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{in_buf.size()};
-
-    auto const in  = in_buf.to_mdspan();
-    auto const out = out_buf.to_mdspan();
-
-    neo::fft::dft(in, out, neo::fft::direction::forward);
-    neo::fft::dft(out, in, neo::fft::direction::backward);
-
-    neo::scale(Float(1) / static_cast<Float>(size), in);
-    REQUIRE(neo::allclose(original.to_mdspan(), in));
-}
-
-TEMPLATE_TEST_CASE("neo/fft: bluestein_plan", "", std::complex<float>, std::complex<double>)
-{
-    using Complex = TestType;
+    using Complex = typename Plan::value_type;
     using Float   = typename Complex::value_type;
-    using Plan    = neo::fft::bluestein_plan<Complex>;
 
     auto const max_size = sizeof(Float) == 8 ? 512 : 128;
     auto const size     = GENERATE(range(std::size_t(2), std::size_t(max_size)));
@@ -84,3 +64,43 @@ TEMPLATE_TEST_CASE("neo/fft: bluestein_plan", "", std::complex<float>, std::comp
         }
     }
 }
+}  // namespace
+
+TEMPLATE_TEST_CASE("neo/fft: dft", "", float, double)
+{
+    using Float   = TestType;
+    using Complex = std::complex<Float>;
+
+    auto const size = GENERATE(as<std::size_t>{}, 4, 16, 21);
+
+    auto const original = neo::generate_noise_signal<Complex>(size, Catch::getSeed());
+
+    auto in_buf  = original;
+    auto out_buf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{in_buf.size()};
+
+    auto const in  = in_buf.to_mdspan();
+    auto const out = out_buf.to_mdspan();
+
+    neo::fft::dft(in, out, neo::fft::direction::forward);
+    neo::fft::dft(out, in, neo::fft::direction::backward);
+
+    neo::scale(Float(1) / static_cast<Float>(size), in);
+    REQUIRE(neo::allclose(original.to_mdspan(), in));
+}
+
+TEMPLATE_TEST_CASE("neo/fft: dft_plan", "", std::complex<float>, std::complex<double>)
+{
+    test_dft_plan<neo::fft::dft_plan<TestType>>();
+}
+
+TEMPLATE_TEST_CASE("neo/fft: bluestein_plan", "", std::complex<float>, std::complex<double>)
+{
+    test_dft_plan<neo::fft::bluestein_plan<TestType>>();
+}
+
+#if defined(NEO_HAS_INTEL_IPP)
+TEMPLATE_TEST_CASE("neo/fft: intel_ipp_dft_plan", "", std::complex<float>, std::complex<double>)
+{
+    test_dft_plan<neo::fft::intel_ipp_dft_plan<TestType>>();
+}
+#endif
