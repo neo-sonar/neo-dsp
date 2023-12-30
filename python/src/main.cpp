@@ -109,15 +109,18 @@ auto as_mdspan_impl(py::array_t<T, Flags> buf, auto func)
     return func(to_mdspan_layout_stride<Dim>(buf));
 }
 
-template<typename T, int Flags>
+template<int MaxDim, typename T, int Flags>
 auto as_mdspan(py::array_t<T, Flags> buf, auto func)
 {
-    switch (buf.ndim()) {
-        case 1: return as_mdspan_impl<1>(buf, func);
-        case 2: return as_mdspan_impl<2>(buf, func);
-        case 3: return as_mdspan_impl<3>(buf, func);
-        default: throw std::runtime_error("unsupported ndim: " + std::to_string(buf.ndim()));
+    auto const dim = buf.ndim();
+
+    if constexpr (MaxDim >= 1) {
+        if (dim == 1) {
+            return as_mdspan_impl<1>(buf, func);
+        }
     }
+
+    throw std::runtime_error("unsupported ndim: " + std::to_string(dim));
 }
 
 template<neo::complex Complex, neo::fft::direction Dir>
@@ -125,42 +128,38 @@ auto fft(py::array_t<Complex> array, std::optional<std::size_t> n, neo::fft::nor
 {
     using Float = typename Complex::value_type;
 
-    return as_mdspan(array, [n, norm]<typename Vec>(Vec input) -> py::array_t<Complex> {
-        if constexpr (Vec::rank() == 1) {
-            auto const size  = n.value_or(input.extent(0));
-            auto const order = neo::ilog2(size);
-            if (not std::has_single_bit(size)) {
-                throw std::runtime_error{"unsupported size: " + std::to_string(size)};
-            }
-
-            auto result = py::array_t<Complex>(static_cast<py::ssize_t>(size));
-            auto out    = to_mdspan_layout_right<1>(result);
-
-            {
-                auto no_gil = py::gil_scoped_release{};
-
-                auto plan = neo::fft::fft_plan<Complex>{order};
-                if constexpr (Dir == neo::fft::direction::forward) {
-                    neo::fft::fft(plan, input, out);
-                    if (norm == neo::fft::norm::forward) {
-                        neo::scale(Float(1) / Float(size), out);
-                    }
-                } else {
-                    neo::fft::ifft(plan, input, out);
-                    if (norm == neo::fft::norm::backward) {
-                        neo::scale(Float(1) / Float(size), out);
-                    }
-                }
-
-                if (norm == neo::fft::norm::ortho) {
-                    neo::scale(Float(1) / std::sqrt(Float(size)), out);
-                }
-            }
-
-            return result;
-        } else {
-            throw std::runtime_error{"unsupported rank: " + std::to_string(input.rank())};
+    return as_mdspan<1>(array, [n, norm](neo::in_vector auto input) -> py::array_t<Complex> {
+        auto const size  = n.value_or(input.extent(0));
+        auto const order = neo::ilog2(size);
+        if (not std::has_single_bit(size)) {
+            throw std::runtime_error{"unsupported size: " + std::to_string(size)};
         }
+
+        auto result = py::array_t<Complex>(static_cast<py::ssize_t>(size));
+        auto out    = to_mdspan_layout_right<1>(result);
+
+        {
+            auto no_gil = py::gil_scoped_release{};
+
+            auto plan = neo::fft::fft_plan<Complex>{order};
+            if constexpr (Dir == neo::fft::direction::forward) {
+                neo::fft::fft(plan, input, out);
+                if (norm == neo::fft::norm::forward) {
+                    neo::scale(Float(1) / Float(size), out);
+                }
+            } else {
+                neo::fft::ifft(plan, input, out);
+                if (norm == neo::fft::norm::backward) {
+                    neo::scale(Float(1) / Float(size), out);
+                }
+            }
+
+            if (norm == neo::fft::norm::ortho) {
+                neo::scale(Float(1) / std::sqrt(Float(size)), out);
+            }
+        }
+
+        return result;
     });
 }
 
