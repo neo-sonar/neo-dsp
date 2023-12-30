@@ -20,8 +20,8 @@ auto timeit(std::string_view name, size_t N, Func func)
     using microseconds = std::chrono::duration<double, std::micro>;
 
     auto const size       = N;
-    auto const iterations = 100'000U;
-    auto const margin     = iterations / 20U;
+    auto const iterations = 50'000U;
+    auto const margin     = iterations / 30U;
 
     auto all_runs = std::vector<double>(iterations);
 
@@ -101,11 +101,9 @@ enum struct direction
     backward,
 };
 
-inline auto fill_radix2_twiddles(std::span<std::complex<float>> table, direction dir = direction::forward) noexcept
-    -> void
+template<typename Float>
+auto fill_radix2_twiddles(std::span<std::complex<Float>> table, direction dir = direction::forward) noexcept -> void
 {
-    using Float = float;
-
     auto const tableSize = table.size();
     auto const fftSize   = tableSize * 2ULL;
     auto const sign      = dir == direction::forward ? Float(-1) : Float(1);
@@ -117,10 +115,11 @@ inline auto fill_radix2_twiddles(std::span<std::complex<float>> table, direction
     }
 }
 
-inline auto make_radix2_twiddles(std::size_t size, direction dir = direction::forward)
+template<typename Float>
+auto make_radix2_twiddles(std::size_t size, direction dir = direction::forward)
 {
-    auto table = std::vector<std::complex<float>>(size / 2U);
-    fill_radix2_twiddles(table, dir);
+    auto table = std::vector<std::complex<Float>>(size / 2U);
+    fill_radix2_twiddles<Float>(table, dir);
     return table;
 }
 
@@ -157,10 +156,10 @@ auto bitrevorder(std::span<ElementType> xre, std::span<ElementType> xim, IndexTa
     return table;
 }
 
-template<int Order, int Stage>
+template<typename Float, int Order, int Stage>
 struct static_dit2_stage
 {
-    auto operator()(std::complex<float>* __restrict__ x, std::complex<float> const* __restrict__ twiddles) -> void
+    auto operator()(std::complex<Float>* __restrict__ x, std::complex<Float> const* __restrict__ twiddles) -> void
         requires(Stage == 0)
     {
         static constexpr auto const size         = 1 << Order;
@@ -176,10 +175,10 @@ struct static_dit2_stage
             x[i1]           = temp;
         }
 
-        static_dit2_stage<Order, 1>{}(x, twiddles);
+        static_dit2_stage<Float, Order, 1>{}(x, twiddles);
     }
 
-    auto operator()(std::complex<float>* __restrict__ x, std::complex<float> const* __restrict__ twiddles) -> void
+    auto operator()(std::complex<Float>* __restrict__ x, std::complex<Float> const* __restrict__ twiddles) -> void
         requires(Stage != 0 and Stage < Order)
     {
         static constexpr auto const size         = 1 << Order;
@@ -200,16 +199,16 @@ struct static_dit2_stage
             }
         }
 
-        static_dit2_stage<Order, Stage + 1>{}(x, twiddles);
+        static_dit2_stage<Float, Order, Stage + 1>{}(x, twiddles);
     }
 
-    auto operator()(std::complex<float>* __restrict__ /*x*/, std::complex<float> const* __restrict__ /*twiddles*/)
+    auto operator()(std::complex<Float>* __restrict__ /*x*/, std::complex<Float> const* __restrict__ /*twiddles*/)
         -> void
         requires(Stage == Order)
     {}
 };
 
-template<int Order>
+template<typename Float, int Order>
 struct static_fft_plan
 {
     static_fft_plan() = default;
@@ -218,31 +217,31 @@ struct static_fft_plan
 
     [[nodiscard]] static constexpr auto order() { return Order; }
 
-    auto operator()(std::span<std::complex<float>> x, direction dir) -> void
+    auto operator()(std::span<std::complex<Float>> x, direction dir) -> void
     {
         bitrevorder(x, _rev);
 
         if (dir == direction::forward) {
-            static_dit2_stage<Order, 0>{}(x.data(), _wf.data());
+            static_dit2_stage<Float, Order, 0>{}(x.data(), _wf.data());
         } else {
-            static_dit2_stage<Order, 0>{}(x.data(), _wb.data());
+            static_dit2_stage<Float, Order, 0>{}(x.data(), _wb.data());
         }
     }
 
 private:
-    std::vector<std::complex<float>> _wf{make_radix2_twiddles(size_t(size()), direction::forward)};
-    std::vector<std::complex<float>> _wb{make_radix2_twiddles(size_t(size()), direction::backward)};
+    std::vector<std::complex<Float>> _wf{make_radix2_twiddles<Float>(size_t(size()), direction::forward)};
+    std::vector<std::complex<Float>> _wb{make_radix2_twiddles<Float>(size_t(size()), direction::backward)};
     std::vector<std::size_t> _rev{make_bitrevorder_table(size_t(size()))};
 };
 
-template<int Order, int Stage>
+template<typename Float, int Order, int Stage>
 struct split_fft_radix2_dit
 {
     auto operator()(
-        float* __restrict__ xre,
-        float* __restrict__ xim,
-        float const* __restrict__ wre,
-        float const* __restrict__ wim
+        Float* __restrict__ xre,
+        Float* __restrict__ xim,
+        Float const* __restrict__ wre,
+        Float const* __restrict__ wim
     ) -> void
         requires(Stage == 0)
     {
@@ -266,14 +265,14 @@ struct split_fft_radix2_dit
             xim[i2]        = xn2.imag();
         }
 
-        split_fft_radix2_dit<Order, 1>{}(xre, xim, wre, wim);
+        split_fft_radix2_dit<Float, Order, 1>{}(xre, xim, wre, wim);
     }
 
     auto operator()(
-        float* __restrict__ xre,
-        float* __restrict__ xim,
-        float const* __restrict__ wre,
-        float const* __restrict__ wim
+        Float* __restrict__ xre,
+        Float* __restrict__ xim,
+        Float const* __restrict__ wre,
+        Float const* __restrict__ wim
     ) -> void
         requires(Stage != 0 and Stage < Order)
     {
@@ -303,25 +302,25 @@ struct split_fft_radix2_dit
             }
         }
 
-        split_fft_radix2_dit<Order, Stage + 1>{}(xre, xim, wre, wim);
+        split_fft_radix2_dit<Float, Order, Stage + 1>{}(xre, xim, wre, wim);
     }
 
     auto operator()(
-        float* __restrict__ xre,
-        float* __restrict__ xim,
-        float const* __restrict__ wre,
-        float const* __restrict__ wim
+        Float* __restrict__ xre,
+        Float* __restrict__ xim,
+        Float const* __restrict__ wre,
+        Float const* __restrict__ wim
     ) -> void
         requires(Stage == Order)
     {}
 };
 
-template<int Order>
+template<typename Float, int Order>
 struct static_split_fft_plan
 {
     static_split_fft_plan()
     {
-        auto tw = make_radix2_twiddles(size_t(size()), direction::forward);
+        auto tw = make_radix2_twiddles<Float>(size_t(size()), direction::forward);
         _wfre.resize(tw.size());
         _wfim.resize(tw.size());
         _wbre.resize(tw.size());
@@ -338,31 +337,31 @@ struct static_split_fft_plan
 
     [[nodiscard]] static constexpr auto order() { return Order; }
 
-    auto operator()(std::span<float> xre, std::span<float> xim, direction dir) -> void
+    auto operator()(std::span<Float> xre, std::span<Float> xim, direction dir) -> void
     {
         bitrevorder(xre, xim, _rev);
 
         if (dir == direction::forward) {
-            split_fft_radix2_dit<Order, 0>{}(xre.data(), xim.data(), _wfre.data(), _wfim.data());
+            split_fft_radix2_dit<Float, Order, 0>{}(xre.data(), xim.data(), _wfre.data(), _wfim.data());
         } else {
-            split_fft_radix2_dit<Order, 0>{}(xre.data(), xim.data(), _wbre.data(), _wbim.data());
+            split_fft_radix2_dit<Float, Order, 0>{}(xre.data(), xim.data(), _wbre.data(), _wbim.data());
         }
     }
 
 private:
-    std::vector<float> _wfre;
-    std::vector<float> _wfim;
-    std::vector<float> _wbre;
-    std::vector<float> _wbim;
+    std::vector<Float> _wfre;
+    std::vector<Float> _wfim;
+    std::vector<Float> _wbre;
+    std::vector<Float> _wbim;
     std::vector<std::size_t> _rev{make_bitrevorder_table(size_t(size()))};
 };
 
-template<int Order>
+template<typename Float, int Order>
 struct interleave_benchmark
 {
     interleave_benchmark()
     {
-        auto const signal = generate_noise_signal<std::complex<float>>(_plan.size(), std::random_device{}());
+        auto const signal = generate_noise_signal<std::complex<Float>>(_plan.size(), std::random_device{}());
         std::copy(signal.begin(), signal.end(), _buffer.begin());
     }
 
@@ -371,21 +370,21 @@ struct interleave_benchmark
         _plan(_buffer, direction::forward);
         _plan(_buffer, direction::backward);
 
-        auto scale = [f = 1.0F / float(1 << Order)](auto c) { return c * f; };
+        auto scale = [f = 1.0F / Float(1 << Order)](auto c) { return c * f; };
         std::transform(_buffer.begin(), _buffer.end(), _buffer.begin(), scale);
     }
 
 private:
-    static_fft_plan<Order> _plan;
-    std::vector<std::complex<float>> _buffer{std::vector<std::complex<float>>(_plan.size())};
+    static_fft_plan<Float, Order> _plan;
+    std::vector<std::complex<Float>> _buffer{std::vector<std::complex<Float>>(_plan.size())};
 };
 
-template<int Order>
+template<typename Float, int Order>
 struct split_benchmark
 {
     split_benchmark()
     {
-        auto const signal = generate_noise_signal<std::complex<float>>(_plan.size(), std::random_device{}());
+        auto const signal = generate_noise_signal<std::complex<Float>>(_plan.size(), std::random_device{}());
         std::transform(signal.begin(), signal.end(), _bufre.begin(), [](auto c) { return c.real(); });
         std::transform(signal.begin(), signal.end(), _bufim.begin(), [](auto c) { return c.imag(); });
     }
@@ -395,25 +394,25 @@ struct split_benchmark
         _plan(_bufre, _bufim, direction::forward);
         _plan(_bufre, _bufim, direction::backward);
 
-        auto scale = [f = 1.0F / float(1 << Order)](auto c) { return c * f; };
+        auto scale = [f = 1.0F / Float(1 << Order)](auto c) { return c * f; };
         std::transform(_bufre.begin(), _bufre.end(), _bufre.begin(), scale);
         std::transform(_bufim.begin(), _bufim.end(), _bufim.begin(), scale);
     }
 
 private:
-    static_split_fft_plan<Order> _plan;
-    std::vector<float> _bufre{std::vector<float>(_plan.size())};
-    std::vector<float> _bufim{std::vector<float>(_plan.size())};
+    static_split_fft_plan<Float, Order> _plan;
+    std::vector<Float> _bufre{std::vector<Float>(_plan.size())};
+    std::vector<Float> _bufim{std::vector<Float>(_plan.size())};
 };
 
 auto main() -> int
 {
     static constexpr auto N = 4U;
 
-    auto x = std::vector(N, std::complex<float>{0, 0});
+    auto x = std::vector(N, std::complex<double>{0, 0});
     x[0]   = {1.0F, 0.0F};
 
-    auto plan = static_fft_plan<ilog2(N)>{};
+    auto plan = static_fft_plan<double, ilog2(N)>{};
 
     plan(x, direction::forward);
     for (auto z : x)
@@ -422,29 +421,56 @@ auto main() -> int
 
     plan(x, direction::backward);
     for (auto z : x)
-        std::cout << z / float(N) << '\n';
+        std::cout << z / double(N) << '\n';
     std::cout << '\n';
 
-    timeit("static_fft_plan<4>", 16, interleave_benchmark<4>{});
-    timeit("static_fft_plan<5>", 32, interleave_benchmark<5>{});
-    timeit("static_fft_plan<6>", 64, interleave_benchmark<6>{});
-    timeit("static_fft_plan<7>", 128, interleave_benchmark<7>{});
-    timeit("static_fft_plan<8>", 256, interleave_benchmark<8>{});
-    timeit("static_fft_plan<9>", 512, interleave_benchmark<9>{});
-    timeit("static_fft_plan<10>", 1024, interleave_benchmark<10>{});
-    timeit("static_fft_plan<11>", 2048, interleave_benchmark<11>{});
-    timeit("static_fft_plan<12>", 4096, interleave_benchmark<12>{});
+    timeit("static_fft_plan<float, 4>", 16, interleave_benchmark<float, 4>{});
+    timeit("static_fft_plan<float, 5>", 32, interleave_benchmark<float, 5>{});
+    timeit("static_fft_plan<float, 6>", 64, interleave_benchmark<float, 6>{});
+    timeit("static_fft_plan<float, 7>", 128, interleave_benchmark<float, 7>{});
+    timeit("static_fft_plan<float, 8>", 256, interleave_benchmark<float, 8>{});
+    timeit("static_fft_plan<float, 9>", 512, interleave_benchmark<float, 9>{});
+    timeit("static_fft_plan<float, 10>", 1024, interleave_benchmark<float, 10>{});
+    timeit("static_fft_plan<float, 11>", 2048, interleave_benchmark<float, 11>{});
+    timeit("static_fft_plan<float, 12>", 4096, interleave_benchmark<float, 12>{});
+    timeit("static_fft_plan<float, 13>", 8192, interleave_benchmark<float, 13>{});
     std::cout << '\n';
 
-    timeit("static_split_fft_plan<4>", 16, split_benchmark<4>{});
-    timeit("static_split_fft_plan<5>", 32, split_benchmark<5>{});
-    timeit("static_split_fft_plan<6>", 64, split_benchmark<6>{});
-    timeit("static_split_fft_plan<7>", 128, split_benchmark<7>{});
-    timeit("static_split_fft_plan<8>", 256, split_benchmark<8>{});
-    timeit("static_split_fft_plan<9>", 512, split_benchmark<9>{});
-    timeit("static_split_fft_plan<10>", 1024, split_benchmark<10>{});
-    timeit("static_split_fft_plan<11>", 2048, split_benchmark<11>{});
-    timeit("static_split_fft_plan<12>", 4096, split_benchmark<12>{});
+    timeit("static_split_fft_plan<float, 4>", 16, split_benchmark<float, 4>{});
+    timeit("static_split_fft_plan<float, 5>", 32, split_benchmark<float, 5>{});
+    timeit("static_split_fft_plan<float, 6>", 64, split_benchmark<float, 6>{});
+    timeit("static_split_fft_plan<float, 7>", 128, split_benchmark<float, 7>{});
+    timeit("static_split_fft_plan<float, 8>", 256, split_benchmark<float, 8>{});
+    timeit("static_split_fft_plan<float, 9>", 512, split_benchmark<float, 9>{});
+    timeit("static_split_fft_plan<float, 10>", 1024, split_benchmark<float, 10>{});
+    timeit("static_split_fft_plan<float, 11>", 2048, split_benchmark<float, 11>{});
+    timeit("static_split_fft_plan<float, 12>", 4096, split_benchmark<float, 12>{});
+    timeit("static_split_fft_plan<float, 13>", 8192, split_benchmark<float, 13>{});
+    std::cout << '\n';
+
+    timeit("static_fft_plan<double, 4>", 16, interleave_benchmark<double, 4>{});
+    timeit("static_fft_plan<double, 5>", 32, interleave_benchmark<double, 5>{});
+    timeit("static_fft_plan<double, 6>", 64, interleave_benchmark<double, 6>{});
+    timeit("static_fft_plan<double, 7>", 128, interleave_benchmark<double, 7>{});
+    timeit("static_fft_plan<double, 8>", 256, interleave_benchmark<double, 8>{});
+    timeit("static_fft_plan<double, 9>", 512, interleave_benchmark<double, 9>{});
+    timeit("static_fft_plan<double, 10>", 1024, interleave_benchmark<double, 10>{});
+    timeit("static_fft_plan<double, 11>", 2048, interleave_benchmark<double, 11>{});
+    timeit("static_fft_plan<double, 12>", 4096, interleave_benchmark<double, 12>{});
+    timeit("static_fft_plan<double, 13>", 8192, interleave_benchmark<double, 13>{});
+    std::cout << '\n';
+
+    timeit("static_split_fft_plan<double, 4>", 16, split_benchmark<double, 4>{});
+    timeit("static_split_fft_plan<double, 5>", 32, split_benchmark<double, 5>{});
+    timeit("static_split_fft_plan<double, 6>", 64, split_benchmark<double, 6>{});
+    timeit("static_split_fft_plan<double, 7>", 128, split_benchmark<double, 7>{});
+    timeit("static_split_fft_plan<double, 8>", 256, split_benchmark<double, 8>{});
+    timeit("static_split_fft_plan<double, 9>", 512, split_benchmark<double, 9>{});
+    timeit("static_split_fft_plan<double, 10>", 1024, split_benchmark<double, 10>{});
+    timeit("static_split_fft_plan<double, 11>", 2048, split_benchmark<double, 11>{});
+    timeit("static_split_fft_plan<double, 12>", 4096, split_benchmark<double, 12>{});
+    timeit("static_split_fft_plan<double, 13>", 8192, split_benchmark<double, 13>{});
+    std::cout << '\n';
 
     return EXIT_SUCCESS;
 }

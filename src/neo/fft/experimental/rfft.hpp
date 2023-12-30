@@ -1,10 +1,10 @@
 #pragma once
 
 #include <neo/container/mdspan.hpp>
+#include <neo/fft/backend/fallback.hpp>
 #include <neo/fft/bitrevorder.hpp>
 #include <neo/fft/conjugate_view.hpp>
 #include <neo/fft/direction.hpp>
-#include <neo/fft/fft.hpp>
 
 #include <cmath>
 #include <complex>
@@ -103,7 +103,7 @@ struct fallback_fft_plan
 
     explicit fallback_fft_plan(size_type order)
         : _order{order}
-        , _w{make_radix2_twiddles<std::complex<Float>>(size(), direction::forward)}
+        , _w{neo::fft::detail::make_radix2_twiddles<std::complex<Float>>(size(), direction::forward)}
     {}
 
     [[nodiscard]] auto order() const noexcept -> size_type { return _order; }

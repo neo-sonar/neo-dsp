@@ -88,7 +88,6 @@ target_sources(neo_dsp_tests
         "src/neo/fft/fft_test.cpp"
         "src/neo/fft/rfft_test.cpp"
         "src/neo/fft/stft_test.cpp"
-        "src/neo/fft/twiddle_test.cpp"
 
         "src/neo/fixed_point/fixed_point_test.cpp"
 

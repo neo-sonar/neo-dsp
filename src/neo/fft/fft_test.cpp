@@ -218,7 +218,7 @@ static auto test_complex_batch_roundtrip_fft()
     };
 
     auto make_twiddles = [](auto size, neo::fft::direction dir) {
-        auto tw  = neo::fft::make_radix2_twiddles<ScalarComplex>(size, dir);
+        auto tw  = neo::fft::detail::make_radix2_twiddles<ScalarComplex>(size, dir);
         auto buf = stdex::mdarray<ComplexBatch, stdex::dextents<size_t, 1>>{tw.extents()};
         for (auto i{0UL}; i < buf.extent(0); ++i) {
             buf(i) = ComplexBatch{
@@ -323,7 +323,7 @@ TEMPLATE_TEST_CASE("neo/fft: radix2_kernel(simd_batch)", "", neo::pcomplex32x8, 
         };
 
         auto make_twiddles = [](auto size, neo::fft::direction dir) {
-            auto tw  = neo::fft::make_radix2_twiddles<ScalarComplex>(size, dir);
+            auto tw  = neo::fft::detail::make_radix2_twiddles<ScalarComplex>(size, dir);
             auto buf = stdex::mdarray<ComplexBatch, stdex::dextents<size_t, 1>>{tw.extents()};
             for (auto i{0UL}; i < buf.extent(0); ++i) {
                 buf(i) = ComplexBatch{
