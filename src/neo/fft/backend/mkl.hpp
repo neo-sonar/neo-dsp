@@ -71,7 +71,7 @@ private:
 
     [[nodiscard]] static auto make(size_type order)
     {
-        auto handle = DFTI_DESCRIPTOR_HANDLE{};
+        auto* handle = DFTI_DESCRIPTOR_HANDLE{};
         DftiCreateDescriptor(&handle, precision, DFTI_COMPLEX, 1, static_cast<int>(1UL << order));
         DftiSetValue(handle, DFTI_PLACEMENT, DFTI_INPLACE);
         DftiCommitDescriptor(handle);
