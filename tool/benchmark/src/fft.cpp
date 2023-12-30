@@ -75,6 +75,11 @@ BENCHMARK(split_c2c<neo::fft::intel_ipp_split_fft_plan<double>>)->RangeMultiplie
 #endif
 
 #if defined(NEO_HAS_APPLE_VDSP)
+BENCHMARK(split_c2c<neo::fft::apple_vdsp_split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 13);
+BENCHMARK(split_c2c<neo::fft::apple_vdsp_split_fft_plan<double>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 13);
+#endif
+
+#if defined(NEO_HAS_APPLE_VDSP)
 BENCHMARK(c2c<neo::fft::apple_vdsp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 13);
 BENCHMARK(c2c<neo::fft::apple_vdsp_fft_plan<neo::complex128>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 13);
 #endif

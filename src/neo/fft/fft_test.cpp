@@ -106,49 +106,10 @@ auto test_fft_plan()
 #endif
 }
 
-}  // namespace
-
-TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft: fallback_fft_plan",
-    "",
-    (kernel_v1, kernel_v2, kernel_v3),
-    (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>)
-)
+template<typename Plan>
+auto test_split_fft_plan() -> void
 {
-    test_fft_plan<typename TestType::plan_type>();
-}
-
-#if defined(NEO_HAS_APPLE_VDSP)
-TEMPLATE_TEST_CASE("neo/fft: apple_vdsp_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
-{
-    test_fft_plan<neo::fft::apple_vdsp_fft_plan<TestType>>();
-}
-#endif
-
-#if defined(NEO_HAS_INTEL_IPP)
-TEMPLATE_TEST_CASE("neo/fft: intel_ipp_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
-{
-    test_fft_plan<neo::fft::intel_ipp_fft_plan<TestType>>();
-}
-#endif
-
-#if defined(NEO_HAS_INTEL_MKL)
-TEMPLATE_TEST_CASE("neo/fft: intel_mkl_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
-{
-    test_fft_plan<neo::fft::intel_mkl_fft_plan<TestType>>();
-}
-#endif
-
-TEMPLATE_TEST_CASE("neo/fft: fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
-{
-    test_fft_plan<neo::fft::fft_plan<TestType>>();
-}
-
-#if defined(NEO_HAS_INTEL_IPP)
-TEMPLATE_TEST_CASE("neo/fft: intel_ipp_split_fft_plan", "", float, double)
-{
-    using Float = TestType;
-    using Plan  = neo::fft::intel_ipp_split_fft_plan<Float>;
+    using Float = typename Plan::value_type;
 
     auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
     CAPTURE(order);
@@ -195,6 +156,57 @@ TEMPLATE_TEST_CASE("neo/fft: intel_ipp_split_fft_plan", "", float, double)
         neo::scale(Float(1) / static_cast<Float>(plan.size()), in_z.real);
         REQUIRE(neo::allclose(noise.to_mdspan(), in_z.real));
     }
+}
+
+}  // namespace
+
+TEMPLATE_PRODUCT_TEST_CASE(
+    "neo/fft: fallback_fft_plan",
+    "",
+    (kernel_v1, kernel_v2, kernel_v3),
+    (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>)
+)
+{
+    test_fft_plan<typename TestType::plan_type>();
+}
+
+#if defined(NEO_HAS_APPLE_VDSP)
+TEMPLATE_TEST_CASE("neo/fft: apple_vdsp_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
+{
+    test_fft_plan<neo::fft::apple_vdsp_fft_plan<TestType>>();
+}
+#endif
+
+#if defined(NEO_HAS_INTEL_IPP)
+TEMPLATE_TEST_CASE("neo/fft: intel_ipp_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
+{
+    test_fft_plan<neo::fft::intel_ipp_fft_plan<TestType>>();
+}
+#endif
+
+#if defined(NEO_HAS_INTEL_MKL)
+TEMPLATE_TEST_CASE("neo/fft: intel_mkl_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
+{
+    test_fft_plan<neo::fft::intel_mkl_fft_plan<TestType>>();
+}
+#endif
+
+TEMPLATE_TEST_CASE("neo/fft: fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
+{
+    test_fft_plan<neo::fft::fft_plan<TestType>>();
+}
+
+#if defined(NEO_HAS_INTEL_IPP)
+TEMPLATE_TEST_CASE("neo/fft: intel_ipp_split_fft_plan", "", float, double)
+{
+    test_split_fft_plan<neo::fft::intel_ipp_split_fft_plan<TestType>>();
+}
+#endif
+
+#if defined(NEO_HAS_APPLE_VDSP)
+TEMPLATE_TEST_CASE("neo/fft: apple_vdsp_split_fft_plan", "", float, double)
+{
+    test_split_fft_plan<neo::fft::apple_vdsp_split_fft_plan<TestType>>();
 }
 #endif
 
