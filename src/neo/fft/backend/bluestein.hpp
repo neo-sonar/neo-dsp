@@ -41,8 +41,7 @@ struct bluestein_plan
 
     [[nodiscard]] auto size() const noexcept -> size_type { return _size; }
 
-    template<inout_vector Vec>
-        requires std::same_as<typename Vec::value_type, Complex>
+    template<inout_vector_of<Complex> Vec>
     auto operator()(Vec x, direction dir) -> void
     {
         assert(std::cmp_equal(x.extent(0), size()));

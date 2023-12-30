@@ -4,6 +4,7 @@
 
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
+#include <neo/fft/backend/bluestein.hpp>
 #include <neo/fft/direction.hpp>
 
 #include <cassert>
@@ -33,6 +34,40 @@ auto dft(InVec in, OutVec out, direction dir = direction::forward) -> void
             tmp += input * w;
         }
         out(k) = tmp;
+    }
+}
+
+template<typename Plan, inout_vector Vec>
+constexpr auto dft(Plan& plan, Vec inout) -> void
+{
+    plan(inout, direction::forward);
+}
+
+template<typename Plan, in_vector InVec, out_vector OutVec>
+constexpr auto dft(Plan& plan, InVec input, OutVec output) -> void
+{
+    if constexpr (requires { plan(input, output, direction::forward); }) {
+        plan(input, output, direction::forward);
+    } else {
+        copy(input, output);
+        dft(plan, output);
+    }
+}
+
+template<typename Plan, inout_vector Vec>
+constexpr auto idft(Plan& plan, Vec inout) -> void
+{
+    plan(inout, direction::backward);
+}
+
+template<typename Plan, in_vector InVec, out_vector OutVec>
+constexpr auto idft(Plan& plan, InVec input, OutVec output) -> void
+{
+    if constexpr (requires { plan(input, output, direction::backward); }) {
+        plan(input, output, direction::backward);
+    } else {
+        copy(input, output);
+        idft(plan, output);
     }
 }
 

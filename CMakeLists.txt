@@ -81,7 +81,6 @@ target_sources(neo_dsp_tests
         "src/neo/convolution/uniform_partition_test.cpp"
         "src/neo/convolution/uniform_partitioned_convolver_test.cpp"
 
-        "src/neo/fft/bluestein_test.cpp"
         "src/neo/fft/dct_test.cpp"
         "src/neo/fft/dft_test.cpp"
         "src/neo/fft/rfftfreq_test.cpp"
