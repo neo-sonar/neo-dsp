@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "ipow.hpp"
 
 #include <catch2/catch_approx.hpp>

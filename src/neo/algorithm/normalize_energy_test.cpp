@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "normalize_energy.hpp"
 
 #include <neo/algorithm/fill.hpp>

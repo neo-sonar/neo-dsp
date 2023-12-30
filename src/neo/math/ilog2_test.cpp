@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "ilog2.hpp"
 
 #include <catch2/catch_template_test_macros.hpp>

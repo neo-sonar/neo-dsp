@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include <neo/fft.hpp>
 
 #include <neo/testing/testing.hpp>

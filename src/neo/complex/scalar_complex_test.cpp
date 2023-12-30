@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "scalar_complex.hpp"
 
 #include <neo/fixed_point.hpp>

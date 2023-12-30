@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include <neo/config.hpp>
 
 #include <neo/algorithm.hpp>

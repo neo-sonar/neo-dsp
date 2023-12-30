@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "mean.hpp"
 
 #include <neo/algorithm/allclose.hpp>

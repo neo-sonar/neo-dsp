@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include <neo/convolution.hpp>
 
 #include <neo/testing/testing.hpp>

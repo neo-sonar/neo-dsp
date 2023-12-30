@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "variance.hpp"
 
 #include <neo/algorithm/allclose.hpp>

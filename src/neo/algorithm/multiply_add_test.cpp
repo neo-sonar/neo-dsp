@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "multiply_add.hpp"
 
 #include <neo/algorithm/add.hpp>

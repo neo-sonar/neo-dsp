@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "decibel.hpp"
 
 #include <catch2/catch_approx.hpp>

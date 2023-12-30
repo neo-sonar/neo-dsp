@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "compressed_accessor.hpp"
 
 #include <neo/algorithm/add.hpp>

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "rfft.hpp"
 
 #if defined(NEO_HAS_INTEL_IPP)

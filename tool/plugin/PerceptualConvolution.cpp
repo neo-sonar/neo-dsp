@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "PerceptualConvolution.hpp"
 
 #include "PluginParameter.hpp"

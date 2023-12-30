@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <juce_core/juce_core.h>

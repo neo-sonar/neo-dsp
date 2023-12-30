@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "wav.hpp"
 
 #include <neo/algorithm.hpp>

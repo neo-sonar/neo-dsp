@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "parallel_complex.hpp"
 
 #include <catch2/catch_approx.hpp>

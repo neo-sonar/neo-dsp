@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 import neo_dsp as neo
 import numpy as np
 

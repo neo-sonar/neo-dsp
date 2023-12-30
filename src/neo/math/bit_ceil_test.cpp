@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include "bit_ceil.hpp"
 
 #include <catch2/catch_approx.hpp>

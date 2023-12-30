@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 #include <neo/algorithm.hpp>
 #include <neo/complex.hpp>
 #include <neo/convolution.hpp>
