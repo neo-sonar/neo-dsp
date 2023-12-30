@@ -72,6 +72,7 @@ auto main(int argc, char** argv) -> int
     auto const [filter, filter_sr]   = neo::load_wav_file<float>(args[2]);
     auto const output_length         = signal.extent(1);
     auto const output_length_seconds = static_cast<double>(output_length) / signal_sr;
+    auto const block_size            = 8192 * 4;
 
     if (signal.extent(0) != filter.extent(0)) {
         fmt::println("Channel mismatch: signal = {} filter = {}", int(signal.extent(0)), int(filter.extent(0)));
@@ -100,7 +101,7 @@ auto main(int argc, char** argv) -> int
 
     {
         auto const start   = std::chrono::system_clock::now();
-        auto output        = convolve<neo::upola_convolver<std::complex<float>>>(signal, filter);
+        auto output        = convolve<neo::upola_convolver<std::complex<float>>>(signal, filter, block_size);
         auto const stop    = std::chrono::system_clock::now();
         auto const runtime = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start);
 
@@ -115,7 +116,7 @@ auto main(int argc, char** argv) -> int
 
     {
         auto const start   = std::chrono::system_clock::now();
-        auto output        = convolve<split_upola_convolver<std::complex<float>>>(signal, filter);
+        auto output        = convolve<split_upola_convolver<std::complex<float>>>(signal, filter, block_size);
         auto const stop    = std::chrono::system_clock::now();
         auto const runtime = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start);
 
@@ -131,7 +132,7 @@ auto main(int argc, char** argv) -> int
 #if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
     {
         auto const start   = std::chrono::system_clock::now();
-        auto output        = convolve<split_upola_convolver_f16<std::complex<float>>>(signal, filter);
+        auto output        = convolve<split_upola_convolver_f16<std::complex<float>>>(signal, filter, block_size);
         auto const stop    = std::chrono::system_clock::now();
         auto const runtime = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start);
 

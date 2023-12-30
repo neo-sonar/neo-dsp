@@ -96,7 +96,7 @@ multiply_add(split_complex<VecX> x, split_complex<VecY> y, split_complex<VecZ> z
 #endif
 
     if constexpr (has_default_accessor<VecX, VecY, VecZ, VecOut> and has_layout_left_or_right<VecX, VecY, VecZ, VecOut>) {
-        auto const size = x.real.extent(0);
+        auto const size = static_cast<size_t>(x.real.extent(0));
 
         auto const* xre = x.real.data_handle();
         auto const* xim = x.imag.data_handle();
