@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 #include "stft.hpp"
 
 #include <catch2/catch_template_test_macros.hpp>

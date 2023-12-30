@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 #include "normalize_impulse.hpp"
 
 #include <neo/algorithm/fill.hpp>

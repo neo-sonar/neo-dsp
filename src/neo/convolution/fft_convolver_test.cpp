@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 #include "fft_convolver.hpp"
 
 #include <neo/algorithm.hpp>

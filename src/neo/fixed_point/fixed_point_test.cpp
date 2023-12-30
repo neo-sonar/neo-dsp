@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 #include "algorithm.hpp"
 #include "complex.hpp"
 #include "fixed_point.hpp"

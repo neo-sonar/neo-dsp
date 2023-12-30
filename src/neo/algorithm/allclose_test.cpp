@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 #include "allclose.hpp"
 
 #include <neo/algorithm/fill.hpp>

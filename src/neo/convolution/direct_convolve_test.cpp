@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 #include "direct_convolve.hpp"
 
 #include <neo/algorithm.hpp>

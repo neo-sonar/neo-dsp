@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 #include "BenchmarkTab.hpp"
 
 #include "core/StringArray.hpp"

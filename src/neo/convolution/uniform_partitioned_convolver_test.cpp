@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 #include "dense_convolver.hpp"
 #include "sparse_convolver.hpp"
 

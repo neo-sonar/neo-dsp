@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 #include "windowing.hpp"
 
 #include <catch2/catch_approx.hpp>

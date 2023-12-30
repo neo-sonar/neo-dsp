@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 #include <neo/algorithm.hpp>
 #include <neo/fixed_point.hpp>
 

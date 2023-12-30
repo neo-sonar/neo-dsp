@@ -1,4 +1,4 @@
-
+// SPDX-License-Identifier: MIT
 #include "AudioBuffer.hpp"
 
 #include <algorithm>

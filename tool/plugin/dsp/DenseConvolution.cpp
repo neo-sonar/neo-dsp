@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 #include "DenseConvolution.hpp"
 
 #include "dsp/AudioBuffer.hpp"

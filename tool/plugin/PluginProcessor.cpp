@@ -1,4 +1,4 @@
-
+// SPDX-License-Identifier: MIT
 #include "PluginProcessor.hpp"
 
 #include "PluginEditor.hpp"

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 #include "Spectrum.hpp"
 
 #include "dsp/AudioBuffer.hpp"
