@@ -87,11 +87,11 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_deinterleave", "", (std::complex, neo:
     CAPTURE(size);
     CAPTURE(num_coeffs);
 
-    auto fft = neo::fft::fallback_fft_plan<Complex>{order};
+    auto fft = neo::fft::fft_plan<Complex>{order};
     REQUIRE(fft.size() == size);
     REQUIRE(fft.order() == order);
 
-    auto rfft = neo::fft::fallback_rfft_plan<Float, Complex>{order};
+    auto rfft = neo::fft::rfft_plan<Float, Complex>{order};
     REQUIRE(rfft.size() == size);
     REQUIRE(rfft.order() == order);
 
