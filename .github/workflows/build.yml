@@ -70,6 +70,15 @@ jobs:
             cmake_targets: neo_tests
             macos_target: ""
 
+          - name: Windows-MSVC
+            os: windows-latest
+            build_type: Release
+            clang_version: ""
+            cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2"'
+            cmake_prefix_path: ""
+            cmake_targets: neo_tests
+            macos_target: ""
+
           - name: Coverage-Native
             os: ubuntu-22.04
             build_type: Debug
@@ -153,10 +162,16 @@ jobs:
       #     ./oneapi.exe -s -x -f oneapi
       #     ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel:intel.oneapi.win.mkl.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
 
+      - name: Set up Visual Studio shell
+        if: ${{ matrix.name }} == 'Windows-MSVC'
+        uses: egor-tensin/vs-shell@v2
+        with:
+          arch: x64
+
       - name: Install ccache
         uses: hendrikmuhs/ccache-action@main
         with:
-          key: neo-build-${{ matrix.name }}
+          key: "neo-build-${{ matrix.name }}"
 
       - name: Print native arch flags (GCC)
         if: contains(matrix.name, 'Coverage')
