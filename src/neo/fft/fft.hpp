@@ -7,6 +7,7 @@
 #include <neo/algorithm/copy.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/fallback/fallback_fft_plan.hpp>
+#include <neo/math/bit_ceil.hpp>
 #include <neo/math/ilog2.hpp>
 #include <neo/type_traits/value_type_t.hpp>
 
@@ -104,7 +105,7 @@ template<std::integral Int>
 [[nodiscard]] constexpr auto next_order(Int size) noexcept -> Int
 {
     auto const usize = static_cast<std::make_unsigned_t<Int>>(size);
-    return static_cast<Int>(ilog2(std::bit_ceil(usize)));
+    return static_cast<Int>(ilog2(bit_ceil(usize)));
 }
 
 }  // namespace neo::fft

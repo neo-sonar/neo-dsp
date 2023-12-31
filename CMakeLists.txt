@@ -91,6 +91,7 @@ target_sources(neo_tests
         "src/neo/fixed_point/fixed_point_test.cpp"
 
         "src/neo/math/a_weighting_test.cpp"
+        "src/neo/math/bit_ceil_test.cpp"
         "src/neo/math/ilog2_test.cpp"
         "src/neo/math/ipow_test.cpp"
         "src/neo/math/windowing_test.cpp"

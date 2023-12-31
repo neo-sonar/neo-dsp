@@ -8,9 +8,8 @@
 #include <neo/convolution/uniform_partition.hpp>
 #include <neo/fft/rfftfreq.hpp>
 #include <neo/math/a_weighting.hpp>
+#include <neo/math/bit_ceil.hpp>
 #include <neo/unit/decibel.hpp>
-
-#include <bit>
 
 namespace neo {
 
@@ -165,7 +164,7 @@ auto sparse_convolve(
     normalize_impulse(matrix.to_mdspan());
     auto partitions = uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
 
-    auto const K = std::bit_ceil((partitions.extent(2) - 1U) * 2U);
+    auto const K = neo::bit_ceil((partitions.extent(2) - 1U) * 2U);
 
     auto const weights = [K, bins = partitions.extent(2), lowBinsToKeep, sampleRate] {
         jassert(std::cmp_less(lowBinsToKeep, bins));
