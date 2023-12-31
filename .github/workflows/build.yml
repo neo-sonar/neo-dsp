@@ -43,14 +43,14 @@ jobs:
             cmake_targets: neo_tests
             macos_target: ""
 
-          - name: macOS-13.0
+          - name: macOS-13.3
             os: macos-13
             build_type: Debug
             clang_version: ""
             cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
             cmake_prefix_path: ""
             cmake_targets: all
-            macos_target: "13.0"
+            macos_target: "13.3"
 
           - name: macOS-10.15
             os: macos-12
