@@ -74,7 +74,7 @@ jobs:
             os: windows-latest
             build_type: Release
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2"'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2 /EHsc"'
             cmake_prefix_path: ""
             cmake_targets: neo_tests
             macos_target: ""
