@@ -4,8 +4,6 @@
 
 #include <neo/config.hpp>
 
-#include <neo/fft/bitrevorder.hpp>
-#include <neo/fft/conjugate_view.hpp>
 #include <neo/fft/dct.hpp>
 #include <neo/fft/dft.hpp>
 #include <neo/fft/direction.hpp>

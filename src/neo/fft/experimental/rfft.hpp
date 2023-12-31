@@ -3,9 +3,9 @@
 #pragma once
 
 #include <neo/container/mdspan.hpp>
-#include <neo/fft/bitrevorder.hpp>
-#include <neo/fft/conjugate_view.hpp>
 #include <neo/fft/direction.hpp>
+#include <neo/fft/fallback/bitrevorder.hpp>
+#include <neo/fft/fallback/conjugate_view.hpp>
 #include <neo/fft/fallback/fallback_fft_plan.hpp>
 
 #include <cmath>
