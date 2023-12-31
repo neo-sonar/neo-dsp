@@ -20,9 +20,7 @@ static auto uniform_partition(juce::AudioBuffer<float> const& buffer, std::integ
     return neo::uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
 }
 
-DenseConvolution::DenseConvolution(int blockSize)
-    : ConstantOverlapAdd<float>{neo::ilog2(juce::nextPowerOfTwo(blockSize)), 0}
-{}
+DenseConvolution::DenseConvolution(int blockSize) : ConstantOverlapAdd<float>{neo::fft::next_order(blockSize), 0} {}
 
 auto DenseConvolution::loadImpulseResponse(std::unique_ptr<juce::InputStream> stream) -> void
 {

@@ -68,7 +68,7 @@ private:
     std::size_t _signal_size;
     std::size_t _patch_size;
     std::size_t _output_size{signal_size() + patch_size() - 1};
-    fft::rfft_plan<Float> _plan{ilog2(bit_ceil(output_size()))};
+    fft::rfft_plan<Float> _plan{fft::next_order(output_size())};
 
     stdex::mdarray<Float, stdex::dextents<size_t, 1>> _tmp{_plan.size()};
     stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>> _signal_spectrum{_plan.size() / 2 + 1};

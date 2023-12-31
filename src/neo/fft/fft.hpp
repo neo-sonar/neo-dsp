@@ -8,6 +8,8 @@
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/backend/fallback.hpp>
 #include <neo/fft/bitrevorder.hpp>
+#include <neo/math/bit_ceil.hpp>
+#include <neo/math/ilog2.hpp>
 
 #if defined(NEO_HAS_APPLE_VDSP)
     #include <neo/fft/backend/vdsp.hpp>
@@ -97,6 +99,13 @@ template<typename Plan, in_vector InVec, out_vector OutVec>
 constexpr auto ifft(Plan& plan, split_complex<InVec> in, split_complex<OutVec> out) -> void
 {
     plan(in, out, direction::backward);
+}
+
+template<std::integral Int>
+[[nodiscard]] constexpr auto next_order(Int size) noexcept -> Int
+{
+    auto const usize = static_cast<std::make_unsigned_t<Int>>(size);
+    return static_cast<Int>(ilog2(bit_ceil(usize)));
 }
 
 }  // namespace neo::fft
