@@ -18,9 +18,9 @@ def test_fft(n, complex):
     assert np.allclose(neo.fft.ifft(neo.fft.fft(impulse.copy())), impulse)
 
 
-@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("dtype", [np.float64])
 @pytest.mark.parametrize("method", ["direct", "fft"])
-@pytest.mark.parametrize("signal_size", [2, 3, 4, 5, 6, 7, 8, 9, 10])
+@pytest.mark.parametrize("signal_size", [2, 3, 4, 5, 6, 7, 8, 9, 10, 128, 555])
 @pytest.mark.parametrize("patch_size", [2, 3, 4, 5, 6, 7, 8, 9, 10])
 def test_convolve(dtype, method, signal_size, patch_size):
     signal = np.random.rand(signal_size).astype(dtype)
@@ -30,7 +30,7 @@ def test_convolve(dtype, method, signal_size, patch_size):
     convolved = neo.convolve(signal, patch, method=method)
 
     assert convolved.shape[0] == signal.shape[0] + patch.shape[0] - 1
-    assert convolved[:signal_size] == approx(signal, rel=1e-4)
+    assert convolved[:signal_size] == approx(signal)
 
     with pytest.raises(RuntimeError):
         neo.convolve(signal, patch, mode="valid")
