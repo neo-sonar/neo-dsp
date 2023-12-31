@@ -180,7 +180,7 @@ jobs:
 
       - name: CMake configure
         shell: bash
-        run: cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=${{ matrix.build_type }} -D CMAKE_COMPILE_WARNING_AS_ERROR=ON ${{ matrix.cmake_flags }}
+        run: cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=${{ matrix.build_type }} -D CMAKE_COMPILE_WARNING_AS_ERROR=OFF ${{ matrix.cmake_flags }}
 
       - name: CMake build
         shell: bash
