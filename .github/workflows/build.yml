@@ -13,7 +13,6 @@ concurrency:
 env:
   CMAKE_GENERATOR: Ninja
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  MACOSX_DEPLOYMENT_TARGET: "10.15"
 
 jobs:
   build:
@@ -21,6 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       CMAKE_PREFIX_PATH: ${{ matrix.cmake_prefix_path }}
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_target }}
     strategy:
       fail-fast: false
       matrix:
@@ -32,6 +32,7 @@ jobs:
             cmake_flags: "-D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON"
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
             cmake_targets: all
+            macos_target: ""
 
           - name: Linux-GCC
             os: ubuntu-22.04
@@ -40,14 +41,25 @@ jobs:
             cmake_flags: '-D CMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -march=ivybridge"'
             cmake_prefix_path: ""
             cmake_targets: neo_tests
+            macos_target: ""
 
-          - name: macOS
+          - name: macOS-13.0
             os: macos-13
             build_type: Debug
             clang_version: ""
             cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
             cmake_prefix_path: ""
             cmake_targets: all
+            macos_target: "13.0"
+
+          - name: macOS-10.15
+            os: macos-12
+            build_type: Debug
+            clang_version: ""
+            cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
+            cmake_prefix_path: ""
+            cmake_targets: all
+            macos_target: "10.15"
 
           - name: Windows-Clang
             os: windows-latest
@@ -56,6 +68,7 @@ jobs:
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native"'
             cmake_prefix_path: ""
             cmake_targets: neo_tests
+            macos_target: ""
 
           - name: Coverage-Native
             os: ubuntu-22.04
@@ -64,6 +77,7 @@ jobs:
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
             cmake_targets: neo_tests
+            macos_target: ""
 
           - name: Coverage-SSE41
             os: ubuntu-22.04
@@ -72,6 +86,7 @@ jobs:
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
             cmake_targets: neo_tests
+            macos_target: ""
 
           - name: Coverage-SSE2
             os: ubuntu-22.04
@@ -80,6 +95,7 @@ jobs:
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
             cmake_targets: neo_tests
+            macos_target: ""
 
     steps:
       - name: Checkout code
