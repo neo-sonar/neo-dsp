@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #include "interleave_complex.hpp"
 
 #include <neo/math/float_equality.hpp>

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <neo/math/fast_math.hpp>
@@ -16,9 +18,9 @@ template<precision Precision = precision::accurate, std::floating_point Float>
         return infinity;
     }
     if constexpr (Precision == precision::accurate) {
-        return (std::max)(infinity, Float(20) * std::log10(gain));
+        return std::max(infinity, Float(20) * std::log10(gain));
     } else {
-        return (std::max)(infinity, Float(20) * static_cast<Float>(fast_log10(static_cast<float>(gain))));
+        return std::max(infinity, Float(20) * static_cast<Float>(fast_log10(static_cast<float>(gain))));
     }
 }
 

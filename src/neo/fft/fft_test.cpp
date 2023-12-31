@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #include "fft.hpp"
 
 #include <neo/algorithm/allclose.hpp>
@@ -21,7 +23,7 @@ namespace {
 template<typename Complex, typename Kernel>
 struct kernel_tester
 {
-    using plan_type = neo::fft::fft_plan<Complex, Kernel>;
+    using plan_type = neo::fft::fallback_fft_plan<Complex, Kernel>;
 };
 
 template<typename Complex>
@@ -33,11 +35,19 @@ using kernel_v2 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v2>;
 template<typename Complex>
 using kernel_v3 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v3>;
 
+constexpr auto execute_dit2_kernel = [](auto kernel, neo::inout_vector auto x, auto const& twiddles) -> void {
+    neo::fft::bitrevorder(x);
+    kernel(x, twiddles);
+};
+
 template<typename Plan>
 auto test_fft_plan()
 {
     using Complex = typename Plan::value_type;
     using Float   = typename Complex::value_type;
+
+    REQUIRE(neo::fft::next_order(2U) == 1U);
+    REQUIRE(neo::fft::next_order(3U) == 2U);
 
     auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
     CAPTURE(order);
@@ -45,6 +55,7 @@ auto test_fft_plan()
     auto plan = Plan{order};
     REQUIRE(plan.order() == order);
     REQUIRE(plan.size() == std::size_t(1) << order);
+    REQUIRE(neo::fft::next_order(plan.size()) == plan.order());
 
     auto const noise = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
 
@@ -52,6 +63,8 @@ auto test_fft_plan()
     {
         auto copy = noise;
         auto io   = copy.to_mdspan();
+        STATIC_REQUIRE(neo::has_default_accessor<decltype(io)>);
+        STATIC_REQUIRE(neo::has_layout_left_or_right<decltype(io)>);
 
         neo::fft::fft(plan, io);
         neo::fft::ifft(plan, io);
@@ -64,6 +77,10 @@ auto test_fft_plan()
     {
         auto tmp_buf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
         auto out_buf = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{noise.extents()};
+        STATIC_REQUIRE(neo::has_default_accessor<decltype(tmp_buf.to_mdspan())>);
+        STATIC_REQUIRE(neo::has_default_accessor<decltype(out_buf.to_mdspan())>);
+        STATIC_REQUIRE(neo::has_layout_left_or_right<decltype(tmp_buf.to_mdspan())>);
+        STATIC_REQUIRE(neo::has_layout_left_or_right<decltype(out_buf.to_mdspan())>);
 
         auto tmp = tmp_buf.to_mdspan();
         auto out = out_buf.to_mdspan();
@@ -74,12 +91,83 @@ auto test_fft_plan()
         neo::scale(Float(1) / static_cast<Float>(plan.size()), out);
         REQUIRE(neo::allclose(noise.to_mdspan(), out));
     }
+
+// Bug in Kokkos::layout_stride no_unique_address_emulation
+#if not defined(NEO_PLATFORM_WINDOWS)
+    SECTION("inplace strided")
+    {
+        auto buf = stdex::mdarray<Complex, stdex::dextents<size_t, 2>, stdex::layout_left>{2, plan.size()};
+        auto io  = stdex::submdspan(buf.to_mdspan(), 0, stdex::full_extent);
+        neo::copy(noise.to_mdspan(), io);
+
+        STATIC_REQUIRE(neo::has_default_accessor<decltype(io)>);
+        STATIC_REQUIRE_FALSE(neo::has_layout_left_or_right<decltype(io)>);
+
+        neo::fft::fft(plan, io);
+        neo::fft::ifft(plan, io);
+
+        neo::scale(Float(1) / static_cast<Float>(plan.size()), io);
+        REQUIRE(neo::allclose(noise.to_mdspan(), io));
+    }
+#endif
+}
+
+template<typename Plan>
+auto test_split_fft_plan() -> void
+{
+    using Float = typename Plan::value_type;
+
+    auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
+    CAPTURE(order);
+
+    auto plan = Plan{order};
+    REQUIRE(plan.order() == order);
+    REQUIRE(plan.size() == std::size_t(1) << order);
+
+    auto const noise = neo::generate_noise_signal<Float>(plan.size(), Catch::getSeed());
+
+    SECTION("inplace")
+    {
+        auto buf = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{2, noise.extent(0)};
+        auto z   = neo::split_complex{
+            stdex::submdspan(buf.to_mdspan(), 0, stdex::full_extent),
+            stdex::submdspan(buf.to_mdspan(), 1, stdex::full_extent),
+        };
+
+        neo::copy(noise.to_mdspan(), z.real);
+        neo::fft::fft(plan, z);
+        neo::fft::ifft(plan, z);
+
+        neo::scale(Float(1) / static_cast<Float>(plan.size()), z.real);
+        REQUIRE(neo::allclose(noise.to_mdspan(), z.real));
+    }
+
+    SECTION("copy")
+    {
+        auto in_buf  = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{2, noise.extent(0)};
+        auto out_buf = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{2, noise.extent(0)};
+        auto in_z    = neo::split_complex{
+            stdex::submdspan(in_buf.to_mdspan(), 0, stdex::full_extent),
+            stdex::submdspan(in_buf.to_mdspan(), 1, stdex::full_extent),
+        };
+        auto out_z = neo::split_complex{
+            stdex::submdspan(out_buf.to_mdspan(), 0, stdex::full_extent),
+            stdex::submdspan(out_buf.to_mdspan(), 1, stdex::full_extent),
+        };
+
+        neo::copy(noise.to_mdspan(), in_z.real);
+        neo::fft::fft(plan, in_z, out_z);
+        neo::fft::ifft(plan, out_z, in_z);
+
+        neo::scale(Float(1) / static_cast<Float>(plan.size()), in_z.real);
+        REQUIRE(neo::allclose(noise.to_mdspan(), in_z.real));
+    }
 }
 
 }  // namespace
 
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft: fft_plan",
+    "neo/fft: fallback_fft_plan",
     "",
     (kernel_v1, kernel_v2, kernel_v3),
     (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>)
@@ -88,7 +176,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     test_fft_plan<typename TestType::plan_type>();
 }
 
-#if defined(NEO_PLATFORM_APPLE)
+#if defined(NEO_HAS_APPLE_VDSP)
 TEMPLATE_TEST_CASE("neo/fft: apple_vdsp_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
 {
     test_fft_plan<neo::fft::apple_vdsp_fft_plan<TestType>>();
@@ -99,6 +187,32 @@ TEMPLATE_TEST_CASE("neo/fft: apple_vdsp_fft_plan", "", neo::complex64, std::comp
 TEMPLATE_TEST_CASE("neo/fft: intel_ipp_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
 {
     test_fft_plan<neo::fft::intel_ipp_fft_plan<TestType>>();
+}
+#endif
+
+#if defined(NEO_HAS_INTEL_MKL)
+TEMPLATE_TEST_CASE("neo/fft: intel_mkl_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
+{
+    test_fft_plan<neo::fft::intel_mkl_fft_plan<TestType>>();
+}
+#endif
+
+TEMPLATE_TEST_CASE("neo/fft: fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
+{
+    test_fft_plan<neo::fft::fft_plan<TestType>>();
+}
+
+#if defined(NEO_HAS_INTEL_IPP)
+TEMPLATE_TEST_CASE("neo/fft: intel_ipp_split_fft_plan", "", float, double)
+{
+    test_split_fft_plan<neo::fft::intel_ipp_split_fft_plan<TestType>>();
+}
+#endif
+
+#if defined(NEO_HAS_APPLE_VDSP)
+TEMPLATE_TEST_CASE("neo/fft: apple_vdsp_split_fft_plan", "", float, double)
+{
+    test_split_fft_plan<neo::fft::apple_vdsp_split_fft_plan<TestType>>();
 }
 #endif
 
@@ -122,7 +236,7 @@ static auto test_complex_batch_roundtrip_fft()
     };
 
     auto make_twiddles = [](auto size, neo::fft::direction dir) {
-        auto tw  = neo::fft::make_radix2_twiddles<ScalarComplex>(size, dir);
+        auto tw  = neo::fft::detail::make_radix2_twiddles<ScalarComplex>(size, dir);
         auto buf = stdex::mdarray<ComplexBatch, stdex::dextents<size_t, 1>>{tw.extents()};
         for (auto i{0UL}; i < buf.extent(0); ++i) {
             buf(i) = ComplexBatch{
@@ -142,8 +256,8 @@ static auto test_complex_batch_roundtrip_fft()
     auto const forward_twiddles  = make_twiddles(size, neo::fft::direction::forward);
     auto const backward_twiddles = make_twiddles(size, neo::fft::direction::backward);
 
-    neo::fft::execute_dit2_kernel(Kernel{}, inout.to_mdspan(), forward_twiddles.to_mdspan());
-    neo::fft::execute_dit2_kernel(Kernel{}, inout.to_mdspan(), backward_twiddles.to_mdspan());
+    execute_dit2_kernel(Kernel{}, inout.to_mdspan(), forward_twiddles.to_mdspan());
+    execute_dit2_kernel(Kernel{}, inout.to_mdspan(), backward_twiddles.to_mdspan());
 
     for (auto i{0U}; i < inout.extent(0); ++i) {
         auto const real_batch = inout(i).real();
@@ -227,7 +341,7 @@ TEMPLATE_TEST_CASE("neo/fft: radix2_kernel(simd_batch)", "", neo::pcomplex32x8, 
         };
 
         auto make_twiddles = [](auto size, neo::fft::direction dir) {
-            auto tw  = neo::fft::make_radix2_twiddles<ScalarComplex>(size, dir);
+            auto tw  = neo::fft::detail::make_radix2_twiddles<ScalarComplex>(size, dir);
             auto buf = stdex::mdarray<ComplexBatch, stdex::dextents<size_t, 1>>{tw.extents()};
             for (auto i{0UL}; i < buf.extent(0); ++i) {
                 buf(i) = ComplexBatch{
@@ -247,8 +361,8 @@ TEMPLATE_TEST_CASE("neo/fft: radix2_kernel(simd_batch)", "", neo::pcomplex32x8, 
         auto const forward_twiddles  = make_twiddles(size, neo::fft::direction::forward);
         auto const backward_twiddles = make_twiddles(size, neo::fft::direction::backward);
 
-        neo::fft::execute_dit2_kernel(kernel, inout.to_mdspan(), forward_twiddles.to_mdspan());
-        neo::fft::execute_dit2_kernel(kernel, inout.to_mdspan(), backward_twiddles.to_mdspan());
+        execute_dit2_kernel(kernel, inout.to_mdspan(), forward_twiddles.to_mdspan());
+        execute_dit2_kernel(kernel, inout.to_mdspan(), backward_twiddles.to_mdspan());
 
         for (auto i{0U}; i < inout.extent(0); ++i) {
             auto const real_batch = inout(i).real();

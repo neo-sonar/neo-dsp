@@ -1,4 +1,8 @@
+// SPDX-License-Identifier: MIT
+
 #pragma once
+
+#include <neo/type_traits/value_type_t.hpp>
 
 #if defined(__clang__)
     #pragma clang diagnostic push
@@ -94,6 +98,33 @@ concept inout_object =                                                          
     && std::same_as<std::remove_const_t<typename T::element_type>, typename T::element_type>  //
     && T::is_always_unique();                                                                 //
 
+template<typename Vec, typename Value>
+concept in_vector_of = in_vector<Vec> and std::same_as<value_type_t<Vec>, Value>;
+
+template<typename Vec, typename Value>
+concept out_vector_of = out_vector<Vec> and std::same_as<value_type_t<Vec>, Value>;
+
+template<typename Vec, typename Value>
+concept inout_vector_of = inout_vector<Vec> and std::same_as<value_type_t<Vec>, Value>;
+
+template<typename Mat, typename Value>
+concept in_matrix_of = in_matrix<Mat> and std::same_as<value_type_t<Mat>, Value>;
+
+template<typename Mat, typename Value>
+concept out_matrix_of = out_matrix<Mat> and std::same_as<value_type_t<Mat>, Value>;
+
+template<typename Mat, typename Value>
+concept inout_matrix_of = inout_matrix<Mat> and std::same_as<value_type_t<Mat>, Value>;
+
+template<typename Obj, typename Value>
+concept in_object_of = in_object<Obj> and std::same_as<value_type_t<Obj>, Value>;
+
+template<typename Obj, typename Value>
+concept out_object_of = out_object<Obj> and std::same_as<value_type_t<Obj>, Value>;
+
+template<typename Obj, typename Value>
+concept inout_object_of = inout_object<Obj> and std::same_as<value_type_t<Obj>, Value>;
+
 namespace detail {
 
 [[nodiscard]] constexpr auto extents_equal(in_object auto ref, in_object auto... others) noexcept -> bool
@@ -108,9 +139,21 @@ template<auto Stride>
 }
 
 template<in_object First, in_object... Objs>
-inline constexpr auto all_same_value_type_v
-    = (std::same_as<typename First::value_type, typename Objs::value_type> and ...);
+inline constexpr auto all_same_value_type_v = (std::same_as<value_type_t<First>, value_type_t<Objs>> and ...);
 
 }  // namespace detail
+
+template<typename... Objs>
+inline constexpr auto has_default_accessor
+    = (std::same_as<typename Objs::accessor_type, stdex::default_accessor<typename Objs::element_type>> and ...);
+
+template<typename... Objs>
+inline constexpr auto has_layout_left = (std::same_as<typename Objs::layout_type, stdex::layout_left> and ...);
+
+template<typename... Objs>
+inline constexpr auto has_layout_right = (std::same_as<typename Objs::layout_type, stdex::layout_right> and ...);
+
+template<typename... Objs>
+inline constexpr auto has_layout_left_or_right = has_layout_left<Objs...> or has_layout_right<Objs...>;
 
 }  // namespace neo

@@ -1,4 +1,4 @@
-Welcome to neo_dsp's documentation!
+Welcome to neo's documentation!
 ===================================
 
 Contents
@@ -6,5 +6,5 @@ Contents
 
 .. toctree::
 
-   neo_dsp
+   neo
    fft

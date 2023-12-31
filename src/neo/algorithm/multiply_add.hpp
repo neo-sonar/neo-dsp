@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <neo/config.hpp>
@@ -6,8 +8,12 @@
 #include <neo/container/csr_matrix.hpp>
 #include <neo/container/mdspan.hpp>
 
-#if defined(NEO_PLATFORM_APPLE)
+#if defined(NEO_HAS_APPLE_VDSP)
     #include <Accelerate/Accelerate.h>
+#endif
+
+#if defined(NEO_HAS_XSIMD)
+    #include <neo/algorithm/backend/xsimd.hpp>
 #endif
 
 #include <cassert>
@@ -20,6 +26,18 @@ template<in_vector VecX, in_vector VecY, in_vector VecZ, out_vector VecOut>
 constexpr auto multiply_add(VecX x, VecY y, VecZ z, VecOut out) noexcept -> void
 {
     assert(detail::extents_equal(x, y, z, out));
+
+    if constexpr (has_default_accessor<VecX, VecY, VecZ, VecOut> and has_layout_left_or_right<VecX, VecY, VecZ, VecOut>) {
+        auto x_ptr   = x.data_handle();
+        auto y_ptr   = y.data_handle();
+        auto z_ptr   = z.data_handle();
+        auto out_ptr = out.data_handle();
+        auto size    = x.extent(0);
+        if constexpr (requires { detail::multiply_add(x_ptr, y_ptr, z_ptr, out_ptr, size); }) {
+            detail::multiply_add(x_ptr, y_ptr, z_ptr, out_ptr, size);
+            return;
+        }
+    }
 
     for (decltype(x.extent(0)) i{0}; i < x.extent(0); ++i) {
         out[i] = x[i] * y[i] + z[i];
@@ -56,7 +74,7 @@ multiply_add(split_complex<VecX> x, split_complex<VecY> y, split_complex<VecZ> z
 {
     assert(detail::extents_equal(x.real, x.imag, y.real, y.imag, z.real, z.imag, out.real, out.imag));
 
-#if defined(NEO_PLATFORM_APPLE)
+#if defined(NEO_HAS_APPLE_VDSP)
     if constexpr (detail::all_same_value_type_v<VecX, VecY, VecZ, VecOut>) {
         if (detail::strides_equal_to<1>(x.real, x.imag, y.real, y.imag, z.real, z.imag, out.real, out.imag)) {
             using Float = typename VecX::value_type;
@@ -78,6 +96,25 @@ multiply_add(split_complex<VecX> x, split_complex<VecY> y, split_complex<VecZ> z
         }
     }
 #endif
+
+    if constexpr (has_default_accessor<VecX, VecY, VecZ, VecOut> and has_layout_left_or_right<VecX, VecY, VecZ, VecOut>) {
+        auto const size = static_cast<size_t>(x.real.extent(0));
+
+        auto const* xre = x.real.data_handle();
+        auto const* xim = x.imag.data_handle();
+        auto const* yre = y.real.data_handle();
+        auto const* yim = y.imag.data_handle();
+        auto const* zre = z.real.data_handle();
+        auto const* zim = z.imag.data_handle();
+
+        auto* ore = out.real.data_handle();
+        auto* oim = out.imag.data_handle();
+
+        if constexpr (requires { detail::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size); }) {
+            detail::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size);
+            return;
+        }
+    }
 
     for (auto i{0}; i < static_cast<int>(x.real.extent(0)); ++i) {
         auto const xre = x.real[i];

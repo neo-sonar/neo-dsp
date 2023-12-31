@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #include "algorithm.hpp"
 #include "complex.hpp"
 #include "fixed_point.hpp"
@@ -18,10 +20,11 @@
     return std::abs(a - b) < tolerance;
 }
 
-// NOLINTBEGIN(*-braces-around-statements,readability-misleading-indentation)
+// NOLINTBEGIN(-bugprone-branch-clone,-*-braces-around-statements)
 
 template<typename T>
-static constexpr auto tolerance = [] {
+constexpr auto get_tolerance()
+{
     if constexpr (std::same_as<T, neo::q7>) {
         return 0.01F;
     } else if constexpr (std::same_as<T, neo::q15>) {
@@ -31,9 +34,12 @@ static constexpr auto tolerance = [] {
     } else {
         return 0.03F;
     }
-}();
+}
 
-// NOLINTEND(*-braces-around-statements,readability-misleading-indentation)
+template<typename T>
+static constexpr auto tolerance = get_tolerance<T>();
+
+// NOLINTEND(-bugprone-branch-clone,-*-braces-around-statements)
 
 TEMPLATE_TEST_CASE(
     "neo/fixed_point: to_float",

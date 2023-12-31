@@ -1,7 +1,10 @@
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <neo/config.hpp>
 #include <neo/container/mdspan.hpp>
+#include <neo/type_traits/value_type_t.hpp>
 
 #include <optional>
 #include <utility>
@@ -9,9 +12,9 @@
 namespace neo {
 
 template<in_object InObj>
-[[nodiscard]] constexpr auto mean_unchecked(InObj x) noexcept -> typename InObj::value_type
+[[nodiscard]] constexpr auto mean_unchecked(InObj x) noexcept -> value_type_t<InObj>
 {
-    using Float = typename InObj::value_type;
+    using Float = value_type_t<InObj>;
 
     auto sum = Float(0);
 
@@ -31,7 +34,7 @@ template<in_object InObj>
 }
 
 template<in_object InObj>
-[[nodiscard]] constexpr auto mean(InObj x) noexcept -> std::optional<typename InObj::value_type>
+[[nodiscard]] constexpr auto mean(InObj x) noexcept -> std::optional<value_type_t<InObj>>
 {
     if (std::cmp_less(x.size(), 1)) {
         return std::nullopt;

@@ -13,12 +13,14 @@ concurrency:
 env:
   CMAKE_GENERATOR: Ninja
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  MACOSX_DEPLOYMENT_TARGET: "10.15"
 
 jobs:
   build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    env:
+      CMAKE_PREFIX_PATH: ${{ matrix.cmake_prefix_path }}
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_target }}
     strategy:
       fail-fast: false
       matrix:
@@ -27,50 +29,82 @@ jobs:
             os: ubuntu-20.04
             build_type: Release
             clang_version: 15
-            cmake_flags: "-D CMAKE_PREFIX_PATH=/opt/intel/oneapi/ipp/latest -D NEO_ENABLE_INTEL_IPP=ON"
+            cmake_flags: "-D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON"
+            cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
             cmake_targets: all
+            macos_target: ""
 
           - name: Linux-GCC
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -march=ivybridge"'
-            cmake_targets: neo_dsp_tests
+            cmake_prefix_path: ""
+            cmake_targets: neo_tests
+            macos_target: ""
 
-          - name: macOS
+          - name: macOS-13.3
             os: macos-13
-            build_type: Release
+            build_type: Debug
             clang_version: ""
             cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
+            cmake_prefix_path: ""
             cmake_targets: all
+            macos_target: "13.3"
+
+          - name: macOS-10.15
+            os: macos-12
+            build_type: Debug
+            clang_version: ""
+            cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
+            cmake_prefix_path: ""
+            cmake_targets: all
+            macos_target: "10.15"
 
           - name: Windows-Clang
             os: windows-latest
             build_type: Release
             clang_version: latest
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native"'
-            cmake_targets: neo_dsp_tests
+            cmake_prefix_path: ""
+            cmake_targets: neo_tests
+            macos_target: ""
+
+          - name: Windows-MSVC
+            os: windows-latest
+            build_type: Release
+            clang_version: ""
+            cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2 /EHsc"'
+            cmake_prefix_path: ""
+            cmake_targets: neo_tests
+            macos_target: ""
 
           - name: Coverage-Native
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native" -D CMAKE_PREFIX_PATH=/opt/intel/oneapi/ipp/latest -D NEO_ENABLE_INTEL_IPP=ON'
-            cmake_targets: neo_dsp_tests
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
+            cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
+            cmake_targets: neo_tests
+            macos_target: ""
 
           - name: Coverage-SSE41
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem" -D CMAKE_PREFIX_PATH=/opt/intel/oneapi/ipp/latest -D NEO_ENABLE_INTEL_IPP=ON'
-            cmake_targets: neo_dsp_tests
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
+            cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
+            cmake_targets: neo_tests
+            macos_target: ""
 
           - name: Coverage-SSE2
             os: ubuntu-22.04
             build_type: Debug
             clang_version: ""
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2" -D CMAKE_PREFIX_PATH=/opt/intel/oneapi/ipp/latest -D NEO_ENABLE_INTEL_IPP=ON'
-            cmake_targets: neo_dsp_tests
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
+            cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
+            cmake_targets: neo_tests
+            macos_target: ""
 
     steps:
       - name: Checkout code
@@ -111,30 +145,33 @@ jobs:
         with:
           version: ${{ matrix.clang_version }}
 
-      - name: Install IPP (Linux)
+      - name: Install IPP/MKL (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
           wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
           echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt update
-          sudo apt install intel-oneapi-ipp-devel
-          ls -la /opt/intel/oneapi/ipp/latest
-          ls -la /opt/intel/oneapi/ipp/latest/include
-          ls -la /opt/intel/oneapi/ipp/latest/include/ipp
+          sudo apt install intel-oneapi-mkl-devel intel-oneapi-ipp-devel
 
-      # - name: Install IPP (Windows)
+      # - name: Install IPP/MKL (Windows)
       #   if: runner.os == 'Windows'
       #   shell: bash
       #   run: |
       #     curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/irc_nas/19078/w_BaseKit_p_2023.0.0.25940_offline.exe
       #     ./oneapi.exe -s -x -f oneapi
-      #     ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
+      #     ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel:intel.oneapi.win.mkl.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
+
+      - name: Set up Visual Studio shell
+        if: ${{ matrix.name }} == 'Windows-MSVC'
+        uses: egor-tensin/vs-shell@v2
+        with:
+          arch: x64
 
       - name: Install ccache
         uses: hendrikmuhs/ccache-action@main
         with:
-          key: neo-dsp-build-${{ matrix.name }}
+          key: "neo-build-${{ matrix.name }}"
 
       - name: Print native arch flags (GCC)
         if: contains(matrix.name, 'Coverage')
@@ -143,7 +180,7 @@ jobs:
 
       - name: CMake configure
         shell: bash
-        run: cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_flags }}
+        run: cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=${{ matrix.build_type }} -D CMAKE_COMPILE_WARNING_AS_ERROR=OFF ${{ matrix.cmake_flags }}
 
       - name: CMake build
         shell: bash

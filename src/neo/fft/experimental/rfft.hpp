@@ -1,10 +1,12 @@
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <neo/container/mdspan.hpp>
-#include <neo/fft/bitrevorder.hpp>
-#include <neo/fft/conjugate_view.hpp>
 #include <neo/fft/direction.hpp>
-#include <neo/fft/fft.hpp>
+#include <neo/fft/fallback/bitrevorder.hpp>
+#include <neo/fft/fallback/conjugate_view.hpp>
+#include <neo/fft/fallback/fallback_fft_plan.hpp>
 
 #include <cmath>
 #include <complex>
@@ -96,14 +98,14 @@ struct c2c_kernel
 }  // namespace detail
 
 template<std::floating_point Float>
-struct fft_plan
+struct fallback_fft_plan
 {
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit fft_plan(size_type order)
+    explicit fallback_fft_plan(size_type order)
         : _order{order}
-        , _w{make_radix2_twiddles<std::complex<Float>>(size(), direction::forward)}
+        , _w{neo::fft::detail::make_radix2_twiddles<std::complex<Float>>(size(), direction::forward)}
     {}
 
     [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
@@ -199,7 +201,7 @@ struct rfft_plan
 
 private:
     size_type _order;
-    fft_plan<Float> _fft{_order - 1U};
+    fallback_fft_plan<Float> _fft{_order - 1U};
 };
 
 }  // namespace neo::fft::experimental

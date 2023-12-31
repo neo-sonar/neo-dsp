@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <neo/config.hpp>
 
-#include <neo/algorithm/detail/linalg_binary_op.hpp>
+#include <neo/algorithm/backend/linalg_binary_op.hpp>
 
 #include <functional>
 

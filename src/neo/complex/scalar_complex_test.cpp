@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #include "scalar_complex.hpp"
 
 #include <neo/fixed_point.hpp>
@@ -13,6 +15,7 @@ auto test_floating_point(TestType tolerance)
     using Float   = TestType;
     using Complex = neo::scalar_complex<Float>;
 
+    STATIC_REQUIRE(std::is_trivial_v<Complex>);
     STATIC_REQUIRE(neo::is_complex<neo::scalar_complex<Float>>);
     STATIC_REQUIRE(neo::complex<neo::scalar_complex<Float>>);
     STATIC_REQUIRE(std::same_as<neo::real_or_complex_value_t<neo::scalar_complex<Float>>, Float>);
@@ -55,20 +58,21 @@ auto test_floating_point(TestType tolerance)
 template<typename TestType>
 auto test_fixed_point()
 {
-    using FixedPoint = TestType;
-    using Complex    = neo::scalar_complex<FixedPoint>;
+    using FxPoint = TestType;
+    using Complex = neo::scalar_complex<FxPoint>;
 
-    STATIC_REQUIRE(neo::is_complex<neo::scalar_complex<FixedPoint>>);
-    STATIC_REQUIRE(neo::complex<neo::scalar_complex<FixedPoint>>);
-    STATIC_REQUIRE(std::same_as<neo::real_or_complex_value_t<neo::scalar_complex<FixedPoint>>, FixedPoint>);
-    STATIC_REQUIRE(std::same_as<typename Complex::value_type, FixedPoint>);
+    STATIC_REQUIRE(std::is_trivial_v<Complex>);
+    STATIC_REQUIRE(neo::is_complex<neo::scalar_complex<FxPoint>>);
+    STATIC_REQUIRE(neo::complex<neo::scalar_complex<FxPoint>>);
+    STATIC_REQUIRE(std::same_as<neo::real_or_complex_value_t<neo::scalar_complex<FxPoint>>, FxPoint>);
+    STATIC_REQUIRE(std::same_as<typename Complex::value_type, FxPoint>);
 
-    auto tc = Complex{FixedPoint(neo::underlying_value, 10)};
+    auto tc = Complex{FxPoint(neo::underlying_value, 10)};
     REQUIRE(tc.real().value() == 10);
     REQUIRE(tc.imag().value() == 0);
 
-    tc.real(FixedPoint(neo::underlying_value, 20));
-    tc.imag(FixedPoint(neo::underlying_value, 30));
+    tc.real(FxPoint(neo::underlying_value, 20));
+    tc.imag(FxPoint(neo::underlying_value, 30));
     REQUIRE(tc.real().value() == 20);
     REQUIRE(tc.imag().value() == 30);
 

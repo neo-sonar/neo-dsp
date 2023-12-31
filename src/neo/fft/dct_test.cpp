@@ -1,13 +1,15 @@
+// SPDX-License-Identifier: MIT
+
 #include "dct.hpp"
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-TEMPLATE_TEST_CASE("neo/fft: dct2_plan", "", float, double)
+TEMPLATE_PRODUCT_TEST_CASE("neo/fft: dct2_plan", "", (neo::fft::fallback_dct2_plan), (float, double))
 {
-    using Float = TestType;
-    using Plan  = neo::fft::dct2_plan<Float>;
+    using Plan  = TestType;
+    using Float = typename Plan::value_type;
 
     SECTION("size/order")
     {

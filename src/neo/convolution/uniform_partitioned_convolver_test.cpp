@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #include "dense_convolver.hpp"
 #include "sparse_convolver.hpp"
 
@@ -18,14 +20,14 @@ namespace {
 template<neo::complex Complex>
 using split_upola_convolver = neo::uniform_partitioned_convolver<
     neo::overlap_add<Complex>,
-    neo::dense_split_fdl<typename Complex::value_type>,
-    neo::dense_split_filter<typename Complex::value_type>>;
+    neo::dense_split_fdl<neo::value_type_t<Complex>>,
+    neo::dense_split_filter<neo::value_type_t<Complex>>>;
 
 template<neo::complex Complex>
 using split_upols_convolver = neo::uniform_partitioned_convolver<
     neo::overlap_save<Complex>,
-    neo::dense_split_fdl<typename Complex::value_type>,
-    neo::dense_split_filter<typename Complex::value_type>>;
+    neo::dense_split_fdl<neo::value_type_t<Complex>>,
+    neo::dense_split_filter<neo::value_type_t<Complex>>>;
 
 template<typename T>
 constexpr auto is_sparse_convolver = false;

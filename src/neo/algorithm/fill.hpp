@@ -1,6 +1,8 @@
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
-#include <neo/algorithm/detail/linalg_unary_op.hpp>
+#include <neo/algorithm/backend/linalg_unary_op.hpp>
 
 namespace neo {
 

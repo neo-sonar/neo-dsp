@@ -3,7 +3,7 @@ requires = ["scikit_build_core", "pybind11"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "neo_dsp"
+name = "neo"
 version = "0.1.0"
 description = "Audio DSP library"
 readme = "README.md"
@@ -23,8 +23,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/neo-sonar/neo-dsp"
-Issues = "https://github.com/neo-sonar/neo-dsp/issues"
+Homepage = "https://github.com/neo-sonar/neo"
+Issues = "https://github.com/neo-sonar/neo/issues"
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
@@ -32,8 +32,8 @@ test = ["pytest", "pytest-cov"]
 [tool.scikit-build]
 cmake.minimum-version = "3.23"
 cmake.source-dir = "."
-cmake.targets = ["_neo_dsp"]
-wheel.packages = ["python/src/neo_dsp"]
+cmake.targets = ["_neo"]
+wheel.packages = ["python/src/neo"]
 wheel.expand-macos-universal-tags = true
 
 

@@ -1,8 +1,14 @@
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <neo/algorithm/copy.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/fft.hpp>
+
+#if defined(NEO_HAS_INTEL_IPP)
+    #include <neo/fft/backend/ipp.hpp>
+#endif
 
 #include <cassert>
 #include <concepts>
@@ -13,12 +19,12 @@ namespace neo::fft {
 // https://dsp.stackexchange.com/questions/2807/fast-cosine-transform-via-fft/10606#10606
 // Type 2 DCT using N FFT (Makhoul)
 template<std::floating_point Float>
-struct dct2_plan
+struct fallback_dct2_plan
 {
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit dct2_plan(size_type order) : _fft{order} {}
+    explicit fallback_dct2_plan(size_type order) : _fft{order} {}
 
     [[nodiscard]] auto order() const noexcept -> size_type { return _fft.order(); }
 

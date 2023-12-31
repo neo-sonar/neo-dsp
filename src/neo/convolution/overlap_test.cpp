@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #include "overlap_add.hpp"
 #include "overlap_save.hpp"
 
@@ -61,7 +63,7 @@ static auto test_overlap() -> void
 
     for (std::size_t i{0}; i < output.size(); i += block_size) {
         auto block = stdex::submdspan(blocks, std::tuple{i, i + block_size});
-        overlap(block, [=](neo::inout_vector auto io) {
+        overlap(block, [&](neo::inout_vector auto io) {
             REQUIRE(io.extent(0) == overlap.transform_size() / 2UL + 1UL);
         });
     }

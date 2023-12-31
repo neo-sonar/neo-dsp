@@ -1,4 +1,10 @@
+// SPDX-License-Identifier: MIT
+
 #include "rfft.hpp"
+
+#if defined(NEO_HAS_INTEL_IPP)
+    #include <neo/fft/backend/ipp.hpp>
+#endif
 
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/scale.hpp>
@@ -17,39 +23,22 @@
 
 namespace {
 
-template<typename Float, typename Kernel, typename Complex>
+template<typename Float, typename Complex>
+    requires(std::same_as<Float, typename Complex::value_type>)
 struct tester
 {
-    static_assert(std::same_as<Float, typename Complex::value_type>);
-    using complex_plan_type = neo::fft::fft_plan<Complex, Kernel>;
-    using plan_type         = neo::fft::rfft_plan<Float, complex_plan_type>;
+    using plan_type = neo::fft::fallback_rfft_plan<Float, Complex>;
 };
 
-template<typename Float, typename Kernel>
-using std_complex = tester<Float, Kernel, std::complex<Float>>;
+template<typename Float>
+using std_complex = tester<Float, std::complex<Float>>;
 
-template<typename Float, typename Kernel>
-using neo_complex = tester<Float, Kernel, neo::scalar_complex<Float>>;
+template<typename Float>
+using neo_complex = tester<Float, neo::scalar_complex<Float>>;
 
-}  // namespace
-
-using namespace neo::fft;
-
-TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft: rfft_plan",
-    "",
-    (std_complex, neo_complex),
-
-    ((float, kernel::c2c_dit2_v1),
-     (float, kernel::c2c_dit2_v2),
-     (float, kernel::c2c_dit2_v3),
-
-     (double, kernel::c2c_dit2_v1),
-     (double, kernel::c2c_dit2_v2),
-     (double, kernel::c2c_dit2_v3))
-)
+template<typename Plan>
+auto test_rfft()
 {
-    using Plan    = typename TestType::plan_type;
     using Float   = typename Plan::real_type;
     using Complex = typename Plan::complex_type;
 
@@ -72,6 +61,22 @@ TEMPLATE_PRODUCT_TEST_CASE(
     REQUIRE(neo::allclose(stdex::mdspan{original.data(), stdex::extents{original.size()}}, real));
 }
 
+}  // namespace
+
+using namespace neo::fft;
+
+TEMPLATE_PRODUCT_TEST_CASE("neo/fft: fallback_rfft_plan", "", (std_complex, neo_complex), (float, double))
+{
+    test_rfft<typename TestType::plan_type>();
+}
+
+#if defined(NEO_HAS_INTEL_IPP)
+TEMPLATE_TEST_CASE("neo/fft: intel_ipp_rfft_plan", "", float, double)
+{
+    test_rfft<neo::fft::intel_ipp_rfft_plan<TestType>>();
+}
+#endif
+
 TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_deinterleave", "", (std::complex, neo::scalar_complex), (float, double))
 {
     using Complex = TestType;
@@ -88,7 +93,7 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_deinterleave", "", (std::complex, neo:
     REQUIRE(fft.size() == size);
     REQUIRE(fft.order() == order);
 
-    auto rfft = neo::fft::rfft_plan<Float, decltype(fft)>{order};
+    auto rfft = neo::fft::rfft_plan<Float, Complex>{order};
     REQUIRE(rfft.size() == size);
     REQUIRE(rfft.order() == order);
 
@@ -131,7 +136,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::fft", "", float, double)
         CAPTURE(order);
         CAPTURE(size);
 
-        auto plan = neo::fft::experimental::fft_plan<Float>{order};
+        auto plan = neo::fft::experimental::fallback_fft_plan<Float>{order};
         REQUIRE(plan.size() == size);
         REQUIRE(plan.order() == order);
 
@@ -168,7 +173,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::fft", "", float, double)
         auto const expected = std::array<Float, 8>{10, 0, -2, 2, -2, 0, -2, -2};
 
         auto x    = input;
-        auto plan = neo::fft::experimental::fft_plan<Float>{neo::ilog2(input.size() / 2)};
+        auto plan = neo::fft::experimental::fallback_fft_plan<Float>{neo::ilog2(input.size() / 2)};
         plan(stdex::mdspan{x.data(), stdex::extents{x.size()}}, neo::fft::direction::forward);
 
         for (auto i{0U}; i < expected.size(); ++i) {

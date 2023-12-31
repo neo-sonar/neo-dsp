@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #include "complex.hpp"
 
 #include <neo/complex/scalar_complex.hpp>

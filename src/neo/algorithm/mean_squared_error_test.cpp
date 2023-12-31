@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #include "mean_squared_error.hpp"
 
 #include <neo/algorithm/fill.hpp>
