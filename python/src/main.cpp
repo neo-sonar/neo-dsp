@@ -222,7 +222,7 @@ template<std::floating_point Float>
     return out;
 }
 
-PYBIND11_MODULE(_neo_dsp, m)
+PYBIND11_MODULE(_neo, m)
 {
     py::enum_<neo::convolution_method>(m, "convolution_method")
         .value("automatic", neo::convolution_method::automatic)

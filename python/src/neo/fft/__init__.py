@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .. import _neo_dsp
+from .. import _neo
 
 import numpy as np
 
@@ -13,25 +13,25 @@ __all__ = [
 ]
 
 NORM_MODE = {
-    "backward": _neo_dsp.norm.backward,
-    "ortho": _neo_dsp.norm.ortho,
-    "forward": _neo_dsp.norm.forward,
+    "backward": _neo.norm.backward,
+    "ortho": _neo.norm.ortho,
+    "forward": _neo.norm.forward,
 }
 
 
 def fft(x: np.ndarray, n=None, norm="backward") -> np.ndarray:
     """Compute the 1-D discrete Fourier Transform.
     """
-    return _neo_dsp.fft(x, n, NORM_MODE[norm])
+    return _neo.fft(x, n, NORM_MODE[norm])
 
 
 def ifft(x: np.ndarray, n=None, norm="backward") -> np.ndarray:
     """Compute the 1-D inverse discrete Fourier Transform.
     """
-    return _neo_dsp.ifft(x, n, NORM_MODE[norm])
+    return _neo.ifft(x, n, NORM_MODE[norm])
 
 
 def rfftfreq(n: int, d=1.0) -> np.ndarray:
     """Return the Discrete Fourier Transform sample frequencies.
     """
-    return _neo_dsp.rfftfreq(n, d)
+    return _neo.rfftfreq(n, d)

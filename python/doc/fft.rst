@@ -1,6 +1,6 @@
-neo_dsp.fft
+neo.fft
 ===================================
 
-.. automodule:: neo_dsp.fft
+.. automodule:: neo.fft
    :members:
    :undoc-members:

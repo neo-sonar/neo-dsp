@@ -66,7 +66,7 @@ auto main(int argc, char** argv) -> int
     auto const args = std::span<char const* const>{argv, size_t(argc)};
 
     if (args.size() != 4) {
-        fmt::println("Usage: ./neo_dsp_convolver path/to/signal.wav path/to/filter.wav path/to/output.wav");
+        fmt::println("Usage: ./neo_convolver path/to/signal.wav path/to/filter.wav path/to/output.wav");
         return EXIT_FAILURE;
     }
 

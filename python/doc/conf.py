@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'neo_dsp'
+project = 'neo'
 copyright = '2023, Tobias Hienzsch'
 author = 'Tobias Hienzsch'
 release = '0.1.0'

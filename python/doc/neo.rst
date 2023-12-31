@@ -1,6 +1,6 @@
-neo_dsp
+neo
 ===================================
 
-.. automodule:: neo_dsp
+.. automodule:: neo
    :members:
    :undoc-members:

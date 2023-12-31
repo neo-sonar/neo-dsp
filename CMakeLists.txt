@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.23...3.27)
-project(neo-dsp-dev VERSION 0.1.0)
+project(neo-dev VERSION 0.1.0)
 
 option(NEO_ENABLE_APPLE_VDSP "Link against Apple vDSP" ON)
 option(NEO_ENABLE_INTEL_IPP "Link against Intel IPP" OFF)
@@ -49,8 +49,8 @@ FetchContent_Declare(Catch2 GIT_REPOSITORY "https://github.com/catchorg/Catch2" 
 FetchContent_MakeAvailable(fmt Catch2)
 include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 
-add_executable(neo_dsp_tests)
-target_sources(neo_dsp_tests
+add_executable(neo_tests)
+target_sources(neo_tests
     PRIVATE
         "src/neo/algorithm/allclose_test.cpp"
         "src/neo/algorithm/allmatch_test.cpp"
@@ -102,11 +102,11 @@ target_sources(neo_dsp_tests
         "src/neo/unit/mel_test.cpp"
 )
 
-catch_discover_tests(neo_dsp_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+catch_discover_tests(neo_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-target_link_libraries(neo_dsp_tests
+target_link_libraries(neo_tests
     PRIVATE
-        neo::dsp
+        neosonar::neo
         Catch2::Catch2WithMain
         juce::juce_recommended_warning_flags
 )
