@@ -47,10 +47,10 @@ struct bitrevorder_plan
     }
 
 private:
-    [[nodiscard]] static auto make(std::size_t size) -> std::vector<std::size_t>
+    [[nodiscard]] static auto make(std::size_t size) -> std::vector<std::uint32_t>
     {
         auto const order = ilog2(size);
-        auto table       = std::vector<std::size_t>(size, 0);
+        auto table       = std::vector<std::uint32_t>(size, 0);
         for (auto i{0U}; i < size; ++i) {
             for (auto j{0U}; j < order; ++j) {
                 table[i] |= ((i >> j) & 1) << (order - 1 - j);
@@ -59,7 +59,7 @@ private:
         return table;
     }
 
-    std::vector<std::size_t> _table;
+    std::vector<std::uint32_t> _table;
 };
 
 template<inout_vector Vec>
