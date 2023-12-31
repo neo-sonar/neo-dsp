@@ -66,12 +66,12 @@ struct bluestein_plan
         }
 
         // convolution
-        _fft(a, direction::forward);
-        _fft(b, direction::forward);
+        neo::fft::fft(_plan, a);
+        neo::fft::fft(_plan, b);
         multiply(a, b, a);
 
-        _fft(a, direction::backward);
-        scale(Float(1) / Float(_fft.size()), a);
+        neo::fft::ifft(_plan, a);
+        scale(Float(1) / Float(_plan.size()), a);
 
         // post-processing
         multiply(stdex::submdspan(a, std::tuple{0, size()}), w, x);
@@ -81,13 +81,13 @@ private:
     using Float = typename Complex::value_type;
 
     size_type _size;
-    fft_plan<Complex> _fft{ilog2(bit_ceil(_size * size_type(2) + size_type(1)))};
+    fft_plan<Complex> _plan{ilog2(bit_ceil(_size * size_type(2) + size_type(1)))};
 
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _wf{size()};
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _wb{size()};
 
-    stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _a{_fft.size()};
-    stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _b{_fft.size()};
+    stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _a{_plan.size()};
+    stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _b{_plan.size()};
 };
 
 }  // namespace neo::fft
