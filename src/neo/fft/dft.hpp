@@ -8,6 +8,7 @@
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/direction.hpp>
 #include <neo/fft/fallback/fallback_dft_plan.hpp>
+#include <neo/type_traits/value_type_t.hpp>
 
 #if defined(NEO_HAS_INTEL_IPP)
     #include <neo/fft/backend/ipp.hpp>
@@ -27,11 +28,11 @@ using dft_plan = fallback_dft_plan<Complex>;
 #endif
 
 template<in_vector InVec, out_vector OutVec>
-    requires std::same_as<typename InVec::value_type, typename OutVec::value_type>
+    requires std::same_as<value_type_t<InVec>, value_type_t<OutVec>>
 auto dft(InVec in, OutVec out, direction dir = direction::forward) -> void
 {
-    using Complex = typename OutVec::value_type;
-    using Float   = typename Complex::value_type;
+    using Complex = value_type_t<OutVec>;
+    using Float   = value_type_t<Complex>;
 
     assert(neo::detail::extents_equal(in, out));
 

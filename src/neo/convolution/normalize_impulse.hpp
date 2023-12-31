@@ -8,7 +8,7 @@
 namespace neo {
 
 template<inout_object InOutObj>
-    requires std::floating_point<typename InOutObj::value_type>
+    requires std::floating_point<value_type_t<InOutObj>>
 auto normalize_impulse(InOutObj obj) noexcept -> void
 {
     using Index = typename InOutObj::index_type;

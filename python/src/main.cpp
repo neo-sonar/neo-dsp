@@ -5,6 +5,7 @@
 #include <neo/convolution.hpp>
 #include <neo/fft.hpp>
 #include <neo/math.hpp>
+#include <neo/type_traits.hpp>
 #include <neo/unit.hpp>
 
 #include <pybind11/complex.h>
@@ -128,7 +129,7 @@ auto as_mdspan(py::array_t<T, Flags> buf, auto func)
 template<neo::complex Complex, neo::fft::direction Dir>
 auto fft(py::array_t<Complex> array, std::optional<std::size_t> n, neo::fft::norm norm) -> py::array_t<Complex>
 {
-    using Float = typename Complex::value_type;
+    using Float = neo::value_type_t<Complex>;
 
     return as_mdspan<1>(array, [n, norm](neo::in_vector auto input) -> py::array_t<Complex> {
         auto const size  = n.value_or(input.extent(0));

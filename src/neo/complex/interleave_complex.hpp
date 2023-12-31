@@ -6,6 +6,7 @@
 
 #include <neo/complex/complex.hpp>
 #include <neo/simd/native.hpp>
+#include <neo/type_traits/value_type_t.hpp>
 
 namespace neo {
 
@@ -25,14 +26,14 @@ struct alignas(FloatBatch::alignment) interleave_complex
     NEO_ALWAYS_INLINE interleave_complex(register_type reg) noexcept : _batch{reg} {}
 
     template<neo::complex Complex>
-        requires std::same_as<typename Complex::value_type, real_scalar_type>
+        requires std::same_as<value_type_t<Complex>, real_scalar_type>
     [[nodiscard]] NEO_ALWAYS_INLINE static auto load_unaligned(Complex const* val) noexcept -> interleave_complex
     {
         return batch_type::load_unaligned(reinterpret_cast<real_scalar_type const*>(val));
     }
 
     template<neo::complex Complex>
-        requires std::same_as<typename Complex::value_type, real_scalar_type>
+        requires std::same_as<value_type_t<Complex>, real_scalar_type>
     NEO_ALWAYS_INLINE auto store_unaligned(Complex* output) const noexcept -> void
     {
         return _batch.store_unaligned(reinterpret_cast<real_scalar_type*>(output));

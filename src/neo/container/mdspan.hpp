@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <neo/type_traits/value_type_t.hpp>
+
 #if defined(__clang__)
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wextra-semi"
@@ -97,31 +99,31 @@ concept inout_object =                                                          
     && T::is_always_unique();                                                                 //
 
 template<typename Vec, typename Value>
-concept in_vector_of = in_vector<Vec> and std::same_as<Value, typename Vec::value_type>;
+concept in_vector_of = in_vector<Vec> and std::same_as<value_type_t<Vec>, Value>;
 
 template<typename Vec, typename Value>
-concept out_vector_of = out_vector<Vec> and std::same_as<Value, typename Vec::value_type>;
+concept out_vector_of = out_vector<Vec> and std::same_as<value_type_t<Vec>, Value>;
 
 template<typename Vec, typename Value>
-concept inout_vector_of = inout_vector<Vec> and std::same_as<Value, typename Vec::value_type>;
+concept inout_vector_of = inout_vector<Vec> and std::same_as<value_type_t<Vec>, Value>;
 
 template<typename Mat, typename Value>
-concept in_matrix_of = in_matrix<Mat> and std::same_as<Value, typename Mat::value_type>;
+concept in_matrix_of = in_matrix<Mat> and std::same_as<value_type_t<Mat>, Value>;
 
 template<typename Mat, typename Value>
-concept out_matrix_of = out_matrix<Mat> and std::same_as<Value, typename Mat::value_type>;
+concept out_matrix_of = out_matrix<Mat> and std::same_as<value_type_t<Mat>, Value>;
 
 template<typename Mat, typename Value>
-concept inout_matrix_of = inout_matrix<Mat> and std::same_as<Value, typename Mat::value_type>;
+concept inout_matrix_of = inout_matrix<Mat> and std::same_as<value_type_t<Mat>, Value>;
 
 template<typename Obj, typename Value>
-concept in_object_of = in_object<Obj> and std::same_as<Value, typename Obj::value_type>;
+concept in_object_of = in_object<Obj> and std::same_as<value_type_t<Obj>, Value>;
 
 template<typename Obj, typename Value>
-concept out_object_of = out_object<Obj> and std::same_as<Value, typename Obj::value_type>;
+concept out_object_of = out_object<Obj> and std::same_as<value_type_t<Obj>, Value>;
 
 template<typename Obj, typename Value>
-concept inout_object_of = inout_object<Obj> and std::same_as<Value, typename Obj::value_type>;
+concept inout_object_of = inout_object<Obj> and std::same_as<value_type_t<Obj>, Value>;
 
 namespace detail {
 
@@ -137,8 +139,7 @@ template<auto Stride>
 }
 
 template<in_object First, in_object... Objs>
-inline constexpr auto all_same_value_type_v
-    = (std::same_as<typename First::value_type, typename Objs::value_type> and ...);
+inline constexpr auto all_same_value_type_v = (std::same_as<value_type_t<First>, value_type_t<Objs>> and ...);
 
 }  // namespace detail
 

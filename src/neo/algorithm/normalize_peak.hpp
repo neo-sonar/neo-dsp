@@ -7,6 +7,7 @@
 #include <neo/algorithm/scale.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/math/float_equality.hpp>
+#include <neo/type_traits/value_type_t.hpp>
 
 #include <algorithm>
 #include <functional>
@@ -15,10 +16,10 @@
 namespace neo {
 
 template<in_object InObj>
-    requires std::floating_point<typename InObj::value_type>
+    requires std::floating_point<value_type_t<InObj>>
 [[nodiscard]] auto normalize_peak_factor(InObj obj) noexcept
 {
-    using Float = typename InObj::value_type;
+    using Float = value_type_t<InObj>;
 
     auto abs_max = Float(0);
     if constexpr (InObj::rank() == 1) {
