@@ -6,8 +6,8 @@
 
 #include <neo/algorithm/copy.hpp>
 #include <neo/container/mdspan.hpp>
-#include <neo/fft/backend/fallback.hpp>
 #include <neo/fft/bitrevorder.hpp>
+#include <neo/fft/fallback/fallback_fft_plan.hpp>
 #include <neo/math/bit_ceil.hpp>
 #include <neo/math/ilog2.hpp>
 

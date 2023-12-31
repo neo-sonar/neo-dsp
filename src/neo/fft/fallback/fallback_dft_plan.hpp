@@ -18,13 +18,14 @@
 
 namespace neo::fft {
 
+// Bluestein FFT
 template<complex Complex>
-struct bluestein_plan
+struct fallback_dft_plan
 {
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    explicit bluestein_plan(size_type size) : _size{size}
+    explicit fallback_dft_plan(size_type size) : _size{size}
     {
         auto const wf = _wf.to_mdspan();
         auto const wb = _wb.to_mdspan();

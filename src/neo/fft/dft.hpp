@@ -6,8 +6,8 @@
 
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
-#include <neo/fft/backend/bluestein.hpp>
 #include <neo/fft/direction.hpp>
+#include <neo/fft/fallback/fallback_dft_plan.hpp>
 
 #if defined(NEO_HAS_INTEL_IPP)
     #include <neo/fft/backend/ipp.hpp>
@@ -23,7 +23,7 @@ template<complex Complex>
 using dft_plan = intel_ipp_dft_plan<Complex>;
 #else
 template<complex Complex>
-using dft_plan = bluestein_plan<Complex>;
+using dft_plan = fallback_dft_plan<Complex>;
 #endif
 
 template<in_vector InVec, out_vector OutVec>

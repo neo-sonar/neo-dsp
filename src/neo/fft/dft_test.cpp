@@ -95,9 +95,9 @@ TEMPLATE_TEST_CASE("neo/fft: dft_plan", "", std::complex<float>, std::complex<do
     test_dft_plan<neo::fft::dft_plan<TestType>>();
 }
 
-TEMPLATE_TEST_CASE("neo/fft: bluestein_plan", "", std::complex<float>, std::complex<double>)
+TEMPLATE_TEST_CASE("neo/fft: fallback_dft_plan", "", std::complex<float>, std::complex<double>)
 {
-    test_dft_plan<neo::fft::bluestein_plan<TestType>>();
+    test_dft_plan<neo::fft::fallback_dft_plan<TestType>>();
 }
 
 #if defined(NEO_HAS_INTEL_IPP)
