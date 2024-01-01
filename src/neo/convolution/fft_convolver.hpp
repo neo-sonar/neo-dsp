@@ -38,33 +38,32 @@ struct fft_convolver
         assert(patch.extent(0) == patch_size());
         assert(output.extent(0) == output_size());
 
-        auto const tmp             = _tmp.to_mdspan();
         auto const signal_spectrum = _signal_spectrum.to_mdspan();
         auto const patch_spectrum  = _patch_spectrum.to_mdspan();
 
-        // Signal R2C
-        copy(signal, stdex::submdspan(tmp, std::tuple{0, signal.extent(0)}));
-        fill(stdex::submdspan(tmp, std::tuple{signal.extent(0), tmp.extent(0)}), Float(0));
-        rfft(_plan, tmp, signal_spectrum);
-
-        // Patch R2C
-        copy(patch, stdex::submdspan(tmp, std::tuple{0, patch.extent(0)}));
-        fill(stdex::submdspan(tmp, std::tuple{patch.extent(0), tmp.extent(0)}), Float(0));
-        rfft(_plan, tmp, patch_spectrum);
-
-        // Convolve
+        zero_pad_and_transform_forward(signal, signal_spectrum);
+        zero_pad_and_transform_forward(patch, patch_spectrum);
         multiply(signal_spectrum, patch_spectrum, signal_spectrum);
-
-        // C2R
-        fill(tmp, Float(0));
-        irfft(_plan, signal_spectrum, tmp);
-        scale(Float(1) / Float(_plan.size()), tmp);
-
-        // Copy to output
-        copy(stdex::submdspan(tmp, std::tuple{0, output_size()}), output);
+        transform_backward(signal_spectrum, output);
     }
 
 private:
+    auto zero_pad_and_transform_forward(in_vector auto in, out_vector auto out)
+    {
+        auto const tmp = _tmp.to_mdspan();
+        copy(in, stdex::submdspan(tmp, std::tuple{0, in.extent(0)}));
+        fill(stdex::submdspan(tmp, std::tuple{in.extent(0), tmp.extent(0)}), Float(0));
+        rfft(_plan, tmp, out);
+    }
+
+    auto transform_backward(in_vector auto in, out_vector auto out)
+    {
+        auto const tmp = _tmp.to_mdspan();
+        irfft(_plan, in, tmp);
+        scale(Float(1) / Float(_plan.size()), tmp);
+        copy(stdex::submdspan(tmp, std::tuple{0, output_size()}), out);
+    }
+
     std::size_t _signal_size;
     std::size_t _patch_size;
     std::size_t _output_size{signal_size() + patch_size() - 1};
