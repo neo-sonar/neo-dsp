@@ -1,4 +1,4 @@
-project(neo_benchmarks)
+project(neosonar-neo-benchmark)
 
 FetchContent_Declare(benchmark GIT_REPOSITORY "https://github.com/google/benchmark" GIT_TAG "v1.8.3" GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(benchmark)

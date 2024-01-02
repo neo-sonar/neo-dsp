@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.23...3.27)
-project(neo-dev VERSION 0.1.0)
+project(neosonar-neo-dev VERSION 0.1.0)
 
 option(NEO_ENABLE_APPLE_VDSP "Link against Apple vDSP" ON)
 option(NEO_ENABLE_INTEL_IPP "Link against Intel IPP" OFF)
@@ -30,6 +30,11 @@ include(FetchContent)
 
 FetchContent_Declare(mdspan GIT_REPOSITORY "https://github.com/kokkos/mdspan" GIT_TAG "stable" GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(mdspan)
+
+if(NEO_ENABLE_INTEL_MKL)
+    set(MKL_LINK "static")
+    set(MKL_THREADING "sequential")
+endif()
 
 if(NEO_ENABLE_XSIMD)
     FetchContent_Declare(xsimd GIT_REPOSITORY "https://github.com/xtensor-stack/xsimd" GIT_TAG "12.1.1" GIT_SHALLOW TRUE)
