@@ -14,11 +14,11 @@ auto conv(benchmark::State& state) -> void
     using Complex = typename Convolver::value_type;
     using Real    = typename Complex::value_type;
 
-    auto const block_size = static_cast<std::size_t>(state.range(0));
-    auto const len        = static_cast<std::size_t>(state.range(1));
+    auto const block_size   = static_cast<std::size_t>(state.range(0));
+    auto const impulse_size = static_cast<std::size_t>(state.range(1));
 
-    auto const impulse = [len] {
-        auto buf = neo::generate_noise_signal<Real>(len, std::random_device{}());
+    auto const impulse = [impulse_size] {
+        auto buf = neo::generate_noise_signal<Real>(impulse_size, std::random_device{}());
         neo::normalize_impulse(buf.to_mdspan());
         return buf;
     }();
@@ -32,9 +32,9 @@ auto conv(benchmark::State& state) -> void
     auto block       = noise;
 
     for (auto _ : state) {
-        state.PauseTiming();
+        // state.PauseTiming();
         neo::copy(noise.to_mdspan(), block.to_mdspan());
-        state.ResumeTiming();
+        // state.ResumeTiming();
 
         convolver(block.to_mdspan());
 
@@ -50,12 +50,18 @@ auto conv(benchmark::State& state) -> void
 }  // namespace
 
 BENCHMARK(conv<neo::upola_convolver<std::complex<float>>>)
-    ->ArgsProduct({benchmark::CreateRange(64, 8192, 2), benchmark::CreateRange(1 << 7, 1 << 18, 2)});
+    ->ArgsProduct({benchmark::CreateRange(1024, 1024, 2), benchmark::CreateRange(8192, 8192, 2)});
 BENCHMARK(conv<neo::upols_convolver<std::complex<float>>>)
-    ->ArgsProduct({benchmark::CreateRange(64, 8192, 2), benchmark::CreateRange(1 << 7, 1 << 18, 2)});
+    ->ArgsProduct({benchmark::CreateRange(1024, 1024, 2), benchmark::CreateRange(8192, 8192, 2)});
+
+BENCHMARK(conv<neo::split_upola_convolver<std::complex<float>>>)
+    ->ArgsProduct({benchmark::CreateRange(1024, 1024, 2), benchmark::CreateRange(8192, 8192, 2)});
+BENCHMARK(conv<neo::split_upols_convolver<std::complex<float>>>)
+    ->ArgsProduct({benchmark::CreateRange(1024, 1024, 2), benchmark::CreateRange(8192, 8192, 2)});
+
 // BENCHMARK(conv<neo::upola_convolver<std::complex<double>>>)
-//     ->ArgsProduct({benchmark::CreateRange(64, 8192, 2), benchmark::CreateRange(1 << 7, 1 << 18, 2)});
+//     ->ArgsProduct({benchmark::CreateRange(8192, 8192, 2), benchmark::CreateRange(1<<7, 1<<20, 2)});
 // BENCHMARK(conv<neo::upols_convolver<std::complex<double>>>)
-//     ->ArgsProduct({benchmark::CreateRange(64, 8192, 2), benchmark::CreateRange(1 << 7, 1 << 18, 2)});
+//     ->ArgsProduct({benchmark::CreateRange(8192, 8192, 2), benchmark::CreateRange(1<<7, 1<<20, 2)});
 
 BENCHMARK_MAIN();

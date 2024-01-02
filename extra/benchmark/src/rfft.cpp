@@ -42,14 +42,14 @@ auto r2c(benchmark::State& state) -> void
 }  // namespace
 
 #if defined(NEO_HAS_INTEL_IPP)
-BENCHMARK(r2c<neo::fft::intel_ipp_rfft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 13);
-BENCHMARK(r2c<neo::fft::intel_ipp_rfft_plan<double>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 13);
+BENCHMARK(r2c<neo::fft::intel_ipp_rfft_plan<float>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(r2c<neo::fft::intel_ipp_rfft_plan<double>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
 #endif
 
-BENCHMARK(r2c<neo::fft::fallback_rfft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 13);
-BENCHMARK(r2c<neo::fft::fallback_rfft_plan<double>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 13);
+BENCHMARK(r2c<neo::fft::fallback_rfft_plan<float>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(r2c<neo::fft::fallback_rfft_plan<double>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
 
-BENCHMARK(r2c<neo::fft::rfft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 13);
-BENCHMARK(r2c<neo::fft::rfft_plan<double>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 13);
+BENCHMARK(r2c<neo::fft::rfft_plan<float>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
+BENCHMARK(r2c<neo::fft::rfft_plan<double>>)->RangeMultiplier(2)->Range(1 << 8, 1 << 15);
 
 BENCHMARK_MAIN();
