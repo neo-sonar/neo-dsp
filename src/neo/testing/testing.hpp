@@ -38,13 +38,13 @@ template<typename FloatOrComplex, typename URNG = std::mt19937>
 {
     auto rng = URNG{seed};
 
-    if constexpr (std::same_as<FloatOrComplex, q7> or std::same_as<FloatOrComplex, q15>) {
-        using FixedPoint = FloatOrComplex;
+    if constexpr (is_fixed_point<FloatOrComplex>) {
+        using FxPoint = FloatOrComplex;
 
         auto dist = std::uniform_real_distribution<float>{-1.0F, 1.0F};
-        auto buf  = stdex::mdarray<FixedPoint, stdex::dextents<size_t, 1>>{length};
+        auto buf  = stdex::mdarray<FxPoint, stdex::dextents<size_t, 1>>{length};
         for (auto i{0U}; i < buf.extent(0); ++i) {
-            buf(i) = FixedPoint{dist(rng)};
+            buf(i) = FxPoint{dist(rng)};
         }
 
         return buf;
