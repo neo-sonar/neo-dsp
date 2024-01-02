@@ -11,7 +11,7 @@
 #include <neo/math/ilog2.hpp>
 #include <neo/type_traits/value_type_t.hpp>
 
-#if defined(NEO_HAS_APPLE_VDSP)
+#if defined(NEO_HAS_APPLE_ACCELERATE)
     #include <neo/fft/backend/vdsp.hpp>
 #endif
 
@@ -25,7 +25,7 @@
 
 namespace neo::fft {
 
-#if defined(NEO_HAS_APPLE_VDSP)
+#if defined(NEO_HAS_APPLE_ACCELERATE)
 template<complex Complex>
 using fft_plan = apple_vdsp_fft_plan<Complex>;
 #elif defined(NEO_HAS_INTEL_IPP)

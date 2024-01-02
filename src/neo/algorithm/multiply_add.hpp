@@ -8,7 +8,7 @@
 #include <neo/container/csr_matrix.hpp>
 #include <neo/container/mdspan.hpp>
 
-#if defined(NEO_HAS_APPLE_VDSP)
+#if defined(NEO_HAS_APPLE_ACCELERATE)
     #include <Accelerate/Accelerate.h>
 #endif
 
@@ -74,7 +74,7 @@ multiply_add(split_complex<VecX> x, split_complex<VecY> y, split_complex<VecZ> z
 {
     assert(detail::extents_equal(x.real, x.imag, y.real, y.imag, z.real, z.imag, out.real, out.imag));
 
-#if defined(NEO_HAS_APPLE_VDSP)
+#if defined(NEO_HAS_APPLE_ACCELERATE)
     if constexpr (detail::all_same_value_type_v<VecX, VecY, VecZ, VecOut>) {
         if (detail::strides_equal_to<1>(x.real, x.imag, y.real, y.imag, z.real, z.imag, out.real, out.imag)) {
             using Float = typename VecX::value_type;

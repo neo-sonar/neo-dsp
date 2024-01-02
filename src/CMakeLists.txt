@@ -11,10 +11,10 @@ target_include_directories(neosonar-neo INTERFACE
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-if(NEO_ENABLE_APPLE_VDSP AND APPLE)
+if(NEO_ENABLE_APPLE_ACCELERATE AND APPLE)
     find_library(ACCELERATE_LIBRARY Accelerate)
     target_link_libraries(neosonar-neo INTERFACE ${ACCELERATE_LIBRARY})
-    target_compile_definitions(neosonar-neo INTERFACE NEO_HAS_APPLE_VDSP=1)
+    target_compile_definitions(neosonar-neo INTERFACE NEO_HAS_APPLE_ACCELERATE=1)
     target_compile_definitions(neosonar-neo INTERFACE ACCELERATE_NEW_LAPACK=1 ACCELERATE_LAPACK_ILP64=1)
 endif()
 

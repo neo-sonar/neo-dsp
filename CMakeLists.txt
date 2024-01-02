@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.23...3.27)
 project(neosonar-neo-dev VERSION 0.1.0)
 
-option(NEO_ENABLE_APPLE_VDSP "Link against Apple vDSP" ON)
+option(NEO_ENABLE_APPLE_ACCELERATE "Link against Apple Accelerate" ON)
 option(NEO_ENABLE_INTEL_IPP "Link against Intel IPP" OFF)
 option(NEO_ENABLE_INTEL_MKL "Link against Intel MKL" OFF)
 option(NEO_ENABLE_XSIMD "Link against xsimd" ON)

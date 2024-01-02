@@ -6,7 +6,7 @@
 
 #include <neo/container/mdspan.hpp>
 
-#if defined(NEO_HAS_APPLE_VDSP)
+#if defined(NEO_HAS_APPLE_ACCELERATE)
     #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 130300
         #include <Accelerate/Accelerate.h>
         #define NEO_HAS_CBLAS 1
@@ -22,7 +22,7 @@
 #if defined(NEO_HAS_CBLAS)
 namespace neo::cblas {
 
-    #if defined(NEO_HAS_APPLE_VDSP)
+    #if defined(NEO_HAS_APPLE_ACCELERATE)
 using size_type = long;
     #elif defined(NEO_HAS_INTEL_MKL)
 using size_type = MKL_INT;
