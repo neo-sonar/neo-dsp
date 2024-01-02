@@ -35,13 +35,27 @@ struct overlap_save
     auto operator()(inout_vector auto block, auto callback) -> void;
 
 private:
+    auto slide_window_left(auto window) -> void
+    {
+        auto const step      = static_cast<int>(block_size());
+        auto const num_steps = static_cast<int>(window.extent(0)) / step;
+        for (auto i{0}; i < num_steps - 1; ++i) {
+            auto const dest_idx = i * step;
+            auto const src_idx  = dest_idx + step;
+
+            auto const src_block  = stdex::submdspan(window, std::tuple{src_idx, src_idx + step});
+            auto const dest_block = stdex::submdspan(window, std::tuple{dest_idx, src_idx});
+            copy(src_block, dest_block);
+        }
+    }
+
     size_type _block_size;
     size_type _filter_size;
-    fft::rfft_plan<real_type> _rfft{fft::next_order(_block_size + _filter_size - 1UL)};
+    fft::rfft_plan<real_type> _plan{fft::next_order(_block_size + _filter_size - 1UL)};
 
-    stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _window{_rfft.size()};
-    stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
-    stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
+    stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _window{_plan.size()};
+    stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _real_buffer{_plan.size()};
+    stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_plan.size()};
 };
 
 template<complex Complex>
@@ -65,25 +79,13 @@ auto overlap_save<Complex>::filter_size() const noexcept -> size_type
 template<complex Complex>
 auto overlap_save<Complex>::transform_size() const noexcept -> size_type
 {
-    return _rfft.size();
+    return _plan.size();
 }
 
 template<complex Complex>
 auto overlap_save<Complex>::operator()(inout_vector auto block, auto callback) -> void
 {
     assert(block.extent(0) == block_size());
-
-    auto slide_window_left = [step = static_cast<int>(block_size())](auto window) {
-        auto const num_steps = static_cast<int>(window.extent(0)) / step;
-        for (auto i{0}; i < num_steps - 1; ++i) {
-            auto const dest_idx = i * step;
-            auto const src_idx  = dest_idx + step;
-
-            auto const src_block  = stdex::submdspan(window, std::tuple{src_idx, src_idx + step});
-            auto const dest_block = stdex::submdspan(window, std::tuple{dest_idx, src_idx});
-            copy(src_block, dest_block);
-        }
-    };
 
     // Time domain input buffer
     auto const window       = _window.to_mdspan();
@@ -95,16 +97,16 @@ auto overlap_save<Complex>::operator()(inout_vector auto block, auto callback) -
 
     // 2B-point R2C-FFT
     auto const complex_buf = _complex_buffer.to_mdspan();
-    _rfft(window, complex_buf);
+    rfft(_plan, window, complex_buf);
 
     // Apply processing
-    auto const coeffs = stdex::submdspan(complex_buf, std::tuple{0, _rfft.size() / 2 + 1});
+    auto const coeffs = stdex::submdspan(complex_buf, std::tuple{0, _plan.size() / 2 + 1});
     callback(coeffs);
 
     // 2B-point C2R-IFFT
     auto const real_buf = _real_buffer.to_mdspan();
-    _rfft(complex_buf, real_buf);
-    scale(1.0F / static_cast<real_type>(_rfft.size()), real_buf);
+    irfft(_plan, complex_buf, real_buf);
+    scale(1.0F / static_cast<real_type>(_plan.size()), real_buf);
 
     // Copy block_size samples to output
     copy(stdex::submdspan(real_buf, keep_extents), block);
