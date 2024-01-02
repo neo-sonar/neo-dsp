@@ -1,10 +1,11 @@
 project(neosonar-neo-benchmark)
 
+set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable Google benchmark tests")
 FetchContent_Declare(benchmark GIT_REPOSITORY "https://github.com/google/benchmark" GIT_TAG "v1.8.3" GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(benchmark)
 
 add_executable(fixed_point_benchmark src/fixed_point.cpp)
-target_link_libraries(fixed_point_benchmark PRIVATE neosonar::neo fmt::fmt-header-only)
+target_link_libraries(fixed_point_benchmark PRIVATE neosonar::neo)
 
 add_executable(convolution_benchmark src/convolution.cpp)
 target_link_libraries(convolution_benchmark PRIVATE neosonar::neo benchmark::benchmark)

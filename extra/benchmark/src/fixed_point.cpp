@@ -9,14 +9,12 @@
 #include <neo/testing/benchmark.hpp>
 #include <neo/testing/testing.hpp>
 
-#include <fmt/format.h>
-#include <fmt/os.h>
-
 #include <algorithm>
 #include <cfloat>
 #include <chrono>
 #include <cmath>
 #include <cstddef>
+#include <cstdio>
 #include <functional>
 #include <numeric>
 #include <random>
@@ -53,13 +51,7 @@ auto timeit(std::string_view name, size_t size_of_t, size_t n, Func func)
     auto const avg  = std::reduce(runs.begin(), runs.end(), 0.0) / double(runs.size());
     auto const items_per_sec      = static_cast<int>(std::lround(double(size) / avg));
     auto const mega_bytes_per_sec = std::round(double(size * size_of_t) / avg) / 1000.0;
-    fmt::println(
-        "{:<32} avg: {:.1f}us - GB/sec: {:.2f} - N/usec: {}",
-        name.data(),
-        avg,
-        mega_bytes_per_sec,
-        items_per_sec
-    );
+    std::printf("%-32s avg: %.2fus - GB/sec: %.2f - N/usec: %d\n", name.data(), avg, mega_bytes_per_sec, items_per_sec);
 }
 
 template<typename FloatOrComplex, std::size_t Size>

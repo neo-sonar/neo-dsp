@@ -48,73 +48,7 @@ if(DEFINED SKBUILD)
     return()
 endif()
 
-set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable Google benchmark tests")
-FetchContent_Declare(fmt GIT_REPOSITORY "https://github.com/fmtlib/fmt" GIT_TAG "10.1.1" GIT_SHALLOW TRUE)
-FetchContent_Declare(Catch2 GIT_REPOSITORY "https://github.com/catchorg/Catch2" GIT_TAG "devel" GIT_SHALLOW TRUE)
-FetchContent_MakeAvailable(fmt Catch2)
-include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
-
-add_executable(neo_tests)
-target_sources(neo_tests
-    PRIVATE
-        "src/neo/algorithm/allclose_test.cpp"
-        "src/neo/algorithm/allmatch_test.cpp"
-        "src/neo/algorithm/copy_test.cpp"
-        "src/neo/algorithm/mean_squared_error_test.cpp"
-        "src/neo/algorithm/mean_test.cpp"
-        "src/neo/algorithm/multiply_add_test.cpp"
-        "src/neo/algorithm/normalize_energy_test.cpp"
-        "src/neo/algorithm/standard_deviation_test.cpp"
-        "src/neo/algorithm/variance_test.cpp"
-
-        "src/neo/complex/complex_test.cpp"
-        "src/neo/complex/interleave_complex_test.cpp"
-        "src/neo/complex/parallel_complex_test.cpp"
-        "src/neo/complex/scalar_complex_test.cpp"
-        "src/neo/complex/split_complex_test.cpp"
-
-        "src/neo/container/compressed_accessor_test.cpp"
-        "src/neo/container/csr_matrix_test.cpp"
-
-        "src/neo/convolution/compressed_fdl_test.cpp"
-        "src/neo/convolution/dense_fdl_test.cpp"
-        "src/neo/convolution/direct_convolve_test.cpp"
-        "src/neo/convolution/fdl_index_test.cpp"
-        "src/neo/convolution/fft_convolver_test.cpp"
-        "src/neo/convolution/normalize_impulse_test.cpp"
-        "src/neo/convolution/overlap_test.cpp"
-        "src/neo/convolution/uniform_partition_test.cpp"
-        "src/neo/convolution/uniform_partitioned_convolver_test.cpp"
-
-        "src/neo/fft/dct_test.cpp"
-        "src/neo/fft/dft_test.cpp"
-        "src/neo/fft/rfftfreq_test.cpp"
-        "src/neo/fft/fft_test.cpp"
-        "src/neo/fft/rfft_test.cpp"
-        "src/neo/fft/stft_test.cpp"
-
-        "src/neo/fixed_point/fixed_point_test.cpp"
-
-        "src/neo/math/a_weighting_test.cpp"
-        "src/neo/math/bit_ceil_test.cpp"
-        "src/neo/math/ilog2_test.cpp"
-        "src/neo/math/ipow_test.cpp"
-        "src/neo/math/windowing_test.cpp"
-
-        "src/neo/simd_test.cpp"
-
-        "src/neo/unit/decibel_test.cpp"
-        "src/neo/unit/mel_test.cpp"
-)
-
-catch_discover_tests(neo_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-target_link_libraries(neo_tests
-    PRIVATE
-        neosonar::neo
-        Catch2::Catch2WithMain
-        juce::juce_recommended_warning_flags
-)
+add_subdirectory(test)
 
 add_subdirectory(extra/benchmark)
 add_subdirectory(extra/cli)
