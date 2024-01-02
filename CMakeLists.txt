@@ -116,6 +116,6 @@ target_link_libraries(neo_tests
         juce::juce_recommended_warning_flags
 )
 
-add_subdirectory(tool/benchmark)
-add_subdirectory(tool/cli)
-add_subdirectory(tool/plugin)
+add_subdirectory(extra/benchmark)
+add_subdirectory(extra/cli)
+add_subdirectory(extra/plugin)
