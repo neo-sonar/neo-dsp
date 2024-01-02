@@ -44,7 +44,7 @@ endif()
 add_subdirectory(src)
 
 if(DEFINED SKBUILD)
-    add_subdirectory(python)
+    add_subdirectory(extra/python)
     return()
 endif()
 

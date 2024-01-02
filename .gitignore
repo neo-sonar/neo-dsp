@@ -94,4 +94,4 @@ env.bak/
 venv.bak/
 
 # Sphinx
-/python/doc/_build
+/extra/python/doc/_build

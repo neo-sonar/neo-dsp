@@ -33,7 +33,7 @@ test = ["pytest", "pytest-cov"]
 cmake.minimum-version = "3.23"
 cmake.source-dir = "."
 cmake.targets = ["_neo"]
-wheel.packages = ["python/src/neo"]
+wheel.packages = ["extra/python/src/neo"]
 wheel.expand-macos-universal-tags = true
 
 
@@ -42,4 +42,4 @@ minversion = "7.0"
 addopts = ["-ra", "--strict-markers", "--strict-config"]
 xfail_strict = true
 filterwarnings = ["error"]
-testpaths = ["python/test/*"]
+testpaths = ["extra/python/test/*"]
