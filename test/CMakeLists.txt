@@ -5,6 +5,9 @@ FetchContent_MakeAvailable(Catch2)
 include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 
 add_executable(neosonar-neo-tests)
+target_link_libraries(neosonar-neo-tests PRIVATE neosonar::neo Catch2::Catch2WithMain juce::juce_recommended_warning_flags)
+catch_discover_tests(neosonar-neo-tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 target_sources(neosonar-neo-tests
     PRIVATE
         "${CMAKE_SOURCE_DIR}/src/neo/algorithm/allclose_test.cpp"
@@ -55,13 +58,4 @@ target_sources(neosonar-neo-tests
 
         "${CMAKE_SOURCE_DIR}/src/neo/unit/decibel_test.cpp"
         "${CMAKE_SOURCE_DIR}/src/neo/unit/mel_test.cpp"
-)
-
-catch_discover_tests(neosonar-neo-tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-target_link_libraries(neosonar-neo-tests
-    PRIVATE
-        neosonar::neo
-        Catch2::Catch2WithMain
-        juce::juce_recommended_warning_flags
 )
