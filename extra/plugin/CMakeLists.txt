@@ -1,4 +1,4 @@
-project(neosonar-neo-plugin-perceptual-convolution VERSION ${CMAKE_PROJECT_VERSION})
+project(neosonar-neo-plugin VERSION ${CMAKE_PROJECT_VERSION})
 
 FetchContent_Declare(JUCE GIT_REPOSITORY "https://github.com/juce-framework/JUCE" GIT_TAG "develop" GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(JUCE)
@@ -24,31 +24,31 @@ juce_add_plugin(PerceptualConvolution
 )
 
 set(PerceptualConvolution_Sources
-    PerceptualConvolution.cpp
-    PerceptualConvolution.hpp
-    PluginEditor.hpp
-    PluginEditor.cpp
-    PluginParameter.hpp
-    PluginParameter.cpp
-    PluginProcessor.hpp
-    PluginProcessor.cpp
+    "src/PerceptualConvolution.cpp"
+    "src/PerceptualConvolution.hpp"
+    "src/PluginEditor.hpp"
+    "src/PluginEditor.cpp"
+    "src/PluginParameter.hpp"
+    "src/PluginParameter.cpp"
+    "src/PluginProcessor.hpp"
+    "src/PluginProcessor.cpp"
 
-    core/StringArray.hpp
+    "src/core/StringArray.hpp"
 
-    dsp/AudioBuffer.cpp
-    dsp/AudioBuffer.hpp
-    dsp/AudioFile.cpp
-    dsp/AudioFile.hpp
-    dsp/ConstantOverlapAdd.hpp
-    dsp/DenseConvolution.cpp
-    dsp/DenseConvolution.hpp
-    dsp/Spectrum.cpp
-    dsp/Spectrum.hpp
+    "src/dsp/AudioBuffer.cpp"
+    "src/dsp/AudioBuffer.hpp"
+    "src/dsp/AudioFile.cpp"
+    "src/dsp/AudioFile.hpp"
+    "src/dsp/ConstantOverlapAdd.hpp"
+    "src/dsp/DenseConvolution.cpp"
+    "src/dsp/DenseConvolution.hpp"
+    "src/dsp/Spectrum.cpp"
+    "src/dsp/Spectrum.hpp"
 
-    ui/BenchmarkTab.cpp
-    ui/BenchmarkTab.hpp
-    ui/ParameterTab.cpp
-    ui/ParameterTab.hpp
+    "src/ui/BenchmarkTab.cpp"
+    "src/ui/BenchmarkTab.hpp"
+    "src/ui/ParameterTab.cpp"
+    "src/ui/ParameterTab.hpp"
 )
 
 target_sources(PerceptualConvolution PRIVATE ${PerceptualConvolution_Sources})
@@ -73,7 +73,7 @@ endif()
 
 target_include_directories(PerceptualConvolution
     PUBLIC
-        ${PROJECT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/src
 )
 
 target_link_libraries(PerceptualConvolution
