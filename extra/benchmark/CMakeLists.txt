@@ -11,6 +11,7 @@ endfunction(neo_add_benchmark)
 
 neo_add_benchmark(convolution)
 neo_add_benchmark(fft)
+neo_add_benchmark(memcpy)
 neo_add_benchmark(multiply)
 neo_add_benchmark(multiply_add)
 neo_add_benchmark(rfft)
