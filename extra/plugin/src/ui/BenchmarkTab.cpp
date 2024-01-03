@@ -5,6 +5,7 @@
 #include "core/StringArray.hpp"
 #include "dsp/AudioBuffer.hpp"
 #include "dsp/AudioFile.hpp"
+#include "dsp/Convolution.hpp"
 #include "dsp/DenseConvolution.hpp"
 #include "dsp/Spectrum.hpp"
 
@@ -21,15 +22,16 @@ namespace neo {
 
 namespace {
 
-struct JuceConvolver
+template<typename Convolver>
+struct ProcessChainConvolver
 {
-    explicit JuceConvolver(juce::File impulse) : _impulse{std::move(impulse)} {}
+    explicit ProcessChainConvolver(juce::File impulse) : _impulse{std::move(impulse)} {}
 
     auto prepare(juce::dsp::ProcessSpec const& spec) -> void
     {
-        auto const trim      = juce::dsp::Convolution::Trim::no;
-        auto const stereo    = juce::dsp::Convolution::Stereo::yes;
-        auto const normalize = juce::dsp::Convolution::Normalise::no;
+        auto const trim      = Convolver::Trim::no;
+        auto const stereo    = Convolver::Stereo::yes;
+        auto const normalize = Convolver::Normalise::no;
 
         _convolver.loadImpulseResponse(_impulse, stereo, trim, 0, normalize);
         _convolver.prepare(spec);
@@ -45,8 +47,7 @@ struct JuceConvolver
 
 private:
     juce::File _impulse;
-    juce::dsp::ConvolutionMessageQueue _queue;
-    juce::dsp::Convolution _convolver{juce::dsp::Convolution::Latency{0}, _queue};
+    Convolver _convolver{};
 };
 
 struct FrequencySpectrumWeighting
@@ -113,13 +114,15 @@ BenchmarkTab::BenchmarkTab(PluginProcessor& processor, juce::AudioFormatManager&
     auto const stftSizeNames = juce::StringArray{"512", "1024", "2048"};
 
     auto const engines = juce::Array<juce::var>{
-        juce::var{"juce::Convolution"},
+        juce::var{"juce::dsp::Convolution"},
+        juce::var{"neo::Convolution"},
         juce::var{"DenseConvolution"},
         juce::var{"upola_convolver"},
         juce::var{"upols_convolver"},
         juce::var{"split_upola_convolver"},
         juce::var{"split_upols_convolver"},
         juce::var{"sparse_upola_convolver"},
+        juce::var{"convolver_tests"},
         juce::var{"sparse_quality_tests"},
     };
     auto const engineNames = toStringArray(engines);
@@ -164,6 +167,10 @@ BenchmarkTab::~BenchmarkTab()
 
 auto BenchmarkTab::setImpulseResponseFile(juce::File const& file) -> void
 {
+    if (not file.existsAsFile()) {
+        return;
+    }
+
     _impulse     = loadAndResample(_formatManager, file, _spec.sampleRate);
     _impulseFile = file;
 
@@ -230,6 +237,13 @@ auto BenchmarkTab::selectSignalFile() -> void
 
 auto BenchmarkTab::loadSignalFile(juce::File const& file) -> void
 {
+    if (_spec.sampleRate == 0.0) {
+        return;
+    }
+    if (not file.existsAsFile()) {
+        return;
+    }
+
     _signalFile = file;
     _signal     = loadAndResample(_formatManager, _signalFile, _spec.sampleRate);
 }
@@ -253,8 +267,11 @@ auto BenchmarkTab::runBenchmarks() -> void
 
     using Complex = std::complex<float>;
 
-    if (hasEngineEnabled("juce::Convolution")) {
+    if (hasEngineEnabled("juce::dsp::Convolution")) {
         _threadPool.addJob([this] { runJuceConvolutionBenchmark(); });
+    }
+    if (hasEngineEnabled("neo::Convolution")) {
+        _threadPool.addJob([this] { runNeoConvolutionBenchmark(); });
     }
     if (hasEngineEnabled("DenseConvolution")) {
         _threadPool.addJob([this] { runDenseConvolutionBenchmark(); });
@@ -273,6 +290,9 @@ auto BenchmarkTab::runBenchmarks() -> void
     }
     if (hasEngineEnabled("sparse_upola_convolver")) {
         _threadPool.addJob([this] { runSparseConvolverBenchmark(); });
+    }
+    if (hasEngineEnabled("convolver_tests")) {
+        _threadPool.addJob([this] { runConvolverTests(); });
     }
     if (hasEngineEnabled("sparse_quality_tests")) {
         _threadPool.addJob([this] { runSparseQualityTests(); });
@@ -325,7 +345,7 @@ auto BenchmarkTab::runWeightingTests() -> void
 
 auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
 {
-    auto proc = JuceConvolver{_impulseFile};
+    auto proc = ProcessChainConvolver<juce::dsp::Convolution>{_impulseFile};
     auto out  = juce::AudioBuffer<float>{_signal.buffer.getNumChannels(), _signal.buffer.getNumSamples()};
     auto file = getBenchmarkResultsDirectory().getNonexistentChildFile("jconv", ".wav");
 
@@ -339,7 +359,29 @@ auto BenchmarkTab::runJuceConvolutionBenchmark() -> void
     auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     juce::MessageManager::callAsync([this, elapsed] {
         _fileInfo.moveCaretToEnd(false);
-        _fileInfo.insertTextAtCaret("JCONV-DENSE: " + juce::String{elapsed.count()} + "\n");
+        _fileInfo.insertTextAtCaret("JUCE-CONVOLUTION: " + juce::String{elapsed.count()} + "\n");
+    });
+
+    writeToWavFile(file, output, _spec.sampleRate, 32);
+}
+
+auto BenchmarkTab::runNeoConvolutionBenchmark() -> void
+{
+    auto proc = ProcessChainConvolver<neo::Convolution>{_impulseFile};
+    auto out  = juce::AudioBuffer<float>{_signal.buffer.getNumChannels(), _signal.buffer.getNumSamples()};
+    auto file = getBenchmarkResultsDirectory().getNonexistentChildFile("jconv", ".wav");
+
+    auto const start = std::chrono::system_clock::now();
+    processBlocks(proc, _signal.buffer, out, 4096, _spec.sampleRate);
+    auto const end = std::chrono::system_clock::now();
+
+    auto output = to_mdarray(out);
+    neo::normalize_peak(output.to_mdspan());
+
+    auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    juce::MessageManager::callAsync([this, elapsed] {
+        _fileInfo.moveCaretToEnd(false);
+        _fileInfo.insertTextAtCaret("NEO-CONVOLUTION: " + juce::String{elapsed.count()} + "\n");
     });
 
     writeToWavFile(file, output, _spec.sampleRate, 32);
@@ -410,6 +452,8 @@ auto BenchmarkTab::runSparseConvolverBenchmark() -> void
     auto const file     = getBenchmarkResultsDirectory().getNonexistentChildFile(filename, ".wav");
     writeToWavFile(file, output, _spec.sampleRate, 32);
 }
+
+auto BenchmarkTab::runConvolverTests() -> void {}
 
 auto BenchmarkTab::runSparseQualityTests() -> void
 {

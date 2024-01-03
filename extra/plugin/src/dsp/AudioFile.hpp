@@ -10,6 +10,7 @@
 
 namespace neo {
 
+[[nodiscard]] auto load(juce::AudioFormatManager& formats, juce::File const& file) -> BufferWithSampleRate<float>;
 [[nodiscard]] auto loadAndResample(juce::AudioFormatManager& formats, juce::File const& file, double sampleRate)
     -> BufferWithSampleRate<float>;
 

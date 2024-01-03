@@ -14,7 +14,7 @@ PerceptualConvolution::PerceptualConvolution(juce::AudioProcessorValueTreeState&
 
 auto PerceptualConvolution::prepare(juce::dsp::ProcessSpec const& spec) -> void
 {
-    auto impulse = juce::File{R"(C:\Users\tobias\Music\Samples\IR\LexiconPCM90 Halls\ORCH_large hall.WAV)"};
+    auto impulse = juce::File{R"(/home/tobante/Music/Samples/4.4s_Dream_Hall.wav)"};
 
     _convolution = std::make_unique<DenseConvolution>(static_cast<int>(spec.maximumBlockSize));
     _convolution->loadImpulseResponse(impulse.createInputStream());

@@ -38,8 +38,10 @@ private:
     auto runBenchmarks() -> void;
     auto runWeightingTests() -> void;
     auto runJuceConvolutionBenchmark() -> void;
+    auto runNeoConvolutionBenchmark() -> void;
     auto runDenseConvolutionBenchmark() -> void;
     auto runSparseConvolverBenchmark() -> void;
+    auto runConvolverTests() -> void;
     auto runSparseQualityTests() -> void;
 
     template<typename Convolver>

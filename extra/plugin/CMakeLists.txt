@@ -40,6 +40,8 @@ set(PerceptualConvolution_Sources
     "src/dsp/AudioFile.cpp"
     "src/dsp/AudioFile.hpp"
     "src/dsp/ConstantOverlapAdd.hpp"
+    "src/dsp/Convolution.cpp"
+    "src/dsp/Convolution.hpp"
     "src/dsp/DenseConvolution.cpp"
     "src/dsp/DenseConvolution.hpp"
     "src/dsp/Spectrum.cpp"
