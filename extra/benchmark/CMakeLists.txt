@@ -14,7 +14,6 @@ neo_add_benchmark(fft)
 neo_add_benchmark(multiply)
 neo_add_benchmark(multiply_add)
 neo_add_benchmark(rfft)
-neo_add_benchmark(split_complex)
 
 add_executable(fixed_point_benchmark src/fixed_point.cpp)
 target_link_libraries(fixed_point_benchmark PRIVATE neosonar::neo)
