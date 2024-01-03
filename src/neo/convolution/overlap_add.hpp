@@ -42,7 +42,7 @@ private:
     size_type _filter_size;
     size_type _usable_coeffs{_block_size + _filter_size - 1UL};
 
-    fft::rfft_plan<real_type> _rfft{fft::next_order(_usable_coeffs)};
+    fft::rfft_plan<real_type, complex_type> _rfft{fft::next_order(_usable_coeffs)};
     stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
     stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
 

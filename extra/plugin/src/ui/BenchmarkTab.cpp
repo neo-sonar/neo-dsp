@@ -116,6 +116,9 @@ BenchmarkTab::BenchmarkTab(PluginProcessor& processor, juce::AudioFormatManager&
         juce::var{"juce::Convolution"},
         juce::var{"DenseConvolution"},
         juce::var{"upola_convolver"},
+        juce::var{"upols_convolver"},
+        juce::var{"split_upola_convolver"},
+        juce::var{"split_upols_convolver"},
         juce::var{"sparse_upola_convolver"},
         juce::var{"sparse_quality_tests"},
     };
@@ -248,6 +251,8 @@ auto BenchmarkTab::runBenchmarks() -> void
         return;
     }
 
+    using Complex = std::complex<float>;
+
     if (hasEngineEnabled("juce::Convolution")) {
         _threadPool.addJob([this] { runJuceConvolutionBenchmark(); });
     }
@@ -255,7 +260,16 @@ auto BenchmarkTab::runBenchmarks() -> void
         _threadPool.addJob([this] { runDenseConvolutionBenchmark(); });
     }
     if (hasEngineEnabled("upola_convolver")) {
-        _threadPool.addJob([this] { runDenseConvolverBenchmark(); });
+        _threadPool.addJob([this] { runDenseBenchmark<neo::upola_convolver<Complex>>("UPOLA"); });
+    }
+    if (hasEngineEnabled("upols_convolver")) {
+        _threadPool.addJob([this] { runDenseBenchmark<neo::upols_convolver<Complex>>("UPOLS"); });
+    }
+    if (hasEngineEnabled("split_upola_convolver")) {
+        _threadPool.addJob([this] { runDenseBenchmark<neo::split_upola_convolver<Complex>>("SPLIT-UPOLA"); });
+    }
+    if (hasEngineEnabled("split_upols_convolver")) {
+        _threadPool.addJob([this] { runDenseBenchmark<neo::split_upols_convolver<Complex>>("SPLIT-UPOLS"); });
     }
     if (hasEngineEnabled("sparse_upola_convolver")) {
         _threadPool.addJob([this] { runSparseConvolverBenchmark(); });
@@ -370,26 +384,6 @@ auto BenchmarkTab::runDenseConvolutionBenchmark() -> void
     writeToWavFile(file, output, _spec.sampleRate, 32);
 }
 
-auto BenchmarkTab::runDenseConvolverBenchmark() -> void
-{
-    auto start     = std::chrono::system_clock::now();
-    auto result    = neo::dense_convolve(_signal.buffer, _impulse.buffer, 4096);
-    auto const end = std::chrono::system_clock::now();
-
-    auto output = to_mdarray(result);
-    neo::normalize_peak(output.to_mdspan());
-
-    auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-    juce::MessageManager::callAsync([this, elapsed] {
-        _fileInfo.moveCaretToEnd(false);
-        _fileInfo.insertTextAtCaret("TCONV-DENSE: " + juce::String{elapsed.count()} + "\n");
-    });
-
-    auto file = getBenchmarkResultsDirectory().getNonexistentChildFile("tconv_dense", ".wav");
-    writeToWavFile(file, output, _spec.sampleRate, 32);
-}
-
 auto BenchmarkTab::runSparseConvolverBenchmark() -> void
 {
     auto const thresholdDB   = -static_cast<float>(_dynamicRange.getValue());
@@ -428,7 +422,9 @@ auto BenchmarkTab::runSparseQualityTests() -> void
     auto stftPlan = neo::fft::stft_plan<double>{stftOptions};
 
     auto const dense = [this] {
-        auto result = to_mdarray(neo::dense_convolve(_signal.buffer, _impulse.buffer, 4096));
+        auto result = to_mdarray(
+            neo::dense_convolve<neo::upols_convolver<std::complex<float>>>(_signal.buffer, _impulse.buffer, 4096)
+        );
         neo::normalize_peak(result.to_mdspan());
         return result;
     }();

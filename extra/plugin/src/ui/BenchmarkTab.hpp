@@ -4,6 +4,7 @@
 
 #include "PluginProcessor.hpp"
 #include "dsp/AudioBuffer.hpp"
+#include "dsp/AudioFile.hpp"
 
 #include <neo/container/mdspan.hpp>
 
@@ -38,9 +39,29 @@ private:
     auto runWeightingTests() -> void;
     auto runJuceConvolutionBenchmark() -> void;
     auto runDenseConvolutionBenchmark() -> void;
-    auto runDenseConvolverBenchmark() -> void;
     auto runSparseConvolverBenchmark() -> void;
     auto runSparseQualityTests() -> void;
+
+    template<typename Convolver>
+    auto runDenseBenchmark(juce::String const& name) -> void
+    {
+        auto start     = std::chrono::system_clock::now();
+        auto result    = neo::dense_convolve<Convolver>(_signal.buffer, _impulse.buffer, 4096);
+        auto const end = std::chrono::system_clock::now();
+
+        auto output = to_mdarray(result);
+        neo::normalize_peak(output.to_mdspan());
+
+        auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+        juce::MessageManager::callAsync([this, elapsed, name] {
+            _fileInfo.moveCaretToEnd(false);
+            _fileInfo.insertTextAtCaret(name + ": " + juce::String{elapsed.count()} + "\n");
+        });
+
+        auto file = getBenchmarkResultsDirectory().getNonexistentChildFile(name, ".wav");
+        writeToWavFile(file, output, _spec.sampleRate, 32);
+    }
 
     auto updateImages() -> void;
 
