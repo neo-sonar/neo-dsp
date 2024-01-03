@@ -32,13 +32,10 @@ auto conv(benchmark::State& state) -> void
     auto block       = noise;
 
     for (auto _ : state) {
-        // state.PauseTiming();
         neo::copy(noise.to_mdspan(), block.to_mdspan());
-        // state.ResumeTiming();
-
         convolver(block.to_mdspan());
 
-        benchmark::DoNotOptimize(block.data());
+        benchmark::DoNotOptimize(block(0));
         benchmark::ClobberMemory();
     }
 
@@ -47,21 +44,21 @@ auto conv(benchmark::State& state) -> void
     state.SetBytesProcessed(items * sizeof(Real));
 }
 
+constexpr auto const min_block  = 128;
+constexpr auto const max_block  = 1 << 16;
+constexpr auto const min_filter = 1 << 16;
+constexpr auto const max_filter = 1 << 16;
+
 }  // namespace
 
 BENCHMARK(conv<neo::upola_convolver<std::complex<float>>>)
-    ->ArgsProduct({benchmark::CreateRange(1024, 1024, 2), benchmark::CreateRange(8192, 8192, 2)});
+    ->ArgsProduct({benchmark::CreateRange(min_block, max_block, 2), benchmark::CreateRange(min_filter, max_filter, 2)});
 BENCHMARK(conv<neo::upols_convolver<std::complex<float>>>)
-    ->ArgsProduct({benchmark::CreateRange(1024, 1024, 2), benchmark::CreateRange(8192, 8192, 2)});
+    ->ArgsProduct({benchmark::CreateRange(min_block, max_block, 2), benchmark::CreateRange(min_filter, max_filter, 2)});
 
 BENCHMARK(conv<neo::split_upola_convolver<std::complex<float>>>)
-    ->ArgsProduct({benchmark::CreateRange(1024, 1024, 2), benchmark::CreateRange(8192, 8192, 2)});
+    ->ArgsProduct({benchmark::CreateRange(min_block, max_block, 2), benchmark::CreateRange(min_filter, max_filter, 2)});
 BENCHMARK(conv<neo::split_upols_convolver<std::complex<float>>>)
-    ->ArgsProduct({benchmark::CreateRange(1024, 1024, 2), benchmark::CreateRange(8192, 8192, 2)});
-
-// BENCHMARK(conv<neo::upola_convolver<std::complex<double>>>)
-//     ->ArgsProduct({benchmark::CreateRange(8192, 8192, 2), benchmark::CreateRange(1<<7, 1<<20, 2)});
-// BENCHMARK(conv<neo::upols_convolver<std::complex<double>>>)
-//     ->ArgsProduct({benchmark::CreateRange(8192, 8192, 2), benchmark::CreateRange(1<<7, 1<<20, 2)});
+    ->ArgsProduct({benchmark::CreateRange(min_block, max_block, 2), benchmark::CreateRange(min_filter, max_filter, 2)});
 
 BENCHMARK_MAIN();
