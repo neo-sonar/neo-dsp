@@ -11,7 +11,7 @@
 
 namespace neo::convolution {
 
-template<typename Complex>
+template<complex Complex>
 struct sparse_filter
 {
     using value_type = Complex;

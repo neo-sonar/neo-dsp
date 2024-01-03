@@ -41,9 +41,9 @@ TEMPLATE_TEST_CASE("neo/convolution: compressed_fdl", "", std::int8_t, std::int1
     input(7) = FloatComplex{-0.750F, -1.000F};
 
     auto fdl = Fdl(stdex::extents{4, 8});
-    fdl(input.to_mdspan(), 0);
+    fdl.insert(input.to_mdspan(), 0);
 
-    auto compressed = fdl(0);
+    auto compressed = fdl[0];
     REQUIRE(compressed.extent(0) == 8);
 
     REQUIRE_THAT(compressed[0].real(), Catch::Matchers::WithinAbs(+0.000, tolerance));

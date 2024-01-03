@@ -21,9 +21,19 @@ struct compressed_fdl
 
     compressed_fdl() = default;
 
-    explicit compressed_fdl(stdex::dextents<size_t, 2> extents) noexcept : _fdl{extents} {}
+    explicit compressed_fdl(stdex::dextents<size_t, 2> extents) : _fdl{extents} {}
 
-    auto operator()(in_vector auto input, std::integral auto index) noexcept -> void
+    [[nodiscard]] auto operator[](std::integral auto index) const noexcept -> in_vector_of<FloatComplex> auto
+    {
+        auto const subfilter = stdex::submdspan(_fdl.to_mdspan(), index, stdex::full_extent);
+        return stdex::mdspan{
+            subfilter.data_handle(),
+            subfilter.mapping(),
+            compressed_accessor<FloatComplex, typename decltype(subfilter)::accessor_type>{subfilter.accessor()},
+        };
+    }
+
+    auto insert(in_vector_of<FloatComplex> auto input, std::integral auto index) noexcept -> void
     {
         auto const compress = [](auto val) {
             using int_type         = typename IntComplex::value_type;
@@ -35,16 +45,6 @@ struct compressed_fdl
         for (auto i{0U}; i < input.extent(0); ++i) {
             fdl[i] = IntComplex{compress(input[i].real()), compress(input[i].imag())};
         }
-    }
-
-    [[nodiscard]] auto operator()(std::integral auto index) const noexcept -> in_vector auto
-    {
-        auto const subfilter = stdex::submdspan(_fdl.to_mdspan(), index, stdex::full_extent);
-        return stdex::mdspan{
-            subfilter.data_handle(),
-            subfilter.mapping(),
-            compressed_accessor<FloatComplex, typename decltype(subfilter)::accessor_type>{subfilter.accessor()},
-        };
     }
 
 private:

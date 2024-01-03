@@ -49,8 +49,8 @@ auto uniform_partitioned_convolver<Overlap, Fdl, Filter>::operator()(in_vector a
     _overlap(block, [this](inout_vector auto inout) {
         fill(_accumulator.to_mdspan(), typename accumulator_type::value_type{});
 
-        auto insert   = [this, inout](auto index) { _fdl(inout, index); };
-        auto multiply = [this](auto fdl, auto filter) { _filter(_fdl(fdl), filter, _accumulator.to_mdspan()); };
+        auto insert   = [this, inout](auto index) { _fdl.insert(inout, index); };
+        auto multiply = [this](auto index, auto filter) { _filter(_fdl[index], filter, _accumulator.to_mdspan()); };
         _indexer(insert, multiply);
 
         if constexpr (accumulator_type::rank() == 1) {
