@@ -20,17 +20,14 @@ struct dense_filter
 
     dense_filter() = default;
 
-    auto filter(in_matrix_of<Complex> auto filter) -> void
+    auto filter(in_matrix_of<Complex> auto input) -> void
     {
-        _filter = stdex::mdarray<Complex, stdex::dextents<size_t, 2>>{filter.extents()};
-        copy(filter, _filter.to_mdspan());
+        _filter = stdex::mdarray<Complex, stdex::dextents<size_t, 2>>{input.extents()};
+        copy(input, _filter.to_mdspan());
     }
 
-    auto operator()(
-        in_vector_of<Complex> auto fdl,
-        std::integral auto filter_index,
-        inout_vector_of<Complex> auto accumulator
-    ) -> void
+    template<in_vector_of<Complex> FdlRow, std::integral Index, inout_vector_of<Complex> Accumulator>
+    auto operator()(FdlRow fdl, Index filter_index, Accumulator accumulator) -> void
     {
         auto const subfilter = stdex::submdspan(_filter.to_mdspan(), filter_index, stdex::full_extent);
         multiply_add(fdl, subfilter, accumulator, accumulator);
@@ -48,7 +45,9 @@ struct dense_split_filter
 
     dense_split_filter() = default;
 
-    auto filter(in_matrix auto filter) -> void
+    template<in_matrix Filter>
+        requires complex<value_type_t<Filter>>
+    auto filter(Filter filter) -> void
     {
         _filter    = stdex::mdarray<Float, stdex::dextents<size_t, 3>>{2, filter.extent(0), filter.extent(1)};
         auto reals = stdex::submdspan(_filter.to_mdspan(), 0, stdex::full_extent, stdex::full_extent);
@@ -62,18 +61,18 @@ struct dense_split_filter
         }
     }
 
-    template<in_vector InVec>
-    auto operator()(split_complex<InVec> fdl, std::integral auto filter_index, inout_matrix auto accumulator) -> void
+    template<in_vector InVec, std::integral Index, inout_matrix_of<Float> Accumulator>
+    auto operator()(split_complex<InVec> fdl, Index filter_index, Accumulator accumulator) -> void
     {
         auto const subfilter = split_complex{
             stdex::submdspan(_filter.to_mdspan(), 0, filter_index, stdex::full_extent),
             stdex::submdspan(_filter.to_mdspan(), 1, filter_index, stdex::full_extent),
         };
-        auto const acc = split_complex{
+        auto const out = split_complex{
             stdex::submdspan(accumulator, 0, stdex::full_extent),
             stdex::submdspan(accumulator, 1, stdex::full_extent),
         };
-        multiply_add(fdl, subfilter, acc, acc);
+        multiply_add(fdl, subfilter, out, out);
     }
 
 private:
