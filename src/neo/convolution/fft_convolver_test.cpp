@@ -16,9 +16,9 @@ TEMPLATE_TEST_CASE("neo/convolution: fft_convolve", "", float, double)
 
     auto const empty = stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>{0};
     auto const one   = stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>{0};
-    REQUIRE(neo::fft_convolve(empty.to_mdspan(), empty.to_mdspan()).extent(0) == 0);
-    REQUIRE(neo::fft_convolve(one.to_mdspan(), empty.to_mdspan()).extent(0) == 0);
-    REQUIRE(neo::fft_convolve(empty.to_mdspan(), one.to_mdspan()).extent(0) == 0);
+    REQUIRE(neo::convolution::fft_convolve(empty.to_mdspan(), empty.to_mdspan()).extent(0) == 0);
+    REQUIRE(neo::convolution::fft_convolve(one.to_mdspan(), empty.to_mdspan()).extent(0) == 0);
+    REQUIRE(neo::convolution::fft_convolve(empty.to_mdspan(), one.to_mdspan()).extent(0) == 0);
 
     auto const signal_size = GENERATE(as<std::size_t>{}, 8, 9, 10, 64, 78, 143, 256, 444, 666, 1024);
     auto const patch_size  = GENERATE(as<std::size_t>{}, 4, 8, 9, 10, 64, 78, 143, 256, 444, 666, 1024);
@@ -30,7 +30,7 @@ TEMPLATE_TEST_CASE("neo/convolution: fft_convolve", "", float, double)
         return buf;
     }();
 
-    auto const output = neo::fft_convolve(signal.to_mdspan(), patch.to_mdspan());
+    auto const output = neo::convolution::fft_convolve(signal.to_mdspan(), patch.to_mdspan());
     REQUIRE(output.extent(0) == signal_size + patch_size - 1);
     REQUIRE(neo::allclose(stdex::submdspan(output.to_mdspan(), std::tuple{0, signal_size}), signal.to_mdspan()));
 }

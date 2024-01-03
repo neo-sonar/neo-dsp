@@ -17,7 +17,7 @@ static auto uniform_partition(juce::AudioBuffer<float> const& buffer, std::integ
     -> stdex::mdarray<std::complex<float>, stdex::dextents<size_t, 3>>
 {
     auto matrix = to_mdarray(buffer);
-    return neo::uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
+    return neo::convolution::uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
 }
 
 DenseConvolution::DenseConvolution(int blockSize) : ConstantOverlapAdd<float>{neo::fft::next_order(blockSize), 0} {}
@@ -83,8 +83,8 @@ auto DenseConvolution::updateImpulseResponse() -> void
         _convolvers.resize(_spec->numChannels);
         auto resampled = resample(*_impulse, _spec->sampleRate);
         auto matrix    = to_mdarray(resampled.buffer);
-        normalize_impulse(matrix.to_mdspan());
-        _filter = neo::uniform_partition(matrix.to_mdspan(), _spec->maximumBlockSize);
+        neo::convolution::normalize_impulse(matrix.to_mdspan());
+        _filter = neo::convolution::uniform_partition(matrix.to_mdspan(), _spec->maximumBlockSize);
         for (auto ch{0U}; ch < _spec->numChannels; ++ch) {
             auto channel = stdex::submdspan(_filter.to_mdspan(), ch, stdex::full_extent, stdex::full_extent);
             _convolvers[ch].filter(channel);
@@ -131,8 +131,8 @@ auto sparse_convolve(
     auto output = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
     auto block  = std::vector<float>(size_t(blockSize));
     auto matrix = to_mdarray(filter);
-    normalize_impulse(matrix.to_mdspan());
-    auto partitions = uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
+    neo::convolution::normalize_impulse(matrix.to_mdspan());
+    auto partitions = neo::convolution::uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
 
     auto const K = neo::bit_ceil((partitions.extent(2) - 1U) * 2U);
 
@@ -152,7 +152,7 @@ auto sparse_convolve(
     }();
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
-        auto convolver               = neo::sparse_upola_convolver<std::complex<float>>{};
+        auto convolver               = neo::convolution::sparse_upola_convolver<std::complex<float>>{};
         auto const channel           = static_cast<size_t>(ch);
         auto const full              = stdex::full_extent;
         auto const channelPartitions = stdex::submdspan(partitions.to_mdspan(), channel, full, full);

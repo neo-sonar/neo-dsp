@@ -10,7 +10,7 @@
 #include <neo/container/mdspan.hpp>
 #include <neo/type_traits/value_type_t.hpp>
 
-namespace neo {
+namespace neo::convolution {
 
 template<typename Complex>
 struct dense_filter
@@ -78,4 +78,4 @@ private:
     stdex::mdarray<Float, stdex::dextents<size_t, 3>> _filter;
 };
 
-}  // namespace neo
+}  // namespace neo::convolution

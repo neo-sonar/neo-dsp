@@ -14,7 +14,7 @@
 #include <cassert>
 #include <utility>
 
-namespace neo {
+namespace neo::convolution {
 
 template<std::floating_point Float>
 struct fft_convolver
@@ -90,4 +90,4 @@ auto fft_convolve(Signal signal, Patch patch)
     return output;
 }
 
-}  // namespace neo
+}  // namespace neo::convolution

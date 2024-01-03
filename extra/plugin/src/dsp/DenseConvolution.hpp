@@ -32,7 +32,7 @@ private:
 
     std::optional<BufferWithSampleRate<float>> _impulse;
     std::optional<juce::dsp::ProcessSpec> _spec;
-    std::vector<neo::upols_convolver<std::complex<float>>> _convolvers;
+    std::vector<neo::convolution::upols_convolver<std::complex<float>>> _convolvers;
     stdex::mdarray<std::complex<float>, stdex::dextents<std::size_t, 3>> _filter;
 };
 
@@ -44,8 +44,8 @@ dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> 
     auto output = juce::AudioBuffer<float>{signal.getNumChannels(), signal.getNumSamples()};
     auto block  = std::vector<float>(size_t(blockSize));
     auto matrix = to_mdarray(filter);
-    normalize_impulse(matrix.to_mdspan());
-    auto partitions = uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
+    neo::convolution::normalize_impulse(matrix.to_mdspan());
+    auto partitions = neo::convolution::uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
 
     for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
         auto convolver     = Convolver{};

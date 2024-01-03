@@ -21,7 +21,7 @@ TEMPLATE_TEST_CASE("neo/convolution: overlap_add", "", float, double)
 {
     using Float   = TestType;
     using Complex = std::complex<Float>;
-    using Overlap = neo::overlap_add<Complex>;
+    using Overlap = neo::convolution::overlap_add<Complex>;
 
     auto num_overlaps = [](std::size_t block_size, std::size_t filter_size) {
         auto overlap = Overlap{block_size, filter_size};
@@ -81,9 +81,9 @@ static auto test_overlap() -> void
 }
 
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/convolution: overlap",
+    "neo/convolution:",
     "",
-    (neo::overlap_add, neo::overlap_save),
+    (neo::convolution::overlap_add, neo::convolution::overlap_save),
     (std::complex<float>, std::complex<double>)
 )
 {

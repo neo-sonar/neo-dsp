@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace neo {
+namespace neo::convolution {
 
 enum struct convolution_mode
 {
@@ -11,4 +11,4 @@ enum struct convolution_mode
     same,
 };
 
-}  // namespace neo
+}  // namespace neo::convolution

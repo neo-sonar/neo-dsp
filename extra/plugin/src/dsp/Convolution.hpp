@@ -94,7 +94,7 @@ private:
         auto resampled = resample(*_impulse, _spec->sampleRate);
         auto array     = to_mdarray(resampled.buffer);
 
-        _filter = neo::uniform_partition(array.to_mdspan(), _spec->maximumBlockSize);
+        _filter = neo::convolution::uniform_partition(array.to_mdspan(), _spec->maximumBlockSize);
         _convolvers.resize(_spec->numChannels);
 
         for (auto ch{0U}; ch < _spec->numChannels; ++ch) {
@@ -109,7 +109,7 @@ private:
     std::optional<BufferWithSampleRate<float>> _impulse;
 
     stdex::mdarray<std::complex<float>, stdex::dextents<std::size_t, 3>> _filter;
-    std::vector<neo::split_upols_convolver<std::complex<float>>> _convolvers;
+    std::vector<neo::convolution::split_upols_convolver<std::complex<float>>> _convolvers;
 };
 
 }  // namespace neo

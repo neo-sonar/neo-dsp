@@ -19,11 +19,11 @@ auto conv(benchmark::State& state) -> void
 
     auto const impulse = [impulse_size] {
         auto buf = neo::generate_noise_signal<Real>(impulse_size, std::random_device{}());
-        neo::normalize_impulse(buf.to_mdspan());
+        neo::convolution::normalize_impulse(buf.to_mdspan());
         return buf;
     }();
     auto const matrix = stdex::mdspan{impulse.data(), stdex::extents(1, impulse.extent(0))};
-    auto const filter = neo::uniform_partition(matrix, block_size);
+    auto const filter = neo::convolution::uniform_partition(matrix, block_size);
 
     auto convolver = Convolver{};
     convolver.filter(stdex::submdspan(filter.to_mdspan(), 0, stdex::full_extent, stdex::full_extent));
@@ -51,14 +51,14 @@ constexpr auto const max_filter = 1 << 16;
 
 }  // namespace
 
-BENCHMARK(conv<neo::upola_convolver<std::complex<float>>>)
+BENCHMARK(conv<neo::convolution::upola_convolver<std::complex<float>>>)
     ->ArgsProduct({benchmark::CreateRange(min_block, max_block, 2), benchmark::CreateRange(min_filter, max_filter, 2)});
-BENCHMARK(conv<neo::upols_convolver<std::complex<float>>>)
+BENCHMARK(conv<neo::convolution::upols_convolver<std::complex<float>>>)
     ->ArgsProduct({benchmark::CreateRange(min_block, max_block, 2), benchmark::CreateRange(min_filter, max_filter, 2)});
 
-BENCHMARK(conv<neo::split_upola_convolver<std::complex<float>>>)
+BENCHMARK(conv<neo::convolution::split_upola_convolver<std::complex<float>>>)
     ->ArgsProduct({benchmark::CreateRange(min_block, max_block, 2), benchmark::CreateRange(min_filter, max_filter, 2)});
-BENCHMARK(conv<neo::split_upols_convolver<std::complex<float>>>)
+BENCHMARK(conv<neo::convolution::split_upols_convolver<std::complex<float>>>)
     ->ArgsProduct({benchmark::CreateRange(min_block, max_block, 2), benchmark::CreateRange(min_filter, max_filter, 2)});
 
 BENCHMARK_MAIN();

@@ -29,12 +29,12 @@ TEMPLATE_TEST_CASE("neo/convolution: normalize_impulse", "", float, double)
     SECTION("vector")
     {
         auto vec = set1_vector(Float(2));
-        neo::normalize_impulse(vec.to_mdspan());
+        neo::convolution::normalize_impulse(vec.to_mdspan());
         REQUIRE(vec(0) == Catch::Approx(1.0));
 
         vec(0) = Float(2);
         vec(1) = Float(2);
-        neo::normalize_impulse(vec.to_mdspan());
+        neo::convolution::normalize_impulse(vec.to_mdspan());
         REQUIRE(vec(0) == Catch::Approx(0.707106782));
         REQUIRE(vec(1) == Catch::Approx(0.707106782));
     }
@@ -42,15 +42,15 @@ TEMPLATE_TEST_CASE("neo/convolution: normalize_impulse", "", float, double)
     SECTION("matrix")
     {
         auto no_channels = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{0, size * 2};
-        neo::normalize_impulse(no_channels.to_mdspan());
+        neo::convolution::normalize_impulse(no_channels.to_mdspan());
 
         auto mat = set1_matrix(Float(2));
-        neo::normalize_impulse(mat.to_mdspan());
+        neo::convolution::normalize_impulse(mat.to_mdspan());
         REQUIRE(mat(0, 0) == Catch::Approx(1.0));
 
         mat(0, 0) = Float(2);
         mat(0, 1) = Float(2);
-        neo::normalize_impulse(mat.to_mdspan());
+        neo::convolution::normalize_impulse(mat.to_mdspan());
         REQUIRE(mat(0, 0) == Catch::Approx(0.707106782));
         REQUIRE(mat(0, 1) == Catch::Approx(0.707106782));
     }

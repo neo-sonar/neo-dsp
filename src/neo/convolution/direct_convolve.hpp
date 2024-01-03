@@ -7,7 +7,7 @@
 #include <cassert>
 #include <utility>
 
-namespace neo {
+namespace neo::convolution {
 
 template<in_vector Signal, in_vector Patch, out_vector Output>
     requires(std::same_as<typename Signal::value_type, typename Patch::value_type>)
@@ -70,4 +70,4 @@ auto direct_convolve(Signal signal, Patch patch)
     return output;
 }
 
-}  // namespace neo
+}  // namespace neo::convolution

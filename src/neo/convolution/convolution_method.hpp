@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace neo {
+namespace neo::convolution {
 
 enum struct convolution_method
 {
@@ -15,4 +15,4 @@ enum struct convolution_method
     upols,
 };
 
-}  // namespace neo
+}  // namespace neo::convolution

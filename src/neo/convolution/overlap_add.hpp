@@ -18,7 +18,7 @@
 #include <cassert>
 #include <functional>
 
-namespace neo {
+namespace neo::convolution {
 
 template<complex Complex>
 struct overlap_add
@@ -131,4 +131,4 @@ auto overlap_add<Complex>::operator()(inout_vector auto block, auto callback) ->
     }
 }
 
-}  // namespace neo
+}  // namespace neo::convolution

@@ -24,7 +24,7 @@ TEMPLATE_TEST_CASE("neo/convolution: direct_convolve", "", float, double)
         return buf;
     }();
 
-    auto const output = neo::direct_convolve(signal.to_mdspan(), patch.to_mdspan());
+    auto const output = neo::convolution::direct_convolve(signal.to_mdspan(), patch.to_mdspan());
     REQUIRE(output.extent(0) == signal_size + patch_size - 1);
     REQUIRE(neo::allclose(stdex::submdspan(output.to_mdspan(), std::tuple{0, signal_size}), signal.to_mdspan()));
 }

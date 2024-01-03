@@ -7,7 +7,7 @@
 #include <neo/complex/split_complex.hpp>
 #include <neo/container/mdspan.hpp>
 
-namespace neo {
+namespace neo::convolution {
 
 template<typename Complex>
 struct dense_fdl
@@ -67,4 +67,4 @@ private:
     stdex::mdarray<Float, stdex::dextents<size_t, 3>> _fdl{};
 };
 
-}  // namespace neo
+}  // namespace neo::convolution

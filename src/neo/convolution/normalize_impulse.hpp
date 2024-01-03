@@ -5,7 +5,7 @@
 #include <neo/algorithm/normalize_energy.hpp>
 #include <neo/container/mdspan.hpp>
 
-namespace neo {
+namespace neo::convolution {
 
 template<inout_object InOutObj>
     requires std::floating_point<value_type_t<InOutObj>>
@@ -31,4 +31,4 @@ auto normalize_impulse(InOutObj obj) noexcept -> void
     }
 }
 
-}  // namespace neo
+}  // namespace neo::convolution

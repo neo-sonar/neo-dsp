@@ -16,7 +16,7 @@
 #include <cassert>
 #include <functional>
 
-namespace neo {
+namespace neo::convolution {
 
 template<complex Complex>
 struct overlap_save
@@ -112,4 +112,4 @@ auto overlap_save<Complex>::operator()(inout_vector auto block, auto callback) -
     copy(stdex::submdspan(real_buf, keep_extents), block);
 }
 
-}  // namespace neo
+}  // namespace neo::convolution

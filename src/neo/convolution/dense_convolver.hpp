@@ -12,7 +12,7 @@
 #include <neo/convolution/uniform_partitioned_convolver.hpp>
 #include <neo/type_traits/value_type_t.hpp>
 
-namespace neo {
+namespace neo::convolution {
 
 template<complex Complex>
 using upols_convolver = uniform_partitioned_convolver<overlap_save<Complex>, dense_fdl<Complex>, dense_filter<Complex>>;
@@ -32,4 +32,4 @@ using split_upols_convolver = uniform_partitioned_convolver<
     dense_split_fdl<value_type_t<Complex>>,
     dense_split_filter<value_type_t<Complex>>>;
 
-}  // namespace neo
+}  // namespace neo::convolution

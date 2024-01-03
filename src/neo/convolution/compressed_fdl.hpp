@@ -10,7 +10,7 @@
 #include <cmath>
 #include <limits>
 
-namespace neo {
+namespace neo::convolution {
 
 template<complex FloatComplex, complex IntComplex>
 struct compressed_fdl
@@ -51,4 +51,4 @@ private:
     stdex::mdarray<IntComplex, stdex::dextents<size_t, 2>> _fdl{};
 };
 
-}  // namespace neo
+}  // namespace neo::convolution

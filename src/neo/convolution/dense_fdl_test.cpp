@@ -16,6 +16,6 @@ TEMPLATE_TEST_CASE(
 )
 {
     using Complex = TestType;
-    using Fdl     = neo::dense_fdl<Complex>;
+    using Fdl     = neo::convolution::dense_fdl<Complex>;
     STATIC_REQUIRE(std::same_as<typename Fdl::value_type, Complex>);
 }

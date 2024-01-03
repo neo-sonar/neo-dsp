@@ -9,7 +9,7 @@
 
 #include <concepts>
 
-namespace neo {
+namespace neo::convolution {
 
 template<typename Complex>
 struct sparse_filter
@@ -36,4 +36,4 @@ private:
     csr_matrix<Complex> _filter;
 };
 
-}  // namespace neo
+}  // namespace neo::convolution

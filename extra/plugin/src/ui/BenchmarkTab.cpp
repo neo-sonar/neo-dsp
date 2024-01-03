@@ -178,10 +178,10 @@ auto BenchmarkTab::setImpulseResponseFile(juce::File const& file) -> void
     _spectrum               = neo::fft::stft(filterMatrix.to_mdspan(), 1024);
 
     auto impulse = to_mdarray(_impulse.buffer);
-    normalize_impulse(impulse.to_mdspan());
+    neo::convolution::normalize_impulse(impulse.to_mdspan());
 
     auto const blockSize = 512ULL;
-    _partitions          = neo::uniform_partition(
+    _partitions          = neo::convolution::uniform_partition(
         stdex::submdspan(impulse.to_mdspan(), stdex::full_extent, std::tuple{blockSize, impulse.extent(1)}),
         blockSize
     );
@@ -277,16 +277,20 @@ auto BenchmarkTab::runBenchmarks() -> void
         _threadPool.addJob([this] { runDenseConvolutionBenchmark(); });
     }
     if (hasEngineEnabled("upola_convolver")) {
-        _threadPool.addJob([this] { runDenseBenchmark<neo::upola_convolver<Complex>>("UPOLA"); });
+        _threadPool.addJob([this] { runDenseBenchmark<neo::convolution::upola_convolver<Complex>>("UPOLA"); });
     }
     if (hasEngineEnabled("upols_convolver")) {
-        _threadPool.addJob([this] { runDenseBenchmark<neo::upols_convolver<Complex>>("UPOLS"); });
+        _threadPool.addJob([this] { runDenseBenchmark<neo::convolution::upols_convolver<Complex>>("UPOLS"); });
     }
     if (hasEngineEnabled("split_upola_convolver")) {
-        _threadPool.addJob([this] { runDenseBenchmark<neo::split_upola_convolver<Complex>>("SPLIT-UPOLA"); });
+        _threadPool.addJob([this] {
+            runDenseBenchmark<neo::convolution::split_upola_convolver<Complex>>("SPLIT-UPOLA");
+        });
     }
     if (hasEngineEnabled("split_upols_convolver")) {
-        _threadPool.addJob([this] { runDenseBenchmark<neo::split_upols_convolver<Complex>>("SPLIT-UPOLS"); });
+        _threadPool.addJob([this] {
+            runDenseBenchmark<neo::convolution::split_upols_convolver<Complex>>("SPLIT-UPOLS");
+        });
     }
     if (hasEngineEnabled("sparse_upola_convolver")) {
         _threadPool.addJob([this] { runSparseConvolverBenchmark(); });
@@ -466,9 +470,11 @@ auto BenchmarkTab::runSparseQualityTests() -> void
     auto stftPlan = neo::fft::stft_plan<double>{stftOptions};
 
     auto const dense = [this] {
-        auto result = to_mdarray(
-            neo::dense_convolve<neo::upols_convolver<std::complex<float>>>(_signal.buffer, _impulse.buffer, 4096)
-        );
+        auto result = to_mdarray(neo::dense_convolve<neo::convolution::upols_convolver<std::complex<float>>>(
+            _signal.buffer,
+            _impulse.buffer,
+            4096
+        ));
         neo::normalize_peak(result.to_mdspan());
         return result;
     }();
