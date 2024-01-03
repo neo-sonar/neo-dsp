@@ -5,14 +5,14 @@
 #include <neo/config.hpp>
 
 #include <neo/convolution/compressed_fdl.hpp>
-#include <neo/convolution/convolution_method.hpp>
-#include <neo/convolution/convolution_mode.hpp>
 #include <neo/convolution/dense_convolver.hpp>
 #include <neo/convolution/dense_fdl.hpp>
 #include <neo/convolution/dense_filter.hpp>
 #include <neo/convolution/direct_convolve.hpp>
 #include <neo/convolution/fdl_index.hpp>
 #include <neo/convolution/fft_convolver.hpp>
+#include <neo/convolution/method.hpp>
+#include <neo/convolution/mode.hpp>
 #include <neo/convolution/normalize_impulse.hpp>
 #include <neo/convolution/overlap_add.hpp>
 #include <neo/convolution/overlap_save.hpp>

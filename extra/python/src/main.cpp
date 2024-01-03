@@ -166,8 +166,8 @@ auto fft(py::array_t<Complex> array, std::optional<std::size_t> n, neo::fft::nor
     });
 }
 
-template<neo::convolution::convolution_method Method, std::floating_point Float>
-[[nodiscard]] auto convolve(py::array_t<Float> in1, py::array_t<Float> in2, neo::convolution::convolution_mode mode)
+template<neo::convolution::method Method, std::floating_point Float>
+[[nodiscard]] auto convolve(py::array_t<Float> in1, py::array_t<Float> in2, neo::convolution::mode mode)
     -> py::array_t<Float>
 {
     if (in1.ndim() != 1 or in1.ndim() != 1) {
@@ -177,15 +177,15 @@ template<neo::convolution::convolution_method Method, std::floating_point Float>
     auto const signal = to_mdspan_layout_stride<1>(in1);
     auto const patch  = to_mdspan_layout_stride<1>(in2);
 
-    if (mode == neo::convolution::convolution_mode::full) {
+    if (mode == neo::convolution::mode::full) {
         auto output      = py::array_t<Float>(static_cast<py::ssize_t>(signal.extent(0) + patch.extent(0) - 1));
         auto output_view = to_mdspan_layout_right<1>(output);
 
         {
             auto no_gil = py::gil_scoped_release{};
-            if constexpr (Method == neo::convolution::convolution_method::direct) {
+            if constexpr (Method == neo::convolution::method::direct) {
                 neo::convolution::direct_convolve(signal, patch, output_view);
-            } else if constexpr (Method == neo::convolution::convolution_method::fft) {
+            } else if constexpr (Method == neo::convolution::method::fft) {
                 auto out = neo::convolution::fft_convolve(signal, patch);
                 neo::copy(out.to_mdspan(), output_view);
             }
@@ -224,19 +224,19 @@ template<std::floating_point Float>
 
 PYBIND11_MODULE(_neo, m)
 {
-    py::enum_<neo::convolution::convolution_method>(m, "convolution_method")
-        .value("automatic", neo::convolution::convolution_method::automatic)
-        .value("direct", neo::convolution::convolution_method::direct)
-        .value("fft", neo::convolution::convolution_method::fft)
-        .value("ola", neo::convolution::convolution_method::ola)
-        .value("ols", neo::convolution::convolution_method::ols)
-        .value("upola", neo::convolution::convolution_method::upola)
-        .value("upols", neo::convolution::convolution_method::upols);
+    py::enum_<neo::convolution::method>(m, "convolution_method")
+        .value("automatic", neo::convolution::method::automatic)
+        .value("direct", neo::convolution::method::direct)
+        .value("fft", neo::convolution::method::fft)
+        .value("ola", neo::convolution::method::ola)
+        .value("ols", neo::convolution::method::ols)
+        .value("upola", neo::convolution::method::upola)
+        .value("upols", neo::convolution::method::upols);
 
-    py::enum_<neo::convolution::convolution_mode>(m, "convolution_mode")
-        .value("full", neo::convolution::convolution_mode::full)
-        .value("valid", neo::convolution::convolution_mode::valid)
-        .value("same", neo::convolution::convolution_mode::same);
+    py::enum_<neo::convolution::mode>(m, "convolution_mode")
+        .value("full", neo::convolution::mode::full)
+        .value("valid", neo::convolution::mode::valid)
+        .value("same", neo::convolution::mode::same);
 
     py::enum_<neo::fft::norm>(m, "norm")
         .value("backward", neo::fft::norm::backward)
@@ -251,11 +251,11 @@ PYBIND11_MODULE(_neo, m)
     m.def("ifft", &fft<std::complex<float>, neo::fft::direction::backward>);
     m.def("ifft", &fft<std::complex<double>, neo::fft::direction::backward>);
 
-    m.def("direct_convolve", &convolve<neo::convolution::convolution_method::direct, float>);
-    m.def("direct_convolve", &convolve<neo::convolution::convolution_method::direct, double>);
+    m.def("direct_convolve", &convolve<neo::convolution::method::direct, float>);
+    m.def("direct_convolve", &convolve<neo::convolution::method::direct, double>);
 
-    m.def("fft_convolve", &convolve<neo::convolution::convolution_method::fft, float>);
-    m.def("fft_convolve", &convolve<neo::convolution::convolution_method::fft, double>);
+    m.def("fft_convolve", &convolve<neo::convolution::method::fft, float>);
+    m.def("fft_convolve", &convolve<neo::convolution::method::fft, double>);
 
     m.def("amplitude_to_db", py::vectorize(amplitude_to_db<float>));
     m.def("amplitude_to_db", py::vectorize(amplitude_to_db<double>));

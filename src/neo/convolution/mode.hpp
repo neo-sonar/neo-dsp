@@ -4,7 +4,7 @@
 
 namespace neo::convolution {
 
-enum struct convolution_mode
+enum struct mode
 {
     full,
     valid,

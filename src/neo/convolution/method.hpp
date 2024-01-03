@@ -4,7 +4,7 @@
 
 namespace neo::convolution {
 
-enum struct convolution_method
+enum struct method
 {
     automatic,
     direct,
