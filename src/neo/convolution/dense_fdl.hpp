@@ -12,8 +12,7 @@ namespace neo::convolution {
 template<complex Complex>
 struct dense_fdl
 {
-    using value_type       = Complex;
-    using accumulator_type = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>;
+    using value_type = Complex;
 
     dense_fdl() = default;
 
@@ -36,8 +35,7 @@ private:
 template<typename Float>
 struct dense_split_fdl
 {
-    using value_type       = Float;
-    using accumulator_type = stdex::mdarray<Float, stdex::extents<size_t, 2, std::dynamic_extent>>;
+    using value_type = Float;
 
     dense_split_fdl() = default;
 

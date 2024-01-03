@@ -15,7 +15,8 @@ namespace neo::convolution {
 template<typename Complex>
 struct dense_filter
 {
-    using value_type = Complex;
+    using value_type       = Complex;
+    using accumulator_type = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>;
 
     dense_filter() = default;
 
@@ -42,7 +43,8 @@ private:
 template<typename Float>
 struct dense_split_filter
 {
-    using value_type = Float;
+    using value_type       = Float;
+    using accumulator_type = stdex::mdarray<Float, stdex::extents<size_t, 2, std::dynamic_extent>>;
 
     dense_split_filter() = default;
 

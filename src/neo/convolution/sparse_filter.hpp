@@ -14,7 +14,8 @@ namespace neo::convolution {
 template<complex Complex>
 struct sparse_filter
 {
-    using value_type = Complex;
+    using value_type       = Complex;
+    using accumulator_type = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>;
 
     sparse_filter() = default;
 
