@@ -112,58 +112,6 @@ auto test_fft_plan()
 #endif
 }
 
-template<typename Plan>
-auto test_split_fft_plan() -> void
-{
-    using Float = typename Plan::value_type;
-
-    auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
-    CAPTURE(order);
-
-    auto plan = Plan{order};
-    REQUIRE(plan.order() == order);
-    REQUIRE(plan.size() == std::size_t(1) << order);
-
-    auto const noise = neo::generate_noise_signal<Float>(plan.size(), Catch::getSeed());
-
-    SECTION("inplace")
-    {
-        auto buf = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{2, noise.extent(0)};
-        auto z   = neo::split_complex{
-            stdex::submdspan(buf.to_mdspan(), 0, stdex::full_extent),
-            stdex::submdspan(buf.to_mdspan(), 1, stdex::full_extent),
-        };
-
-        neo::copy(noise.to_mdspan(), z.real);
-        neo::fft::fft(plan, z);
-        neo::fft::ifft(plan, z);
-
-        neo::scale(Float(1) / static_cast<Float>(plan.size()), z.real);
-        REQUIRE(neo::allclose(noise.to_mdspan(), z.real));
-    }
-
-    SECTION("copy")
-    {
-        auto in_buf  = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{2, noise.extent(0)};
-        auto out_buf = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{2, noise.extent(0)};
-        auto in_z    = neo::split_complex{
-            stdex::submdspan(in_buf.to_mdspan(), 0, stdex::full_extent),
-            stdex::submdspan(in_buf.to_mdspan(), 1, stdex::full_extent),
-        };
-        auto out_z = neo::split_complex{
-            stdex::submdspan(out_buf.to_mdspan(), 0, stdex::full_extent),
-            stdex::submdspan(out_buf.to_mdspan(), 1, stdex::full_extent),
-        };
-
-        neo::copy(noise.to_mdspan(), in_z.real);
-        neo::fft::fft(plan, in_z, out_z);
-        neo::fft::ifft(plan, out_z, in_z);
-
-        neo::scale(Float(1) / static_cast<Float>(plan.size()), in_z.real);
-        REQUIRE(neo::allclose(noise.to_mdspan(), in_z.real));
-    }
-}
-
 }  // namespace
 
 TEMPLATE_PRODUCT_TEST_CASE(
@@ -201,20 +149,6 @@ TEMPLATE_TEST_CASE("neo/fft: fft_plan", "", neo::complex64, std::complex<float>,
 {
     test_fft_plan<neo::fft::fft_plan<TestType>>();
 }
-
-#if defined(NEO_HAS_INTEL_IPP)
-TEMPLATE_TEST_CASE("neo/fft: intel_ipp_split_fft_plan", "", float, double)
-{
-    test_split_fft_plan<neo::fft::intel_ipp_split_fft_plan<TestType>>();
-}
-#endif
-
-#if defined(NEO_HAS_APPLE_ACCELERATE)
-TEMPLATE_TEST_CASE("neo/fft: apple_vdsp_split_fft_plan", "", float, double)
-{
-    test_split_fft_plan<neo::fft::apple_vdsp_split_fft_plan<TestType>>();
-}
-#endif
 
 template<typename ComplexBatch, typename Kernel>
 static auto test_complex_batch_roundtrip_fft()
