@@ -3,6 +3,7 @@
 #pragma once
 
 #include <neo/container/mdspan.hpp>
+#include <neo/convolution/mode.hpp>
 
 #include <cassert>
 #include <utility>
@@ -15,7 +16,7 @@ auto direct_convolve(Signal signal, Patch patch, Output output) noexcept -> void
 {
     auto const n  = signal.extent(0);
     auto const l  = patch.extent(0);
-    auto const mm = n + l - 1;
+    auto const mm = output_size<mode::full>(n, l);
     assert(std::cmp_equal(output.extent(0), mm));
 
     if (n >= l) {
@@ -60,12 +61,10 @@ template<in_vector Signal, in_vector Patch>
     requires(std::same_as<value_type_t<Signal>, value_type_t<Patch>>)
 auto direct_convolve(Signal signal, Patch patch)
 {
-    auto const n  = signal.extent(0);
-    auto const l  = patch.extent(0);
-    auto const mm = n + l - 1;
+    using Float = value_type_t<Signal>;
 
-    using Float = typename Signal::value_type;
-    auto output = stdex::mdarray<Float, stdex::dextents<size_t, 1>>{mm};
+    auto size   = output_size<mode::full>(signal.extent(0), patch.extent(0));
+    auto output = stdex::mdarray<Float, stdex::dextents<size_t, 1>>{size};
     direct_convolve(signal, patch, output.to_mdspan());
     return output;
 }

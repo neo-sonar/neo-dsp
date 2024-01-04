@@ -10,6 +10,8 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+using namespace neo::convolution;
+
 TEMPLATE_TEST_CASE("neo/convolution: direct_convolve", "", float, double)
 {
     using Float = TestType;
@@ -24,7 +26,7 @@ TEMPLATE_TEST_CASE("neo/convolution: direct_convolve", "", float, double)
         return buf;
     }();
 
-    auto const output = neo::convolution::direct_convolve(signal.to_mdspan(), patch.to_mdspan());
-    REQUIRE(output.extent(0) == signal_size + patch_size - 1);
+    auto const output = direct_convolve(signal.to_mdspan(), patch.to_mdspan());
+    REQUIRE(output.extent(0) == output_size<mode::full>(signal_size, patch_size));
     REQUIRE(neo::allclose(stdex::submdspan(output.to_mdspan(), std::tuple{0, signal_size}), signal.to_mdspan()));
 }

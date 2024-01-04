@@ -7,6 +7,7 @@
 #include <neo/algorithm/multiply.hpp>
 #include <neo/algorithm/scale.hpp>
 #include <neo/container/mdspan.hpp>
+#include <neo/convolution/mode.hpp>
 #include <neo/fft/rfft.hpp>
 #include <neo/math/bit_ceil.hpp>
 #include <neo/math/ilog2.hpp>
@@ -29,7 +30,10 @@ struct fft_convolver
 
     [[nodiscard]] auto patch_size() const noexcept -> std::size_t { return _patch_size; }
 
-    [[nodiscard]] auto output_size() const noexcept -> std::size_t { return _output_size; }
+    [[nodiscard]] auto output_size() const noexcept -> std::size_t
+    {
+        return convolution::output_size<mode::full>(signal_size(), patch_size());
+    }
 
     template<in_vector Signal, in_vector Patch, out_vector Output>
     auto operator()(Signal signal, Patch patch, Output output) -> void
@@ -66,7 +70,6 @@ private:
 
     std::size_t _signal_size;
     std::size_t _patch_size;
-    std::size_t _output_size{signal_size() + patch_size() - 1};
     fft::rfft_plan<Float> _plan{fft::next_order(output_size())};
 
     stdex::mdarray<Float, stdex::dextents<size_t, 1>> _tmp{_plan.size()};
