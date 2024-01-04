@@ -115,9 +115,6 @@
 
 namespace neo {
 
-template<typename>
-inline constexpr auto const always_false = false;
-
 namespace config {
 
 #if defined(NEO_HAS_SIMD_NEON)

@@ -9,6 +9,7 @@
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/direction.hpp>
 #include <neo/fft/order.hpp>
+#include <neo/type_traits/always_false.hpp>
 
 #include <ipp.h>
 
