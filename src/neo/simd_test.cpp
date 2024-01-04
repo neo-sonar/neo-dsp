@@ -33,6 +33,10 @@ static auto test()
     test(std::multiplies{}, Float(1), Float(2), Float(2));
 }
 
+#if defined(NEO_HAS_SIMD_SSE2)
+TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::float32x, neo::float64x) { test<TestType>(); }
+#endif
+
 #if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
 TEMPLATE_TEST_CASE("neo/simd: batch", "", neo::float16x8, neo::float16x16) { test<TestType>(); }
 #endif
