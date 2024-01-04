@@ -133,7 +133,7 @@ auto fft(py::array_t<Complex> array, std::optional<std::size_t> n, neo::fft::nor
 
     return as_mdspan<1>(array, [n, norm](neo::in_vector auto input) -> py::array_t<Complex> {
         auto const size  = n.value_or(input.extent(0));
-        auto const order = neo::ilog2(size);
+        auto const order = neo::fft::next_order(size);
         if (not std::has_single_bit(size)) {
             throw std::runtime_error{"unsupported size: " + std::to_string(size)};
         }

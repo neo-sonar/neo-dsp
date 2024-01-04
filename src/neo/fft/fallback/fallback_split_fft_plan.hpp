@@ -5,6 +5,7 @@
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/fft.hpp>
+#include <neo/fft/order.hpp>
 
 namespace neo::fft {
 
@@ -14,11 +15,11 @@ struct fallback_split_fft_plan
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit fallback_split_fft_plan(size_type order) : _order{order} {}
+    explicit fallback_split_fft_plan(fft::order order) : _order{order} {}
 
-    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
+    [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
 
-    [[nodiscard]] auto size() const noexcept -> size_type { return size_type(1) << order(); }
+    [[nodiscard]] auto size() const noexcept -> size_type { return fft::size(order()); }
 
     template<inout_vector_of<Float> InOutVec>
     auto operator()(split_complex<InOutVec> x, direction dir) noexcept -> void
@@ -51,8 +52,8 @@ struct fallback_split_fft_plan
     }
 
 private:
-    size_type _order;
-    fft_plan<std::complex<Float>> _fft{_order};
+    fft::order _order;
+    fft_plan<std::complex<Float>> _fft{static_cast<fft::order>(_order)};
     stdex::mdarray<std::complex<Float>, stdex::dextents<size_t, 1>> _buffer{size()};
 };
 

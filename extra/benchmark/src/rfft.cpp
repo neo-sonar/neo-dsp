@@ -15,7 +15,7 @@ auto r2c(benchmark::State& state) -> void
     using Float   = typename Plan::real_type;
 
     auto const len   = static_cast<std::size_t>(state.range(0));
-    auto const order = neo::ilog2(len);
+    auto const order = neo::fft::next_order(len);
     auto const noise = neo::generate_noise_signal<Float>(len, std::random_device{}());
 
     auto plan   = Plan{order};
@@ -35,7 +35,7 @@ auto r2c(benchmark::State& state) -> void
         benchmark::ClobberMemory();
     }
 
-    auto const flop        = 5UL * plan.size() * plan.order() * static_cast<size_t>(state.iterations());
+    auto const flop        = 5UL * plan.size() * size_t(plan.order()) * static_cast<size_t>(state.iterations());
     state.counters["flop"] = benchmark::Counter(static_cast<double>(flop), benchmark::Counter::kIsRate);
 }
 

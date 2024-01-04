@@ -7,9 +7,7 @@
 #include <neo/algorithm/copy.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/fallback/fallback_fft_plan.hpp>
-#include <neo/math/bit_ceil.hpp>
-#include <neo/math/ilog2.hpp>
-#include <neo/type_traits/value_type_t.hpp>
+#include <neo/fft/order.hpp>
 
 #if defined(NEO_HAS_APPLE_ACCELERATE)
     #include <neo/fft/backend/vdsp.hpp>
@@ -71,13 +69,6 @@ constexpr auto ifft(Plan& plan, InVec input, OutVec output) -> void
         copy(input, output);
         ifft(plan, output);
     }
-}
-
-template<std::integral Int>
-[[nodiscard]] constexpr auto next_order(Int size) noexcept -> Int
-{
-    auto const usize = static_cast<std::make_unsigned_t<Int>>(size);
-    return static_cast<Int>(ilog2(bit_ceil(usize)));
 }
 
 }  // namespace neo::fft

@@ -8,6 +8,7 @@
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/direction.hpp>
+#include <neo/fft/order.hpp>
 
 #include <Accelerate/Accelerate.h>
 
@@ -25,7 +26,7 @@ struct apple_vdsp_fft_plan
     using size_type          = std::size_t;
     using native_handle_type = std::conditional_t<std::same_as<real_type, float>, FFTSetup, FFTSetupD>;
 
-    explicit apple_vdsp_fft_plan(size_type order);
+    explicit apple_vdsp_fft_plan(fft::order order);
     ~apple_vdsp_fft_plan();
 
     apple_vdsp_fft_plan(apple_vdsp_fft_plan const& other)                    = delete;
@@ -49,15 +50,15 @@ struct apple_vdsp_fft_plan
         return *this;
     }
 
-    [[nodiscard]] auto order() const noexcept -> size_type;
+    [[nodiscard]] auto order() const noexcept -> fft::order;
     [[nodiscard]] auto size() const noexcept -> size_type;
 
     template<inout_vector_of<Complex> InOutVec>
     auto operator()(InOutVec x, direction dir) noexcept -> void;
 
 private:
-    size_type _order;
-    size_type _size{1ULL << _order};
+    fft::order _order;
+    size_type _size{fft::size(order())};
     native_handle_type _plan;
     stdex::mdarray<real_type, stdex::dextents<size_t, 2>> _input{2, _size};
     stdex::mdarray<real_type, stdex::dextents<size_t, 2>> _output{2, _size};
@@ -65,7 +66,7 @@ private:
 
 template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
-apple_vdsp_fft_plan<Complex>::apple_vdsp_fft_plan(size_type order)
+apple_vdsp_fft_plan<Complex>::apple_vdsp_fft_plan(fft::order order)
     : _order{order}
     , _plan{[order] {
     if constexpr (std::same_as<real_type, float>) {
@@ -100,7 +101,7 @@ auto apple_vdsp_fft_plan<Complex>::size() const noexcept -> size_type
 
 template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
-auto apple_vdsp_fft_plan<Complex>::order() const noexcept -> size_type
+auto apple_vdsp_fft_plan<Complex>::order() const noexcept -> fft::order
 {
     return _order;
 }
@@ -142,7 +143,7 @@ struct apple_vdsp_split_fft_plan
     using size_type          = std::size_t;
     using native_handle_type = std::conditional_t<std::same_as<Float, float>, FFTSetup, FFTSetupD>;
 
-    explicit apple_vdsp_split_fft_plan(size_type order);
+    explicit apple_vdsp_split_fft_plan(fft::order order);
     ~apple_vdsp_split_fft_plan();
 
     apple_vdsp_split_fft_plan(apple_vdsp_split_fft_plan const& other)                    = delete;
@@ -166,7 +167,7 @@ struct apple_vdsp_split_fft_plan
         return *this;
     }
 
-    [[nodiscard]] auto order() const noexcept -> size_type;
+    [[nodiscard]] auto order() const noexcept -> fft::order;
     [[nodiscard]] auto size() const noexcept -> size_type;
 
     template<inout_vector_of<Float> InOutVec>
@@ -176,8 +177,8 @@ struct apple_vdsp_split_fft_plan
     auto operator()(split_complex<InVec> in, split_complex<OutVec> out, direction dir) noexcept -> void;
 
 private:
-    size_type _order;
-    size_type _size{1ULL << _order};
+    fft::order _order;
+    size_type _size{fft::size(order())};
     native_handle_type _plan;
     stdex::mdarray<Float, stdex::dextents<size_t, 2>> _input{2, _size};
     stdex::mdarray<Float, stdex::dextents<size_t, 2>> _output{2, _size};
@@ -185,7 +186,7 @@ private:
 
 template<std::floating_point Float>
     requires(std::same_as<Float, float> or std::same_as<Float, double>)
-apple_vdsp_split_fft_plan<Float>::apple_vdsp_split_fft_plan(size_type order)
+apple_vdsp_split_fft_plan<Float>::apple_vdsp_split_fft_plan(fft::order order)
     : _order{order}
     , _plan{[order] {
     if constexpr (std::same_as<Float, float>) {
@@ -220,7 +221,7 @@ auto apple_vdsp_split_fft_plan<Float>::size() const noexcept -> size_type
 
 template<std::floating_point Float>
     requires(std::same_as<Float, float> or std::same_as<Float, double>)
-auto apple_vdsp_split_fft_plan<Float>::order() const noexcept -> size_type
+auto apple_vdsp_split_fft_plan<Float>::order() const noexcept -> fft::order
 {
     return _order;
 }
