@@ -33,7 +33,7 @@ struct apple_vdsp_fft_plan
     auto operator=(apple_vdsp_fft_plan const& other) -> apple_vdsp_fft_plan& = delete;
 
     apple_vdsp_fft_plan(apple_vdsp_fft_plan&& other) noexcept
-        : _order{std::exchange(other._order, 0)}
+        : _order{std::exchange(other._order, fft::order{0})}
         , _size{std::exchange(other._size, 0)}
         , _plan{std::exchange(other._plan, nullptr)}
         , _input{std::move(other._input)}
@@ -42,7 +42,7 @@ struct apple_vdsp_fft_plan
 
     auto operator=(apple_vdsp_fft_plan&& other) noexcept -> apple_vdsp_fft_plan&
     {
-        _order  = std::exchange(other._order, 0);
+        _order  = std::exchange(other._order, fft::order{0});
         _size   = std::exchange(other._size, 0);
         _plan   = std::exchange(other._plan, nullptr);
         _input  = std::move(other._input);
@@ -150,7 +150,7 @@ struct apple_vdsp_split_fft_plan
     auto operator=(apple_vdsp_split_fft_plan const& other) -> apple_vdsp_split_fft_plan& = delete;
 
     apple_vdsp_split_fft_plan(apple_vdsp_split_fft_plan&& other) noexcept
-        : _order{std::exchange(other._order, 0)}
+        : _order{std::exchange(other._order, fft::order{0})}
         , _size{std::exchange(other._size, 0)}
         , _plan{std::exchange(other._plan, nullptr)}
         , _input{std::move(other._input)}
@@ -159,7 +159,7 @@ struct apple_vdsp_split_fft_plan
 
     auto operator=(apple_vdsp_split_fft_plan&& other) noexcept -> apple_vdsp_split_fft_plan&
     {
-        _order  = std::exchange(other._order, 0);
+        _order  = std::exchange(other._order, fft::order{0});
         _size   = std::exchange(other._size, 0);
         _plan   = std::exchange(other._plan, nullptr);
         _input  = std::move(other._input);
