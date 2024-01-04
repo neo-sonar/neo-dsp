@@ -109,11 +109,11 @@ struct batch_f32
     using float_type = float;
 
     static constexpr auto const size   = 128 / 32;
-    static constexpr auto const loadu  = _mm128_loadu_ps;
-    static constexpr auto const storeu = _mm128_storeu_ps;
-    static constexpr auto const add    = _mm128_add_ps;
-    static constexpr auto const sub    = _mm128_sub_ps;
-    static constexpr auto const mul    = _mm128_mul_ps;
+    static constexpr auto const loadu  = _mm_loadu_ps;
+    static constexpr auto const storeu = _mm_storeu_ps;
+    static constexpr auto const add    = _mm_add_ps;
+    static constexpr auto const sub    = _mm_sub_ps;
+    static constexpr auto const mul    = _mm_mul_ps;
 };
 
 struct batch_f64
@@ -121,11 +121,11 @@ struct batch_f64
     using float_type = double;
 
     static constexpr auto const size   = 128 / 64;
-    static constexpr auto const loadu  = _mm128_loadu_pd;
-    static constexpr auto const storeu = _mm128_storeu_pd;
-    static constexpr auto const add    = _mm128_add_pd;
-    static constexpr auto const sub    = _mm128_sub_pd;
-    static constexpr auto const mul    = _mm128_mul_pd;
+    static constexpr auto const loadu  = _mm_loadu_pd;
+    static constexpr auto const storeu = _mm_storeu_pd;
+    static constexpr auto const add    = _mm_add_pd;
+    static constexpr auto const sub    = _mm_sub_pd;
+    static constexpr auto const mul    = _mm_mul_pd;
 };
 
 template<std::floating_point Float>
