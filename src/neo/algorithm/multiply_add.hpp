@@ -93,23 +93,24 @@ auto multiply_add(
     std::size_t size
 ) -> void
 {
+    using reg = batch<Float>;
 
-    auto const inc      = batch<Float>::size;
+    auto const inc      = reg::size;
     auto const vec_size = size - (size % inc);
 
     for (auto i = std::size_t(0); i < vec_size; i += inc) {
-        auto const xre = batch<Float>::loadu(&x_real[i]);
-        auto const xim = batch<Float>::loadu(&x_imag[i]);
-        auto const yre = batch<Float>::loadu(&y_real[i]);
-        auto const yim = batch<Float>::loadu(&y_imag[i]);
-        auto const zre = batch<Float>::loadu(&z_real[i]);
-        auto const zim = batch<Float>::loadu(&z_imag[i]);
+        auto const xre = reg::loadu(&x_real[i]);
+        auto const xim = reg::loadu(&x_imag[i]);
+        auto const yre = reg::loadu(&y_real[i]);
+        auto const yim = reg::loadu(&y_imag[i]);
+        auto const zre = reg::loadu(&z_real[i]);
+        auto const zim = reg::loadu(&z_imag[i]);
 
-        auto const out_re = (xre * yre - xim * yim) + zre;
-        auto const out_im = (xre * yim + xim * yre) + zim;
+        auto const out_re = reg::add(reg::sub(reg::mul(xre, yre), reg::mul(xim, yim)), zre);
+        auto const out_im = reg::add(reg::add(reg::mul(xre, yim), reg::mul(xim, yre)), zim);
 
-        batch<Float>::storeu(&out_real[i], out_re);
-        batch<Float>::storeu(&out_imag[i], out_im);
+        reg::storeu(&out_real[i], out_re);
+        reg::storeu(&out_imag[i], out_im);
     }
 
     for (auto i = vec_size; i < size; ++i) {
