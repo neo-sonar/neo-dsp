@@ -41,10 +41,10 @@ auto multiply_add(
 {
     using split_t = std::conditional_t<std::same_as<Float, float>, DSPSplitComplex, DSPDoubleSplitComplex>;
 
-    auto x_sc = split_t{.realp = const_cast<Float*>(&x_real), .imagp = const_cast<Float*>(&x_imag)};
-    auto y_sc = split_t{.realp = const_cast<Float*>(&y_real), .imagp = const_cast<Float*>(&y_imag)};
-    auto z_sc = split_t{.realp = const_cast<Float*>(&z_real), .imagp = const_cast<Float*>(&z_imag)};
-    auto o_sc = split_t{.realp = &out_real, .imagp = &out_imag};
+    auto x_sc = split_t{.realp = const_cast<Float*>(x_real), .imagp = const_cast<Float*>(x_imag)};
+    auto y_sc = split_t{.realp = const_cast<Float*>(y_real), .imagp = const_cast<Float*>(y_imag)};
+    auto z_sc = split_t{.realp = const_cast<Float*>(z_real), .imagp = const_cast<Float*>(z_imag)};
+    auto o_sc = split_t{.realp = out_real, .imagp = out_imag};
 
     if constexpr (std::same_as<Float, float>) {
         vDSP_zvma(&x_sc, 1, &y_sc, 1, &z_sc, 1, &o_sc, 1, size);
