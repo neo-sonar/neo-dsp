@@ -70,9 +70,9 @@ apple_vdsp_fft_plan<Complex>::apple_vdsp_fft_plan(fft::order order)
     : _order{order}
     , _plan{[order] {
     if constexpr (std::same_as<real_type, float>) {
-        return vDSP_create_fftsetup(order, 2);
+        return vDSP_create_fftsetup(static_cast<vDSP_Length>(order), 2);
     } else {
-        return vDSP_create_fftsetupD(order, 2);
+        return vDSP_create_fftsetupD(static_cast<vDSP_Length>(order), 2);
     }
 }()}
 {
@@ -125,9 +125,9 @@ auto apple_vdsp_fft_plan<Complex>::operator()(InOutVec x, direction dir) noexcep
     }
 
     if constexpr (std::same_as<real_type, float>) {
-        vDSP_fft_zop(_plan, &in, 1, &out, 1, _order, sign);
+        vDSP_fft_zop(_plan, &in, 1, &out, 1, static_cast<vDSP_Length>(_order), sign);
     } else {
-        vDSP_fft_zopD(_plan, &in, 1, &out, 1, _order, sign);
+        vDSP_fft_zopD(_plan, &in, 1, &out, 1, static_cast<vDSP_Length>(_order), sign);
     }
 
     for (auto i{0}; std::cmp_less(i, x.extent(0)); ++i) {
@@ -190,9 +190,9 @@ apple_vdsp_split_fft_plan<Float>::apple_vdsp_split_fft_plan(fft::order order)
     : _order{order}
     , _plan{[order] {
     if constexpr (std::same_as<Float, float>) {
-        return vDSP_create_fftsetup(order, 2);
+        return vDSP_create_fftsetup(static_cast<vDSP_Length>(order), 2);
     } else {
-        return vDSP_create_fftsetupD(order, 2);
+        return vDSP_create_fftsetupD(static_cast<vDSP_Length>(order), 2);
     }
 }()}
 {
@@ -245,9 +245,9 @@ auto apple_vdsp_split_fft_plan<Float>::operator()(split_complex<InOutVec> x, dir
         };
 
         if constexpr (std::same_as<Float, float>) {
-            vDSP_fft_zip(_plan, &split_x, 1, _order, sign);
+            vDSP_fft_zip(_plan, &split_x, 1, static_cast<vDSP_Length>(_order), sign);
         } else {
-            vDSP_fft_zipD(_plan, &split_x, 1, _order, sign);
+            vDSP_fft_zipD(_plan, &split_x, 1, static_cast<vDSP_Length>(_order), sign);
         }
     } else {
         always_false<InOutVec>;
@@ -275,9 +275,9 @@ auto apple_vdsp_split_fft_plan<Float>::operator()(
         auto const split_out = split_complex{.realp = out.real.data_handle(), .imagp = out.imag.data_handle()};
 
         if constexpr (std::same_as<Float, float>) {
-            vDSP_fft_zop(_plan, &split_in, 1, &split_out, 1, _order, sign);
+            vDSP_fft_zop(_plan, &split_in, 1, &split_out, 1, static_cast<vDSP_Length>(_order), sign);
         } else {
-            vDSP_fft_zopD(_plan, &split_in, 1, &split_out, 1, _order, sign);
+            vDSP_fft_zopD(_plan, &split_in, 1, &split_out, 1, static_cast<vDSP_Length>(_order), sign);
         }
     } else {
         always_false<InVec>;
