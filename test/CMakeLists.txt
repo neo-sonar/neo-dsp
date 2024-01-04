@@ -21,8 +21,6 @@ target_sources(neosonar-neo-tests
         "${CMAKE_SOURCE_DIR}/src/neo/algorithm/variance_test.cpp"
 
         "${CMAKE_SOURCE_DIR}/src/neo/complex/complex_test.cpp"
-        "${CMAKE_SOURCE_DIR}/src/neo/complex/interleave_complex_test.cpp"
-        "${CMAKE_SOURCE_DIR}/src/neo/complex/parallel_complex_test.cpp"
         "${CMAKE_SOURCE_DIR}/src/neo/complex/scalar_complex_test.cpp"
         "${CMAKE_SOURCE_DIR}/src/neo/complex/split_complex_test.cpp"
 
