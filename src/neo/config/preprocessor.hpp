@@ -109,6 +109,6 @@
 
 #if defined(NEO_PLATFORM_MACOS)
     #define NEO_HAS_BUILTIN_FLOAT16 1
-#elif defined(NEO_HAS_SIMD_SSE41) and not defined(NEO_PLATFORM_LINUX) and not defined(NEO_COMPILER_MSVC)
+#elif defined(NEO_HAS_SIMD_SSE41) and not defined(NEO_COMPILER_GCC) and not defined(NEO_COMPILER_MSVC)
     #define NEO_HAS_BUILTIN_FLOAT16 1
 #endif
