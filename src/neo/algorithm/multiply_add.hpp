@@ -7,6 +7,7 @@
 #include <neo/complex/split_complex.hpp>
 #include <neo/container/csr_matrix.hpp>
 #include <neo/container/mdspan.hpp>
+#include <neo/simd/native.hpp>
 
 #if defined(NEO_HAS_APPLE_ACCELERATE)
     #include <Accelerate/Accelerate.h>
@@ -19,6 +20,113 @@
 #include <cassert>
 #include <utility>
 
+namespace neo::native {
+
+#if defined(NEO_HAS_APPLE_ACCELERATE)
+    #define NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD
+
+template<std::floating_point Float>
+    requires(std::same_as<Float, float> or std::same_as<Float, double>)
+auto multiply_add(
+    Float const* x_real,
+    Float const* x_imag,
+    Float const* y_real,
+    Float const* y_imag,
+    Float const* z_real,
+    Float const* z_imag,
+    Float* out_real,
+    Float* out_imag,
+    std::size_t size
+) -> void
+{
+    using split_t = std::conditional_t<std::same_as<Float, float>, DSPSplitComplex, DSPDoubleSplitComplex>;
+
+    auto x_sc = split_t{.realp = const_cast<Float*>(&x_real), .imagp = const_cast<Float*>(&x_imag)};
+    auto y_sc = split_t{.realp = const_cast<Float*>(&y_real), .imagp = const_cast<Float*>(&y_imag)};
+    auto z_sc = split_t{.realp = const_cast<Float*>(&z_real), .imagp = const_cast<Float*>(&z_imag)};
+    auto o_sc = split_t{.realp = &out_real, .imagp = &out_imag};
+
+    if constexpr (std::same_as<Float, float>) {
+        vDSP_zvma(&x_sc, 1, &y_sc, 1, &z_sc, 1, &o_sc, 1, size);
+    } else {
+        vDSP_zvmaD(&x_sc, 1, &y_sc, 1, &z_sc, 1, &o_sc, 1, size);
+    }
+}
+
+#elif defined(NEO_HAS_SIMD_AVX) and not defined(NEO_HAS_SIMD_AVX512F)
+    #define NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD
+
+struct batch_f32
+{
+    static constexpr auto const size   = 256 / 32;
+    static constexpr auto const loadu  = _mm256_loadu_ps;
+    static constexpr auto const storeu = _mm256_storeu_ps;
+    static constexpr auto const add    = _mm256_add_ps;
+    static constexpr auto const sub    = _mm256_sub_ps;
+    static constexpr auto const mul    = _mm256_mul_ps;
+};
+
+struct batch_f64
+{
+    static constexpr auto const size   = 256 / 64;
+    static constexpr auto const loadu  = _mm256_loadu_pd;
+    static constexpr auto const storeu = _mm256_storeu_pd;
+    static constexpr auto const add    = _mm256_add_pd;
+    static constexpr auto const sub    = _mm256_sub_pd;
+    static constexpr auto const mul    = _mm256_mul_pd;
+};
+
+template<std::floating_point Float>
+using batch = std::conditional_t<std::same_as<Float, float>, batch_f32, batch_f64>;
+
+template<std::floating_point Float>
+    requires(std::same_as<Float, float> or std::same_as<Float, double>)
+auto multiply_add(
+    Float const* x_real,
+    Float const* x_imag,
+    Float const* y_real,
+    Float const* y_imag,
+    Float const* z_real,
+    Float const* z_imag,
+    Float* out_real,
+    Float* out_imag,
+    std::size_t size
+) -> void
+{
+
+    auto const inc      = batch<Float>::size;
+    auto const vec_size = size - (size % inc);
+
+    for (auto i = std::size_t(0); i < vec_size; i += inc) {
+        auto const xre = batch<Float>::loadu(&x_real[i]);
+        auto const xim = batch<Float>::loadu(&x_imag[i]);
+        auto const yre = batch<Float>::loadu(&y_real[i]);
+        auto const yim = batch<Float>::loadu(&y_imag[i]);
+        auto const zre = batch<Float>::loadu(&z_real[i]);
+        auto const zim = batch<Float>::loadu(&z_imag[i]);
+
+        auto const out_re = (xre * yre - xim * yim) + zre;
+        auto const out_im = (xre * yim + xim * yre) + zim;
+
+        batch<Float>::storeu(&out_real[i], out_re);
+        batch<Float>::storeu(&out_imag[i], out_im);
+    }
+
+    for (auto i = vec_size; i < size; ++i) {
+        auto const xre = x_real[i];
+        auto const xim = x_imag[i];
+        auto const yre = y_real[i];
+        auto const yim = y_imag[i];
+
+        out_real[i] = (xre * yre - xim * yim) + z_real[i];
+        out_imag[i] = (xre * yim + xim * yre) + z_imag[i];
+    }
+}
+
+#endif
+
+}  // namespace neo::native
+
 namespace neo {
 
 // out = x * y + z
@@ -27,6 +135,7 @@ constexpr auto multiply_add(VecX x, VecY y, VecZ z, VecOut out) noexcept -> void
 {
     assert(detail::extents_equal(x, y, z, out));
 
+#if defined(NEO_HAS_XSIMD)
     if constexpr (always_vectorizable<VecX, VecY, VecZ, VecOut>) {
         auto x_ptr   = x.data_handle();
         auto y_ptr   = y.data_handle();
@@ -38,6 +147,7 @@ constexpr auto multiply_add(VecX x, VecY y, VecZ z, VecOut out) noexcept -> void
             return;
         }
     }
+#endif
 
     for (decltype(x.extent(0)) i{0}; i < x.extent(0); ++i) {
         out[i] = x[i] * y[i] + z[i];
@@ -77,46 +187,30 @@ multiply_add(split_complex<VecX> x, split_complex<VecY> y, split_complex<VecZ> z
     constexpr auto const same_type    = detail::all_same_value_type_v<VecX, VecY, VecZ, VecOut>;
     constexpr auto const vectorizable = same_type and always_vectorizable<VecX, VecY, VecZ, VecOut>;
 
-#if defined(NEO_HAS_APPLE_ACCELERATE)
     if constexpr (vectorizable) {
-        if (detail::strides_equal_to<1>(x.real, x.imag, y.real, y.imag, z.real, z.imag, out.real, out.imag)) {
-            using Float = typename VecX::value_type;
-            if constexpr (std::same_as<Float, float> or std::same_as<Float, double>) {
-                using split_t = std::conditional_t<std::same_as<Float, float>, DSPSplitComplex, DSPDoubleSplitComplex>;
-                auto xsc = split_t{.realp = const_cast<Float*>(&x.real[0]), .imagp = const_cast<Float*>(&x.imag[0])};
-                auto ysc = split_t{.realp = const_cast<Float*>(&y.real[0]), .imagp = const_cast<Float*>(&y.imag[0])};
-                auto zsc = split_t{.realp = const_cast<Float*>(&z.real[0]), .imagp = const_cast<Float*>(&z.imag[0])};
-                auto osc = split_t{.realp = &out.real[0], .imagp = &out.imag[0]};
+        [[maybe_unused]] auto const size = static_cast<size_t>(x.real.extent(0));
 
-                if constexpr (std::same_as<Float, float>) {
-                    vDSP_zvma(&xsc, 1, &ysc, 1, &zsc, 1, &osc, 1, x.real.extent(0));
-                } else {
-                    vDSP_zvmaD(&xsc, 1, &ysc, 1, &zsc, 1, &osc, 1, x.real.extent(0));
-                }
+        [[maybe_unused]] auto const* xre = x.real.data_handle();
+        [[maybe_unused]] auto const* xim = x.imag.data_handle();
+        [[maybe_unused]] auto const* yre = y.real.data_handle();
+        [[maybe_unused]] auto const* yim = y.imag.data_handle();
+        [[maybe_unused]] auto const* zre = z.real.data_handle();
+        [[maybe_unused]] auto const* zim = z.imag.data_handle();
 
-                return;
-            }
+        [[maybe_unused]] auto* ore = out.real.data_handle();
+        [[maybe_unused]] auto* oim = out.imag.data_handle();
+
+#if defined(NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD)
+        if constexpr (requires { native::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size); }) {
+            native::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size);
+            return;
         }
-    }
-#endif
-
-    if constexpr (vectorizable) {
-        auto const size = static_cast<size_t>(x.real.extent(0));
-
-        auto const* xre = x.real.data_handle();
-        auto const* xim = x.imag.data_handle();
-        auto const* yre = y.real.data_handle();
-        auto const* yim = y.imag.data_handle();
-        auto const* zre = z.real.data_handle();
-        auto const* zim = z.imag.data_handle();
-
-        auto* ore = out.real.data_handle();
-        auto* oim = out.imag.data_handle();
-
+#elif defined(NEO_HAS_XSIMD)
         if constexpr (requires { detail::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size); }) {
             detail::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size);
             return;
         }
+#endif
     }
 
     for (auto i{0}; i < static_cast<int>(x.real.extent(0)); ++i) {
