@@ -27,7 +27,7 @@ constexpr auto multiply_add(VecX x, VecY y, VecZ z, VecOut out) noexcept -> void
 {
     assert(detail::extents_equal(x, y, z, out));
 
-    if constexpr (has_default_accessor<VecX, VecY, VecZ, VecOut> and has_layout_left_or_right<VecX, VecY, VecZ, VecOut>) {
+    if constexpr (always_vectorizable<VecX, VecY, VecZ, VecOut>) {
         auto x_ptr   = x.data_handle();
         auto y_ptr   = y.data_handle();
         auto z_ptr   = z.data_handle();
@@ -74,8 +74,11 @@ multiply_add(split_complex<VecX> x, split_complex<VecY> y, split_complex<VecZ> z
 {
     assert(detail::extents_equal(x.real, x.imag, y.real, y.imag, z.real, z.imag, out.real, out.imag));
 
+    constexpr auto const same_type    = detail::all_same_value_type_v<VecX, VecY, VecZ, VecOut>;
+    constexpr auto const vectorizable = same_type and always_vectorizable<VecX, VecY, VecZ, VecOut>;
+
 #if defined(NEO_HAS_APPLE_ACCELERATE)
-    if constexpr (detail::all_same_value_type_v<VecX, VecY, VecZ, VecOut>) {
+    if constexpr (vectorizable) {
         if (detail::strides_equal_to<1>(x.real, x.imag, y.real, y.imag, z.real, z.imag, out.real, out.imag)) {
             using Float = typename VecX::value_type;
             if constexpr (std::same_as<Float, float> or std::same_as<Float, double>) {
@@ -97,7 +100,7 @@ multiply_add(split_complex<VecX> x, split_complex<VecY> y, split_complex<VecZ> z
     }
 #endif
 
-    if constexpr (has_default_accessor<VecX, VecY, VecZ, VecOut> and has_layout_left_or_right<VecX, VecY, VecZ, VecOut>) {
+    if constexpr (vectorizable) {
         auto const size = static_cast<size_t>(x.real.extent(0));
 
         auto const* xre = x.real.data_handle();

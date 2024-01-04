@@ -126,7 +126,7 @@ struct intel_ipp_fft_plan
 
         auto transform = dir == direction::forward ? traits::forward_inplace : traits::backward_inplace;
 
-        if constexpr (has_layout_left_or_right<InOutVec> and has_default_accessor<InOutVec>) {
+        if constexpr (always_vectorizable<InOutVec>) {
             auto buffer = reinterpret_cast<typename traits::complex_type*>(x.data_handle());
             transform(buffer, _handle, _work_buf.get());
         } else {
@@ -143,7 +143,7 @@ struct intel_ipp_fft_plan
         assert(std::cmp_equal(input.extent(0), size()));
         assert(std::cmp_equal(output.extent(0), size()));
 
-        if constexpr (has_default_accessor<InVec, OutVec> and has_layout_left_or_right<InVec, OutVec>) {
+        if constexpr (always_vectorizable<InVec, OutVec>) {
             auto const* in = reinterpret_cast<typename traits::complex_type const*>(input.data_handle());
             auto* out      = reinterpret_cast<typename traits::complex_type*>(output.data_handle());
             auto transform = dir == direction::forward ? traits::forward_copy : traits::backward_copy;
@@ -234,7 +234,7 @@ struct intel_ipp_dft_plan
             transform(in, out, _handle, _work_buf.get());
         };
 
-        if constexpr (has_default_accessor<InVec, OutVec> and has_layout_left_or_right<InVec, OutVec>) {
+        if constexpr (always_vectorizable<InVec, OutVec>) {
             run(input.data_handle(), output.data_handle());
         } else {
             copy(input, _tmp_in.to_mdspan());
@@ -304,7 +304,7 @@ struct intel_ipp_split_fft_plan
 
         auto transform = dir == direction::forward ? traits::forward_inplace : traits::backward_inplace;
 
-        if constexpr (has_layout_left_or_right<InOutVec> and has_default_accessor<InOutVec>) {
+        if constexpr (always_vectorizable<InOutVec>) {
             transform(x.real.data_handle(), x.imag.data_handle(), _handle, _work_buf.get());
         } else {
             always_false<InOutVec>;
@@ -319,10 +319,7 @@ struct intel_ipp_split_fft_plan
 
         auto transform = dir == direction::forward ? traits::forward_copy : traits::backward_copy;
 
-        static constexpr auto in_traits  = has_layout_left_or_right<InVec> and has_default_accessor<InVec>;
-        static constexpr auto out_traits = has_layout_left_or_right<OutVec> and has_default_accessor<OutVec>;
-
-        if constexpr (in_traits and out_traits) {
+        if constexpr (always_vectorizable<InVec> and always_vectorizable<OutVec>) {
             transform(
                 in.real.data_handle(),
                 in.imag.data_handle(),
@@ -396,10 +393,7 @@ struct intel_ipp_rfft_plan
     {
         assert(std::cmp_equal(in.extent(0), size()));
 
-        constexpr auto const in_vectorizable  = has_layout_left_or_right<InVec> and has_default_accessor<InVec>;
-        constexpr auto const out_vectorizable = has_layout_left_or_right<OutVec> and has_default_accessor<OutVec>;
-
-        if constexpr (in_vectorizable and out_vectorizable and (sizeof(complex_type) == sizeof(Float) * 2)) {
+        if constexpr (always_vectorizable<InVec> and always_vectorizable<OutVec> and (sizeof(complex_type) == sizeof(Float) * 2)) {
             auto* const out_ptr = reinterpret_cast<Float*>(out.data_handle());
             traits::forward_copy(in.data_handle(), out_ptr, _handle, _work_buf.get());
         } else {
@@ -418,10 +412,7 @@ struct intel_ipp_rfft_plan
     template<in_vector_of<complex_type> InVec, out_vector_of<Float> OutVec>
     auto operator()(InVec in, OutVec out) noexcept -> void
     {
-        constexpr auto const in_vectorizable  = has_layout_left_or_right<InVec> and has_default_accessor<InVec>;
-        constexpr auto const out_vectorizable = has_layout_left_or_right<OutVec> and has_default_accessor<OutVec>;
-
-        if constexpr (in_vectorizable and out_vectorizable and (sizeof(complex_type) == sizeof(Float) * 2)) {
+        if constexpr (always_vectorizable<InVec> and always_vectorizable<OutVec> and (sizeof(complex_type) == sizeof(Float) * 2)) {
             auto* const in_ptr = reinterpret_cast<Float*>(in.data_handle());
             traits::backward_copy(in_ptr, out.data_handle(), _handle, _work_buf.get());
         } else {

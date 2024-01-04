@@ -54,7 +54,7 @@ struct intel_mkl_fft_plan
             }
         };
 
-        if constexpr (has_layout_left_or_right<InOutVec> and has_default_accessor<InOutVec>) {
+        if constexpr (always_vectorizable<InOutVec>) {
             perform(x.data_handle());
         } else {
             copy(x, _buffer.to_mdspan());

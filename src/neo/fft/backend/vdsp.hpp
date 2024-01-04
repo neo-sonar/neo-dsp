@@ -239,7 +239,7 @@ auto apple_vdsp_split_fft_plan<Float>::operator()(split_complex<InOutVec> x, dir
 
     auto const sign = dir == direction::forward ? kFFTDirection_Forward : kFFTDirection_Inverse;
 
-    if constexpr (has_default_accessor<InOutVec> and has_layout_left_or_right<InOutVec>) {
+    if constexpr (always_vectorizable<InOutVec>) {
         auto const split_x = split_complex{
             .realp = x.real.data_handle(),
             .imagp = x.imag.data_handle(),
@@ -271,7 +271,7 @@ auto apple_vdsp_split_fft_plan<Float>::operator()(
 
     auto const sign = dir == direction::forward ? kFFTDirection_Forward : kFFTDirection_Inverse;
 
-    if constexpr (has_default_accessor<InVec, OutVec> and has_layout_left_or_right<InVec, OutVec>) {
+    if constexpr (always_vectorizable<InVec, OutVec>) {
         auto const split_in  = split_complex{.realp = in.real.data_handle(), .imagp = in.imag.data_handle()};
         auto const split_out = split_complex{.realp = out.real.data_handle(), .imagp = out.imag.data_handle()};
 
