@@ -22,6 +22,54 @@
 
 namespace neo::native {
 
+namespace detail {
+
+template<typename Batch>
+auto multiply_add(
+    typename Batch::float_type const* x_real,
+    typename Batch::float_type const* x_imag,
+    typename Batch::float_type const* y_real,
+    typename Batch::float_type const* y_imag,
+    typename Batch::float_type const* z_real,
+    typename Batch::float_type const* z_imag,
+    typename Batch::float_type* out_real,
+    typename Batch::float_type* out_imag,
+    std::size_t size
+) -> void
+{
+    using reg = Batch;
+
+    auto const inc      = reg::size;
+    auto const vec_size = size - (size % inc);
+
+    for (auto i = std::size_t(0); i < vec_size; i += inc) {
+        auto const xre = reg::loadu(&x_real[i]);
+        auto const xim = reg::loadu(&x_imag[i]);
+        auto const yre = reg::loadu(&y_real[i]);
+        auto const yim = reg::loadu(&y_imag[i]);
+        auto const zre = reg::loadu(&z_real[i]);
+        auto const zim = reg::loadu(&z_imag[i]);
+
+        auto const out_re = reg::add(reg::sub(reg::mul(xre, yre), reg::mul(xim, yim)), zre);
+        auto const out_im = reg::add(reg::add(reg::mul(xre, yim), reg::mul(xim, yre)), zim);
+
+        reg::storeu(&out_real[i], out_re);
+        reg::storeu(&out_imag[i], out_im);
+    }
+
+    for (auto i = vec_size; i < size; ++i) {
+        auto const xre = x_real[i];
+        auto const xim = x_imag[i];
+        auto const yre = y_real[i];
+        auto const yim = y_imag[i];
+
+        out_real[i] = (xre * yre - xim * yim) + z_real[i];
+        out_imag[i] = (xre * yim + xim * yre) + z_imag[i];
+    }
+}
+
+}  // namespace detail
+
 #if defined(NEO_HAS_APPLE_ACCELERATE)
     #define NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD
 
@@ -53,31 +101,32 @@ auto multiply_add(
     }
 }
 
-#elif defined(NEO_HAS_SIMD_AVX) and not defined(NEO_HAS_SIMD_AVX512F)
+#elif defined(NEO_HAS_SIMD_SSE2) and not defined(NEO_HAS_SIMD_AVX)
     #define NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD
 
 struct batch_f32
 {
-    static constexpr auto const size   = 256 / 32;
-    static constexpr auto const loadu  = _mm256_loadu_ps;
-    static constexpr auto const storeu = _mm256_storeu_ps;
-    static constexpr auto const add    = _mm256_add_ps;
-    static constexpr auto const sub    = _mm256_sub_ps;
-    static constexpr auto const mul    = _mm256_mul_ps;
+    using float_type = float;
+
+    static constexpr auto const size   = 128 / 32;
+    static constexpr auto const loadu  = _mm128_loadu_ps;
+    static constexpr auto const storeu = _mm128_storeu_ps;
+    static constexpr auto const add    = _mm128_add_ps;
+    static constexpr auto const sub    = _mm128_sub_ps;
+    static constexpr auto const mul    = _mm128_mul_ps;
 };
 
 struct batch_f64
 {
-    static constexpr auto const size   = 256 / 64;
-    static constexpr auto const loadu  = _mm256_loadu_pd;
-    static constexpr auto const storeu = _mm256_storeu_pd;
-    static constexpr auto const add    = _mm256_add_pd;
-    static constexpr auto const sub    = _mm256_sub_pd;
-    static constexpr auto const mul    = _mm256_mul_pd;
-};
+    using float_type = double;
 
-template<std::floating_point Float>
-using batch = std::conditional_t<std::same_as<Float, float>, batch_f32, batch_f64>;
+    static constexpr auto const size   = 128 / 64;
+    static constexpr auto const loadu  = _mm128_loadu_pd;
+    static constexpr auto const storeu = _mm128_storeu_pd;
+    static constexpr auto const add    = _mm128_add_pd;
+    static constexpr auto const sub    = _mm128_sub_pd;
+    static constexpr auto const mul    = _mm128_mul_pd;
+};
 
 template<std::floating_point Float>
     requires(std::same_as<Float, float> or std::same_as<Float, double>)
@@ -93,35 +142,53 @@ auto multiply_add(
     std::size_t size
 ) -> void
 {
-    using reg = batch<Float>;
+    using batch = std::conditional_t<std::same_as<Float, float>, batch_f32, batch_f64>;
+    native::detail::multiply_add<batch>(x_real, x_imag, y_real, y_imag, z_real, z_imag, out_real, out_imag, size);
+}
 
-    auto const inc      = reg::size;
-    auto const vec_size = size - (size % inc);
+#elif defined(NEO_HAS_SIMD_AVX) and not defined(NEO_HAS_SIMD_AVX512F)
+    #define NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD
 
-    for (auto i = std::size_t(0); i < vec_size; i += inc) {
-        auto const xre = reg::loadu(&x_real[i]);
-        auto const xim = reg::loadu(&x_imag[i]);
-        auto const yre = reg::loadu(&y_real[i]);
-        auto const yim = reg::loadu(&y_imag[i]);
-        auto const zre = reg::loadu(&z_real[i]);
-        auto const zim = reg::loadu(&z_imag[i]);
+struct batch_f32
+{
+    using float_type = float;
 
-        auto const out_re = reg::add(reg::sub(reg::mul(xre, yre), reg::mul(xim, yim)), zre);
-        auto const out_im = reg::add(reg::add(reg::mul(xre, yim), reg::mul(xim, yre)), zim);
+    static constexpr auto const size   = 256 / 32;
+    static constexpr auto const loadu  = _mm256_loadu_ps;
+    static constexpr auto const storeu = _mm256_storeu_ps;
+    static constexpr auto const add    = _mm256_add_ps;
+    static constexpr auto const sub    = _mm256_sub_ps;
+    static constexpr auto const mul    = _mm256_mul_ps;
+};
 
-        reg::storeu(&out_real[i], out_re);
-        reg::storeu(&out_imag[i], out_im);
-    }
+struct batch_f64
+{
+    using float_type = double;
 
-    for (auto i = vec_size; i < size; ++i) {
-        auto const xre = x_real[i];
-        auto const xim = x_imag[i];
-        auto const yre = y_real[i];
-        auto const yim = y_imag[i];
+    static constexpr auto const size   = 256 / 64;
+    static constexpr auto const loadu  = _mm256_loadu_pd;
+    static constexpr auto const storeu = _mm256_storeu_pd;
+    static constexpr auto const add    = _mm256_add_pd;
+    static constexpr auto const sub    = _mm256_sub_pd;
+    static constexpr auto const mul    = _mm256_mul_pd;
+};
 
-        out_real[i] = (xre * yre - xim * yim) + z_real[i];
-        out_imag[i] = (xre * yim + xim * yre) + z_imag[i];
-    }
+template<std::floating_point Float>
+    requires(std::same_as<Float, float> or std::same_as<Float, double>)
+auto multiply_add(
+    Float const* x_real,
+    Float const* x_imag,
+    Float const* y_real,
+    Float const* y_imag,
+    Float const* z_real,
+    Float const* z_imag,
+    Float* out_real,
+    Float* out_imag,
+    std::size_t size
+) -> void
+{
+    using batch = std::conditional_t<std::same_as<Float, float>, batch_f32, batch_f64>;
+    native::detail::multiply_add<batch>(x_real, x_imag, y_real, y_imag, z_real, z_imag, out_real, out_imag, size);
 }
 
 #endif
