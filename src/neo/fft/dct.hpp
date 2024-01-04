@@ -24,9 +24,9 @@ struct fallback_dct2_plan
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit fallback_dct2_plan(size_type order) : _fft{order} {}
+    explicit fallback_dct2_plan(fft::order order) : _fft{order} {}
 
-    [[nodiscard]] auto order() const noexcept -> size_type { return _fft.order(); }
+    [[nodiscard]] auto order() const noexcept -> fft::order { return _fft.order(); }
 
     [[nodiscard]] auto size() const noexcept -> size_type { return _fft.size(); }
 

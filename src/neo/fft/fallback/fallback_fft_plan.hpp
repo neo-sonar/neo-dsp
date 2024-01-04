@@ -8,6 +8,7 @@
 #include <neo/fft/fallback/bitrevorder.hpp>
 #include <neo/fft/fallback/conjugate_view.hpp>
 #include <neo/fft/fallback/kernel/c2c_dit2.hpp>
+#include <neo/fft/order.hpp>
 
 #include <cassert>
 #include <numbers>
@@ -50,9 +51,9 @@ struct fallback_fft_plan
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    explicit fallback_fft_plan(size_type order);
+    explicit fallback_fft_plan(fft::order order);
 
-    [[nodiscard]] auto order() const noexcept -> size_type;
+    [[nodiscard]] auto order() const noexcept -> fft::order;
     [[nodiscard]] auto size() const noexcept -> size_type;
 
     template<inout_vector Vec>
@@ -60,16 +61,16 @@ struct fallback_fft_plan
     auto operator()(Vec x, direction dir) noexcept -> void;
 
 private:
-    size_type _order;
-    size_type _size{1ULL << _order};
-    bitrevorder_plan _reorder{_order};
+    fft::order _order;
+    size_type _size{fft::size(order())};
+    bitrevorder_plan _reorder{static_cast<size_t>(_order)};
     stdex::mdarray<Complex, stdex::dextents<size_type, 1>> _twiddles{
         detail::make_radix2_twiddles<Complex>(_size, direction::forward),
     };
 };
 
 template<typename Complex, typename Kernel>
-fallback_fft_plan<Complex, Kernel>::fallback_fft_plan(size_type order) : _order{order}
+fallback_fft_plan<Complex, Kernel>::fallback_fft_plan(fft::order order) : _order{order}
 {}
 
 template<typename Complex, typename Kernel>
@@ -79,7 +80,7 @@ auto fallback_fft_plan<Complex, Kernel>::size() const noexcept -> size_type
 }
 
 template<typename Complex, typename Kernel>
-auto fallback_fft_plan<Complex, Kernel>::order() const noexcept -> size_type
+auto fallback_fft_plan<Complex, Kernel>::order() const noexcept -> fft::order
 {
     return _order;
 }

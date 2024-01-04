@@ -16,7 +16,7 @@ TEMPLATE_TEST_CASE("neo/convolution: compressed_fdl", "", std::int8_t, std::int1
     using Int          = TestType;
     using IntComplex   = neo::scalar_complex<Int>;
     using FloatComplex = neo::scalar_complex<float>;
-    using Fdl          = neo::compressed_fdl<FloatComplex, IntComplex>;
+    using Fdl          = neo::convolution::compressed_fdl<FloatComplex, IntComplex>;
 
     STATIC_REQUIRE(std::same_as<typename Fdl::value_type, FloatComplex>);
     STATIC_REQUIRE(std::same_as<typename Fdl::compressed_type, IntComplex>);
@@ -41,9 +41,9 @@ TEMPLATE_TEST_CASE("neo/convolution: compressed_fdl", "", std::int8_t, std::int1
     input(7) = FloatComplex{-0.750F, -1.000F};
 
     auto fdl = Fdl(stdex::extents{4, 8});
-    fdl(input.to_mdspan(), 0);
+    fdl.insert(input.to_mdspan(), 0);
 
-    auto compressed = fdl(0);
+    auto compressed = fdl[0];
     REQUIRE(compressed.extent(0) == 8);
 
     REQUIRE_THAT(compressed[0].real(), Catch::Matchers::WithinAbs(+0.000, tolerance));
@@ -80,10 +80,10 @@ TEMPLATE_TEST_CASE("neo/convolution: compressed_fdl", "", std::int8_t, std::int1
     REQUIRE_THAT(output(1).real(), Catch::Matchers::WithinAbs(1.250, tolerance));
     REQUIRE_THAT(output(1).imag(), Catch::Matchers::WithinAbs(2.333, tolerance));
 
-    using Overlap = neo::overlap_save<FloatComplex>;
-    using Filter  = neo::dense_filter<FloatComplex>;
+    using Overlap = neo::convolution::overlap_save<FloatComplex>;
+    using Filter  = neo::convolution::dense_filter<FloatComplex>;
 
     auto filter    = stdex::mdarray<FloatComplex, stdex::dextents<size_t, 2>>{2, 513};
-    auto convolver = neo::uniform_partitioned_convolver<Overlap, Fdl, Filter>{};
+    auto convolver = neo::convolution::uniform_partitioned_convolver<Overlap, Fdl, Filter>{};
     convolver.filter(filter.to_mdspan());
 }

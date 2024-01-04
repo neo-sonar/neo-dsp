@@ -125,4 +125,10 @@ template<std::signed_integral IntType, int FractionalBits>
 using q7  = fixed_point<std::int8_t, 7>;
 using q15 = fixed_point<std::int16_t, 15>;
 
+template<typename T>
+inline constexpr auto is_fixed_point = false;
+
+template<std::signed_integral IntType, int FractionalBits>
+inline constexpr auto is_fixed_point<fixed_point<IntType, FractionalBits>> = true;
+
 }  // namespace neo

@@ -17,41 +17,30 @@
 
 namespace {
 
-template<neo::complex Complex>
-using split_upola_convolver = neo::uniform_partitioned_convolver<
-    neo::overlap_add<Complex>,
-    neo::dense_split_fdl<neo::value_type_t<Complex>>,
-    neo::dense_split_filter<neo::value_type_t<Complex>>>;
-
-template<neo::complex Complex>
-using split_upols_convolver = neo::uniform_partitioned_convolver<
-    neo::overlap_save<Complex>,
-    neo::dense_split_fdl<neo::value_type_t<Complex>>,
-    neo::dense_split_filter<neo::value_type_t<Complex>>>;
-
 template<typename T>
 constexpr auto is_sparse_convolver = false;
 
 template<typename Complex, typename Overlap, typename Fdl>
-constexpr auto is_sparse_convolver<neo::uniform_partitioned_convolver<Overlap, Fdl, neo::sparse_filter<Complex>>>
+constexpr auto is_sparse_convolver<
+    neo::convolution::uniform_partitioned_convolver<Overlap, Fdl, neo::convolution::sparse_filter<Complex>>>
     = true;
 
 }  // namespace
 
-static_assert(not is_sparse_convolver<neo::upola_convolver<std::complex<float>>>);
-static_assert(not is_sparse_convolver<neo::upols_convolver<std::complex<float>>>);
-static_assert(is_sparse_convolver<neo::sparse_upols_convolver<std::complex<float>>>);
-static_assert(is_sparse_convolver<neo::sparse_upola_convolver<std::complex<float>>>);
+static_assert(not is_sparse_convolver<neo::convolution::upola_convolver<std::complex<float>>>);
+static_assert(not is_sparse_convolver<neo::convolution::upols_convolver<std::complex<float>>>);
+static_assert(is_sparse_convolver<neo::convolution::sparse_upols_convolver<std::complex<float>>>);
+static_assert(is_sparse_convolver<neo::convolution::sparse_upola_convolver<std::complex<float>>>);
 
 TEMPLATE_PRODUCT_TEST_CASE(
     "neo/convolution: convolver",
     "",
-    (neo::upola_convolver,
-     neo::upols_convolver,
-     split_upola_convolver,
-     split_upols_convolver,
-     neo::sparse_upola_convolver,
-     neo::sparse_upols_convolver),
+    (neo::convolution::upola_convolver,
+     neo::convolution::upols_convolver,
+     neo::convolution::split_upola_convolver,
+     neo::convolution::split_upols_convolver,
+     neo::convolution::sparse_upola_convolver,
+     neo::convolution::sparse_upols_convolver),
     (std::complex<float>, std::complex<double>)
 )
 {

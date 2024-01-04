@@ -40,7 +40,7 @@ jobs:
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -march=ivybridge"'
             cmake_prefix_path: ""
-            cmake_targets: neo_tests
+            cmake_targets: neosonar-neo-tests
             macos_target: ""
 
           - name: macOS-13.3
@@ -67,7 +67,7 @@ jobs:
             clang_version: latest
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native"'
             cmake_prefix_path: ""
-            cmake_targets: neo_tests
+            cmake_targets: neosonar-neo-tests
             macos_target: ""
 
           - name: Windows-MSVC
@@ -76,7 +76,7 @@ jobs:
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2 /EHsc"'
             cmake_prefix_path: ""
-            cmake_targets: neo_tests
+            cmake_targets: neosonar-neo-tests
             macos_target: ""
 
           - name: Coverage-Native
@@ -85,7 +85,7 @@ jobs:
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
-            cmake_targets: neo_tests
+            cmake_targets: neosonar-neo-tests
             macos_target: ""
 
           - name: Coverage-SSE41
@@ -94,7 +94,7 @@ jobs:
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
-            cmake_targets: neo_tests
+            cmake_targets: neosonar-neo-tests
             macos_target: ""
 
           - name: Coverage-SSE2
@@ -103,7 +103,7 @@ jobs:
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
-            cmake_targets: neo_tests
+            cmake_targets: neosonar-neo-tests
             macos_target: ""
 
     steps:

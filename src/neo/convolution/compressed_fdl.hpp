@@ -10,20 +10,29 @@
 #include <cmath>
 #include <limits>
 
-namespace neo {
+namespace neo::convolution {
 
 template<complex FloatComplex, complex IntComplex>
 struct compressed_fdl
 {
-    using value_type       = FloatComplex;
-    using compressed_type  = IntComplex;
-    using accumulator_type = stdex::mdarray<FloatComplex, stdex::dextents<size_t, 1>>;
+    using value_type      = FloatComplex;
+    using compressed_type = IntComplex;
 
     compressed_fdl() = default;
 
-    explicit compressed_fdl(stdex::dextents<size_t, 2> extents) noexcept : _fdl{extents} {}
+    explicit compressed_fdl(stdex::dextents<size_t, 2> extents) : _fdl{extents} {}
 
-    auto operator()(in_vector auto input, std::integral auto index) noexcept -> void
+    [[nodiscard]] auto operator[](std::integral auto index) const noexcept -> in_vector_of<FloatComplex> auto
+    {
+        auto const subfilter = stdex::submdspan(_fdl.to_mdspan(), index, stdex::full_extent);
+        return stdex::mdspan{
+            subfilter.data_handle(),
+            subfilter.mapping(),
+            compressed_accessor<FloatComplex, typename decltype(subfilter)::accessor_type>{subfilter.accessor()},
+        };
+    }
+
+    auto insert(in_vector_of<FloatComplex> auto input, std::integral auto index) noexcept -> void
     {
         auto const compress = [](auto val) {
             using int_type         = typename IntComplex::value_type;
@@ -37,18 +46,8 @@ struct compressed_fdl
         }
     }
 
-    [[nodiscard]] auto operator()(std::integral auto index) const noexcept -> in_vector auto
-    {
-        auto const subfilter = stdex::submdspan(_fdl.to_mdspan(), index, stdex::full_extent);
-        return stdex::mdspan{
-            subfilter.data_handle(),
-            subfilter.mapping(),
-            compressed_accessor<FloatComplex, typename decltype(subfilter)::accessor_type>{subfilter.accessor()},
-        };
-    }
-
 private:
     stdex::mdarray<IntComplex, stdex::dextents<size_t, 2>> _fdl{};
 };
 
-}  // namespace neo
+}  // namespace neo::convolution

@@ -10,7 +10,8 @@
 #include <neo/algorithm/scale.hpp>
 #include <neo/complex.hpp>
 #include <neo/container/mdspan.hpp>
-#include <neo/fft.hpp>
+#include <neo/convolution/mode.hpp>
+#include <neo/fft/rfft.hpp>
 #include <neo/math/bit_ceil.hpp>
 #include <neo/math/idiv.hpp>
 #include <neo/math/ilog2.hpp>
@@ -18,7 +19,7 @@
 #include <cassert>
 #include <functional>
 
-namespace neo {
+namespace neo::convolution {
 
 template<complex Complex>
 struct overlap_add
@@ -40,9 +41,9 @@ struct overlap_add
 private:
     size_type _block_size;
     size_type _filter_size;
-    size_type _usable_coeffs{_block_size + _filter_size - 1UL};
+    size_type _usable_coeffs{output_size<mode::full>(_block_size, _filter_size)};
 
-    fft::rfft_plan<real_type> _rfft{fft::next_order(_usable_coeffs)};
+    fft::rfft_plan<real_type, complex_type> _rfft{fft::next_order(_usable_coeffs)};
     stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
     stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
 
@@ -131,4 +132,4 @@ auto overlap_add<Complex>::operator()(inout_vector auto block, auto callback) ->
     }
 }
 
-}  // namespace neo
+}  // namespace neo::convolution

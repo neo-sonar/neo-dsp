@@ -7,26 +7,25 @@
 #include <neo/complex/split_complex.hpp>
 #include <neo/container/mdspan.hpp>
 
-namespace neo {
+namespace neo::convolution {
 
-template<typename Complex>
+template<complex Complex>
 struct dense_fdl
 {
-    using value_type       = Complex;
-    using accumulator_type = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>;
+    using value_type = Complex;
 
     dense_fdl() = default;
 
-    explicit dense_fdl(stdex::dextents<size_t, 2> extents) noexcept : _fdl{extents} {}
+    explicit dense_fdl(stdex::dextents<size_t, 2> extents) : _fdl{extents} {}
 
-    auto operator()(in_vector auto input, std::integral auto index) noexcept -> void
-    {
-        copy(input, stdex::submdspan(_fdl.to_mdspan(), index, stdex::full_extent));
-    }
-
-    [[nodiscard]] auto operator()(std::integral auto index) const noexcept -> in_vector auto
+    [[nodiscard]] auto operator[](std::integral auto index) const noexcept -> in_vector_of<Complex> auto
     {
         return stdex::submdspan(_fdl.to_mdspan(), index, stdex::full_extent);
+    }
+
+    auto insert(in_vector_of<Complex> auto input, std::integral auto index) noexcept -> void
+    {
+        copy(input, stdex::submdspan(_fdl.to_mdspan(), index, stdex::full_extent));
     }
 
 private:
@@ -36,16 +35,21 @@ private:
 template<typename Float>
 struct dense_split_fdl
 {
-    using value_type       = Float;
-    using accumulator_type = stdex::mdarray<Float, stdex::extents<size_t, 2, std::dynamic_extent>>;
+    using value_type = Float;
 
     dense_split_fdl() = default;
 
-    explicit dense_split_fdl(stdex::dextents<size_t, 2> extents) noexcept
-        : _fdl{2, extents.extent(0), extents.extent(1)}
-    {}
+    explicit dense_split_fdl(stdex::dextents<size_t, 2> extents) : _fdl{2, extents.extent(0), extents.extent(1)} {}
 
-    auto operator()(in_vector auto input, std::integral auto index) noexcept -> void
+    [[nodiscard]] auto operator[](std::integral auto index) const noexcept
+    {
+        return split_complex{
+            stdex::submdspan(_fdl.to_mdspan(), 0, index, stdex::full_extent),
+            stdex::submdspan(_fdl.to_mdspan(), 1, index, stdex::full_extent),
+        };
+    }
+
+    auto insert(in_vector auto input, std::integral auto index) noexcept -> void
     {
         auto real = stdex::submdspan(_fdl.to_mdspan(), 0, index, stdex::full_extent);
         auto imag = stdex::submdspan(_fdl.to_mdspan(), 1, index, stdex::full_extent);
@@ -55,16 +59,8 @@ struct dense_split_fdl
         }
     }
 
-    [[nodiscard]] auto operator()(std::integral auto index) const noexcept
-    {
-        return split_complex{
-            stdex::submdspan(_fdl.to_mdspan(), 0, index, stdex::full_extent),
-            stdex::submdspan(_fdl.to_mdspan(), 1, index, stdex::full_extent),
-        };
-    }
-
 private:
     stdex::mdarray<Float, stdex::dextents<size_t, 3>> _fdl{};
 };
 
-}  // namespace neo
+}  // namespace neo::convolution

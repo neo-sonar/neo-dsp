@@ -7,11 +7,9 @@
 #include <neo/algorithm/copy.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/fallback/fallback_fft_plan.hpp>
-#include <neo/math/bit_ceil.hpp>
-#include <neo/math/ilog2.hpp>
-#include <neo/type_traits/value_type_t.hpp>
+#include <neo/fft/order.hpp>
 
-#if defined(NEO_HAS_APPLE_VDSP)
+#if defined(NEO_HAS_APPLE_ACCELERATE)
     #include <neo/fft/backend/vdsp.hpp>
 #endif
 
@@ -25,7 +23,7 @@
 
 namespace neo::fft {
 
-#if defined(NEO_HAS_APPLE_VDSP)
+#if defined(NEO_HAS_APPLE_ACCELERATE)
 template<complex Complex>
 using fft_plan = apple_vdsp_fft_plan<Complex>;
 #elif defined(NEO_HAS_INTEL_IPP)
@@ -57,20 +55,6 @@ constexpr auto fft(Plan& plan, InVec input, OutVec output) -> void
 }
 
 template<typename Plan, inout_vector Vec>
-    requires std::floating_point<value_type_t<Vec>>
-constexpr auto fft(Plan& plan, split_complex<Vec> inout) -> void
-{
-    plan(inout, direction::forward);
-}
-
-template<typename Plan, in_vector InVec, out_vector OutVec>
-    requires std::same_as<value_type_t<InVec>, value_type_t<OutVec>>
-constexpr auto fft(Plan& plan, split_complex<InVec> in, split_complex<OutVec> out) -> void
-{
-    plan(in, out, direction::forward);
-}
-
-template<typename Plan, inout_vector Vec>
 constexpr auto ifft(Plan& plan, Vec inout) -> void
 {
     plan(inout, direction::backward);
@@ -85,27 +69,6 @@ constexpr auto ifft(Plan& plan, InVec input, OutVec output) -> void
         copy(input, output);
         ifft(plan, output);
     }
-}
-
-template<typename Plan, inout_vector Vec>
-    requires std::floating_point<value_type_t<Vec>>
-constexpr auto ifft(Plan& plan, split_complex<Vec> inout) -> void
-{
-    plan(inout, direction::backward);
-}
-
-template<typename Plan, in_vector InVec, out_vector OutVec>
-    requires std::same_as<value_type_t<InVec>, value_type_t<OutVec>>
-constexpr auto ifft(Plan& plan, split_complex<InVec> in, split_complex<OutVec> out) -> void
-{
-    plan(in, out, direction::backward);
-}
-
-template<std::integral Int>
-[[nodiscard]] constexpr auto next_order(Int size) noexcept -> Int
-{
-    auto const usize = static_cast<std::make_unsigned_t<Int>>(size);
-    return static_cast<Int>(ilog2(bit_ceil(usize)));
 }
 
 }  // namespace neo::fft

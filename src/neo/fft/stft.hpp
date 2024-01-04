@@ -96,7 +96,7 @@ struct stft_plan
 private:
     stft_options<Float> _options;
 
-    rfft_plan<Float> _rfft{static_cast<size_t>(ilog2(_options.transform_size))};
+    rfft_plan<Float> _rfft{next_order(_options.transform_size)};
     stdex::mdarray<Float, stdex::dextents<std::size_t, 1>> _input{_rfft.size()};
     stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>> _output{_rfft.size()};
 

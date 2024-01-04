@@ -21,7 +21,7 @@ struct intel_mkl_fft_plan
     using real_type  = typename Complex::value_type;
     using size_type  = std::size_t;
 
-    explicit intel_mkl_fft_plan(size_type order) : _order{order}, _handle{make(order)} {}
+    explicit intel_mkl_fft_plan(fft::order order) : _order{order}, _handle{make(order)} {}
 
     ~intel_mkl_fft_plan() noexcept
     {
@@ -36,9 +36,9 @@ struct intel_mkl_fft_plan
     intel_mkl_fft_plan(intel_mkl_fft_plan&& other)                    = default;
     auto operator=(intel_mkl_fft_plan&& other) -> intel_mkl_fft_plan& = default;
 
-    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
+    [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
 
-    [[nodiscard]] auto size() const noexcept -> size_type { return size_type(1) << order(); }
+    [[nodiscard]] auto size() const noexcept -> size_type { return fft::size(order()); }
 
     template<inout_vector InOutVec>
         requires std::same_as<typename InOutVec::value_type, Complex>
@@ -71,16 +71,22 @@ private:
         DFTI_DESCRIPTOR_HANDLE ptr;
     };
 
-    [[nodiscard]] static auto make(size_type order)
+    [[nodiscard]] static auto make(fft::order order)
     {
         auto* handle = DFTI_DESCRIPTOR_HANDLE{};
-        DftiCreateDescriptor(&handle, precision, DFTI_COMPLEX, 1, static_cast<int>(1UL << order));
+        DftiCreateDescriptor(
+            &handle,
+            precision,
+            DFTI_COMPLEX,
+            1,
+            static_cast<int>(1UL << static_cast<size_type>(order))
+        );
         DftiSetValue(handle, DFTI_PLACEMENT, DFTI_INPLACE);
         DftiCommitDescriptor(handle);
         return std::make_unique<handle_t>(handle_t{.ptr = handle});
     }
 
-    size_type _order;
+    fft::order _order;
     std::unique_ptr<handle_t> _handle{nullptr};
     stdex::mdarray<Complex, stdex::dextents<size_t, 1>> _buffer{size()};
 };

@@ -8,7 +8,7 @@ TEMPLATE_TEST_CASE("neo/convolution: fdl_index", "", int, unsigned, std::ptrdiff
 {
     using Index = TestType;
 
-    auto indexer = neo::fdl_index<Index>{3};
+    auto indexer = neo::convolution::fdl_index<Index>{3};
 
     SECTION("copy callback")
     {
