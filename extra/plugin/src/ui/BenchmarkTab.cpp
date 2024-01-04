@@ -237,7 +237,7 @@ auto BenchmarkTab::selectSignalFile() -> void
 
 auto BenchmarkTab::loadSignalFile(juce::File const& file) -> void
 {
-    if (_spec.sampleRate == 0.0) {
+    if (_spec.sampleRate <= 0.0) {
         return;
     }
     if (not file.existsAsFile()) {
