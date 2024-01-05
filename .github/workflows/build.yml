@@ -77,7 +77,7 @@ jobs:
           - name: Windows-MSVC
             os: windows-latest
             build_type: Release
-            generator: "Visual Studio 17 2022"
+            generator: Ninja
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2 /EHsc"'
             cmake_prefix_path: ""
@@ -173,8 +173,6 @@ jobs:
       - name: Set up Visual Studio shell
         if: ${{ matrix.name }} == 'Windows-MSVC'
         uses: egor-tensin/vs-shell@v2
-        with:
-          arch: x64
 
       - name: Install ccache
         uses: hendrikmuhs/ccache-action@main
