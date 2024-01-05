@@ -157,23 +157,25 @@ auto batch_split_multiply_add(benchmark::State& state) -> void
 
 }  // namespace
 
-// BENCHMARK(multiply_add<float>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
-// BENCHMARK(multiply_add<double>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+BENCHMARK(multiply_add<std::complex<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+BENCHMARK(multiply_add<std::complex<double>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 
-// BENCHMARK(multiply_add<neo::q7>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
-// BENCHMARK(multiply_add<neo::q15>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
-
-// BENCHMARK(multiply_add<std::complex<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
-// BENCHMARK(multiply_add<std::complex<double>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
-
-// BENCHMARK(multiply_add<neo::complex64>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
-// BENCHMARK(multiply_add<neo::complex128>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
+BENCHMARK(multiply_add<neo::complex32>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+#endif
+BENCHMARK(multiply_add<neo::complex64>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+BENCHMARK(multiply_add<neo::complex128>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 
 #if defined(NEO_HAS_BUILTIN_FLOAT16)
 BENCHMARK(split_multiply_add<_Float16>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 #endif
 BENCHMARK(split_multiply_add<float>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 BENCHMARK(split_multiply_add<double>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+
+#if defined(NEO_HAS_XSIMD)
+BENCHMARK(batch_split_multiply_add<xsimd::batch<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+BENCHMARK(batch_split_multiply_add<xsimd::batch<double>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+#endif
 
 BENCHMARK(split_multiply_add<neo::q7>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 BENCHMARK(split_multiply_add<neo::q15>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
@@ -182,5 +184,11 @@ BENCHMARK(split_multiply_add<neo::q15>)->RangeMultiplier(2)->Range(1 << 7, 1 << 
 BENCHMARK(batch_split_multiply_add<neo::q15x8>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 BENCHMARK(batch_split_multiply_add<neo::q15x16>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 #endif
+
+// BENCHMARK(multiply_add<float>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+// BENCHMARK(multiply_add<double>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+
+// BENCHMARK(multiply_add<neo::q7>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+// BENCHMARK(multiply_add<neo::q15>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 
 BENCHMARK_MAIN();

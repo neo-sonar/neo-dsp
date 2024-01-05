@@ -91,6 +91,9 @@ template<typename Scalar>
     return static_cast<Scalar>(std::sqrt(dot(z.real(), z.imag())));
 }
 
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
+using complex32 = scalar_complex<_Float16>;
+#endif
 using complex64  = scalar_complex<float>;
 using complex128 = scalar_complex<double>;
 
