@@ -3,7 +3,10 @@
 #include "bit_ceil.hpp"
 
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_template_test_macros.hpp>
+
+#include <random>
 
 TEMPLATE_TEST_CASE("neo/math: bit_ceil", "", std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t)
 {
@@ -25,4 +28,16 @@ TEMPLATE_TEST_CASE("neo/math: detail::bit_ceil_fallback", "", std::uint8_t, std:
     REQUIRE(neo::detail::bit_ceil_fallback(UInt(3)) == UInt(4));
     REQUIRE(neo::detail::bit_ceil_fallback(UInt(4)) == UInt(4));
     REQUIRE(neo::detail::bit_ceil_fallback(UInt(100)) == UInt(128));
+
+#if defined(__cpp_lib_int_pow2)
+
+    auto rng  = std::mt19937{Catch::getSeed()};
+    auto dist = std::uniform_int_distribution<UInt>{1, std::numeric_limits<UInt>::max() / 2};
+    for (auto i{0}; i < 10'000; ++i) {
+        auto const val = dist(rng);
+        CAPTURE(val);
+        REQUIRE(neo::detail::bit_ceil_fallback(val) == std::bit_ceil(val));
+    }
+
+#endif
 }
