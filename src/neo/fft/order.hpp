@@ -4,7 +4,7 @@
 
 #include <neo/config.hpp>
 
-#include <neo/math/bit_ceil.hpp>
+#include <neo/bit/bit_ceil.hpp>
 #include <neo/math/ilog2.hpp>
 #include <neo/math/ipow.hpp>
 

@@ -8,8 +8,6 @@
 #include <neo/complex/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/fft.hpp>
-#include <neo/math/bit_ceil.hpp>
-#include <neo/math/ilog2.hpp>
 
 #include <complex>
 #include <concepts>
