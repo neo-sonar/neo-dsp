@@ -30,11 +30,16 @@ TEMPLATE_TEST_CASE("neo/math: detail::bit_ceil_fallback", "", std::uint8_t, std:
     REQUIRE(neo::detail::bit_ceil_fallback(UInt(100)) == UInt(128));
 
 #if defined(__cpp_lib_int_pow2)
+    // Can't use std::uniform_int_distribution<UInt> directly,
+    // wouldn't compile for "unsigned char" on Microsoft STL.
+    // Fails static assertion. Workaround: always use std::uint64_t
+    // and cast to UInt afterwards.
 
     auto rng  = std::mt19937{Catch::getSeed()};
-    auto dist = std::uniform_int_distribution<UInt>{1, std::numeric_limits<UInt>::max() / 2};
+    auto dist = std::uniform_int_distribution<std::uint64_t>{1, std::numeric_limits<UInt>::max() / 2};
+
     for (auto i{0}; i < 10'000; ++i) {
-        auto const val = dist(rng);
+        auto const val = static_cast<UInt>(dist(rng));
         CAPTURE(val);
         REQUIRE(neo::detail::bit_ceil_fallback(val) == std::bit_ceil(val));
     }
