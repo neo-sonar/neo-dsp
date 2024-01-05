@@ -96,6 +96,65 @@ auto split_multiply_add(benchmark::State& state) -> void
     state.SetBytesProcessed(items * sizeof(Real) * 2);
 }
 
+template<typename FixedPointBatch>
+auto batch_split_multiply_add(benchmark::State& state) -> void
+{
+    using FxPoint = typename FixedPointBatch::value_type;
+
+    auto const size        = state.range(0);
+    auto const num_batches = size / FixedPointBatch::size;
+
+    auto x_buf   = stdex::mdarray<FixedPointBatch, stdex::dextents<size_t, 2>>{2, num_batches};
+    auto y_buf   = stdex::mdarray<FixedPointBatch, stdex::dextents<size_t, 2>>{2, num_batches};
+    auto out_buf = stdex::mdarray<FixedPointBatch, stdex::dextents<size_t, 2>>{2, num_batches};
+
+    auto const x = neo::split_complex{
+        stdex::submdspan(x_buf.to_mdspan(), 0, stdex::full_extent),
+        stdex::submdspan(x_buf.to_mdspan(), 1, stdex::full_extent),
+    };
+    auto const y = neo::split_complex{
+        stdex::submdspan(y_buf.to_mdspan(), 0, stdex::full_extent),
+        stdex::submdspan(y_buf.to_mdspan(), 1, stdex::full_extent),
+    };
+    auto const out = neo::split_complex{
+        stdex::submdspan(out_buf.to_mdspan(), 0, stdex::full_extent),
+        stdex::submdspan(out_buf.to_mdspan(), 1, stdex::full_extent),
+    };
+
+    auto const noise_x_real   = neo::generate_noise_signal<FxPoint>(num_batches, std::random_device{}());
+    auto const noise_x_imag   = neo::generate_noise_signal<FxPoint>(num_batches, std::random_device{}());
+    auto const noise_y_real   = neo::generate_noise_signal<FxPoint>(num_batches, std::random_device{}());
+    auto const noise_y_imag   = neo::generate_noise_signal<FxPoint>(num_batches, std::random_device{}());
+    auto const noise_out_real = neo::generate_noise_signal<FxPoint>(num_batches, std::random_device{}());
+    auto const noise_out_imag = neo::generate_noise_signal<FxPoint>(num_batches, std::random_device{}());
+
+    for (auto i{0U}; i < num_batches; ++i) {
+        x.real[i] = FixedPointBatch::broadcast(noise_x_real(i));
+        x.imag[i] = FixedPointBatch::broadcast(noise_x_imag(i));
+        y.real[i] = FixedPointBatch::broadcast(noise_y_real(i));
+        y.imag[i] = FixedPointBatch::broadcast(noise_y_imag(i));
+    }
+
+    for (auto _ : state) {
+        state.PauseTiming();
+        for (auto i{0U}; i < num_batches; ++i) {
+            out.real[i] = FixedPointBatch::broadcast(noise_out_real(i));
+            out.imag[i] = FixedPointBatch::broadcast(noise_out_imag(i));
+        }
+        state.ResumeTiming();
+
+        neo::multiply_add(x, y, out, out);
+
+        benchmark::DoNotOptimize(out.real[0]);
+        benchmark::DoNotOptimize(out.imag[0]);
+        benchmark::ClobberMemory();
+    }
+
+    auto const items = static_cast<int64_t>(state.iterations()) * size;
+    state.SetItemsProcessed(items);
+    state.SetBytesProcessed(items * sizeof(FxPoint) * 2);
+}
+
 }  // namespace
 
 // BENCHMARK(multiply_add<float>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
@@ -118,5 +177,10 @@ BENCHMARK(split_multiply_add<double>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24
 
 BENCHMARK(split_multiply_add<neo::q7>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 BENCHMARK(split_multiply_add<neo::q15>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+
+#if defined(NEO_HAS_ISA_AVX2)
+BENCHMARK(batch_split_multiply_add<neo::q15x8>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+BENCHMARK(batch_split_multiply_add<neo::q15x16>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+#endif
 
 BENCHMARK_MAIN();

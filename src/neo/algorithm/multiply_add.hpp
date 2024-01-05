@@ -71,7 +71,7 @@ auto multiply_add(
 }  // namespace detail
 
 #if defined(NEO_HAS_APPLE_ACCELERATE)
-    #define NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD
+    #define NEO_HAS_SIMD_SPLIT_COMPLEX_MULTIPLY_ADD
 
 template<std::floating_point Float>
     requires(std::same_as<Float, float> or std::same_as<Float, double>)
@@ -102,7 +102,7 @@ auto multiply_add(
 }
 
 #elif defined(NEO_HAS_ISA_SSE2) and not defined(NEO_HAS_ISA_AVX)
-    #define NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD
+    #define NEO_HAS_SIMD_SPLIT_COMPLEX_MULTIPLY_ADD
 
 struct batch_f32
 {
@@ -147,7 +147,7 @@ auto multiply_add(
 }
 
 #elif defined(NEO_HAS_ISA_AVX) and not defined(NEO_HAS_ISA_AVX512F) and not defined(NEO_COMPILER_MSVC)
-    #define NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD
+    #define NEO_HAS_SIMD_SPLIT_COMPLEX_MULTIPLY_ADD
 
 struct batch_f32
 {
@@ -222,7 +222,7 @@ auto multiply_add(
     }
 }
 
-    #if not defined(NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD)
+    #if not defined(NEO_HAS_SIMD_SPLIT_COMPLEX_MULTIPLY_ADD)
 template<std::floating_point Float>
     requires(not std::same_as<Float, long double>)
 auto multiply_add(
@@ -345,12 +345,7 @@ multiply_add(split_complex<VecX> x, split_complex<VecY> y, split_complex<VecZ> z
         [[maybe_unused]] auto* ore = out.real.data_handle();
         [[maybe_unused]] auto* oim = out.imag.data_handle();
 
-#if defined(NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD)
-        if constexpr (requires { simd::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size); }) {
-            simd::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size);
-            return;
-        }
-#elif defined(NEO_HAS_XSIMD)
+#if defined(NEO_HAS_SIMD_SPLIT_COMPLEX_MULTIPLY_ADD) or defined(NEO_HAS_XSIMD)
         if constexpr (requires { simd::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size); }) {
             simd::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size);
             return;

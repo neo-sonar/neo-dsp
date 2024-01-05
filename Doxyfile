@@ -2330,7 +2330,11 @@ PREDEFINED             = NEO_HAS_ISA_SSE2=1 \
                          NEO_HAS_ISA_SSE41=1 \
                          NEO_HAS_ISA_AVX=1 \
                          NEO_HAS_ISA_AVX2=1 \
-                         NEO_HAS_ISA_NEON=1
+                         NEO_HAS_ISA_AVX512F=1 \
+                         NEO_HAS_ISA_AVX512BW=1 \
+                         NEO_HAS_ISA_NEON=1 \
+                         NEO_HAS_APPLE_ACCELERATE=1 \
+                         NEO_HAS_XSIMD=1
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The
