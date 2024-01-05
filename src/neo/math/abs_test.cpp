@@ -3,6 +3,8 @@
 #include "abs.hpp"
 #include "conj.hpp"
 
+#include <neo/complex.hpp>
+
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
@@ -46,6 +48,16 @@ TEMPLATE_TEST_CASE("neo/math: abs", "", float, double)
     REQUIRE(neo::math::abs(Float(-1.25)) == Catch::Approx(Float(1.25)));
 }
 
+TEMPLATE_TEST_CASE("neo/math: abs", "", neo::complex64, neo::complex128)
+{
+    using Complex = TestType;
+
+    REQUIRE(neo::math::abs(Complex{0, 0}) == Catch::Approx(0));
+    REQUIRE(neo::math::abs(Complex{1, 0}) == Catch::Approx(1));
+    REQUIRE(neo::math::conj(Complex{1, 2}).real() == Catch::Approx(1));
+    REQUIRE(neo::math::conj(Complex{1, 2}).imag() == Catch::Approx(-2));
+}
+
 namespace ns {
 
 struct complex
@@ -63,7 +75,7 @@ TEMPLATE_TEST_CASE("neo/math: abs", "", ns::complex)
 {
     using Complex = TestType;
 
-    REQUIRE(neo::math::abs(Complex(0.0)) == Catch::Approx(0.0));
-    REQUIRE(neo::math::abs(Complex(1.0)) == Catch::Approx(1.0));
-    REQUIRE(neo::math::conj(Complex(1.0)) == Catch::Approx(1.0));
+    REQUIRE(neo::math::abs(Complex{0.0}) == Catch::Approx(0.0));
+    REQUIRE(neo::math::abs(Complex{1.0}) == Catch::Approx(1.0));
+    REQUIRE(neo::math::conj(Complex{1.0}) == Catch::Approx(1.0));
 }
