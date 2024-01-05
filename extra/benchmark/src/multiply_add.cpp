@@ -98,21 +98,25 @@ auto split_multiply_add(benchmark::State& state) -> void
 
 }  // namespace
 
-// BENCHMARK(multiply_add<float>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-// BENCHMARK(multiply_add<double>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+// BENCHMARK(multiply_add<float>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+// BENCHMARK(multiply_add<double>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 
-// BENCHMARK(multiply_add<neo::q7>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-// BENCHMARK(multiply_add<neo::q15>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+// BENCHMARK(multiply_add<neo::q7>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+// BENCHMARK(multiply_add<neo::q15>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 
-// BENCHMARK(multiply_add<std::complex<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-// BENCHMARK(multiply_add<std::complex<double>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+// BENCHMARK(multiply_add<std::complex<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+// BENCHMARK(multiply_add<std::complex<double>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 
-// BENCHMARK(multiply_add<neo::complex64>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-// BENCHMARK(multiply_add<neo::complex128>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+// BENCHMARK(multiply_add<neo::complex64>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+// BENCHMARK(multiply_add<neo::complex128>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 
-BENCHMARK(split_multiply_add<neo::q7>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(split_multiply_add<neo::q15>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(split_multiply_add<float>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(split_multiply_add<double>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
+BENCHMARK(split_multiply_add<_Float16>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+#endif
+BENCHMARK(split_multiply_add<float>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+BENCHMARK(split_multiply_add<double>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+
+BENCHMARK(split_multiply_add<neo::q7>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+BENCHMARK(split_multiply_add<neo::q15>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 
 BENCHMARK_MAIN();
