@@ -8,6 +8,7 @@
 #include <neo/complex/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/fft.hpp>
+#include <neo/math/conj.hpp>
 
 #include <complex>
 #include <concepts>
@@ -58,7 +59,7 @@ struct fallback_dft_plan
         b[0] = w[0];
         for (std::size_t i{1}; i < size(); ++i) {
             auto const m = b.extent(0);
-            auto const c = std::conj(w[i]);
+            auto const c = math::conj(w[i]);
 
             b[i]     = c;
             b[m - i] = c;

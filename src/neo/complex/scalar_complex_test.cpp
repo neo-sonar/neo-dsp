@@ -3,6 +3,7 @@
 #include "scalar_complex.hpp"
 
 #include <neo/fixed_point.hpp>
+#include <neo/math/conj.hpp>
 #include <neo/testing/testing.hpp>
 
 #include <catch2/catch_approx.hpp>
@@ -57,7 +58,7 @@ auto test_floating_point(TestType tolerance)
     REQUIRE(copy.real() == Catch::Approx(Float(-40)));
     REQUIRE(copy.imag() == Catch::Approx(Float(96)));
 
-    auto conj = neo::conj(copy);
+    auto conj = neo::math::conj(copy);
     REQUIRE(conj.real() == Catch::Approx(Float(-40)));
     REQUIRE(conj.imag() == Catch::Approx(Float(-96)));
 

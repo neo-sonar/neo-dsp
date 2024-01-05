@@ -5,6 +5,7 @@
 #include <neo/complex.hpp>
 #include <neo/fft/fallback/fallback_rfft_plan.hpp>
 #include <neo/fft/fft.hpp>
+#include <neo/math/conj.hpp>
 
 namespace neo::fft {
 
@@ -43,9 +44,8 @@ auto rfft_deinterleave(InVec dft, OutVecA a, OutVecB b) -> void
     b[0] = dft[0].imag();
 
     for (auto k{1U}; k < n / 2 + 1; ++k) {
-        using std::conj;
-        a[k] = (dft[k] + conj(dft[n - k])) * Float(0.5);
-        b[k] = (i * (dft[k] - conj(dft[n - k]))) * Float(0.5);
+        a[k] = (dft[k] + math::conj(dft[n - k])) * Float(0.5);
+        b[k] = (i * (dft[k] - math::conj(dft[n - k]))) * Float(0.5);
     }
 }
 

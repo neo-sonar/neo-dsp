@@ -5,6 +5,8 @@
 #include <neo/config.hpp>
 
 #include <neo/math/a_weighting.hpp>
+#include <neo/math/abs.hpp>
+#include <neo/math/conj.hpp>
 #include <neo/math/fast_math.hpp>
 #include <neo/math/float_equality.hpp>
 #include <neo/math/idiv.hpp>
