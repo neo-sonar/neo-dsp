@@ -89,9 +89,9 @@
     #endif
 #endif
 
-#if defined(NEO_PLATFORM_MACOS)
+#if defined(NEO_PLATFORM_APPLE)
     #define NEO_HAS_BUILTIN_FLOAT16
-#elif defined(NEO_HAS_ISA_SSE41) and not defined(NEO_COMPILER_GCC) and not defined(NEO_COMPILER_MSVC)
+#elif defined(NEO_HAS_ISA_SSE41) and defined(NEO_COMPILER_CLANG)
     #define NEO_HAS_BUILTIN_FLOAT16
 #endif
 
