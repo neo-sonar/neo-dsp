@@ -22,15 +22,13 @@ concept has_adl_conj = not has_member_conj<T> and requires(T const& t) { conj(t)
 
 struct conj_fn
 {
-    template<typename T>
-        requires has_member_conj<T>
+    template<has_member_conj T>
     auto operator()(T x) const noexcept
     {
         return x.conj();
     }
 
-    template<typename T>
-        requires has_adl_conj<T>
+    template<has_adl_conj T>
     auto operator()(T x) const noexcept
     {
         return conj(x);

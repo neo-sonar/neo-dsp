@@ -51,6 +51,7 @@ target_sources(neosonar-neo-tests
         "${CMAKE_SOURCE_DIR}/src/neo/fixed_point/fixed_point_test.cpp"
 
         "${CMAKE_SOURCE_DIR}/src/neo/math/a_weighting_test.cpp"
+        "${CMAKE_SOURCE_DIR}/src/neo/math/abs_test.cpp"
         "${CMAKE_SOURCE_DIR}/src/neo/math/ipow_test.cpp"
         "${CMAKE_SOURCE_DIR}/src/neo/math/windowing_test.cpp"
 

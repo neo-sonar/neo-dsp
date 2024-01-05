@@ -27,15 +27,20 @@ struct abs_fn
         return x;
     }
 
-    template<typename T>
-        requires has_member_abs<T>
+    template<std::signed_integral UInt>
+    [[nodiscard]] constexpr auto operator()(UInt x) const noexcept
+    {
+        return std::abs(x);
+    }
+
+    template<has_member_abs T>
     [[nodiscard]] constexpr auto operator()(T x) const noexcept
     {
         return x.abs();
     }
 
-    template<typename T>
-        requires has_adl_abs<T>
+    template<has_adl_abs T>
+        requires(not std::signed_integral<T>)
     [[nodiscard]] constexpr auto operator()(T x) const noexcept
     {
         return abs(x);
