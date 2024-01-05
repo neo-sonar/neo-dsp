@@ -52,11 +52,32 @@ struct scalar_complex
         };
     }
 
+    friend constexpr auto operator/(scalar_complex lhs, scalar_complex rhs) noexcept -> scalar_complex
+    {
+        auto const a     = lhs.real();
+        auto const b     = lhs.imag();
+        auto const c     = rhs.real();
+        auto const d     = rhs.imag();
+        auto const denom = c * c + d * d;
+        return scalar_complex{
+            (a * c + b * d) / denom,
+            (b * c - a * d) / denom,
+        };
+    }
+
     template<typename OtherScalar>
         requires(not complex<OtherScalar>)
     friend constexpr auto operator*=(scalar_complex& lhs, OtherScalar rhs) noexcept -> scalar_complex&
     {
         lhs = scalar_complex{lhs.real() * rhs, lhs.imag() * rhs};
+        return lhs;
+    }
+
+    template<typename OtherScalar>
+        requires(not complex<OtherScalar>)
+    friend constexpr auto operator/=(scalar_complex& lhs, OtherScalar rhs) noexcept -> scalar_complex&
+    {
+        lhs = scalar_complex{lhs.real() / rhs, lhs.imag() / rhs};
         return lhs;
     }
 
