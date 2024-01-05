@@ -12,7 +12,7 @@
 
 namespace neo {
 
-#if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_SIMD_F16C)
+#if defined(NEO_HAS_BUILTIN_FLOAT16) and defined(NEO_HAS_ISA_F16C)
 struct alignas(16) float16x8
 {
     using value_type    = _Float16;

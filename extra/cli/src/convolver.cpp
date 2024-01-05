@@ -18,7 +18,7 @@ using split_upola_convolver = neo::convolution::uniform_partitioned_convolver<
     neo::convolution::dense_split_fdl<typename Complex::value_type>,
     neo::convolution::dense_split_filter<typename Complex::value_type>>;
 
-#if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
+#if defined(NEO_HAS_ISA_F16C) or defined(NEO_HAS_ISA_NEON)
 template<neo::complex Complex>
 using split_upola_convolver_f16 = neo::convolution::uniform_partitioned_convolver<
     neo::convolution::overlap_add<Complex>,
@@ -132,7 +132,7 @@ auto main(int argc, char** argv) -> int
         );
     }
 
-#if defined(NEO_HAS_SIMD_F16C) or defined(NEO_HAS_SIMD_NEON)
+#if defined(NEO_HAS_ISA_F16C) or defined(NEO_HAS_ISA_NEON)
     {
         auto const start   = std::chrono::system_clock::now();
         auto output        = convolve<split_upola_convolver_f16<std::complex<float>>>(signal, filter, block_size);

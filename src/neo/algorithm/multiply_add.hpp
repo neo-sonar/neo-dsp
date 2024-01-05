@@ -101,7 +101,7 @@ auto multiply_add(
     }
 }
 
-#elif defined(NEO_HAS_SIMD_SSE2) and not defined(NEO_HAS_SIMD_AVX)
+#elif defined(NEO_HAS_ISA_SSE2) and not defined(NEO_HAS_ISA_AVX)
     #define NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD
 
 struct batch_f32
@@ -146,7 +146,7 @@ auto multiply_add(
     native::detail::multiply_add<batch>(x_real, x_imag, y_real, y_imag, z_real, z_imag, out_real, out_imag, size);
 }
 
-#elif defined(NEO_HAS_SIMD_AVX) and not defined(NEO_HAS_SIMD_AVX512F)
+#elif defined(NEO_HAS_ISA_AVX) and not defined(NEO_HAS_ISA_AVX512F)
     #define NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD
 
 struct batch_f32
