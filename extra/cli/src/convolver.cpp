@@ -12,13 +12,7 @@
 
 #include <cstdlib>
 
-template<neo::complex Complex>
-using split_upola_convolver = neo::convolution::uniform_partitioned_convolver<
-    neo::convolution::overlap_add<Complex>,
-    neo::convolution::dense_split_fdl<typename Complex::value_type>,
-    neo::convolution::dense_split_filter<typename Complex::value_type>>;
-
-#if defined(NEO_HAS_ISA_F16C) or defined(NEO_HAS_ISA_NEON)
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
 template<neo::complex Complex>
 using split_upola_convolver_f16 = neo::convolution::uniform_partitioned_convolver<
     neo::convolution::overlap_add<Complex>,
@@ -118,8 +112,9 @@ auto main(int argc, char** argv) -> int
     }
 
     {
-        auto const start   = std::chrono::system_clock::now();
-        auto output        = convolve<split_upola_convolver<std::complex<float>>>(signal, filter, block_size);
+        auto const start = std::chrono::system_clock::now();
+        auto output
+            = convolve<neo::convolution::split_upola_convolver<std::complex<float>>>(signal, filter, block_size);
         auto const stop    = std::chrono::system_clock::now();
         auto const runtime = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start);
 
@@ -132,7 +127,7 @@ auto main(int argc, char** argv) -> int
         );
     }
 
-#if defined(NEO_HAS_ISA_F16C) or defined(NEO_HAS_ISA_NEON)
+#if defined(NEO_HAS_BUILTIN_FLOAT16)
     {
         auto const start   = std::chrono::system_clock::now();
         auto output        = convolve<split_upola_convolver_f16<std::complex<float>>>(signal, filter, block_size);

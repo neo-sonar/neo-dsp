@@ -97,7 +97,7 @@
 
 #if defined(__GNUC__) or defined(__clang__)
     #define NEO_ALWAYS_INLINE __attribute__((always_inline)) inline
-#elif defined(_MSC_VER) and not defined(__clang__)
+#elif defined(_MSC_VER)
     #define NEO_ALWAYS_INLINE __forceinline
 #else
     #define NEO_ALWAYS_INLINE inline
