@@ -40,14 +40,14 @@ auto multiply_add(benchmark::State& state) -> void
     state.SetBytesProcessed(items * sizeof(ValueType));
 }
 
-template<typename Float>
+template<typename Real>
 auto split_multiply_add(benchmark::State& state) -> void
 {
     auto const size = state.range(0);
 
-    auto x_buf   = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{2, size};
-    auto y_buf   = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{2, size};
-    auto out_buf = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{2, size};
+    auto x_buf   = stdex::mdarray<Real, stdex::dextents<size_t, 2>>{2, size};
+    auto y_buf   = stdex::mdarray<Real, stdex::dextents<size_t, 2>>{2, size};
+    auto out_buf = stdex::mdarray<Real, stdex::dextents<size_t, 2>>{2, size};
 
     auto const x = neo::split_complex{
         stdex::submdspan(x_buf.to_mdspan(), 0, stdex::full_extent),
@@ -62,22 +62,25 @@ auto split_multiply_add(benchmark::State& state) -> void
         stdex::submdspan(out_buf.to_mdspan(), 1, stdex::full_extent),
     };
 
-    auto const noise_x   = neo::generate_noise_signal<neo::scalar_complex<Float>>(size, std::random_device{}());
-    auto const noise_y   = neo::generate_noise_signal<neo::scalar_complex<Float>>(size, std::random_device{}());
-    auto const noise_out = neo::generate_noise_signal<neo::scalar_complex<Float>>(size, std::random_device{}());
+    auto const noise_x_real   = neo::generate_noise_signal<Real>(size, std::random_device{}());
+    auto const noise_x_imag   = neo::generate_noise_signal<Real>(size, std::random_device{}());
+    auto const noise_y_real   = neo::generate_noise_signal<Real>(size, std::random_device{}());
+    auto const noise_y_imag   = neo::generate_noise_signal<Real>(size, std::random_device{}());
+    auto const noise_out_real = neo::generate_noise_signal<Real>(size, std::random_device{}());
+    auto const noise_out_imag = neo::generate_noise_signal<Real>(size, std::random_device{}());
 
     for (auto i{0U}; i < size; ++i) {
-        x.real[i] = noise_x(i).real();
-        x.imag[i] = noise_x(i).imag();
-        y.real[i] = noise_y(i).real();
-        y.imag[i] = noise_y(i).imag();
+        x.real[i] = noise_x_real(i);
+        x.imag[i] = noise_x_imag(i);
+        y.real[i] = noise_y_real(i);
+        y.imag[i] = noise_y_imag(i);
     }
 
     for (auto _ : state) {
         state.PauseTiming();
         for (auto i{0U}; i < size; ++i) {
-            out.real[i] = noise_out(i).real();
-            out.imag[i] = noise_out(i).imag();
+            out.real[i] = noise_out_real(i);
+            out.imag[i] = noise_out_imag(i);
         }
         state.ResumeTiming();
 
@@ -90,7 +93,7 @@ auto split_multiply_add(benchmark::State& state) -> void
 
     auto const items = static_cast<int64_t>(state.iterations()) * size;
     state.SetItemsProcessed(items);
-    state.SetBytesProcessed(items * sizeof(Float) * 2);
+    state.SetBytesProcessed(items * sizeof(Real) * 2);
 }
 
 }  // namespace
@@ -101,12 +104,14 @@ auto split_multiply_add(benchmark::State& state) -> void
 // BENCHMARK(multiply_add<neo::q7>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 // BENCHMARK(multiply_add<neo::q15>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
-BENCHMARK(multiply_add<std::complex<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(multiply_add<std::complex<double>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+// BENCHMARK(multiply_add<std::complex<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+// BENCHMARK(multiply_add<std::complex<double>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
 // BENCHMARK(multiply_add<neo::complex64>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 // BENCHMARK(multiply_add<neo::complex128>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
+BENCHMARK(split_multiply_add<neo::q7>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(split_multiply_add<neo::q15>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 BENCHMARK(split_multiply_add<float>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 BENCHMARK(split_multiply_add<double>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
