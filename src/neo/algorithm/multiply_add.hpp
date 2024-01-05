@@ -14,13 +14,13 @@
 #endif
 
 #if defined(NEO_HAS_XSIMD)
-    #include <neo/algorithm/backend/xsimd.hpp>
+    #include <neo/config/xsimd.hpp>
 #endif
 
 #include <cassert>
 #include <utility>
 
-namespace neo::native {
+namespace neo::simd {
 
 namespace detail {
 
@@ -143,7 +143,7 @@ auto multiply_add(
 ) -> void
 {
     using batch = std::conditional_t<std::same_as<Float, float>, batch_f32, batch_f64>;
-    native::detail::multiply_add<batch>(x_real, x_imag, y_real, y_imag, z_real, z_imag, out_real, out_imag, size);
+    simd::detail::multiply_add<batch>(x_real, x_imag, y_real, y_imag, z_real, z_imag, out_real, out_imag, size);
 }
 
 #elif defined(NEO_HAS_ISA_AVX) and not defined(NEO_HAS_ISA_AVX512F) and not defined(NEO_COMPILER_MSVC)
@@ -188,12 +188,89 @@ auto multiply_add(
 ) -> void
 {
     using batch = std::conditional_t<std::same_as<Float, float>, batch_f32, batch_f64>;
-    native::detail::multiply_add<batch>(x_real, x_imag, y_real, y_imag, z_real, z_imag, out_real, out_imag, size);
+    simd::detail::multiply_add<batch>(x_real, x_imag, y_real, y_imag, z_real, z_imag, out_real, out_imag, size);
 }
 
 #endif
 
-}  // namespace neo::native
+#if defined(NEO_HAS_XSIMD)
+template<std::floating_point Float>
+    requires(not std::same_as<Float, long double>)
+auto multiply_add(
+    std::complex<Float> const* x,
+    std::complex<Float> const* y,
+    std::complex<Float> const* z,
+    std::complex<Float>* out,
+    std::size_t size
+) -> void
+{
+    using batch_type = xsimd::batch<std::complex<Float>>;
+
+    auto const inc      = batch_type::size;
+    auto const vec_size = size - size % inc;
+
+    for (auto i = std::size_t(0); i < vec_size; i += inc) {
+        auto const x_vec   = batch_type::load_unaligned(&x[i]);
+        auto const y_vec   = batch_type::load_unaligned(&y[i]);
+        auto const z_vec   = batch_type::load_unaligned(&z[i]);
+        auto const out_vec = x_vec * y_vec + z_vec;
+        out_vec.store_unaligned(&out[i]);
+    }
+
+    for (auto i = vec_size; i < size; ++i) {
+        out[i] = x[i] * y[i] + z[i];
+    }
+}
+
+    #if not defined(NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD)
+template<std::floating_point Float>
+    requires(not std::same_as<Float, long double>)
+auto multiply_add(
+    Float const* x_real,
+    Float const* x_imag,
+    Float const* y_real,
+    Float const* y_imag,
+    Float const* z_real,
+    Float const* z_imag,
+    Float* out_real,
+    Float* out_imag,
+    std::size_t size
+) -> void
+{
+    using batch_type = xsimd::batch<Float>;
+
+    auto const inc      = batch_type::size;
+    auto const vec_size = size - size % inc;
+
+    for (auto i = std::size_t(0); i < vec_size; i += inc) {
+        auto const xre = batch_type::load_unaligned(&x_real[i]);
+        auto const xim = batch_type::load_unaligned(&x_imag[i]);
+        auto const yre = batch_type::load_unaligned(&y_real[i]);
+        auto const yim = batch_type::load_unaligned(&y_imag[i]);
+        auto const zre = batch_type::load_unaligned(&z_real[i]);
+        auto const zim = batch_type::load_unaligned(&z_imag[i]);
+
+        auto const out_re = (xre * yre - xim * yim) + zre;
+        auto const out_im = (xre * yim + xim * yre) + zim;
+
+        out_re.store_unaligned(&out_real[i]);
+        out_im.store_unaligned(&out_imag[i]);
+    }
+
+    for (auto i = vec_size; i < size; ++i) {
+        auto const xre = x_real[i];
+        auto const xim = x_imag[i];
+        auto const yre = y_real[i];
+        auto const yim = y_imag[i];
+
+        out_real[i] = (xre * yre - xim * yim) + z_real[i];
+        out_imag[i] = (xre * yim + xim * yre) + z_imag[i];
+    }
+}
+    #endif
+#endif
+
+}  // namespace neo::simd
 
 namespace neo {
 
@@ -210,8 +287,8 @@ constexpr auto multiply_add(VecX x, VecY y, VecZ z, VecOut out) noexcept -> void
         auto z_ptr   = z.data_handle();
         auto out_ptr = out.data_handle();
         auto size    = x.extent(0);
-        if constexpr (requires { detail::multiply_add(x_ptr, y_ptr, z_ptr, out_ptr, size); }) {
-            detail::multiply_add(x_ptr, y_ptr, z_ptr, out_ptr, size);
+        if constexpr (requires { simd::multiply_add(x_ptr, y_ptr, z_ptr, out_ptr, size); }) {
+            simd::multiply_add(x_ptr, y_ptr, z_ptr, out_ptr, size);
             return;
         }
     }
@@ -269,13 +346,13 @@ multiply_add(split_complex<VecX> x, split_complex<VecY> y, split_complex<VecZ> z
         [[maybe_unused]] auto* oim = out.imag.data_handle();
 
 #if defined(NEO_HAS_NATIVE_SPLIT_COMPLEX_MULTIPLY_ADD)
-        if constexpr (requires { native::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size); }) {
-            native::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size);
+        if constexpr (requires { simd::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size); }) {
+            simd::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size);
             return;
         }
 #elif defined(NEO_HAS_XSIMD)
-        if constexpr (requires { detail::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size); }) {
-            detail::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size);
+        if constexpr (requires { simd::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size); }) {
+            simd::multiply_add(xre, xim, yre, yim, zre, zim, ore, oim, size);
             return;
         }
 #endif
