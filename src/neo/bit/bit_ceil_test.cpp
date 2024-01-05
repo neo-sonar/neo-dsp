@@ -8,7 +8,7 @@
 
 #include <random>
 
-TEMPLATE_TEST_CASE("neo/math: bit_ceil", "", std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t)
+TEMPLATE_TEST_CASE("neo/bit: bit_ceil", "", std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t)
 {
     using UInt = TestType;
 
@@ -19,7 +19,7 @@ TEMPLATE_TEST_CASE("neo/math: bit_ceil", "", std::uint8_t, std::uint16_t, std::u
     REQUIRE(neo::bit_ceil(UInt(100)) == UInt(128));
 }
 
-TEMPLATE_TEST_CASE("neo/math: detail::bit_ceil_fallback", "", std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t)
+TEMPLATE_TEST_CASE("neo/bit: detail::bit_ceil_fallback", "", std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t)
 {
     using UInt = TestType;
 

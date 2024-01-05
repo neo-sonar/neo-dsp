@@ -2,9 +2,9 @@
 
 #pragma once
 
+#include <neo/bit/bit_log2.hpp>
 #include <neo/complex/complex.hpp>
 #include <neo/container/mdspan.hpp>
-#include <neo/math/ilog2.hpp>
 
 #include <cstddef>
 #include <span>
@@ -49,7 +49,7 @@ struct bitrevorder_plan
 private:
     [[nodiscard]] static auto make(std::size_t size) -> std::vector<std::uint32_t>
     {
-        auto const order = ilog2(size);
+        auto const order = bit_log2(size);
         auto table       = std::vector<std::uint32_t>(size, 0);
         for (auto i{0U}; i < size; ++i) {
             for (auto j{0U}; j < order; ++j) {

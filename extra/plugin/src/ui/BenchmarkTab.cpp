@@ -9,12 +9,18 @@
 #include "dsp/DenseConvolution.hpp"
 #include "dsp/Spectrum.hpp"
 
-#include <neo/algorithm/normalize_peak.hpp>
-#include <neo/algorithm/root_mean_squared_error.hpp>
-#include <neo/fft/rfftfreq.hpp>
-#include <neo/fft/stft.hpp>
-#include <neo/math/a_weighting.hpp>
-#include <neo/unit/decibel.hpp>
+#include <neo/algorithm.hpp>
+#include <neo/bit.hpp>
+#include <neo/complex.hpp>
+#include <neo/config.hpp>
+#include <neo/container.hpp>
+#include <neo/convolution.hpp>
+#include <neo/fft.hpp>
+#include <neo/fixed_point.hpp>
+#include <neo/math.hpp>
+#include <neo/simd.hpp>
+#include <neo/type_traits.hpp>
+#include <neo/unit.hpp>
 
 #include <juce_dsp/juce_dsp.h>
 

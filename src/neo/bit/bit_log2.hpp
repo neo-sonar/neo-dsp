@@ -10,7 +10,7 @@
 namespace neo {
 
 template<std::integral Int>
-[[nodiscard]] constexpr auto ilog2(Int x) -> Int
+[[nodiscard]] constexpr auto bit_log2(Int x) -> Int
 {
     assert(x > Int(0));
 
