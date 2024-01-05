@@ -20,10 +20,12 @@ auto test_floating_point(TestType tolerance)
     STATIC_REQUIRE(neo::complex<neo::scalar_complex<Float>>);
     STATIC_REQUIRE(std::same_as<neo::real_or_complex_value_t<neo::scalar_complex<Float>>, Float>);
     STATIC_REQUIRE(std::same_as<typename Complex::value_type, Float>);
+    STATIC_REQUIRE(std::tuple_size_v<neo::scalar_complex<Float>> == 2);
 
-    auto tc = Complex{Float(1)};
-    REQUIRE(tc.real() == Catch::Approx(Float(1)));
-    REQUIRE(tc.imag() == Catch::Approx(Float(0)));
+    auto tc             = Complex{Float(1)};
+    auto const [re, im] = tc;
+    REQUIRE(re == Catch::Approx(Float(1)));
+    REQUIRE(im == Catch::Approx(Float(0)));
 
     tc.real(Float(2));
     tc.imag(Float(3));
@@ -66,6 +68,7 @@ auto test_fixed_point()
     STATIC_REQUIRE(neo::complex<neo::scalar_complex<FxPoint>>);
     STATIC_REQUIRE(std::same_as<neo::real_or_complex_value_t<neo::scalar_complex<FxPoint>>, FxPoint>);
     STATIC_REQUIRE(std::same_as<typename Complex::value_type, FxPoint>);
+    STATIC_REQUIRE(std::tuple_size_v<neo::scalar_complex<FxPoint>> == 2);
 
     auto tc = Complex{FxPoint(neo::underlying_value, 10)};
     REQUIRE(tc.real().value() == 10);

@@ -7,6 +7,7 @@
 #include <neo/complex/complex.hpp>
 
 #include <cmath>
+#include <tuple>
 
 namespace neo {
 
@@ -66,6 +67,17 @@ private:
 template<typename Scalar>
 inline constexpr auto const is_complex<scalar_complex<Scalar>> = true;
 
+template<std::size_t I, typename T>
+    requires(I < 2)
+[[nodiscard]] constexpr auto get(scalar_complex<T> const& z) noexcept -> T
+{
+    if constexpr (I == 0) {
+        return z.real();
+    } else {
+        return z.imag();
+    }
+}
+
 template<typename Scalar>
 [[nodiscard]] constexpr auto conj(scalar_complex<Scalar> const& z) noexcept -> scalar_complex<Scalar>
 {
@@ -98,3 +110,14 @@ using complex64  = scalar_complex<float>;
 using complex128 = scalar_complex<double>;
 
 }  // namespace neo
+
+template<typename T>
+struct std::tuple_size<neo::scalar_complex<T>> : std::integral_constant<std::size_t, 2>
+{};
+
+template<std::size_t I, typename T>
+    requires(I < 2)
+struct std::tuple_element<I, neo::scalar_complex<T>>
+{
+    using type = T;
+};
