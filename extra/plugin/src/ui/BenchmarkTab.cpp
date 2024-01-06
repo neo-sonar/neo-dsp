@@ -467,11 +467,11 @@ auto BenchmarkTab::runConvolverTests() -> void {}
 
 auto BenchmarkTab::runSparseQualityTests() -> void
 {
-    auto const stftSize    = static_cast<int>(_stftWindowSize.getValue());
+    auto const stftSize    = static_cast<std::size_t>(static_cast<int>(_stftWindowSize.getValue()));
     auto const stftOptions = neo::fft::stft_options<double>{
-        .frame_length   = stftSize,
+        .frame_size     = stftSize,
         .transform_size = stftSize * 2,
-        .overlap_length = stftSize / 2,
+        .overlap_size   = stftSize / 2,
     };
     auto stftPlan = neo::fft::stft_plan<double>{stftOptions};
 
