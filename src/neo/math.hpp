@@ -12,6 +12,7 @@
 #include <neo/math/idiv.hpp>
 #include <neo/math/imag.hpp>
 #include <neo/math/ipow.hpp>
+#include <neo/math/polar.hpp>
 #include <neo/math/precision.hpp>
 #include <neo/math/real.hpp>
 #include <neo/math/windowing.hpp>

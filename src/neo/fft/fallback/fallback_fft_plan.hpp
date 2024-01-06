@@ -9,6 +9,7 @@
 #include <neo/fft/fallback/conjugate_view.hpp>
 #include <neo/fft/fallback/kernel/c2c_dit2.hpp>
 #include <neo/fft/order.hpp>
+#include <neo/math/polar.hpp>
 
 #include <cassert>
 #include <numbers>
@@ -30,7 +31,7 @@ auto fill_radix2_twiddles(OutVec table, direction dir = direction::forward) noex
 
     for (std::size_t i = 0; i < table_size; ++i) {
         auto const angle   = sign * two_pi * Float(i) / Float(fft_size);
-        auto const twiddle = std::polar(Float(1), angle);              // returns std::complex
+        auto const twiddle = math::polar(Float(1), angle);             // returns std::complex
         table[i]           = Complex{twiddle.real(), twiddle.imag()};  // convert to custom complex (maybe)
     }
 }
