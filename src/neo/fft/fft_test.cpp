@@ -9,6 +9,10 @@
 #include <neo/simd.hpp>
 #include <neo/testing/testing.hpp>
 
+#if defined(NEO_HAS_XSIMD)
+    #include <neo/config/xsimd.hpp>
+#endif
+
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_template_test_macros.hpp>
@@ -23,7 +27,9 @@ namespace {
 template<typename Complex, typename Kernel>
 struct kernel_tester
 {
-    using plan_type = neo::fft::fallback_fft_plan<Complex, Kernel>;
+    using plan_type    = neo::fft::fallback_fft_plan<Complex, Kernel>;
+    using complex_type = Complex;
+    using kernel_type  = Kernel;
 };
 
 template<typename Complex>
@@ -112,50 +118,12 @@ auto test_fft_plan()
 #endif
 }
 
-}  // namespace
-
-TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft: fallback_fft_plan",
-    "",
-    (kernel_v1, kernel_v2, kernel_v3),
-    (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>)
-)
-{
-    test_fft_plan<typename TestType::plan_type>();
-}
-
-#if defined(NEO_HAS_APPLE_ACCELERATE)
-TEMPLATE_TEST_CASE("neo/fft: apple_vdsp_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
-{
-    test_fft_plan<neo::fft::apple_vdsp_fft_plan<TestType>>();
-}
-#endif
-
-#if defined(NEO_HAS_INTEL_IPP)
-TEMPLATE_TEST_CASE("neo/fft: intel_ipp_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
-{
-    test_fft_plan<neo::fft::intel_ipp_fft_plan<TestType>>();
-}
-#endif
-
-#if defined(NEO_HAS_INTEL_MKL)
-TEMPLATE_TEST_CASE("neo/fft: intel_mkl_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
-{
-    test_fft_plan<neo::fft::intel_mkl_fft_plan<TestType>>();
-}
-#endif
-
-TEMPLATE_TEST_CASE("neo/fft: fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
-{
-    test_fft_plan<neo::fft::fft_plan<TestType>>();
-}
-
 template<typename ComplexBatch, typename Kernel>
 static auto test_complex_batch_roundtrip_fft()
 {
-    using ScalarBatch   = typename ComplexBatch::batch_type;
-    using ScalarFloat   = typename ComplexBatch::real_scalar_type;
-    using ScalarComplex = std::complex<ScalarFloat>;
+    using ScalarComplex = neo::value_type_t<ComplexBatch>;
+    using ScalarBatch   = typename ComplexBatch::real_batch;
+    using ScalarFloat   = typename ScalarComplex::value_type;
 
     auto make_noise_signal = [](auto size) {
         auto noise = neo::generate_noise_signal<ScalarComplex>(size, Catch::getSeed());
@@ -225,3 +193,55 @@ static auto test_complex_batch_roundtrip_fft()
         ));
     }
 }
+
+}  // namespace
+
+#if defined(NEO_HAS_APPLE_ACCELERATE)
+TEMPLATE_TEST_CASE("neo/fft: apple_vdsp_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
+{
+    test_fft_plan<neo::fft::apple_vdsp_fft_plan<TestType>>();
+}
+#endif
+
+#if defined(NEO_HAS_INTEL_IPP)
+TEMPLATE_TEST_CASE("neo/fft: intel_ipp_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
+{
+    test_fft_plan<neo::fft::intel_ipp_fft_plan<TestType>>();
+}
+#endif
+
+#if defined(NEO_HAS_INTEL_MKL)
+TEMPLATE_TEST_CASE("neo/fft: intel_mkl_fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
+{
+    test_fft_plan<neo::fft::intel_mkl_fft_plan<TestType>>();
+}
+#endif
+
+TEMPLATE_TEST_CASE("neo/fft: fft_plan", "", neo::complex64, std::complex<float>, neo::complex128, std::complex<double>)
+{
+    test_fft_plan<neo::fft::fft_plan<TestType>>();
+}
+
+TEMPLATE_PRODUCT_TEST_CASE(
+    "neo/fft: fallback_fft_plan",
+    "",
+    (kernel_v1, kernel_v2, kernel_v3),
+    (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>, std::complex<long double>)
+)
+{
+    test_fft_plan<typename TestType::plan_type>();
+}
+
+#if defined(NEO_HAS_XSIMD)
+TEMPLATE_PRODUCT_TEST_CASE(
+    "neo/fft: fallback_fft_plan",
+    "",
+    (kernel_v1, kernel_v2, kernel_v3),
+    (xsimd::batch<std::complex<float>>, xsimd::batch<std::complex<double>>)
+)
+{
+    using Complex = typename TestType::complex_type;
+    using Kernel  = typename TestType::kernel_type;
+    test_complex_batch_roundtrip_fft<Complex, Kernel>();
+}
+#endif
