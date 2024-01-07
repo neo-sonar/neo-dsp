@@ -6,6 +6,8 @@
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/fft.hpp>
 #include <neo/fft/order.hpp>
+#include <neo/math/imag.hpp>
+#include <neo/math/real.hpp>
 
 namespace neo::fft {
 
@@ -57,16 +59,16 @@ private:
             auto const i1 = k;
             auto const i2 = k + stage_length;
 
-            auto const x1 = std::complex{xre[i1], xim[i1]};
-            auto const x2 = std::complex{xre[i2], xim[i2]};
+            auto const x1re = xre[i1];
+            auto const x1im = xim[i1];
+            auto const x2re = xre[i2];
+            auto const x2im = xim[i2];
 
-            auto const xn1 = x1 + x2;
-            xre[i1]        = xn1.real();
-            xim[i1]        = xn1.imag();
+            xre[i1] = x1re + x2re;
+            xim[i1] = x1im + x2im;
 
-            auto const xn2 = x1 - x2;
-            xre[i2]        = xn2.real();
-            xim[i2]        = xn2.imag();
+            xre[i2] = x1re - x2re;
+            xim[i2] = x1im - x2im;
         }
 
         auto const tw_re = stdex::submdspan(_tw.to_mdspan(), 0, stdex::full_extent);
@@ -82,52 +84,52 @@ private:
         int stage
     ) -> void
     {
-        auto const log2_size    = static_cast<int>(order());
-        auto const size         = 1 << log2_size;
+        auto const log2_size = static_cast<int>(order());
+        auto const size      = 1 << log2_size;
+
         auto const stage_length = ipow<2>(stage);
         auto const stride       = ipow<2>(stage + 1);
         auto const tw_stride    = ipow<2>(log2_size - stage - 1);
 
         for (auto k{0}; k < size; k += stride) {
             for (auto pair{0}; pair < stage_length; ++pair) {
-                auto const twi = pair * tw_stride;
-                auto const tw  = std::complex{tw_re[twi], tw_im[twi]};
+                auto const i1      = k + pair;
+                auto const i2      = k + pair + stage_length;
+                auto const w_index = pair * tw_stride;
 
-                auto const i1 = k + pair;
-                auto const i2 = k + pair + stage_length;
+                auto const wre = tw_re[w_index];
+                auto const wim = tw_im[w_index];
 
-                auto const x1 = std::complex{xre[i1], xim[i1]};
-                auto const x2 = std::complex{xre[i2], xim[i2]};
+                auto const x1re = xre[i1];
+                auto const x1im = xim[i1];
+                auto const x2re = xre[i2];
+                auto const x2im = xim[i2];
 
-                auto const xn1 = x1 + tw * x2;
-                xre[i1]        = xn1.real();
-                xim[i1]        = xn1.imag();
+                auto const xwre = wre * x2re - wim * x2im;
+                auto const xwim = wre * x2im + wim * x2re;
 
-                auto const xn2 = x1 - tw * x2;
-                xre[i2]        = xn2.real();
-                xim[i2]        = xn2.imag();
+                xre[i1] = x1re + xwre;
+                xim[i1] = x1im + xwim;
+                xre[i2] = x1re - xwre;
+                xim[i2] = x1im - xwim;
             }
         }
 
-        if (stage + 1 < log2_size) {
-            stage_n(xre, xim, tw_re, tw_im, stage + 1);
+        if (auto const next_stage = ++stage; next_stage < log2_size) {
+            stage_n(xre, xim, tw_re, tw_im, next_stage);
         }
     }
 
     [[nodiscard]] static auto make_twiddles(size_type n)
     {
-        auto tw = detail::make_radix2_twiddles<std::complex<Float>>(n, direction::forward);
+        auto interleaved = detail::make_radix2_twiddles<std::complex<Float>>(n, direction::forward);
 
-        auto tw_buf = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{2, n};
-        auto tw_re  = stdex::submdspan(tw_buf.to_mdspan(), 0, stdex::full_extent);
-        auto tw_im  = stdex::submdspan(tw_buf.to_mdspan(), 1, stdex::full_extent);
+        auto w_buf = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{2, n};
+        auto w_re  = stdex::submdspan(w_buf.to_mdspan(), 0, stdex::full_extent);
+        auto w_im  = stdex::submdspan(w_buf.to_mdspan(), 1, stdex::full_extent);
 
-        for (auto i{0U}; i < tw.extent(0); ++i) {
-            tw_re[i] = tw(i).real();
-            tw_im[i] = tw(i).imag();
-        }
-
-        return tw_buf;
+        copy(interleaved.to_mdspan(), split_complex{w_re, w_im});
+        return w_buf;
     }
 
     fft::order _order;
