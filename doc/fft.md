@@ -1,20 +1,36 @@
 # FFT
 
-## Interface
+```cpp
+#include <neo/fft.hpp>
+```
+
+## Order
 
 ```cpp
 namespace neo::fft {
     enum struct order : std::size_t
     {
     };
+}
+```
 
+## Direction
+
+```cpp
+namespace neo::fft {
     enum struct direction : int
     {
         forward  = -1,
         backward = 1,
     };
+}
+```
 
-    template<neo::complex Complex>
+## FFT
+
+```cpp
+namespace neo::fft {
+    template<typename Complex>
     struct fft_plan
     {
         using value_type = Complex;
@@ -22,31 +38,66 @@ namespace neo::fft {
 
         explicit fft_plan(fft::order order);
 
-        [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order;
-        [[nodiscard]] static constexpr auto max_size() noexcept -> size_type;
+        static constexpr auto max_order() noexcept -> fft::order;
+        static constexpr auto max_size() noexcept -> size_type;
 
-        [[nodiscard]] auto order() const noexcept -> fft::order;
-        [[nodiscard]] auto size() const noexcept -> size_type;
+        auto order() const noexcept -> fft::order;
+        auto size() const noexcept -> size_type;
 
-        template<inout_vector Vec>
-            requires std::same_as<typename Vec::value_type, Complex>
-        auto operator()(Vec x, direction dir) -> void;
+        template<inout_vector_of<Complex> InOutVec>
+        auto operator()(InOutVec x, direction dir) -> void;
 
         template<in_vector_of<Complex> InVec, out_vector_of<Complex> OutVec>
         auto operator()(InVec in, OutVec out, direction dir) -> void;
     };
 
-    template<typename Plan, inout_vector Vec>
-    constexpr auto fft(Plan& plan, Vec x) -> void;
+    template<typename Plan, inout_vector InOutVec>
+    auto fft(Plan& plan, InOutVec x) -> void;
 
     template<typename Plan, in_vector InVec, out_vector OutVec>
-    constexpr auto fft(Plan& plan, InVec in, OutVec out) -> void;
+    auto fft(Plan& plan, InVec in, OutVec out) -> void;
 
-    template<typename Plan, inout_vector Vec>
-    constexpr auto ifft(Plan& plan, Vec x) -> void;
+    template<typename Plan, inout_vector InOutVec>
+    auto ifft(Plan& plan, InOutVec x) -> void;
 
     template<typename Plan, in_vector InVec, out_vector OutVec>
-    constexpr auto ifft(Plan& plan, InVec in, OutVec out) -> void;
+    auto ifft(Plan& plan, InVec in, OutVec out) -> void;
+}
+```
+
+## DFT
+
+```cpp
+namespace neo::fft {
+    template<typename Complex>
+    struct dft_plan
+    {
+        using value_type = Complex;
+        using size_type  = std::size_t;
+
+        explicit dft_plan(size_type size);
+
+        static constexpr auto max_size() noexcept -> size_type;
+        auto size() const noexcept -> size_type;
+
+        template<inout_vector_of<Complex> InOutVec>
+        auto operator()(InOutVec x, direction dir) -> void;
+
+        template<in_vector_of<Complex> InVec, out_vector_of<Complex> OutVec>
+        auto operator()(InVec in, OutVec out, direction dir) -> void;
+    };
+
+    template<typename Plan, inout_vector InOutVec>
+    auto dft(Plan& plan, InOutVec x) -> void;
+
+    template<typename Plan, in_vector InVec, out_vector OutVec>
+    auto dft(Plan& plan, InVec in, OutVec out) -> void;
+
+    template<typename Plan, inout_vector InOutVec>
+    auto idft(Plan& plan, InOutVec x) -> void;
+
+    template<typename Plan, in_vector InVec, out_vector OutVec>
+    auto idft(Plan& plan, InVec in, OutVec out) -> void;
 }
 ```
 
