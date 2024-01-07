@@ -4,18 +4,15 @@
 
 #include <neo/config.hpp>
 
-#include <cassert>
 #include <concepts>
 
 namespace neo {
 
-template<std::integral Int>
-[[nodiscard]] constexpr auto bit_log2(Int x) -> Int
+template<std::unsigned_integral UInt>
+[[nodiscard]] constexpr auto bit_log2(UInt x) noexcept -> UInt
 {
-    assert(x > Int(0));
-
-    auto result = Int{0};
-    for (; x > Int(1); x >>= Int(1)) {
+    auto result = UInt{0};
+    for (; x > UInt(1); x >>= UInt(1)) {
         ++result;
     }
     return result;
