@@ -1,23 +1,14 @@
-# FFT
+# Transforms
 
 ```cpp
 #include <neo/fft.hpp>
-```
 
-## Order
-
-```cpp
 namespace neo::fft {
+
     enum struct order : std::size_t
     {
     };
-}
-```
 
-## Direction
-
-```cpp
-namespace neo::fft {
     enum struct direction : int
     {
         forward  = -1,
