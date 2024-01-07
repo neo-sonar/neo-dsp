@@ -6,6 +6,9 @@
 #include <neo/fft/fallback/fallback_rfft_plan.hpp>
 #include <neo/fft/fft.hpp>
 #include <neo/math/conj.hpp>
+#include <neo/math/imag.hpp>
+#include <neo/math/real.hpp>
+#include <neo/type_traits/value_type_t.hpp>
 
 namespace neo::fft {
 
@@ -31,21 +34,25 @@ constexpr auto irfft(Plan& plan, InVec input, OutVec output)
     return plan(input, output);
 }
 
-template<in_vector InVec, out_vector OutVecA, out_vector OutVecB>
-auto rfft_deinterleave(InVec dft, OutVecA a, OutVecB b) -> void
+template<in_vector InVec, out_vector OutVecX, out_vector OutVecY>
+    requires(complex<value_type_t<InVec>> and complex<value_type_t<OutVecX>> and complex<value_type_t<OutVecY>>)
+auto rfft_deinterleave(InVec dft, OutVecX x, OutVecY y) -> void
 {
-    using Complex = typename InVec::value_type;
-    using Float   = typename Complex::value_type;
+    using Complex = value_type_t<InVec>;
+    using Float   = value_type_t<Complex>;
 
-    auto const n = dft.size();
+    auto const n = static_cast<int>(dft.extent(0));
     auto const i = Complex{Float(0), Float(-1)};
 
-    a[0] = dft[0].real();
-    b[0] = dft[0].imag();
+    x[0] = math::real(dft[0]);
+    y[0] = math::imag(dft[0]);
 
-    for (auto k{1U}; k < n / 2 + 1; ++k) {
-        a[k] = (dft[k] + math::conj(dft[n - k])) * Float(0.5);
-        b[k] = (i * (dft[k] - math::conj(dft[n - k]))) * Float(0.5);
+    for (auto k{1}; k < n / 2 + 1; ++k) {
+        auto const zk  = dft[k];
+        auto const znk = math::conj(dft[n - k]);
+
+        x[k] = (zk + znk) * Float(0.5);
+        y[k] = ((zk - znk) * i) * Float(0.5);
     }
 }
 
