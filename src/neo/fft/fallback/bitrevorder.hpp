@@ -4,6 +4,7 @@
 
 #include <neo/bit/bit_log2.hpp>
 #include <neo/complex/complex.hpp>
+#include <neo/complex/split_complex.hpp>
 #include <neo/container/mdspan.hpp>
 
 #include <cstddef>
@@ -18,7 +19,7 @@ struct bitrevorder_plan
     explicit bitrevorder_plan(std::size_t order) : _table{make(std::size_t(1) << order)} {}
 
     template<inout_vector Vec>
-        requires complex<typename Vec::value_type>
+        requires complex<value_type_t<Vec>>
     auto operator()(Vec x) -> void
     {
         for (auto i{0U}; i < _table.size(); ++i) {
@@ -29,7 +30,7 @@ struct bitrevorder_plan
     }
 
     template<inout_vector Vec>
-        requires std::floating_point<typename Vec::value_type>
+        requires std::floating_point<value_type_t<Vec>>
     auto operator()(Vec x) -> void
     {
         for (auto i{0U}; i < _table.size(); ++i) {
@@ -42,6 +43,19 @@ struct bitrevorder_plan
 
                 std::swap(x[src_re], x[dest_re]);
                 std::swap(x[src_im], x[dest_im]);
+            }
+        }
+    }
+
+    template<inout_vector Vec>
+        requires std::floating_point<value_type_t<Vec>>
+    auto operator()(split_complex<Vec> x) -> void
+    {
+        for (auto i{0U}; i < _table.size(); ++i) {
+            auto const other_idx = _table[i];
+            if (i < other_idx) {
+                std::swap(x.real[i], x.real[other_idx]);
+                std::swap(x.imag[i], x.imag[other_idx]);
             }
         }
     }
