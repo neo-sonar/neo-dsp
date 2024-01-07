@@ -1,19 +1,28 @@
 # Transforms
 
+- [FFT](#fft)
+- [DFT](#dft)
+- [RFFT](#rfft)
+- [Resources](#resources)
+  - [DCT](#dct)
+  - [DSP](#dsp)
+
 ```cpp
 #include <neo/fft.hpp>
 
 namespace neo::fft {
-
-    enum struct order : std::size_t
-    {
-    };
-
     enum struct direction : int
     {
         forward  = -1,
         backward = 1,
     };
+
+    enum struct order : std::size_t
+    {
+    };
+
+    template<std::integral Int>
+    auto next_order(Int size) noexcept -> order;
 }
 ```
 
@@ -43,16 +52,16 @@ namespace neo::fft {
     };
 
     template<typename Plan, inout_vector InOutVec>
-    auto fft(Plan& plan, InOutVec x) -> void;
+    auto fft(Plan& plan, InOutVec x);
 
     template<typename Plan, in_vector InVec, out_vector OutVec>
-    auto fft(Plan& plan, InVec in, OutVec out) -> void;
+    auto fft(Plan& plan, InVec in, OutVec out);
 
     template<typename Plan, inout_vector InOutVec>
-    auto ifft(Plan& plan, InOutVec x) -> void;
+    auto ifft(Plan& plan, InOutVec x);
 
     template<typename Plan, in_vector InVec, out_vector OutVec>
-    auto ifft(Plan& plan, InVec in, OutVec out) -> void;
+    auto ifft(Plan& plan, InVec in, OutVec out);
 }
 ```
 
@@ -79,16 +88,52 @@ namespace neo::fft {
     };
 
     template<typename Plan, inout_vector InOutVec>
-    auto dft(Plan& plan, InOutVec x) -> void;
+    auto dft(Plan& plan, InOutVec x);
 
     template<typename Plan, in_vector InVec, out_vector OutVec>
-    auto dft(Plan& plan, InVec in, OutVec out) -> void;
+    auto dft(Plan& plan, InVec in, OutVec out);
 
     template<typename Plan, inout_vector InOutVec>
-    auto idft(Plan& plan, InOutVec x) -> void;
+    auto idft(Plan& plan, InOutVec x);
 
     template<typename Plan, in_vector InVec, out_vector OutVec>
-    auto idft(Plan& plan, InVec in, OutVec out) -> void;
+    auto idft(Plan& plan, InVec in, OutVec out);
+}
+```
+
+## RFFT
+
+```cpp
+namespace neo::fft {
+    template<std::floating_point Float>
+    struct rfft_plan
+    {
+        using real_type    = Float;
+        using complex_type = std::complex<Float>;
+        using size_type    = std::size_t;
+
+        explicit rfft_plan(fft::order order);
+
+        static constexpr auto max_order() noexcept -> fft::order;
+        static constexpr auto max_size() noexcept -> size_type;
+
+        auto order() const noexcept -> fft::order;
+        auto size() const noexcept -> size_type;
+
+        template<in_vector_of<Float> InVec, out_vector_of<complex_type> OutVec>
+        auto operator()(InVec in, OutVec out) -> void;
+
+        template<in_vector_of<complex_type> InVec, out_vector_of<Float> OutVec>
+        auto operator()(InVec in, OutVec out) -> void;
+    };
+
+    template<typename Plan, in_vector InVec, out_vector OutVec>
+        requires(std::floating_point<value_type_t<InVec>> and neo::complex<value_type_t<OutVec>>)
+    auto rfft(Plan& plan, InVec input, OutVec output);
+
+    template<typename Plan, in_vector InVec, out_vector OutVec>
+        requires(neo::complex<value_type_t<InVec>> and std::floating_point<value_type_t<OutVec>>)
+    auto irfft(Plan& plan, InVec input, OutVec output);
 }
 ```
 

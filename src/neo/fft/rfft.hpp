@@ -18,14 +18,14 @@ using rfft_plan = fallback_rfft_plan<Float, Complex>;
 #endif
 
 template<typename Plan, in_vector InVec, out_vector OutVec>
-    requires(std::floating_point<typename InVec::value_type> and complex<typename OutVec::value_type>)
+    requires(std::floating_point<value_type_t<InVec>> and complex<value_type_t<OutVec>>)
 constexpr auto rfft(Plan& plan, InVec input, OutVec output)
 {
     return plan(input, output);
 }
 
 template<typename Plan, in_vector InVec, out_vector OutVec>
-    requires(complex<typename InVec::value_type> and std::floating_point<typename OutVec::value_type>)
+    requires(complex<value_type_t<InVec>> and std::floating_point<value_type_t<OutVec>>)
 constexpr auto irfft(Plan& plan, InVec input, OutVec output)
 {
     return plan(input, output);
