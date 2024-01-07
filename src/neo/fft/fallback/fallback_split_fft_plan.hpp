@@ -73,50 +73,48 @@ private:
 
         auto const tw_re = stdex::submdspan(_tw.to_mdspan(), 0, stdex::full_extent);
         auto const tw_im = stdex::submdspan(_tw.to_mdspan(), 1, stdex::full_extent);
-        stage_n(xre, xim, tw_re, tw_im, 1);
+        stage_n(xre, xim, tw_re, tw_im);
     }
 
     auto stage_n(
         inout_vector_of<Float> auto xre,
         inout_vector_of<Float> auto xim,
         in_vector_of<Float> auto tw_re,
-        in_vector_of<Float> auto tw_im,
-        int stage
+        in_vector_of<Float> auto tw_im
     ) -> void
     {
         auto const log2_size = static_cast<int>(order());
         auto const size      = 1 << log2_size;
 
-        auto const stage_length = ipow<2>(stage);
-        auto const stride       = ipow<2>(stage + 1);
-        auto const tw_stride    = ipow<2>(log2_size - stage - 1);
+        for (auto stage{1}; stage < log2_size; ++stage) {
 
-        for (auto k{0}; k < size; k += stride) {
-            for (auto pair{0}; pair < stage_length; ++pair) {
-                auto const i1      = k + pair;
-                auto const i2      = k + pair + stage_length;
-                auto const w_index = pair * tw_stride;
+            auto const stage_length = ipow<2>(stage);
+            auto const stride       = ipow<2>(stage + 1);
+            auto const tw_stride    = ipow<2>(log2_size - stage - 1);
 
-                auto const wre = tw_re[w_index];
-                auto const wim = tw_im[w_index];
+            for (auto k{0}; k < size; k += stride) {
+                for (auto pair{0}; pair < stage_length; ++pair) {
+                    auto const i1      = k + pair;
+                    auto const i2      = k + pair + stage_length;
+                    auto const w_index = pair * tw_stride;
 
-                auto const x1re = xre[i1];
-                auto const x1im = xim[i1];
-                auto const x2re = xre[i2];
-                auto const x2im = xim[i2];
+                    auto const wre = tw_re[w_index];
+                    auto const wim = tw_im[w_index];
 
-                auto const xwre = wre * x2re - wim * x2im;
-                auto const xwim = wre * x2im + wim * x2re;
+                    auto const x1re = xre[i1];
+                    auto const x1im = xim[i1];
+                    auto const x2re = xre[i2];
+                    auto const x2im = xim[i2];
 
-                xre[i1] = x1re + xwre;
-                xim[i1] = x1im + xwim;
-                xre[i2] = x1re - xwre;
-                xim[i2] = x1im - xwim;
+                    auto const xwre = wre * x2re - wim * x2im;
+                    auto const xwim = wre * x2im + wim * x2re;
+
+                    xre[i1] = x1re + xwre;
+                    xim[i1] = x1im + xwim;
+                    xre[i2] = x1re - xwre;
+                    xim[i2] = x1im - xwim;
+                }
             }
-        }
-
-        if (auto const next_stage = ++stage; next_stage < log2_size) {
-            stage_n(xre, xim, tw_re, tw_im, next_stage);
         }
     }
 
