@@ -15,6 +15,7 @@
 
 #include <cassert>
 #include <memory>
+#include <stdexcept>
 
 namespace neo::fft {
 
@@ -26,10 +27,26 @@ struct ipp_free
 
 using ipp_buffer = std::unique_ptr<Ipp8u[], ipp_free>;
 
-auto ipp_check(auto status) -> void
+inline auto ipp_check(int status) -> void
 {
+    auto const error_msg = [](int ec) -> std::string {
+        using namespace std::string_view_literals;
+
+        constexpr auto const errors = std::array{
+            std::pair{ ippStsNullPtrErr,    "ipp: internal error"sv},
+            std::pair{ippStsFftOrderErr, "ipp: unsupported order"sv},
+            std::pair{ ippStsFftFlagErr, "ipp: unsupported flags"sv},
+        };
+
+        auto const found = std::ranges::find(errors, ec, &std::pair<int, std::string_view>::first);
+        if (found == std::ranges::end(errors)) {
+            return "ipp: unkown error" + std::to_string(ec);
+        }
+        return std::string{found->second};
+    };
+
     if (status != ippStsNoErr) {
-        assert(false);
+        throw std::runtime_error{error_msg(status)};
     }
 }
 
@@ -107,6 +124,7 @@ struct intel_ipp_fft_plan
     explicit intel_ipp_fft_plan(fft::order order) : _order{order}
     {
         std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<traits>(static_cast<size_type>(order));
+        _buffer                                 = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{size()};
     }
 
     intel_ipp_fft_plan(intel_ipp_fft_plan const& other)                    = delete;
@@ -114,6 +132,10 @@ struct intel_ipp_fft_plan
 
     intel_ipp_fft_plan(intel_ipp_fft_plan&& other)                    = default;
     auto operator=(intel_ipp_fft_plan&& other) -> intel_ipp_fft_plan& = default;
+
+    [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order { return traits::max_order; }
+
+    [[nodiscard]] static constexpr auto max_size() noexcept -> size_type { return fft::size(max_order()); }
 
     [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
 
@@ -162,6 +184,7 @@ private:
     {
         using complex_type                     = ::Ipp32fc;
         using handle_type                      = ::IppsFFTSpec_C_32fc;
+        static constexpr auto max_order        = fft::order{28};
         static constexpr auto get_size         = ::ippsFFTGetSize_C_32fc;
         static constexpr auto init             = ::ippsFFTInit_C_32fc;
         static constexpr auto forward_copy     = ::ippsFFTFwd_CToC_32fc;
@@ -174,6 +197,7 @@ private:
     {
         using complex_type                     = ::Ipp64fc;
         using handle_type                      = ::IppsFFTSpec_C_64fc;
+        static constexpr auto max_order        = fft::order{27};
         static constexpr auto get_size         = ::ippsFFTGetSize_C_64fc;
         static constexpr auto init             = ::ippsFFTInit_C_64fc;
         static constexpr auto forward_copy     = ::ippsFFTFwd_CToC_64fc;
@@ -185,7 +209,7 @@ private:
     using traits = std::conditional_t<std::same_as<real_type, float>, traits_f32, traits_f64>;
 
     fft::order _order;
-    stdex::mdarray<Complex, stdex::dextents<size_t, 1>> _buffer{size()};
+    stdex::mdarray<Complex, stdex::dextents<size_t, 1>> _buffer{};
     typename traits::handle_type* _handle;
     detail::ipp_buffer _spec_buf;
     detail::ipp_buffer _work_buf;

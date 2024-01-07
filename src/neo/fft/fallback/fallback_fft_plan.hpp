@@ -54,6 +54,9 @@ struct fallback_fft_plan
 
     explicit fallback_fft_plan(fft::order order);
 
+    [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order;
+    [[nodiscard]] static constexpr auto max_size() noexcept -> size_type;
+
     [[nodiscard]] auto order() const noexcept -> fft::order;
     [[nodiscard]] auto size() const noexcept -> size_type;
 
@@ -62,6 +65,8 @@ struct fallback_fft_plan
     auto operator()(Vec x, direction dir) noexcept -> void;
 
 private:
+    [[nodiscard]] static auto check_order(fft::order order) -> fft::order;
+
     fft::order _order;
     size_type _size{fft::size(order())};
     bitrevorder_plan _reorder{static_cast<size_t>(_order)};
@@ -71,19 +76,31 @@ private:
 };
 
 template<typename Complex, typename Kernel>
-fallback_fft_plan<Complex, Kernel>::fallback_fft_plan(fft::order order) : _order{order}
+fallback_fft_plan<Complex, Kernel>::fallback_fft_plan(fft::order order) : _order{check_order(order)}
 {}
 
 template<typename Complex, typename Kernel>
-auto fallback_fft_plan<Complex, Kernel>::size() const noexcept -> size_type
+constexpr auto fallback_fft_plan<Complex, Kernel>::max_order() noexcept -> fft::order
 {
-    return _size;
+    return fft::order{27};
+}
+
+template<typename Complex, typename Kernel>
+constexpr auto fallback_fft_plan<Complex, Kernel>::max_size() noexcept -> size_type
+{
+    return fft::size(max_order());
 }
 
 template<typename Complex, typename Kernel>
 auto fallback_fft_plan<Complex, Kernel>::order() const noexcept -> fft::order
 {
     return _order;
+}
+
+template<typename Complex, typename Kernel>
+auto fallback_fft_plan<Complex, Kernel>::size() const noexcept -> size_type
+{
+    return _size;
 }
 
 template<typename Complex, typename Kernel>
@@ -100,6 +117,15 @@ auto fallback_fft_plan<Complex, Kernel>::operator()(Vec x, direction dir) noexce
     } else {
         kernel(x, conjugate_view{_twiddles.to_mdspan()});
     }
+}
+
+template<typename Complex, typename Kernel>
+auto fallback_fft_plan<Complex, Kernel>::check_order(fft::order order) -> fft::order
+{
+    if (order > max_order()) {
+        throw std::runtime_error{"fallback: unsupported order '" + std::to_string(int(order)) + "'"};
+    }
+    return order;
 }
 
 }  // namespace neo::fft

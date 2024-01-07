@@ -51,6 +51,10 @@ struct apple_vdsp_fft_plan
         return *this;
     }
 
+    [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order { return fft::order{27}; }
+
+    [[nodiscard]] static constexpr auto max_size() noexcept -> size_type { return fft::size(max_order()); }
+
     [[nodiscard]] auto order() const noexcept -> fft::order;
     [[nodiscard]] auto size() const noexcept -> size_type;
 
@@ -70,6 +74,10 @@ template<typename Complex>
 apple_vdsp_fft_plan<Complex>::apple_vdsp_fft_plan(fft::order order)
     : _order{order}
     , _plan{[order] {
+    if (order > max_order()) {
+        throw std::runtime_error{"vdsp: unsupported order '" + std::to_string(int(order)) + "'"};
+    }
+
     if constexpr (std::same_as<real_type, float>) {
         return vDSP_create_fftsetup(static_cast<vDSP_Length>(order), 2);
     } else {

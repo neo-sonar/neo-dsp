@@ -55,6 +55,13 @@ auto test_fft_plan()
     // REQUIRE(neo::fft::next_order(2U) == 1U);
     // REQUIRE(neo::fft::next_order(3U) == 2U);
 
+    SECTION("fail")
+    {
+        auto const next = neo::fft::next_order(Plan::max_size() + 1U);
+        CAPTURE(int(next));
+        REQUIRE_THROWS(Plan{next});
+    }
+
     auto const order = GENERATE(as<neo::fft::order>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
     CAPTURE(order);
 
