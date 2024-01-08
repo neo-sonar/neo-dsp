@@ -54,6 +54,7 @@ target_sources(neosonar-neo-tests
         "${CMAKE_SOURCE_DIR}/src/neo/math/abs_test.cpp"
         "${CMAKE_SOURCE_DIR}/src/neo/math/imag_test.cpp"
         "${CMAKE_SOURCE_DIR}/src/neo/math/ipow_test.cpp"
+        "${CMAKE_SOURCE_DIR}/src/neo/math/log2_test.cpp"
         "${CMAKE_SOURCE_DIR}/src/neo/math/real_test.cpp"
         "${CMAKE_SOURCE_DIR}/src/neo/math/windowing_test.cpp"
 
