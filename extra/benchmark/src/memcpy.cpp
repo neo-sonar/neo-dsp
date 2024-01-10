@@ -15,10 +15,10 @@ auto copy(benchmark::State& state) -> void
 
     auto src = std::vector<ValueType>(size);
     auto dst = std::vector<ValueType>(size);
-    std::ranges::fill(src, ValueType{1});
+    std::fill(src.begin(), src.end(), ValueType{1});
 
     for (auto _ : state) {
-        std::ranges::copy(src, dst.begin());
+        std::copy(src.begin(), src.end(), dst.begin());
         benchmark::DoNotOptimize(dst[0]);
         benchmark::ClobberMemory();
     }
