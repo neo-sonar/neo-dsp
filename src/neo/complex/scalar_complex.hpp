@@ -65,6 +65,30 @@ struct scalar_complex
         };
     }
 
+    friend constexpr auto operator+=(scalar_complex& lhs, scalar_complex const& rhs) noexcept -> scalar_complex&
+    {
+        lhs = lhs + rhs;
+        return lhs;
+    }
+
+    friend constexpr auto operator-=(scalar_complex& lhs, scalar_complex const& rhs) noexcept -> scalar_complex&
+    {
+        lhs = lhs - rhs;
+        return lhs;
+    }
+
+    friend constexpr auto operator*=(scalar_complex& lhs, scalar_complex const& rhs) noexcept -> scalar_complex&
+    {
+        lhs = lhs * rhs;
+        return lhs;
+    }
+
+    friend constexpr auto operator/=(scalar_complex& lhs, scalar_complex const& rhs) noexcept -> scalar_complex&
+    {
+        lhs = lhs / rhs;
+        return lhs;
+    }
+
     template<typename OtherScalar>
         requires(not complex<OtherScalar>)
     friend constexpr auto operator*=(scalar_complex& lhs, OtherScalar rhs) noexcept -> scalar_complex&
