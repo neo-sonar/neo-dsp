@@ -14,5 +14,6 @@
 #include <neo/fft/rfftfreq.hpp>
 #include <neo/fft/split_fft.hpp>
 #include <neo/fft/stft.hpp>
+#include <neo/fft/twiddle.hpp>
 
 #include <neo/fft/experimental/rfft.hpp>

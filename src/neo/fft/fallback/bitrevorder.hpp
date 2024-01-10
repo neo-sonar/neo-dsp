@@ -48,7 +48,6 @@ struct bitrevorder_plan
     }
 
     template<inout_vector Vec>
-        requires std::floating_point<value_type_t<Vec>>
     auto operator()(split_complex<Vec> x) -> void
     {
         for (auto i{0U}; i < _table.size(); ++i) {

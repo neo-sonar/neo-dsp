@@ -120,7 +120,7 @@ private:
 
     [[nodiscard]] static auto make_twiddles(size_type n)
     {
-        auto interleaved = detail::make_radix2_twiddles<std::complex<Float>>(n, direction::forward);
+        auto interleaved = make_twiddle_lut_radix2<std::complex<Float>>(n, direction::forward);
 
         auto w_buf = stdex::mdarray<Float, stdex::dextents<size_t, 2>>{2, interleaved.extent(0)};
         auto w_re  = stdex::submdspan(w_buf.to_mdspan(), 0, stdex::full_extent);
