@@ -35,6 +35,7 @@ auto c2c(benchmark::State& state) -> void
     auto const items       = static_cast<int64_t>(state.iterations()) * plan.size();
     auto const flop        = 5UL * size_t(plan.order()) * items;
     state.counters["flop"] = benchmark::Counter(static_cast<double>(flop), benchmark::Counter::kIsRate);
+    state.SetBytesProcessed(items * sizeof(Complex));
 }
 
 template<typename Plan>
@@ -69,27 +70,27 @@ auto split_c2c(benchmark::State& state) -> void
     auto const items       = static_cast<int64_t>(state.iterations()) * plan.size();
     auto const flop        = 5UL * size_t(plan.order()) * items;
     state.counters["flop"] = benchmark::Counter(static_cast<double>(flop), benchmark::Counter::kIsRate);
+    state.SetBytesProcessed(items * sizeof(Float) * 2);
 }
 
 }  // namespace
 
-// BENCHMARK(c2c<neo::fft::fallback_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-// BENCHMARK(c2c<neo::fft::fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<neo::fft::fallback_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<neo::fft::fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
-// #if defined(NEO_HAS_APPLE_ACCELERATE)
-// BENCHMARK(c2c<neo::fft::apple_vdsp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-// #endif
+#if defined(NEO_HAS_APPLE_ACCELERATE)
+BENCHMARK(c2c<neo::fft::apple_vdsp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+#endif
 
-// #if defined(NEO_HAS_INTEL_IPP)
-// BENCHMARK(c2c<neo::fft::intel_ipp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-// #endif
+#if defined(NEO_HAS_INTEL_IPP)
+BENCHMARK(c2c<neo::fft::intel_ipp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+#endif
 
-// #if defined(NEO_HAS_INTEL_MKL)
-// BENCHMARK(c2c<neo::fft::intel_mkl_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-// #endif
+#if defined(NEO_HAS_INTEL_MKL)
+BENCHMARK(c2c<neo::fft::intel_mkl_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+#endif
 
 BENCHMARK(split_c2c<neo::fft::split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-
 BENCHMARK(split_c2c<neo::fft::fallback_split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
 #if defined(NEO_HAS_INTEL_IPP)
