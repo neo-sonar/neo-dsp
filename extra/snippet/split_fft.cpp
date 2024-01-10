@@ -102,7 +102,7 @@ enum struct direction
 };
 
 template<typename Float>
-auto fill_radix2_twiddles(std::span<std::complex<Float>> table, direction dir = direction::forward) noexcept -> void
+auto fill_twiddle_lut_radix2(std::span<std::complex<Float>> table, direction dir = direction::forward) noexcept -> void
 {
     auto const tableSize = table.size();
     auto const fftSize   = tableSize * 2ULL;
@@ -116,10 +116,10 @@ auto fill_radix2_twiddles(std::span<std::complex<Float>> table, direction dir = 
 }
 
 template<typename Float>
-auto make_radix2_twiddles(std::size_t size, direction dir = direction::forward)
+auto make_twiddle_lut_radix2(std::size_t size, direction dir = direction::forward)
 {
     auto table = std::vector<std::complex<Float>>(size / 2U);
-    fill_radix2_twiddles<Float>(table, dir);
+    fill_twiddle_lut_radix2<Float>(table, dir);
     return table;
 }
 
@@ -229,8 +229,8 @@ struct static_fft_plan
     }
 
 private:
-    std::vector<std::complex<Float>> _wf{make_radix2_twiddles<Float>(size_t(size()), direction::forward)};
-    std::vector<std::complex<Float>> _wb{make_radix2_twiddles<Float>(size_t(size()), direction::backward)};
+    std::vector<std::complex<Float>> _wf{make_twiddle_lut_radix2<Float>(size_t(size()), direction::forward)};
+    std::vector<std::complex<Float>> _wb{make_twiddle_lut_radix2<Float>(size_t(size()), direction::backward)};
     std::vector<std::size_t> _rev{make_bitrevorder_table(size_t(size()))};
 };
 
@@ -320,7 +320,7 @@ struct static_split_fft_plan
 {
     static_split_fft_plan()
     {
-        auto tw = make_radix2_twiddles<Float>(size_t(size()), direction::forward);
+        auto tw = make_twiddle_lut_radix2<Float>(size_t(size()), direction::forward);
         _wfre.resize(tw.size());
         _wfim.resize(tw.size());
         _wbre.resize(tw.size());
