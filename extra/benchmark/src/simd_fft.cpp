@@ -28,7 +28,7 @@ struct simd_fft_plan
         requires std::same_as<neo::value_type_t<Vec>, value_type>
     auto operator()(Vec x, neo::fft::direction dir) noexcept -> void
     {
-        assert(std::cmp_equal(x.size(), _size));
+        assert(std::cmp_equal(x.extent(0), size()));
 
         _reorder(x);
 
