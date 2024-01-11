@@ -17,5 +17,6 @@
 #include <neo/fft/twiddle.hpp>
 
 #include <neo/fft/experimental/radix3_plan.hpp>
+#include <neo/fft/experimental/radix4_plan.hpp>
 #include <neo/fft/experimental/radix5_plan.hpp>
 #include <neo/fft/experimental/rfft.hpp>

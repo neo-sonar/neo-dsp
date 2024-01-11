@@ -28,6 +28,10 @@ struct scalar_complex
 
     constexpr auto imag(Scalar im) noexcept -> void { _data[1] = im; }
 
+    friend constexpr auto operator+(scalar_complex z) noexcept -> scalar_complex { return z; }
+
+    friend constexpr auto operator-(scalar_complex z) noexcept -> scalar_complex { return {-z.real(), -z.imag()}; }
+
     friend constexpr auto operator+(scalar_complex lhs, scalar_complex rhs) noexcept -> scalar_complex
     {
         return scalar_complex{
