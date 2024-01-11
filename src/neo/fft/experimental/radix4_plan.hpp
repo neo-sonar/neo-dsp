@@ -34,13 +34,11 @@ struct radix4_plan
         return ipow<size_type(4)>(static_cast<size_type>(order()));
     }
 
-    template<inout_vector Vec>
-        requires std::same_as<typename Vec::value_type, Complex>
+    template<inout_vector_of<Complex> Vec>
     auto operator()(Vec x, direction dir) noexcept -> void
     {
-        auto const w_fwd = stdex::submdspan(_w.to_mdspan(), 0, stdex::full_extent);
-        auto const w_bwd = stdex::submdspan(_w.to_mdspan(), 1, stdex::full_extent);
-        auto const w     = dir == direction::forward ? w_fwd : w_bwd;
+        auto const w = dir == direction::forward ? stdex::submdspan(_w.to_mdspan(), 0, stdex::full_extent)
+                                                 : stdex::submdspan(_w.to_mdspan(), 1, stdex::full_extent);
 
         if constexpr (UseDIT) {
             digitrevorder<4>(x);
