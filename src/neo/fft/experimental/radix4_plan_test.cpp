@@ -14,8 +14,6 @@
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include <random>
-
 TEMPLATE_TEST_CASE(
     "neo/fft: experimental::radix4_plan",
     "",
@@ -29,40 +27,36 @@ TEMPLATE_TEST_CASE(
     using Complex = TestType;
     using Float   = typename Complex::value_type;
 
-    auto const order = GENERATE(as<neo::fft::order>{}, 1, 2, 3, 4, 5, 6, 7, 8);
-    auto const size  = neo::ipow<size_t(4)>(size_t(order));
+    auto const order = GENERATE(as<neo::fft::order>{}, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     CAPTURE(order);
 
-    auto dirac = stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>>{size};
-    dirac(0)   = Complex{Float(1)};
-
-    SECTION("DIT")
+    SECTION("inplace DIT")
     {
-        auto dit = neo::fft::experimental::radix4_plan<Complex, true>{order};
+        auto plan        = neo::fft::experimental::radix4_plan<Complex, true>{order};
+        auto const noise = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
 
-        auto copy = dirac;
+        auto copy = noise;
         auto io   = copy.to_mdspan();
-        neo::fft::fft(dit, io);
 
-        for (auto i{0}; i < int(dit.size()); ++i) {
-            CAPTURE(i);
-            REQUIRE(io[i].real() == Catch::Approx(Float(1)));
-            REQUIRE(io[i].imag() == Catch::Approx(Float(0)));
-        }
+        neo::fft::fft(plan, io);
+        neo::fft::ifft(plan, io);
+
+        neo::scale(Float(1) / static_cast<Float>(plan.size()), io);
+        REQUIRE(neo::allclose(noise.to_mdspan(), io, Float(0.001)));
     }
 
-    SECTION("DIF")
+    SECTION("inplace DIF")
     {
-        auto dif = neo::fft::experimental::radix4_plan<Complex, false>{order};
+        auto plan        = neo::fft::experimental::radix4_plan<Complex, false>{order};
+        auto const noise = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
 
-        auto copy = dirac;
+        auto copy = noise;
         auto io   = copy.to_mdspan();
-        neo::fft::fft(dif, io);
 
-        for (auto i{0}; i < int(dif.size()); ++i) {
-            CAPTURE(i);
-            REQUIRE(io[i].real() == Catch::Approx(Float(1)));
-            REQUIRE(io[i].imag() == Catch::Approx(Float(0)));
-        }
+        neo::fft::fft(plan, io);
+        neo::fft::ifft(plan, io);
+
+        neo::scale(Float(1) / static_cast<Float>(plan.size()), io);
+        REQUIRE(neo::allclose(noise.to_mdspan(), io, Float(0.001)));
     }
 }

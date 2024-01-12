@@ -37,24 +37,32 @@ struct radix4_plan
     template<inout_vector_of<Complex> Vec>
     auto operator()(Vec x, direction dir) noexcept -> void
     {
-        auto const w = dir == direction::forward ? stdex::submdspan(_w.to_mdspan(), 0, stdex::full_extent)
-                                                 : stdex::submdspan(_w.to_mdspan(), 1, stdex::full_extent);
+        using Float = value_type_t<Complex>;
+
+        auto const sign = dir == direction::forward ? Float(-1.0) : Float(1.0);
+        auto const w    = dir == direction::forward ? stdex::submdspan(_w.to_mdspan(), 0, stdex::full_extent)
+                                                    : stdex::submdspan(_w.to_mdspan(), 1, stdex::full_extent);
 
         if constexpr (UseDIT) {
             digitrevorder<4>(x);
-            c2c_dit4(x, w, static_cast<std::size_t>(_order));
+            c2c_dit4(x, w, static_cast<std::size_t>(_order), sign);
         } else {
-            c2c_dif4(x, w, static_cast<std::size_t>(_order));
+            c2c_dif4(x, w, static_cast<std::size_t>(_order), sign);
             digitrevorder<4>(x);
         }
     }
 
 private:
-    static auto c2c_dit4(inout_vector_of<Complex> auto x, in_vector_of<Complex> auto twiddle, std::size_t order) -> void
+    static auto c2c_dit4(
+        inout_vector_of<Complex> auto x,
+        in_vector_of<Complex> auto twiddle,
+        std::size_t order,
+        std::floating_point auto sign
+    ) -> void
     {
         using Float = value_type_t<Complex>;
 
-        auto const z = Complex{Float(0), Float(1)};
+        auto const z = Complex{Float(0), sign};
 
         auto length = 4UL;
         auto tss    = ipow<size_type(4)>(order - 1UL);
@@ -110,11 +118,16 @@ private:
         }
     }
 
-    static auto c2c_dif4(inout_vector_of<Complex> auto x, in_vector_of<Complex> auto twiddle, std::size_t order) -> void
+    static auto c2c_dif4(
+        inout_vector_of<Complex> auto x,
+        in_vector_of<Complex> auto twiddle,
+        std::size_t order,
+        std::floating_point auto sign
+    ) -> void
     {
         using Float = value_type_t<Complex>;
 
-        auto const z = Complex{Float(0), Float(1)};
+        auto const z = Complex{Float(0), sign};
 
         auto length = ipow<size_type(4)>(order);
         auto tss    = 1UL;
