@@ -20,3 +20,4 @@
 #include <neo/fft/experimental/radix4_plan.hpp>
 #include <neo/fft/experimental/radix5_plan.hpp>
 #include <neo/fft/experimental/rfft.hpp>
+#include <neo/fft/experimental/stockham_plan.hpp>
