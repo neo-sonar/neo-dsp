@@ -139,12 +139,20 @@ namespace neo::fft {
 
 ## Resources
 
+- [Real FFT Algorithms](http://www.robinscheibler.org/2013/02/13/real-fft.html)
+- [FFT Algorithms](https://www.tamps.cinvestav.mx/~wgomez/material/AID/fft_algorithms.pdf)
 - [COMPUTING THE FAST FOURIER TRANSFORMON SIMD MICROPROCESSOR](https://www.cs.waikato.ac.nz/~ihw/PhD_theses/Anthony_Blake.pdf)
 - [Notes on FFTs: for implementers](https://fgiesen.wordpress.com/2023/03/19/notes-on-ffts-for-implementers/)
 - [OTFFT Library](http://wwwa.pikara.ne.jp/okojisan/otfft-en/stockham1.html)
 - [Discrete fourier transform and convolution -- scaling factor?](https://mathematica.stackexchange.com/questions/206788/discrete-fourier-transform-and-convolution-scaling-factor)
 - [FXT Library](https://www.jjj.de/fxt/demo/arith/index.html)
 - [FXT Library: Algorithms for programmers ideas and source code](http://dsp-book.narod.ru/fxtbook.pdf)
+- [github.com/ARM-software/CMSIS-DSP](https://github.com/ARM-software/CMSIS-DSP)
+- [github.com/biotrump/OouraFFT](https://github.com/biotrump/OouraFFT)
+- [github.com/Flinch010/bachelor-s-degree](https://github.com/Flinch010/bachelor-s-degree)
+- [github.com/diaxen/fft-garden](https://github.com/diaxen/fft-garden)
+- [github.com/Themaister/muFFT](https://github.com/Themaister/muFFT)
+- [github.com/JodiTheTigger/meow_fft](https://github.com/JodiTheTigger/meow_fft)
 
 ### DCT
 
