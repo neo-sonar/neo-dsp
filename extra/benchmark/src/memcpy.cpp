@@ -8,23 +8,31 @@
 
 namespace {
 
-auto memcopy(benchmark::State& state) -> void
+template<typename ValueType>
+auto copy(benchmark::State& state) -> void
 {
-    auto src = std::make_unique<char[]>(state.range(0));
-    auto dst = std::make_unique<char[]>(state.range(0));
-    std::memset(src.get(), 'x', state.range(0));
+    auto const size = static_cast<std::size_t>(state.range(0));
+
+    auto src = std::vector<ValueType>(size);
+    auto dst = std::vector<ValueType>(size);
+    std::fill(src.begin(), src.end(), ValueType{1});
 
     for (auto _ : state) {
-        std::memcpy(dst.get(), src.get(), state.range(0));
+        std::copy(src.begin(), src.end(), dst.begin());
         benchmark::DoNotOptimize(dst[0]);
         benchmark::ClobberMemory();
     }
 
-    state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(state.range(0)));
+    auto const items = int64_t(state.iterations()) * int64_t(size);
+    state.SetItemsProcessed(items);
+    state.SetBytesProcessed(items * sizeof(ValueType));
 }
 
 }  // namespace
 
-BENCHMARK(memcopy)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+BENCHMARK(copy<char>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+BENCHMARK(copy<int>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+BENCHMARK(copy<float>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
+BENCHMARK(copy<std::complex<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 24);
 
 BENCHMARK_MAIN();

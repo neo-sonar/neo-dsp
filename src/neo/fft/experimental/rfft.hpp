@@ -7,6 +7,7 @@
 #include <neo/fft/fallback/bitrevorder.hpp>
 #include <neo/fft/fallback/conjugate_view.hpp>
 #include <neo/fft/fallback/fallback_fft_plan.hpp>
+#include <neo/fft/twiddle.hpp>
 
 #include <cmath>
 #include <complex>
@@ -26,7 +27,7 @@ struct c2c_kernel
     auto operator()(Vec x, auto const& twiddles) const noexcept -> void
     {
         auto const size  = static_cast<int>(x.extent(0) / 2);
-        auto const order = static_cast<int>(ilog2(size));
+        auto const order = static_cast<int>(bit_log2(static_cast<unsigned>(size)));
 
         {
             // stage 0
@@ -105,7 +106,7 @@ struct fallback_fft_plan
 
     explicit fallback_fft_plan(size_type order)
         : _order{order}
-        , _w{neo::fft::detail::make_radix2_twiddles<std::complex<Float>>(size(), direction::forward)}
+        , _w{neo::fft::make_twiddle_lut_radix2<std::complex<Float>>(size(), direction::forward)}
     {}
 
     [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
