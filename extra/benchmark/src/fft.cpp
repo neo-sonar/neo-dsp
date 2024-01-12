@@ -76,6 +76,7 @@ auto split_c2c(benchmark::State& state) -> void
 }  // namespace
 
 BENCHMARK(c2c<neo::fft::fallback_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<neo::fft::experimental::stockham_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 BENCHMARK(c2c<neo::fft::fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
 #if defined(NEO_HAS_APPLE_ACCELERATE)
