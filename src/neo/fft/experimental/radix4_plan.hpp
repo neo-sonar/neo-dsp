@@ -44,11 +44,11 @@ struct radix4_plan
                                                     : stdex::submdspan(_w.to_mdspan(), 1, stdex::full_extent);
 
         if constexpr (UseDIT) {
-            digitrevorder<4>(x);
+            _reorder(x);
             c2c_dit4(x, w, static_cast<std::size_t>(_order), sign);
         } else {
             c2c_dif4(x, w, static_cast<std::size_t>(_order), sign);
-            digitrevorder<4>(x);
+            _reorder(x);
         }
     }
 
@@ -188,6 +188,7 @@ private:
     }
 
     fft::order _order;
+    digitrevorder_plan<4> _reorder{size()};
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 2>> _w{make_twiddle_lut(size())};
 };
 

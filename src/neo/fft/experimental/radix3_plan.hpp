@@ -47,7 +47,7 @@ struct radix3_plan
         auto const radix = 3;
         auto const len   = static_cast<int>(x.extent(0));
 
-        digitrevorder<3>(x);
+        _reorder(x);
 
         for (auto m = radix; m <= len; m *= radix) {
             // Calculate twiddle factor.
@@ -85,6 +85,7 @@ struct radix3_plan
 
 private:
     fft::order _order;
+    digitrevorder_plan<3> _reorder{size()};
 };
 
 }  // namespace neo::fft::experimental
