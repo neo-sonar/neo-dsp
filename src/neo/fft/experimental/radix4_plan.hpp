@@ -62,7 +62,7 @@ private:
         auto block  = x.size() / 4UL;
         auto base   = 0UL;
 
-        for (auto w{0ULL}; w < order; ++w) {
+        for (auto o{0ULL}; o < order; ++o) {
             for (auto h{0ULL}; h < block; ++h) {
                 for (auto k{0ULL}; k < krange; ++k) {
                     auto const offset = length / 4;
@@ -122,7 +122,7 @@ private:
         auto block  = 1UL;
         auto base   = 0UL;
 
-        for (auto w{0ULL}; w < order; ++w) {
+        for (auto o{0ULL}; o < order; ++o) {
             for (auto h{0ULL}; h < block; ++h) {
                 for (auto k{0ULL}; k < krange; ++k) {
                     auto const offset = length / 4UL;
@@ -164,14 +164,14 @@ private:
     [[nodiscard]] static auto make_twiddle_lut(size_type n)
     {
         auto kmax  = 3UL * (n / 4UL - 1UL);
-        auto w_buf = stdex::mdarray<Complex, stdex::dextents<std::size_t, 2>>{2, n};
-        auto w_fwd = stdex::submdspan(w_buf.to_mdspan(), 0, stdex::full_extent);
-        auto w_bwd = stdex::submdspan(w_buf.to_mdspan(), 1, stdex::full_extent);
+        auto w     = stdex::mdarray<Complex, stdex::dextents<std::size_t, 2>>{2, n};
+        auto w_fwd = stdex::submdspan(w.to_mdspan(), 0, stdex::full_extent);
+        auto w_bwd = stdex::submdspan(w.to_mdspan(), 1, stdex::full_extent);
         for (auto i{0U}; i < kmax + 1; ++i) {
             w_fwd[i] = twiddle<Complex>(n, i, direction::forward);
             w_bwd[i] = twiddle<Complex>(n, i, direction::backward);
         }
-        return w_buf;
+        return w;
     }
 
     fft::order _order;
