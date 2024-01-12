@@ -71,7 +71,7 @@ jobs:
             clang_version: latest
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native"'
             cmake_prefix_path: ""
-            cmake_targets: neosonar-neo-tests
+            cmake_targets: all
             macos_target: ""
 
           - name: Windows-MSVC
@@ -81,7 +81,7 @@ jobs:
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2 /EHsc"'
             cmake_prefix_path: ""
-            cmake_targets: neosonar-neo-tests
+            cmake_targets: all
             macos_target: ""
 
           - name: Coverage-Native
