@@ -47,18 +47,20 @@ struct stockham_plan
 private:
     auto fft(inout_vector_of<Complex> auto x) noexcept -> void
     {
-        fft0(size(), 1, 0, x, _work.to_mdspan(), _w.to_mdspan());
+        fft0(size(), 1, false, x, _work.to_mdspan(), _w.to_mdspan());
     }
 
     void ifft(inout_vector_of<Complex> auto x)
     {
-        for (std::size_t p = 0; p < size(); p++) {
-            x[p] = neo::math::conj(x[p]);
-        }
-        fft0(size(), 1, 0, x, _work.to_mdspan(), _w.to_mdspan());
-        for (std::size_t k = 0; k < size(); k++) {
-            x[k] = neo::math::conj(x[k]);
-        }
+        auto conjugate = [n = size()](inout_vector_of<Complex> auto vec) {
+            for (std::size_t i = 0; i < n; ++i) {
+                vec[i] = neo::math::conj(vec[i]);
+            }
+        };
+
+        conjugate(x);
+        fft0(size(), 1, false, x, _work.to_mdspan(), _w.to_mdspan());
+        conjugate(x);
     }
 
     // n  : sequence length
