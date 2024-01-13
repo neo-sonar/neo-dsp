@@ -1,0 +1,117 @@
+// SPDX-License-Identifier: MIT
+
+#pragma once
+
+#include <neo/algorithm/copy.hpp>
+#include <neo/complex/complex.hpp>
+#include <neo/container/mdspan.hpp>
+#include <neo/fft/direction.hpp>
+#include <neo/fft/order.hpp>
+#include <neo/fft/twiddle.hpp>
+#include <neo/math/conj.hpp>
+#include <neo/math/ipow.hpp>
+
+namespace neo::fft::experimental {
+
+template<complex Complex>
+struct stockham_radix4_plan
+{
+    using value_type = Complex;
+    using size_type  = std::size_t;
+
+    explicit stockham_radix4_plan(fft::order order) : _order{order} {}
+
+    [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order { return fft::order{11}; }
+
+    [[nodiscard]] static constexpr auto max_size() noexcept -> size_type
+    {
+        return ipow<size_type(4)>(static_cast<size_type>(max_order()));
+    }
+
+    [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
+
+    [[nodiscard]] auto size() const noexcept -> size_type
+    {
+        return ipow<size_type(4)>(static_cast<size_type>(order()));
+    }
+
+    template<inout_vector_of<Complex> Vec>
+    auto operator()(Vec x, direction dir) noexcept -> void
+    {
+        using Float = value_type_t<Complex>;
+
+        auto const n = size();
+        auto const t = static_cast<size_t>(_order);
+        auto const y = _work.to_mdspan();
+
+        auto const sign = dir == direction::forward ? Float(-1) : Float(+1);
+        auto const I    = Complex{Float(0), sign};
+        // auto const w    = dir == direction::forward
+        //                     ? stdex::submdspan(_w.to_mdspan(), 0, stdex::full_extent, stdex::full_extent)
+        //                     : stdex::submdspan(_w.to_mdspan(), 1, stdex::full_extent, stdex::full_extent);
+
+        for (auto q{1U}; q <= t; ++q) {
+            auto const L     = ipow<4UL>(q);
+            auto const r     = n / L;
+            auto const Lstar = L / 4UL;
+            auto const rstar = 4UL * r;
+
+            copy(x, y);  // TODO
+
+            for (auto j{0U}; j < Lstar; ++j) {
+                auto const w1 = twiddle<Complex>(L, 1 * j, dir);
+                auto const w2 = twiddle<Complex>(L, 2 * j, dir);
+                auto const w3 = twiddle<Complex>(L, 3 * j, dir);
+
+                // auto const w1 = twiddle<Complex>(n / 4, 1 * j * r, dir);
+                // auto const w2 = twiddle<Complex>(n / 4, 2 * j * r, dir);
+                // auto const w3 = twiddle<Complex>(n / 4, 3 * j * r, dir);
+
+                // auto const v  = (ipow<4UL>(q - 1UL) - 1UL) / 3;
+                // auto const vj = v + j;
+                // auto const w1 = w(vj, 0);
+                // auto const w2 = w(vj, 1);
+                // auto const w3 = w(vj, 2);
+
+                for (auto k{0U}; k < r; ++k) {
+                    auto const a = y[j * rstar + r * 0 + k];
+                    auto const b = y[j * rstar + r * 1 + k] * w1;
+                    auto const c = y[j * rstar + r * 2 + k] * w2;
+                    auto const d = y[j * rstar + r * 3 + k] * w3;
+
+                    auto const t0 = a + c;
+                    auto const t1 = a - c;
+                    auto const t2 = b + d;
+                    auto const t3 = b - d;
+
+                    x[(j + Lstar * 0) * r + k] = t0 + t2;
+                    x[(j + Lstar * 1) * r + k] = t1 - t3 * I;
+                    x[(j + Lstar * 2) * r + k] = t0 - t2;
+                    x[(j + Lstar * 3) * r + k] = t1 + t3 * I;
+                }
+            }
+        }
+    }
+
+private:
+    static auto make_twiddle_lut(size_t n) -> stdex::mdarray<Complex, stdex::dextents<std::size_t, 3>>
+    {
+        auto w = stdex::mdarray<Complex, stdex::dextents<std::size_t, 3>>(2, n / 4, 3);
+        for (std::size_t i = 0; i < w.size(); i++) {
+            // w(0, i, 0) = twiddle<Complex>(n, 1 * i, fft::direction::forward);
+            // w(0, i, 1) = twiddle<Complex>(n, 2 * i, fft::direction::forward);
+            // w(0, i, 2) = twiddle<Complex>(n, 3 * i, fft::direction::forward);
+
+            // w(0, i, 0) = twiddle<Complex>(n, 1 * i, fft::direction::backward);
+            // w(0, i, 1) = twiddle<Complex>(n, 2 * i, fft::direction::backward);
+            // w(0, i, 2) = twiddle<Complex>(n, 3 * i, fft::direction::backward);
+        }
+        return w;
+    }
+
+    fft::order _order;
+    stdex::mdarray<Complex, stdex::dextents<std::size_t, 3>> _w{make_twiddle_lut(size())};
+    stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _work{size()};
+};
+
+}  // namespace neo::fft::experimental

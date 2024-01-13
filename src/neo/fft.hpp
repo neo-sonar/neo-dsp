@@ -21,3 +21,4 @@
 #include <neo/fft/experimental/radix5_plan.hpp>
 #include <neo/fft/experimental/rfft.hpp>
 #include <neo/fft/experimental/stockham_radix2_plan.hpp>
+#include <neo/fft/experimental/stockham_radix4_plan.hpp>
