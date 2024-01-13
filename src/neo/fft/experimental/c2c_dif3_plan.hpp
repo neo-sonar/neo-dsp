@@ -14,12 +14,12 @@ namespace neo::fft::experimental {
 
 /// https://github.com/scientificgo/fft/blob/master/radix3.go
 template<complex Complex>
-struct radix3_plan
+struct c2c_dif3_plan
 {
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    explicit radix3_plan(fft::order order) : _order{order} {}
+    explicit c2c_dif3_plan(fft::order order) : _order{order} {}
 
     [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order { return fft::order{17}; }
 

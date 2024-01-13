@@ -4,9 +4,9 @@
 #include <cstdio>
 #include <vector>
 
-struct stockham_radix2_plan
+struct c2c_stockham_dif2_plan
 {
-    explicit stockham_radix2_plan(std::size_t size) : _w(make_twiddle_lut(size)), _work(size) {}
+    explicit c2c_stockham_dif2_plan(std::size_t size) : _w(make_twiddle_lut(size)), _work(size) {}
 
     auto size() const noexcept { return _work.size(); }
 
@@ -96,7 +96,7 @@ auto main() -> int
     static constexpr auto const Order = 2U;
     static constexpr auto const Size  = 1U << Order;
 
-    auto plan = stockham_radix2_plan{Size};
+    auto plan = c2c_stockham_dif2_plan{Size};
     auto x    = std::array<std::complex<double>, Size>{};
     x[0]      = 1.0;
     x[1]      = 2.0;

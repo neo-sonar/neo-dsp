@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#include "radix4_plan.hpp"
+#include "c2c_dif5_plan.hpp"
 
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/scale.hpp>
@@ -14,8 +14,10 @@
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
+#include <random>
+
 TEMPLATE_TEST_CASE(
-    "neo/fft: experimental::radix4_plan",
+    "neo/fft: experimental::c2c_dif5_plan",
     "",
     std::complex<float>,
     std::complex<double>,
@@ -27,29 +29,14 @@ TEMPLATE_TEST_CASE(
     using Complex = TestType;
     using Float   = typename Complex::value_type;
 
-    auto const order = GENERATE(as<neo::fft::order>{}, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    auto const order = GENERATE(as<neo::fft::order>{}, 1, 2, 3, 4, 5, 6, 7);
     CAPTURE(order);
 
-    SECTION("inplace DIT")
+    auto plan        = neo::fft::experimental::c2c_dif5_plan<Complex>{order};
+    auto const noise = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
+
+    SECTION("inplace")
     {
-        auto plan        = neo::fft::experimental::radix4_plan<Complex, true>{order};
-        auto const noise = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
-
-        auto copy = noise;
-        auto io   = copy.to_mdspan();
-
-        neo::fft::fft(plan, io);
-        neo::fft::ifft(plan, io);
-
-        neo::scale(Float(1) / static_cast<Float>(plan.size()), io);
-        REQUIRE(neo::allclose(noise.to_mdspan(), io, Float(0.001)));
-    }
-
-    SECTION("inplace DIF")
-    {
-        auto plan        = neo::fft::experimental::radix4_plan<Complex, false>{order};
-        auto const noise = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
-
         auto copy = noise;
         auto io   = copy.to_mdspan();
 

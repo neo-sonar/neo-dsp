@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#include "radix3_plan.hpp"
+#include "c2c_stockham_dif2_plan.hpp"
 
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/scale.hpp>
@@ -17,7 +17,7 @@
 #include <random>
 
 TEMPLATE_TEST_CASE(
-    "neo/fft: experimental::radix3_plan",
+    "neo/fft: experimental::c2c_stockham_dif2_plan",
     "",
     std::complex<float>,
     std::complex<double>,
@@ -29,10 +29,10 @@ TEMPLATE_TEST_CASE(
     using Complex = TestType;
     using Float   = typename Complex::value_type;
 
-    auto const order = GENERATE(as<neo::fft::order>{}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    auto const order = GENERATE(as<neo::fft::order>{}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
     CAPTURE(order);
 
-    auto plan        = neo::fft::experimental::radix3_plan<Complex>{order};
+    auto plan        = neo::fft::experimental::c2c_stockham_dif2_plan<Complex>{order};
     auto const noise = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
 
     SECTION("inplace")

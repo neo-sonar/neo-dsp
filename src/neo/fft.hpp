@@ -16,9 +16,9 @@
 #include <neo/fft/stft.hpp>
 #include <neo/fft/twiddle.hpp>
 
-#include <neo/fft/experimental/radix3_plan.hpp>
-#include <neo/fft/experimental/radix4_plan.hpp>
-#include <neo/fft/experimental/radix5_plan.hpp>
+#include <neo/fft/experimental/c2c_dif3_plan.hpp>
+#include <neo/fft/experimental/c2c_dif5_plan.hpp>
+#include <neo/fft/experimental/c2c_dit4_plan.hpp>
+#include <neo/fft/experimental/c2c_stockham_dif2_plan.hpp>
+#include <neo/fft/experimental/c2c_stockham_dit4_plan.hpp>
 #include <neo/fft/experimental/rfft.hpp>
-#include <neo/fft/experimental/stockham_radix2_plan.hpp>
-#include <neo/fft/experimental/stockham_radix4_plan.hpp>
