@@ -13,12 +13,12 @@
 namespace neo::fft::experimental {
 
 template<complex Complex>
-struct stockham_plan
+struct stockham_radix2_plan
 {
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    explicit stockham_plan(fft::order order) : _order{order} {}
+    explicit stockham_radix2_plan(fft::order order) : _order{order} {}
 
     [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order { return fft::order{27}; }
 

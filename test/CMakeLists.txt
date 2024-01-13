@@ -50,7 +50,7 @@ target_sources(neosonar-neo-tests
         "${CMAKE_SOURCE_DIR}/src/neo/fft/experimental/radix3_plan_test.cpp"
         "${CMAKE_SOURCE_DIR}/src/neo/fft/experimental/radix4_plan_test.cpp"
         "${CMAKE_SOURCE_DIR}/src/neo/fft/experimental/radix5_plan_test.cpp"
-        "${CMAKE_SOURCE_DIR}/src/neo/fft/experimental/stockham_plan_test.cpp"
+        "${CMAKE_SOURCE_DIR}/src/neo/fft/experimental/stockham_radix2_plan_test.cpp"
 
         "${CMAKE_SOURCE_DIR}/src/neo/fixed_point/fixed_point_test.cpp"
 

@@ -75,31 +75,33 @@ auto split_c2c(benchmark::State& state) -> void
 
 }  // namespace
 
-BENCHMARK(c2c<neo::fft::fallback_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(c2c<neo::fft::experimental::stockham_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(c2c<neo::fft::fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+using namespace neo::fft;
+
+BENCHMARK(c2c<fallback_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<experimental::stockham_radix2_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
 #if defined(NEO_HAS_APPLE_ACCELERATE)
-BENCHMARK(c2c<neo::fft::apple_vdsp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<apple_vdsp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 #endif
 
 #if defined(NEO_HAS_INTEL_IPP)
-BENCHMARK(c2c<neo::fft::intel_ipp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<intel_ipp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 #endif
 
 #if defined(NEO_HAS_INTEL_MKL)
-BENCHMARK(c2c<neo::fft::intel_mkl_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<intel_mkl_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 #endif
 
-BENCHMARK(split_c2c<neo::fft::split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(split_c2c<neo::fft::fallback_split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(split_c2c<split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(split_c2c<fallback_split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
 #if defined(NEO_HAS_INTEL_IPP)
-BENCHMARK(split_c2c<neo::fft::intel_ipp_split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(split_c2c<intel_ipp_split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 #endif
 
 #if defined(NEO_HAS_APPLE_ACCELERATE)
-BENCHMARK(split_c2c<neo::fft::apple_vdsp_split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(split_c2c<apple_vdsp_split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 #endif
 
 BENCHMARK_MAIN();
