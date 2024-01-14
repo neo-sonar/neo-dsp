@@ -58,57 +58,58 @@ private:
 
         auto const z = Complex{Float(0), sign};
 
-        auto length = 4UL;
-        auto tss    = ipow<size_type(4)>(order - 1UL);
-        auto krange = 1UL;
-        auto block  = x.size() / 4UL;
-        auto base   = 0UL;
+        auto length   = 4UL;
+        auto w_stride = ipow<size_type(4)>(order - 1UL);
+        auto krange   = 1UL;
+        auto block    = x.size() / 4UL;
+        auto base     = 0UL;
 
         for (auto o{0ULL}; o < order; ++o) {
+            auto const offset = length / 4;
+
             for (auto h{0ULL}; h < block; ++h) {
                 for (auto k{0ULL}; k < krange; ++k) {
-                    auto const offset = length / 4;
-                    auto const avar   = base + k;
-                    auto const bvar   = base + k + offset;
-                    auto const cvar   = base + k + (2 * offset);
-                    auto const dvar   = base + k + (3 * offset);
+                    auto const i0 = base + k;
+                    auto const i1 = base + k + offset;
+                    auto const i2 = base + k + (2 * offset);
+                    auto const i3 = base + k + (3 * offset);
 
-                    auto xbr1 = Complex{};
-                    auto xcr2 = Complex{};
-                    auto xdr3 = Complex{};
+                    auto const c0 = x[i0];
+                    auto c1       = Complex{};
+                    auto c2       = Complex{};
+                    auto c3       = Complex{};
                     if (k == 0) {
-                        xbr1 = x[bvar];
-                        xcr2 = x[cvar];
-                        xdr3 = x[dvar];
+                        c1 = x[i1];
+                        c2 = x[i2];
+                        c3 = x[i3];
                     } else {
-                        auto r1var = twiddle[k * tss];
-                        auto r2var = twiddle[2 * k * tss];
-                        auto r3var = twiddle[3 * k * tss];
-                        xbr1       = (x[bvar] * r1var);
-                        xcr2       = (x[cvar] * r2var);
-                        xdr3       = (x[dvar] * r3var);
+                        auto w1 = twiddle[1 * k * w_stride];
+                        auto w2 = twiddle[2 * k * w_stride];
+                        auto w3 = twiddle[3 * k * w_stride];
+                        c1      = (x[i1] * w1);
+                        c2      = (x[i2] * w2);
+                        c3      = (x[i3] * w3);
                     }
 
-                    auto const evar = x[avar] + xcr2;
-                    auto const fvar = x[avar] - xcr2;
-                    auto const gvar = xbr1 + xdr3;
-                    auto const hh   = xbr1 - xdr3;
-                    auto const j_h  = z * hh;
+                    auto const d0 = c0 + c2;
+                    auto const d1 = c0 - c2;
+                    auto const d2 = c1 + c3;
+                    auto const d3 = (c1 - c3) * z;
 
-                    x[avar] = evar + gvar;
-                    x[bvar] = fvar - j_h;
-                    x[cvar] = -gvar + evar;
-                    x[dvar] = j_h + fvar;
+                    x[i0] = d0 + d2;
+                    x[i1] = d1 - d3;
+                    x[i2] = -d2 + d0;
+                    x[i3] = d3 + d1;
                 }
 
                 base = base + (4UL * krange);
             }
 
-            block  = block / 4UL;
-            length = 4 * length;
-            krange = 4 * krange;
-            base   = 0;
-            tss    = tss / 4;
+            block    = block / 4UL;
+            length   = 4 * length;
+            krange   = 4 * krange;
+            base     = 0;
+            w_stride = w_stride / 4;
         }
     }
 
@@ -123,48 +124,49 @@ private:
 
         auto const z = Complex{Float(0), sign};
 
-        auto length = ipow<size_type(4)>(order);
-        auto tss    = 1UL;
-        auto krange = length / 4UL;
-        auto block  = 1UL;
-        auto base   = 0UL;
+        auto length   = ipow<size_type(4)>(order);
+        auto w_stride = 1UL;
+        auto krange   = length / 4UL;
+        auto block    = 1UL;
+        auto base     = 0UL;
 
         for (auto o{0ULL}; o < order; ++o) {
             for (auto h{0ULL}; h < block; ++h) {
                 for (auto k{0ULL}; k < krange; ++k) {
                     auto const offset = length / 4UL;
-                    auto const a      = base + k;
-                    auto const b      = base + k + offset;
-                    auto const c      = base + k + (2 * offset);
-                    auto const d      = base + k + (3 * offset);
-                    auto const apc    = x[a] + x[c];
-                    auto const bpd    = x[b] + x[d];
-                    auto const amc    = x[a] - x[c];
-                    auto const bmd    = x[b] - x[d];
-                    x[a]              = apc + bpd;
+                    auto const i0     = base + k;
+                    auto const i1     = base + k + offset;
+                    auto const i2     = base + k + (2 * offset);
+                    auto const i3     = base + k + (3 * offset);
+
+                    auto const d0 = x[i0] + x[i2];
+                    auto const d1 = x[i0] - x[i2];
+                    auto const d2 = x[i1] + x[i3];
+                    auto const d3 = x[i1] - x[i3];
+                    x[i0]         = d0 + d2;
 
                     if (k == 0) {
-                        x[b] = amc - (z * bmd);
-                        x[c] = apc - bpd;
-                        x[d] = amc + (z * bmd);
+                        x[i1] = d1 - (z * d3);
+                        x[i2] = d0 - d2;
+                        x[i3] = d1 + (z * d3);
                     } else {
-                        auto r1 = twiddle[k * tss];
-                        auto r2 = twiddle[2 * k * tss];
-                        auto r3 = twiddle[3 * k * tss];
-                        x[b]    = (amc - (z * bmd)) * r1;
-                        x[c]    = (apc - bpd) * r2;
-                        x[d]    = (amc + (z * bmd)) * r3;
+                        auto w1 = twiddle[1 * k * w_stride];
+                        auto w2 = twiddle[2 * k * w_stride];
+                        auto w3 = twiddle[3 * k * w_stride];
+                        x[i1]   = (d1 - (z * d3)) * w1;
+                        x[i2]   = (d0 - d2) * w2;
+                        x[i3]   = (d1 + (z * d3)) * w3;
                     }
                 }
 
                 base = base + (4UL * krange);
             }
 
-            block  = block * 4UL;
-            length = length / 4UL;
-            krange = krange / 4UL;
-            base   = 0;
-            tss    = tss * 4;
+            block    = block * 4UL;
+            length   = length / 4UL;
+            krange   = krange / 4UL;
+            base     = 0;
+            w_stride = w_stride * 4;
         }
     }
 
