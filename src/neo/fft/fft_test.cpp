@@ -267,6 +267,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
      c2c_stockham_dif3_plan,
      c2c_stockham_dif4_plan,
      c2c_stockham_dif5_plan,
+     c2c_stockham_dif8_plan,
      c2c_stockham_dit4_plan),
     (std::complex<float>, std::complex<double>, std::complex<long double>, neo::complex64, neo::complex128)
 )
