@@ -12,6 +12,8 @@
 #include <neo/math/idiv.hpp>
 #include <neo/math/imag.hpp>
 #include <neo/math/ipow.hpp>
+#include <neo/math/is_even.hpp>
+#include <neo/math/is_odd.hpp>
 #include <neo/math/log2.hpp>
 #include <neo/math/polar.hpp>
 #include <neo/math/precision.hpp>

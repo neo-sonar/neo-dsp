@@ -9,17 +9,21 @@
 #include <neo/fft/twiddle.hpp>
 #include <neo/math/conj.hpp>
 #include <neo/math/ipow.hpp>
+#include <neo/math/is_even.hpp>
+#include <neo/math/is_odd.hpp>
+
+#include <cstdint>
 
 namespace neo::fft::experimental {
 
 /// http://wwwa.pikara.ne.jp/okojisan/otfft-en/stockham2.html
 template<complex Complex>
-struct c2c_stockham_dif2_plan_v1
+struct c2c_stockham_dif2r_plan
 {
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    c2c_stockham_dif2_plan_v1(from_order_tag /*tag*/, size_type order) : _order{order} {}
+    c2c_stockham_dif2r_plan(from_order_tag /*tag*/, size_type order) : _order{order} {}
 
     [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return size_type{20}; }
 
@@ -116,12 +120,12 @@ private:
 /// Daisuke Takahashi (2019)
 /// ISBN 978-981-13-9964-0
 template<complex Complex>
-struct c2c_stockham_dif2_plan_v2
+struct c2c_stockham_dif2i_plan
 {
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    c2c_stockham_dif2_plan_v2(from_order_tag /*tag*/, size_type order) : _order{order} {}
+    c2c_stockham_dif2i_plan(from_order_tag /*tag*/, size_type order) : _order{order} {}
 
     [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return size_type{20}; }
 
@@ -134,36 +138,53 @@ struct c2c_stockham_dif2_plan_v2
     template<inout_vector_of<Complex> Vec>
     auto operator()(Vec x, direction dir) noexcept -> void
     {
-        auto const n = size();
-        auto const p = static_cast<size_t>(_order);
+        auto const n = static_cast<int>(size());
         auto const y = _work.to_mdspan();
         auto const w = dir == direction::forward ? stdex::submdspan(_w.to_mdspan(), 0, stdex::full_extent)
                                                  : stdex::submdspan(_w.to_mdspan(), 1, stdex::full_extent);
 
-        auto l = n / 2U;
-        auto m = 1U;
+        for (auto stage{0}; stage < static_cast<int>(order()); ++stage) {
+            auto const stride    = ipow<2>(stage);
+            auto const stage_len = n / (stride * 2);
+            auto const offset    = stage_len * stride;
 
-        for (auto t{1U}; t <= p; ++t) {
-            copy(x, y);
-
-            for (auto j{0U}; j < l; ++j) {
-                auto const w1 = w[j * m];
-
-                for (auto k{0U}; k < m; ++k) {
-                    auto const c0 = y[k + (j * m) + (0 * l * m)];
-                    auto const c1 = y[k + (j * m) + (1 * l * m)];
-
-                    x[k + (2 * j * m) + (0 * m)] = c0 + c1;
-                    x[k + (2 * j * m) + (1 * m)] = (c0 - c1) * w1;
-                }
+            if (is_even(stage)) {
+                butterfly(x, y, w, stage_len, stride, offset);
+            } else {
+                butterfly(y, x, w, stage_len, stride, offset);
             }
+        }
 
-            l = l / 2;
-            m = m * 2;
+        if (is_odd(order())) {
+            copy(y, x);
         }
     }
 
 private:
+    auto butterfly(
+        in_vector_of<Complex> auto x,
+        out_vector_of<Complex> auto y,
+        in_vector_of<Complex> auto w,
+        std::int32_t stage_len,
+        std::int32_t stride,
+        std::int32_t offset
+    ) noexcept -> void
+    {
+        for (auto j{0}; j < stage_len; ++j) {
+            auto const jm  = j * stride;
+            auto const jm2 = jm * 2;
+            auto const w1  = w[jm];
+
+            for (auto k{0}; k < stride; ++k) {
+                auto const c0 = x[k + jm];
+                auto const c1 = x[k + jm + offset];
+
+                y[k + jm2]          = c0 + c1;
+                y[k + jm2 + stride] = (c0 - c1) * w1;
+            }
+        }
+    }
+
     static auto make_twiddle_lut(size_t n) -> stdex::mdarray<Complex, stdex::dextents<std::size_t, 2>>
     {
         auto w = stdex::mdarray<Complex, stdex::dextents<std::size_t, 2>>{2, n / 2};

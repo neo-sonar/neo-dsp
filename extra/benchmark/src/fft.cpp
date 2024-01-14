@@ -39,36 +39,6 @@ auto c2c(benchmark::State& state) -> void
 }
 
 template<typename Plan>
-auto c2c_r4(benchmark::State& state) -> void
-{
-    using Complex = typename Plan::value_type;
-    using Float   = typename Complex::value_type;
-
-    auto const order = static_cast<std::size_t>(state.range(0));
-    auto const len   = neo::ipow<size_t(4)>(order);
-    auto const noise = neo::generate_noise_signal<Complex>(len, std::random_device{}());
-
-    auto plan = Plan{neo::fft::from_order, order};
-    auto work = noise;
-
-    for (auto _ : state) {
-        state.PauseTiming();
-        neo::copy(noise.to_mdspan(), work.to_mdspan());
-        state.ResumeTiming();
-
-        neo::fft::fft(plan, work.to_mdspan());
-
-        benchmark::DoNotOptimize(work.data());
-        benchmark::ClobberMemory();
-    }
-
-    auto const items       = static_cast<int64_t>(state.iterations()) * plan.size();
-    auto const flop        = 5UL * size_t(plan.order()) * items;
-    state.counters["flop"] = benchmark::Counter(static_cast<double>(flop), benchmark::Counter::kIsRate);
-    state.SetBytesProcessed(items * sizeof(Complex));
-}
-
-template<typename Plan>
 auto split_c2c(benchmark::State& state) -> void
 {
     using Float = typename Plan::value_type;
@@ -107,9 +77,9 @@ auto split_c2c(benchmark::State& state) -> void
 
 using namespace neo::fft;
 
-// BENCHMARK(c2c<fallback_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(c2c_r4<experimental::c2c_dif4_plan<neo::complex64>>)->DenseRange(2, 10);
-BENCHMARK(c2c_r4<experimental::c2c_dit4_plan<neo::complex64>>)->DenseRange(2, 10);
+BENCHMARK(c2c<fallback_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<experimental::c2c_stockham_dif2r_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<experimental::c2c_stockham_dif2i_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 BENCHMARK(c2c<fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
 #if defined(NEO_HAS_APPLE_ACCELERATE)
