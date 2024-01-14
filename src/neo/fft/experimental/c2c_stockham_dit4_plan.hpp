@@ -23,17 +23,11 @@ struct c2c_stockham_dit4_plan
 
     [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return size_type{11}; }
 
-    [[nodiscard]] static constexpr auto max_size() noexcept -> size_type
-    {
-        return ipow<size_type(4)>(static_cast<size_type>(max_order()));
-    }
+    [[nodiscard]] static constexpr auto max_size() noexcept -> size_type { return ipow<size_type(4)>(max_order()); }
 
     [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
-    [[nodiscard]] auto size() const noexcept -> size_type
-    {
-        return ipow<size_type(4)>(static_cast<size_type>(order()));
-    }
+    [[nodiscard]] auto size() const noexcept -> size_type { return ipow<size_type(4)>(order()); }
 
     template<inout_vector_of<Complex> Vec>
     auto operator()(Vec x, direction dir) noexcept -> void

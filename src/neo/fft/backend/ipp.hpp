@@ -123,7 +123,7 @@ struct intel_ipp_fft_plan
 
     intel_ipp_fft_plan(from_order_tag /*tag*/, size_type order) : _order{order}
     {
-        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<setup>(static_cast<size_type>(order));
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<setup>(order);
         _buffer                                 = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{size()};
     }
 
@@ -307,7 +307,7 @@ struct intel_ipp_split_fft_plan
 
     intel_ipp_split_fft_plan(from_order_tag /*tag*/, size_type order) : _order{order}
     {
-        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<setup>(static_cast<size_type>(order));
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<setup>(order);
     }
 
     intel_ipp_split_fft_plan(intel_ipp_split_fft_plan const& other)                    = delete;
@@ -399,7 +399,7 @@ struct intel_ipp_rfft_plan
 
     intel_ipp_rfft_plan(from_order_tag /*tag*/, size_type order) : _order{order}
     {
-        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<setup>(static_cast<size_type>(order));
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<setup>(order);
     }
 
     intel_ipp_rfft_plan(intel_ipp_rfft_plan const& other)                    = delete;
@@ -494,7 +494,7 @@ struct intel_ipp_dct_plan
 
     intel_ipp_dct_plan(from_order_tag /*tag*/, size_type order) : _order{order}
     {
-        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_dct_handle<setup>(static_cast<size_type>(order));
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_dct_handle<setup>(order);
     }
 
     intel_ipp_dct_plan(intel_ipp_dct_plan const& other)                    = delete;

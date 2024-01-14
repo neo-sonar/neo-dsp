@@ -21,13 +21,13 @@ struct fallback_rfft_plan
 
     [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
-    [[nodiscard]] auto size() const noexcept -> size_type { return _size; }
+    [[nodiscard]] auto size() const noexcept -> size_type { return fft::size(order()); }
 
     template<in_vector_of<Float> InVec, out_vector_of<Complex> OutVec>
     auto operator()(InVec in, OutVec out) noexcept -> void
     {
         auto const buf    = _buffer.to_mdspan();
-        auto const coeffs = _size / 2 + 1;
+        auto const coeffs = size() / 2 + 1;
 
         copy(in, buf);
         _fft(buf, direction::forward);
@@ -38,26 +38,25 @@ struct fallback_rfft_plan
     auto operator()(InVec in, OutVec out) noexcept -> void
     {
         auto const buf    = _buffer.to_mdspan();
-        auto const coeffs = _size / 2 + 1;
+        auto const coeffs = size() / 2 + 1;
 
         copy(in, stdex::submdspan(buf, std::tuple{0, in.extent(0)}));
 
         // Fill upper half with conjugate
-        for (auto i{coeffs}; i < _size; ++i) {
-            buf[i] = math::conj(buf[_size - i]);
+        for (auto i{coeffs}; i < size(); ++i) {
+            buf[i] = math::conj(buf[size() - i]);
         }
 
         _fft(buf, direction::backward);
-        for (auto i{0UL}; i < _size; ++i) {
+        for (auto i{0UL}; i < size(); ++i) {
             out[i] = buf[i].real();
         }
     }
 
 private:
     size_type _order;
-    size_type _size{fft::size(order())};
-    fft_plan<Complex> _fft{from_order, static_cast<size_type>(_order)};
-    stdex::mdarray<Complex, stdex::dextents<size_type, 1>> _buffer{_size};
+    fft_plan<Complex> _fft{from_order, _order};
+    stdex::mdarray<Complex, stdex::dextents<size_type, 1>> _buffer{size()};
 };
 
 }  // namespace neo::fft

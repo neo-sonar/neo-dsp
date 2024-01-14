@@ -68,8 +68,6 @@ struct intel_mkl_fft_plan
     }
 
 private:
-    static constexpr auto precision = std::same_as<real_type, float> ? DFTI_SINGLE : DFTI_DOUBLE;
-
     struct handle_t
     {
         DFTI_DESCRIPTOR_HANDLE ptr;
@@ -81,16 +79,17 @@ private:
             throw std::runtime_error{"mkl: unsupported order '" + std::to_string(int(order)) + "'"};
         }
 
-        auto* handle = DFTI_DESCRIPTOR_HANDLE{};
-        DftiCreateDescriptor(
-            &handle,
-            precision,
-            DFTI_COMPLEX,
-            1,
-            static_cast<int>(1UL << static_cast<size_type>(order))
-        );
+        static constexpr auto const precision  = std::same_as<real_type, float> ? DFTI_SINGLE : DFTI_DOUBLE;
+        static constexpr auto const domain     = DFTI_COMPLEX;
+        static constexpr auto const dimensions = 1;
+
+        auto* handle   = DFTI_DESCRIPTOR_HANDLE{};
+        auto const len = ipow<size_type(2)>(order);
+
+        DftiCreateDescriptor(&handle, precision, domain, dimensions, len);
         DftiSetValue(handle, DFTI_PLACEMENT, DFTI_INPLACE);
         DftiCommitDescriptor(handle);
+
         return std::make_unique<handle_t>(handle_t{.ptr = handle});
     }
 
