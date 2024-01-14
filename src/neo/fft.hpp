@@ -20,5 +20,6 @@
 #include <neo/fft/experimental/c2c_dif5_plan.hpp>
 #include <neo/fft/experimental/c2c_dit4_plan.hpp>
 #include <neo/fft/experimental/c2c_stockham_dif2_plan.hpp>
+#include <neo/fft/experimental/c2c_stockham_dif4_plan.hpp>
 #include <neo/fft/experimental/c2c_stockham_dit4_plan.hpp>
 #include <neo/fft/experimental/rfft.hpp>
