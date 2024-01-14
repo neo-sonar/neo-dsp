@@ -263,7 +263,8 @@ TEMPLATE_PRODUCT_TEST_CASE(
      c2c_dif4_plan,
      c2c_dif5_plan,
      c2c_dit4_plan,
-     c2c_stockham_dif2_plan,
+     c2c_stockham_dif2_plan_v1,
+     c2c_stockham_dif2_plan_v2,
      c2c_stockham_dif3_plan,
      c2c_stockham_dif4_plan,
      c2c_stockham_dif5_plan,
@@ -276,7 +277,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     using Complex = typename Plan::value_type;
     using Float   = typename Complex::value_type;
 
-    auto const o     = GENERATE(range(1, static_cast<int>(Plan::max_order()) - 5));
+    auto const o     = GENERATE(range(1, static_cast<int>(Plan::max_order()) - 6));
     auto const order = static_cast<neo::fft::order>(o);
     CAPTURE(o);
 
