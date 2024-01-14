@@ -23,12 +23,12 @@ struct fallback_fft_plan
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    explicit fallback_fft_plan(fft::order order);
+    fallback_fft_plan(from_order_tag /*tag*/, size_type order);
 
-    [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order;
+    [[nodiscard]] static constexpr auto max_order() noexcept -> size_type;
     [[nodiscard]] static constexpr auto max_size() noexcept -> size_type;
 
-    [[nodiscard]] auto order() const noexcept -> fft::order;
+    [[nodiscard]] auto order() const noexcept -> size_type;
     [[nodiscard]] auto size() const noexcept -> size_type;
 
     template<inout_vector Vec>
@@ -36,9 +36,9 @@ struct fallback_fft_plan
     auto operator()(Vec x, direction dir) noexcept -> void;
 
 private:
-    [[nodiscard]] static auto check_order(fft::order order) -> fft::order;
+    [[nodiscard]] static auto check_order(size_type order) -> size_type;
 
-    fft::order _order;
+    size_type _order;
     size_type _size{fft::size(order())};
     bitrevorder_plan _reorder{static_cast<size_t>(_order)};
     stdex::mdarray<Complex, stdex::dextents<size_type, 1>> _twiddles{
@@ -47,13 +47,14 @@ private:
 };
 
 template<typename Complex, typename Kernel>
-fallback_fft_plan<Complex, Kernel>::fallback_fft_plan(fft::order order) : _order{check_order(order)}
+fallback_fft_plan<Complex, Kernel>::fallback_fft_plan(from_order_tag /*tag*/, size_type order)
+    : _order{check_order(order)}
 {}
 
 template<typename Complex, typename Kernel>
-constexpr auto fallback_fft_plan<Complex, Kernel>::max_order() noexcept -> fft::order
+constexpr auto fallback_fft_plan<Complex, Kernel>::max_order() noexcept -> size_type
 {
-    return fft::order{27};
+    return size_type{27};
 }
 
 template<typename Complex, typename Kernel>
@@ -63,7 +64,7 @@ constexpr auto fallback_fft_plan<Complex, Kernel>::max_size() noexcept -> size_t
 }
 
 template<typename Complex, typename Kernel>
-auto fallback_fft_plan<Complex, Kernel>::order() const noexcept -> fft::order
+auto fallback_fft_plan<Complex, Kernel>::order() const noexcept -> size_type
 {
     return _order;
 }
@@ -91,7 +92,7 @@ auto fallback_fft_plan<Complex, Kernel>::operator()(Vec x, direction dir) noexce
 }
 
 template<typename Complex, typename Kernel>
-auto fallback_fft_plan<Complex, Kernel>::check_order(fft::order order) -> fft::order
+auto fallback_fft_plan<Complex, Kernel>::check_order(size_type order) -> size_type
 {
     if (order > max_order()) {
         throw std::runtime_error{"fallback: unsupported order '" + std::to_string(int(order)) + "'"};

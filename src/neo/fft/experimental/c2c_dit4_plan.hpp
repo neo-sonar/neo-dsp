@@ -18,21 +18,15 @@ struct c2c_radix4_plan
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    explicit c2c_radix4_plan(fft::order order) : _order{order} {}
+    explicit c2c_radix4_plan(from_order_tag /*tag*/, size_type order) : _order{order} {}
 
-    [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order { return fft::order{11}; }
+    [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return size_type{11}; }
 
-    [[nodiscard]] static constexpr auto max_size() noexcept -> size_type
-    {
-        return ipow<size_type(4)>(static_cast<size_type>(max_order()));
-    }
+    [[nodiscard]] static constexpr auto max_size() noexcept -> size_type { return ipow<size_type(4)>(max_order()); }
 
-    [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
-    [[nodiscard]] auto size() const noexcept -> size_type
-    {
-        return ipow<size_type(4)>(static_cast<size_type>(order()));
-    }
+    [[nodiscard]] auto size() const noexcept -> size_type { return ipow<size_type(4)>(order()); }
 
     template<inout_vector_of<Complex> Vec>
     auto operator()(Vec x, direction dir) noexcept -> void
@@ -187,7 +181,7 @@ private:
         return w;
     }
 
-    fft::order _order;
+    size_type _order;
     digitrevorder_plan<4> _reorder{size()};
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 2>> _w{make_twiddle_lut(size())};
 };

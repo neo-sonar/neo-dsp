@@ -60,13 +60,13 @@ auto test_fft_plan()
     {
         auto const next = neo::fft::next_order(Plan::max_size() + 1U);
         CAPTURE(int(next));
-        REQUIRE_THROWS(Plan{next});
+        REQUIRE_THROWS(Plan{neo::fft::from_order, next});
     }
 
-    auto const order = GENERATE(as<neo::fft::order>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
+    auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
     CAPTURE(order);
 
-    auto plan = Plan{order};
+    auto plan = Plan{neo::fft::from_order, order};
     REQUIRE(plan.order() == order);
     REQUIRE(plan.size() == neo::fft::size(order));
     REQUIRE(neo::fft::next_order(plan.size()) == plan.order());
@@ -277,11 +277,10 @@ TEMPLATE_PRODUCT_TEST_CASE(
     using Complex = typename Plan::value_type;
     using Float   = typename Complex::value_type;
 
-    auto const o     = GENERATE(range(1, static_cast<int>(Plan::max_order()) - 6));
-    auto const order = static_cast<neo::fft::order>(o);
-    CAPTURE(o);
+    auto const order = GENERATE(range(size_t(1), static_cast<size_t>(Plan::max_order()) - 6));
+    CAPTURE(order);
 
-    auto plan        = Plan{order};
+    auto plan        = Plan{neo::fft::from_order, order};
     auto const noise = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
 
     SECTION("inplace")

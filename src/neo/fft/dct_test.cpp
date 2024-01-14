@@ -13,16 +13,16 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: dct2_plan", "", (neo::fft::fallback_dct2_pl
 
     SECTION("size/order")
     {
-        auto const order = GENERATE(as<neo::fft::order>{}, 2, 3, 4);
+        auto const order = GENERATE(as<size_t>{}, 2, 3, 4);
 
-        auto plan = Plan{order};
+        auto plan = Plan{neo::fft::from_order, order};
         REQUIRE(plan.order() == order);
         REQUIRE(plan.size() == neo::fft::size(order));
     }
 
     SECTION("python: scipy.fft.dct(x, type=2)")
     {
-        auto plan = Plan{neo::fft::order{3}};
+        auto plan = Plan{neo::fft::from_order, size_t{3}};
         auto x    = std::array<Float, 8>{1, 2, 3, 4, 5, 6, 7, 8};
         plan(stdex::mdspan{x.data(), stdex::extents{x.size()}});
 

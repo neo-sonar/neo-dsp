@@ -18,7 +18,7 @@ auto r2c(benchmark::State& state) -> void
     auto const order = neo::fft::next_order(len);
     auto const noise = neo::generate_noise_signal<Float>(len, std::random_device{}());
 
-    auto plan   = Plan{order};
+    auto plan   = Plan{neo::fft::from_order, order};
     auto input  = noise;
     auto output = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{plan.size() / 2 + 1};
 

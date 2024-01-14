@@ -36,12 +36,12 @@ namespace neo::fft {
         using value_type = Complex;
         using size_type  = std::size_t;
 
-        explicit fft_plan(fft::order order);
+        fft_plan(from_order_tag /*tag*/, size_type order);
 
-        static constexpr auto max_order() noexcept -> fft::order;
+        static constexpr auto max_order() noexcept -> size_type;
         static constexpr auto max_size() noexcept -> size_type;
 
-        auto order() const noexcept -> fft::order;
+        auto order() const noexcept -> size_type;
         auto size() const noexcept -> size_type;
 
         template<inout_vector_of<Complex> InOutVec>
@@ -112,12 +112,12 @@ namespace neo::fft {
         using complex_type = std::complex<Float>;
         using size_type    = std::size_t;
 
-        explicit rfft_plan(fft::order order);
+        rfft_plan(from_order_tag /*tag*/, size_type order);
 
-        static constexpr auto max_order() noexcept -> fft::order;
+        static constexpr auto max_order() noexcept -> size_type;
         static constexpr auto max_size() noexcept -> size_type;
 
-        auto order() const noexcept -> fft::order;
+        auto order() const noexcept -> size_type;
         auto size() const noexcept -> size_type;
 
         template<in_vector_of<Float> InVec, out_vector_of<complex_type> OutVec>

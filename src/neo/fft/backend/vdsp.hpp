@@ -27,14 +27,14 @@ struct apple_vdsp_fft_plan
     using size_type          = std::size_t;
     using native_handle_type = std::conditional_t<std::same_as<real_type, float>, FFTSetup, FFTSetupD>;
 
-    explicit apple_vdsp_fft_plan(fft::order order);
+    apple_vdsp_fft_plan(from_order_tag /*tag*/, size_type order);
     ~apple_vdsp_fft_plan();
 
     apple_vdsp_fft_plan(apple_vdsp_fft_plan const& other)                    = delete;
     auto operator=(apple_vdsp_fft_plan const& other) -> apple_vdsp_fft_plan& = delete;
 
     apple_vdsp_fft_plan(apple_vdsp_fft_plan&& other) noexcept
-        : _order{std::exchange(other._order, fft::order{0})}
+        : _order{std::exchange(other._order, size_type{0})}
         , _size{std::exchange(other._size, 0)}
         , _plan{std::exchange(other._plan, nullptr)}
         , _input{std::move(other._input)}
@@ -43,7 +43,7 @@ struct apple_vdsp_fft_plan
 
     auto operator=(apple_vdsp_fft_plan&& other) noexcept -> apple_vdsp_fft_plan&
     {
-        _order  = std::exchange(other._order, fft::order{0});
+        _order  = std::exchange(other._order, size_type{0});
         _size   = std::exchange(other._size, 0);
         _plan   = std::exchange(other._plan, nullptr);
         _input  = std::move(other._input);
@@ -51,18 +51,18 @@ struct apple_vdsp_fft_plan
         return *this;
     }
 
-    [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order { return fft::order{27}; }
+    [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return size_type{27}; }
 
     [[nodiscard]] static constexpr auto max_size() noexcept -> size_type { return fft::size(max_order()); }
 
-    [[nodiscard]] auto order() const noexcept -> fft::order;
+    [[nodiscard]] auto order() const noexcept -> size_type;
     [[nodiscard]] auto size() const noexcept -> size_type;
 
     template<inout_vector_of<Complex> InOutVec>
     auto operator()(InOutVec x, direction dir) noexcept -> void;
 
 private:
-    fft::order _order;
+    size_type _order;
     size_type _size{fft::size(order())};
     native_handle_type _plan;
     stdex::mdarray<real_type, stdex::dextents<size_t, 2>> _input{2, _size};
@@ -71,7 +71,7 @@ private:
 
 template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
-apple_vdsp_fft_plan<Complex>::apple_vdsp_fft_plan(fft::order order)
+apple_vdsp_fft_plan<Complex>::apple_vdsp_fft_plan(from_order_tag /*tag*/, size_type order)
     : _order{order}
     , _plan{[order] {
     if (order > max_order()) {
@@ -110,7 +110,7 @@ auto apple_vdsp_fft_plan<Complex>::size() const noexcept -> size_type
 
 template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
-auto apple_vdsp_fft_plan<Complex>::order() const noexcept -> fft::order
+auto apple_vdsp_fft_plan<Complex>::order() const noexcept -> size_type
 {
     return _order;
 }
@@ -152,14 +152,14 @@ struct apple_vdsp_split_fft_plan
     using size_type          = std::size_t;
     using native_handle_type = std::conditional_t<std::same_as<Float, float>, FFTSetup, FFTSetupD>;
 
-    explicit apple_vdsp_split_fft_plan(fft::order order);
+    apple_vdsp_split_fft_plan(from_order_tag /*tag*/, size_type order);
     ~apple_vdsp_split_fft_plan();
 
     apple_vdsp_split_fft_plan(apple_vdsp_split_fft_plan const& other)                    = delete;
     auto operator=(apple_vdsp_split_fft_plan const& other) -> apple_vdsp_split_fft_plan& = delete;
 
     apple_vdsp_split_fft_plan(apple_vdsp_split_fft_plan&& other) noexcept
-        : _order{std::exchange(other._order, fft::order{0})}
+        : _order{std::exchange(other._order, size_type{0})}
         , _size{std::exchange(other._size, 0)}
         , _plan{std::exchange(other._plan, nullptr)}
         , _input{std::move(other._input)}
@@ -168,7 +168,7 @@ struct apple_vdsp_split_fft_plan
 
     auto operator=(apple_vdsp_split_fft_plan&& other) noexcept -> apple_vdsp_split_fft_plan&
     {
-        _order  = std::exchange(other._order, fft::order{0});
+        _order  = std::exchange(other._order, size_type{0});
         _size   = std::exchange(other._size, 0);
         _plan   = std::exchange(other._plan, nullptr);
         _input  = std::move(other._input);
@@ -176,7 +176,7 @@ struct apple_vdsp_split_fft_plan
         return *this;
     }
 
-    [[nodiscard]] auto order() const noexcept -> fft::order;
+    [[nodiscard]] auto order() const noexcept -> size_type;
     [[nodiscard]] auto size() const noexcept -> size_type;
 
     template<inout_vector_of<Float> InOutVec>
@@ -186,7 +186,7 @@ struct apple_vdsp_split_fft_plan
     auto operator()(split_complex<InVec> in, split_complex<OutVec> out, direction dir) noexcept -> void;
 
 private:
-    fft::order _order;
+    size_type _order;
     size_type _size{fft::size(order())};
     native_handle_type _plan;
     stdex::mdarray<Float, stdex::dextents<size_t, 2>> _input{2, _size};
@@ -195,7 +195,7 @@ private:
 
 template<std::floating_point Float>
     requires(std::same_as<Float, float> or std::same_as<Float, double>)
-apple_vdsp_split_fft_plan<Float>::apple_vdsp_split_fft_plan(fft::order order)
+apple_vdsp_split_fft_plan<Float>::apple_vdsp_split_fft_plan(from_order_tag /*tag*/, size_type order)
     : _order{order}
     , _plan{[order] {
     if constexpr (std::same_as<Float, float>) {
@@ -230,7 +230,7 @@ auto apple_vdsp_split_fft_plan<Float>::size() const noexcept -> size_type
 
 template<std::floating_point Float>
     requires(std::same_as<Float, float> or std::same_as<Float, double>)
-auto apple_vdsp_split_fft_plan<Float>::order() const noexcept -> fft::order
+auto apple_vdsp_split_fft_plan<Float>::order() const noexcept -> size_type
 {
     return _order;
 }

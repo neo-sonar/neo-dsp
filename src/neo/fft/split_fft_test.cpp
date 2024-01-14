@@ -26,10 +26,10 @@ auto test_split_fft_plan() -> void
 {
     using Float = typename Plan::value_type;
 
-    auto const order = GENERATE(as<neo::fft::order>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
+    auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
     CAPTURE(order);
 
-    auto plan = Plan{order};
+    auto plan = Plan{neo::fft::from_order, order};
     REQUIRE(plan.order() == order);
     REQUIRE(plan.size() == neo::fft::size(order));
 

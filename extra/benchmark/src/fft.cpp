@@ -18,7 +18,7 @@ auto c2c(benchmark::State& state) -> void
     auto const order = neo::fft::next_order(len);
     auto const noise = neo::generate_noise_signal<Complex>(len, std::random_device{}());
 
-    auto plan = Plan{order};
+    auto plan = Plan{neo::fft::from_order, order};
     auto work = noise;
 
     for (auto _ : state) {
@@ -47,7 +47,7 @@ auto split_c2c(benchmark::State& state) -> void
     auto const order = neo::fft::next_order(len);
     auto const noise = neo::generate_noise_signal<Float>(len, std::random_device{}());
 
-    auto plan = Plan{order};
+    auto plan = Plan{neo::fft::from_order, order};
     auto buf  = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{2, len};
     auto z    = neo::split_complex{
         stdex::submdspan(buf.to_mdspan(), 0, stdex::full_extent),

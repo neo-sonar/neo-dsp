@@ -21,7 +21,7 @@ struct intel_mkl_fft_plan
     using real_type  = typename Complex::value_type;
     using size_type  = std::size_t;
 
-    explicit intel_mkl_fft_plan(fft::order order) : _order{order}, _handle{make(order)} {}
+    intel_mkl_fft_plan(from_order_tag /*tag*/, size_type order) : _order{order}, _handle{make(order)} {}
 
     ~intel_mkl_fft_plan() noexcept
     {
@@ -36,11 +36,11 @@ struct intel_mkl_fft_plan
     intel_mkl_fft_plan(intel_mkl_fft_plan&& other)                    = default;
     auto operator=(intel_mkl_fft_plan&& other) -> intel_mkl_fft_plan& = default;
 
-    [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order { return fft::order{27}; }
+    [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return size_type{27}; }
 
     [[nodiscard]] static constexpr auto max_size() noexcept -> size_type { return fft::size(max_order()); }
 
-    [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
     [[nodiscard]] auto size() const noexcept -> size_type { return fft::size(order()); }
 
@@ -75,7 +75,7 @@ private:
         DFTI_DESCRIPTOR_HANDLE ptr;
     };
 
-    [[nodiscard]] static auto make(fft::order order)
+    [[nodiscard]] static auto make(size_type order)
     {
         if (order > max_order()) {
             throw std::runtime_error{"mkl: unsupported order '" + std::to_string(int(order)) + "'"};
@@ -94,7 +94,7 @@ private:
         return std::make_unique<handle_t>(handle_t{.ptr = handle});
     }
 
-    fft::order _order;
+    size_type _order;
     std::unique_ptr<handle_t> _handle;
     stdex::mdarray<Complex, stdex::dextents<size_t, 1>> _buffer{size()};
 };

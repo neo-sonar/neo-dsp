@@ -23,21 +23,15 @@ struct c2c_stockham_dif8_plan
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    explicit c2c_stockham_dif8_plan(fft::order order) : _order{order} {}
+    c2c_stockham_dif8_plan(from_order_tag /*tag*/, size_type order) : _order{order} {}
 
-    [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order { return fft::order{9}; }
+    [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return size_type{9}; }
 
-    [[nodiscard]] static constexpr auto max_size() noexcept -> size_type
-    {
-        return ipow<size_type(8)>(static_cast<size_type>(max_order()));
-    }
+    [[nodiscard]] static constexpr auto max_size() noexcept -> size_type { return ipow<size_type(8)>(max_order()); }
 
-    [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
-    [[nodiscard]] auto size() const noexcept -> size_type
-    {
-        return ipow<size_type(8)>(static_cast<size_type>(order()));
-    }
+    [[nodiscard]] auto size() const noexcept -> size_type { return ipow<size_type(8)>(order()); }
 
     template<inout_vector_of<Complex> Vec>
     auto operator()(Vec x, direction dir) noexcept -> void
@@ -115,7 +109,7 @@ struct c2c_stockham_dif8_plan
     }
 
 private:
-    fft::order _order;
+    size_type _order;
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _work{size()};
 };
 

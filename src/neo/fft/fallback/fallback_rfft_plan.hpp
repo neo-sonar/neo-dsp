@@ -17,9 +17,9 @@ struct fallback_rfft_plan
     using complex_type = Complex;
     using size_type    = std::size_t;
 
-    explicit fallback_rfft_plan(fft::order order) : _order{order} {}
+    fallback_rfft_plan(from_order_tag /*tag*/, size_type order) : _order{order} {}
 
-    [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
     [[nodiscard]] auto size() const noexcept -> size_type { return _size; }
 
@@ -54,9 +54,9 @@ struct fallback_rfft_plan
     }
 
 private:
-    fft::order _order;
+    size_type _order;
     size_type _size{fft::size(order())};
-    fft_plan<Complex> _fft{static_cast<fft::order>(_order)};
+    fft_plan<Complex> _fft{from_order, static_cast<size_type>(_order)};
     stdex::mdarray<Complex, stdex::dextents<size_type, 1>> _buffer{_size};
 };
 

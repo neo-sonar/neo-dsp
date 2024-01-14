@@ -17,9 +17,9 @@ struct fallback_split_fft_plan
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit fallback_split_fft_plan(fft::order order) : _order{order} {}
+    fallback_split_fft_plan(from_order_tag /*tag*/, size_type order) : _order{order} {}
 
-    [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
     [[nodiscard]] auto size() const noexcept -> size_type { return fft::size(order()); }
 
@@ -130,7 +130,7 @@ private:
         return w_buf;
     }
 
-    fft::order _order;
+    size_type _order;
     bitrevorder_plan _reorder{static_cast<size_t>(_order)};
     stdex::mdarray<Float, stdex::dextents<size_t, 2>> _tw{make_twiddles(size())};
 };

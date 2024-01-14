@@ -42,9 +42,9 @@ auto test_rfft()
     using Float   = typename Plan::real_type;
     using Complex = typename Plan::complex_type;
 
-    auto const order = GENERATE(as<neo::fft::order>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
+    auto const order = GENERATE(as<size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
 
-    auto rfft = Plan{order};
+    auto rfft = Plan{neo::fft::from_order, order};
     REQUIRE(rfft.order() == order);
     REQUIRE(rfft.size() == neo::fft::size(order));
 
@@ -82,18 +82,18 @@ TEMPLATE_PRODUCT_TEST_CASE("neo/fft: rfft_deinterleave", "", (std::complex, neo:
     using Complex = TestType;
     using Float   = typename Complex::value_type;
 
-    auto const order      = GENERATE(as<neo::fft::order>{}, 4, 5, 6, 7, 8);
+    auto const order      = GENERATE(as<std::size_t>{}, 4, 5, 6, 7, 8);
     auto const size       = neo::fft::size(order);
     auto const num_coeffs = size / 2 + 1;
     CAPTURE(order);
     CAPTURE(size);
     CAPTURE(num_coeffs);
 
-    auto fft = neo::fft::fft_plan<Complex>{order};
+    auto fft = neo::fft::fft_plan<Complex>{neo::fft::from_order, order};
     REQUIRE(fft.size() == size);
     REQUIRE(fft.order() == order);
 
-    auto rfft = neo::fft::rfft_plan<Float, Complex>{order};
+    auto rfft = neo::fft::rfft_plan<Float, Complex>{neo::fft::from_order, order};
     REQUIRE(rfft.size() == size);
     REQUIRE(rfft.order() == order);
 
@@ -136,7 +136,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::fft", "", float, double)
         CAPTURE(order);
         CAPTURE(size);
 
-        auto plan = neo::fft::experimental::fallback_fft_plan<Float>{order};
+        auto plan = neo::fft::experimental::fallback_fft_plan<Float>{neo::fft::from_order, order};
         REQUIRE(plan.size() == size);
         REQUIRE(plan.order() == order);
 
@@ -173,7 +173,10 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::fft", "", float, double)
         auto const expected = std::array<Float, 8>{10, 0, -2, 2, -2, 0, -2, -2};
 
         auto x    = input;
-        auto plan = neo::fft::experimental::fallback_fft_plan<Float>{neo::bit_log2(input.size() / 2)};
+        auto plan = neo::fft::experimental::fallback_fft_plan<Float>{
+            neo::fft::from_order,
+            neo::bit_log2(input.size() / 2),
+        };
         plan(stdex::mdspan{x.data(), stdex::extents{x.size()}}, neo::fft::direction::forward);
 
         for (auto i{0U}; i < expected.size(); ++i) {
@@ -192,7 +195,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::rfft_plan", "", float, double)
     CAPTURE(order);
     CAPTURE(size);
 
-    auto plan = neo::fft::experimental::rfft_plan<Float>{order};
+    auto plan = neo::fft::experimental::rfft_plan<Float>{neo::fft::from_order, order};
     REQUIRE(plan.order() == order);
     REQUIRE(plan.size() == size);
 

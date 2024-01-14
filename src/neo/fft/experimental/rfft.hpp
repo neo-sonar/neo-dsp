@@ -104,7 +104,7 @@ struct fallback_fft_plan
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit fallback_fft_plan(size_type order)
+    fallback_fft_plan(from_order_tag /*tag*/, size_type order)
         : _order{order}
         , _w{neo::fft::make_twiddle_lut_radix2<std::complex<Float>>(size(), direction::forward)}
     {}
@@ -140,7 +140,7 @@ struct rfft_plan
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit rfft_plan(size_type order) : _order{order} {}
+    rfft_plan(from_order_tag /*tag*/, size_type order) : _order{order} {}
 
     [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
@@ -202,7 +202,7 @@ struct rfft_plan
 
 private:
     size_type _order;
-    fallback_fft_plan<Float> _fft{_order - 1U};
+    fallback_fft_plan<Float> _fft{from_order, _order - 1U};
 };
 
 }  // namespace neo::fft::experimental
