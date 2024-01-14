@@ -21,7 +21,7 @@ struct c2c_stockham_dif2_plan_v1
 
     c2c_stockham_dif2_plan_v1(from_order_tag /*tag*/, size_type order) : _order{order} {}
 
-    [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return size_type{27}; }
+    [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return size_type{20}; }
 
     [[nodiscard]] static constexpr auto max_size() noexcept -> size_type { return ipow<size_type(2)>(max_order()); }
 
@@ -123,7 +123,7 @@ struct c2c_stockham_dif2_plan_v2
 
     c2c_stockham_dif2_plan_v2(from_order_tag /*tag*/, size_type order) : _order{order} {}
 
-    [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return size_type{27}; }
+    [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return size_type{20}; }
 
     [[nodiscard]] static constexpr auto max_size() noexcept -> size_type { return ipow<size_type(2)>(max_order()); }
 
