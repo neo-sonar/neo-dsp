@@ -47,11 +47,6 @@ target_sources(neosonar-neo-tests
         "${CMAKE_SOURCE_DIR}/src/neo/fft/rfft_test.cpp"
         "${CMAKE_SOURCE_DIR}/src/neo/fft/split_fft_test.cpp"
         "${CMAKE_SOURCE_DIR}/src/neo/fft/stft_test.cpp"
-        "${CMAKE_SOURCE_DIR}/src/neo/fft/experimental/c2c_dif3_plan_test.cpp"
-        "${CMAKE_SOURCE_DIR}/src/neo/fft/experimental/c2c_dit4_plan_test.cpp"
-        "${CMAKE_SOURCE_DIR}/src/neo/fft/experimental/c2c_dif5_plan_test.cpp"
-        "${CMAKE_SOURCE_DIR}/src/neo/fft/experimental/c2c_stockham_dif2_plan_test.cpp"
-        "${CMAKE_SOURCE_DIR}/src/neo/fft/experimental/c2c_stockham_dit4_plan_test.cpp"
 
         "${CMAKE_SOURCE_DIR}/src/neo/fixed_point/fixed_point_test.cpp"
 

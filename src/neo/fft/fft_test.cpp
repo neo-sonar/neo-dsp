@@ -252,3 +252,35 @@ TEMPLATE_PRODUCT_TEST_CASE(
     test_complex_batch_roundtrip_fft<Complex, Kernel>();
 }
 #endif
+
+using namespace neo::fft::experimental;
+
+TEMPLATE_PRODUCT_TEST_CASE(
+    "neo/fft: experimental",
+    "",
+    (c2c_dif3_plan, c2c_dif4_plan, c2c_dif5_plan, c2c_dit4_plan, c2c_stockham_dif2_plan, c2c_stockham_dit4_plan),
+    (std::complex<float>, std::complex<double>, std::complex<long double>, neo::complex64, neo::complex128)
+)
+{
+    using Plan    = TestType;
+    using Complex = typename Plan::value_type;
+    using Float   = typename Complex::value_type;
+
+    auto const order = GENERATE(as<neo::fft::order>{}, 1, 2, 3, 4, 5, 6, 7);
+    CAPTURE(order);
+
+    auto plan        = Plan{order};
+    auto const noise = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
+
+    SECTION("inplace")
+    {
+        auto copy = noise;
+        auto io   = copy.to_mdspan();
+
+        neo::fft::fft(plan, io);
+        neo::fft::ifft(plan, io);
+
+        neo::scale(Float(1) / static_cast<Float>(plan.size()), io);
+        REQUIRE(neo::allclose(noise.to_mdspan(), io, Float(0.001)));
+    }
+}

@@ -12,13 +12,13 @@
 
 namespace neo::fft::experimental {
 
-template<complex Complex, bool UseDIT = true>
-struct c2c_dit4_plan
+template<complex Complex, bool UseDIT>
+struct c2c_radix4_plan
 {
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    explicit c2c_dit4_plan(fft::order order) : _order{order} {}
+    explicit c2c_radix4_plan(fft::order order) : _order{order} {}
 
     [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order { return fft::order{11}; }
 
@@ -191,5 +191,11 @@ private:
     digitrevorder_plan<4> _reorder{size()};
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 2>> _w{make_twiddle_lut(size())};
 };
+
+template<typename Complex>
+using c2c_dit4_plan = c2c_radix4_plan<Complex, true>;
+
+template<typename Complex>
+using c2c_dif4_plan = c2c_radix4_plan<Complex, false>;
 
 }  // namespace neo::fft::experimental
