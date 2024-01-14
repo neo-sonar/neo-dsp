@@ -64,9 +64,9 @@ struct complex
 {
     double x;
 
-    auto abs() const noexcept { return x; }
+    [[nodiscard]] auto abs() const noexcept { return x; }
 
-    auto conj() const noexcept { return x; }
+    [[nodiscard]] auto conj() const noexcept { return x; }
 };
 
 }  // namespace ns

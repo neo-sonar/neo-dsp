@@ -45,23 +45,23 @@ struct c2c_stockham_dit4_plan
         auto const y = _work.to_mdspan();
 
         auto const sign = dir == direction::forward ? Float(-1) : Float(+1);
-        auto const I    = Complex{Float(0), sign};
+        auto const i    = Complex{Float(0), sign};
         // auto const w    = dir == direction::forward
         //                     ? stdex::submdspan(_w.to_mdspan(), 0, stdex::full_extent, stdex::full_extent)
         //                     : stdex::submdspan(_w.to_mdspan(), 1, stdex::full_extent, stdex::full_extent);
 
         for (auto q{1U}; q <= t; ++q) {
-            auto const L     = ipow<4UL>(q);
-            auto const r     = n / L;
-            auto const Lstar = L / 4UL;
+            auto const l     = ipow<4UL>(q);
+            auto const r     = n / l;
+            auto const lstar = l / 4UL;
             auto const rstar = 4UL * r;
 
             copy(x, y);  // TODO
 
-            for (auto j{0U}; j < Lstar; ++j) {
-                auto const w1 = twiddle<Complex>(L, 1 * j, dir);
-                auto const w2 = twiddle<Complex>(L, 2 * j, dir);
-                auto const w3 = twiddle<Complex>(L, 3 * j, dir);
+            for (auto j{0U}; j < lstar; ++j) {
+                auto const w1 = twiddle<Complex>(l, 1 * j, dir);
+                auto const w2 = twiddle<Complex>(l, 2 * j, dir);
+                auto const w3 = twiddle<Complex>(l, 3 * j, dir);
 
                 // auto const w1 = twiddle<Complex>(n / 4, 1 * j * r, dir);
                 // auto const w2 = twiddle<Complex>(n / 4, 2 * j * r, dir);
@@ -84,10 +84,10 @@ struct c2c_stockham_dit4_plan
                     auto const t2 = b + d;
                     auto const t3 = b - d;
 
-                    x[(j + Lstar * 0) * r + k] = t0 + t2;
-                    x[(j + Lstar * 1) * r + k] = t1 - t3 * I;
-                    x[(j + Lstar * 2) * r + k] = t0 - t2;
-                    x[(j + Lstar * 3) * r + k] = t1 + t3 * I;
+                    x[(j + lstar * 0) * r + k] = t0 + t2;
+                    x[(j + lstar * 1) * r + k] = t1 - t3 * i;
+                    x[(j + lstar * 2) * r + k] = t0 - t2;
+                    x[(j + lstar * 3) * r + k] = t1 + t3 * i;
                 }
             }
         }

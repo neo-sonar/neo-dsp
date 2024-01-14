@@ -45,33 +45,33 @@ struct c2c_stockham_dif4_plan
         using Float = value_type_t<Complex>;
 
         auto const sign = dir == direction::forward ? Float(-1) : Float(+1);
-        auto const I    = Complex{Float(0), sign};
+        auto const i    = Complex{Float(0), sign};
 
         auto const n = size();
         auto const p = static_cast<size_t>(_order);
         auto const y = _work.to_mdspan();
 
-        auto L = n / 4U;
+        auto l = n / 4U;
         auto m = 1U;
 
         for (auto t{1U}; t <= p; ++t) {
             copy(x, y);  // TODO
 
-            for (auto j{0U}; j < L; ++j) {
-                auto const w1 = twiddle<Complex>(L * 4, 1 * j, dir);
-                auto const w2 = twiddle<Complex>(L * 4, 2 * j, dir);
-                auto const w3 = twiddle<Complex>(L * 4, 3 * j, dir);
+            for (auto j{0U}; j < l; ++j) {
+                auto const w1 = twiddle<Complex>(l * 4, 1 * j, dir);
+                auto const w2 = twiddle<Complex>(l * 4, 2 * j, dir);
+                auto const w3 = twiddle<Complex>(l * 4, 3 * j, dir);
 
                 for (auto k{0U}; k < m; ++k) {
-                    auto const c0 = y[k + (j * m) + (0 * L * m)];
-                    auto const c1 = y[k + (j * m) + (1 * L * m)];
-                    auto const c2 = y[k + (j * m) + (2 * L * m)];
-                    auto const c3 = y[k + (j * m) + (3 * L * m)];
+                    auto const c0 = y[k + (j * m) + (0 * l * m)];
+                    auto const c1 = y[k + (j * m) + (1 * l * m)];
+                    auto const c2 = y[k + (j * m) + (2 * l * m)];
+                    auto const c3 = y[k + (j * m) + (3 * l * m)];
 
                     auto const d0 = c0 + c2;
                     auto const d1 = c0 - c2;
                     auto const d2 = c1 + c3;
-                    auto const d3 = (c1 - c3) * I;
+                    auto const d3 = (c1 - c3) * i;
 
                     x[k + (4 * j * m) + (0 * m)] = d0 + d2;
                     x[k + (4 * j * m) + (1 * m)] = (d1 + d3) * w1;
@@ -80,7 +80,7 @@ struct c2c_stockham_dif4_plan
                 }
             }
 
-            L = L / 4;
+            l = l / 4;
             m = m * 4;
         }
     }

@@ -39,9 +39,8 @@ struct c2c_stockham_dif2_plan
     {
         if (dir == direction::forward) {
             return fft(x);
-        } else {
-            return ifft(x);
         }
+        return ifft(x);
     }
 
 private:
