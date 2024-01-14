@@ -17,6 +17,7 @@
 #include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <algorithm>
@@ -273,8 +274,9 @@ TEMPLATE_PRODUCT_TEST_CASE(
     using Complex = typename Plan::value_type;
     using Float   = typename Complex::value_type;
 
-    auto const order = GENERATE(as<neo::fft::order>{}, 1, 2, 3, 4, 5, 6, 7);
-    CAPTURE(order);
+    auto const o     = GENERATE(range(1, static_cast<int>(Plan::max_order()) - 5));
+    auto const order = static_cast<neo::fft::order>(o);
+    CAPTURE(o);
 
     auto plan        = Plan{order};
     auto const noise = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
