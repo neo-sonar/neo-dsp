@@ -9,6 +9,14 @@
 #include <neo/fft/fallback/fallback_fft_plan.hpp>
 #include <neo/fft/order.hpp>
 
+#include <neo/fft/experimental/c2c_dif3_plan.hpp>
+#include <neo/fft/experimental/c2c_dif5_plan.hpp>
+#include <neo/fft/experimental/c2c_dit4_plan.hpp>
+#include <neo/fft/experimental/c2c_stockham_dif2_plan.hpp>
+#include <neo/fft/experimental/c2c_stockham_dif3_plan.hpp>
+#include <neo/fft/experimental/c2c_stockham_dif4_plan.hpp>
+#include <neo/fft/experimental/c2c_stockham_dit4_plan.hpp>
+
 #if defined(NEO_HAS_APPLE_ACCELERATE)
     #include <neo/fft/backend/vdsp.hpp>
 #endif
