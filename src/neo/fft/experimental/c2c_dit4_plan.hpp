@@ -68,28 +68,43 @@ private:
             auto const offset = length / 4;
 
             for (auto h{0ULL}; h < block; ++h) {
-                for (auto k{0ULL}; k < krange; ++k) {
+
+                {
+                    auto const i0 = base;
+                    auto const i1 = base + (1 * offset);
+                    auto const i2 = base + (2 * offset);
+                    auto const i3 = base + (3 * offset);
+
+                    auto const c0 = x[i0];
+                    auto const c1 = x[i1];
+                    auto const c2 = x[i2];
+                    auto const c3 = x[i3];
+
+                    auto const d0 = c0 + c2;
+                    auto const d1 = c0 - c2;
+                    auto const d2 = c1 + c3;
+                    auto const d3 = (c1 - c3) * z;
+
+                    x[i0] = d0 + d2;
+                    x[i1] = d1 - d3;
+                    x[i2] = -d2 + d0;
+                    x[i3] = d3 + d1;
+                }
+
+                for (auto k{1ULL}; k < krange; ++k) {
+                    auto w1 = twiddle[1 * k * w_stride];
+                    auto w2 = twiddle[2 * k * w_stride];
+                    auto w3 = twiddle[3 * k * w_stride];
+
                     auto const i0 = base + k;
-                    auto const i1 = base + k + offset;
+                    auto const i1 = base + k + (1 * offset);
                     auto const i2 = base + k + (2 * offset);
                     auto const i3 = base + k + (3 * offset);
 
                     auto const c0 = x[i0];
-                    auto c1       = Complex{};
-                    auto c2       = Complex{};
-                    auto c3       = Complex{};
-                    if (k == 0) {
-                        c1 = x[i1];
-                        c2 = x[i2];
-                        c3 = x[i3];
-                    } else {
-                        auto w1 = twiddle[1 * k * w_stride];
-                        auto w2 = twiddle[2 * k * w_stride];
-                        auto w3 = twiddle[3 * k * w_stride];
-                        c1      = (x[i1] * w1);
-                        c2      = (x[i2] * w2);
-                        c3      = (x[i3] * w3);
-                    }
+                    auto const c1 = (x[i1] * w1);
+                    auto const c2 = (x[i2] * w2);
+                    auto const c3 = (x[i3] * w3);
 
                     auto const d0 = c0 + c2;
                     auto const d1 = c0 - c2;

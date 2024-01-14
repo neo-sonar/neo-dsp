@@ -57,44 +57,44 @@ private:
         conjugate(x);
     }
 
-    // n  : sequence length
-    // s  : stride
-    // eo : x is output if eo == 0, work is output if eo == 1
-    // x  : input sequence(or output sequence if eo == 0)
-    // work  : work area(or output sequence if eo == 1)
+    // stage_len:      sequence length
+    // s:              stride
+    // work_is_output: x is output if work_is_output == false, work is output if work_is_output == true
+    // x:              input sequence(or output sequence if work_is_output == false)
+    // work:           work area(or output sequence if work_is_output == true)
     static auto fft0(
-        std::size_t n,
-        std::size_t s,
-        bool eo,
+        std::size_t stage_len,
+        std::size_t stride,
+        bool work_is_output,
         inout_vector_of<Complex> auto x,
         inout_vector_of<Complex> auto work,
         in_vector_of<Complex> auto w
     ) -> void
     {
-        if (n == 1) {
-            if (eo) {
-                for (std::size_t q = 0; q < s; q++) {
-                    work[q] = x[q];
+        if (stage_len == 1) {
+            if (work_is_output) {
+                for (std::size_t k = 0; k < stride; k++) {
+                    work[k] = x[k];
                 }
             }
             return;
         }
 
-        auto const m = n / 2U;
+        auto const m = stage_len / 2U;
 
-        for (std::size_t p = 0; p < m; p++) {
-            auto wp = w[p * s];
+        for (std::size_t j = 0; j < m; j++) {
+            auto const w1 = w[j * stride];
 
-            for (std::size_t q = 0; q < s; q++) {
-                auto const a = x[q + s * (p + 0)];
-                auto const b = x[q + s * (p + m)];
+            for (std::size_t k = 0; k < stride; k++) {
+                auto const a = x[k + stride * (j + 0)];
+                auto const b = x[k + stride * (j + m)];
 
-                work[q + s * (2 * p + 0)] = a + b;
-                work[q + s * (2 * p + 1)] = (a - b) * wp;
+                work[k + stride * (2 * j + 0)] = a + b;
+                work[k + stride * (2 * j + 1)] = (a - b) * w1;
             }
         }
 
-        fft0(n / 2, 2 * s, !eo, work, x, w);
+        fft0(stage_len / 2, stride * 2, !work_is_output, work, x, w);
     }
 
     static auto make_twiddle_lut(size_t n) -> stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>>
