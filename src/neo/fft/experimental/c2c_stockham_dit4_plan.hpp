@@ -56,7 +56,7 @@ struct c2c_stockham_dit4_plan
             auto const lstar = l / 4UL;
             auto const rstar = 4UL * r;
 
-            copy(x, y);  // TODO
+            copy(x, y);
 
             for (auto j{0U}; j < lstar; ++j) {
                 auto const w1 = twiddle<Complex>(l, 1 * j, dir);

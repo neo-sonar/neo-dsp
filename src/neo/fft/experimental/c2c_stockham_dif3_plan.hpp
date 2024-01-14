@@ -56,7 +56,7 @@ struct c2c_stockham_dif3_plan
         auto m = 1U;
 
         for (auto t{1U}; t <= p; ++t) {
-            copy(x, y);  // TODO
+            copy(x, y);
 
             for (auto j{0U}; j < l; ++j) {
                 auto const w1 = twiddle<Complex>(3 * l, 1 * j, dir);
