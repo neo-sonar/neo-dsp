@@ -26,7 +26,7 @@ jobs:
         run: pip install --verbose .[test]
 
       - name: Test
-        run: pytest --cov=neo --cov-branch extra/python/test/*
+        run: pytest --cov=neo --cov-branch
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v3
