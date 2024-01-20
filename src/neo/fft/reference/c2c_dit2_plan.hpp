@@ -7,7 +7,6 @@
 #include <neo/fft/direction.hpp>
 #include <neo/fft/order.hpp>
 #include <neo/fft/reference/bitrevorder.hpp>
-#include <neo/fft/reference/conjugate_view.hpp>
 #include <neo/fft/reference/kernel/c2c_dit2.hpp>
 #include <neo/fft/twiddle.hpp>
 #include <neo/math/polar.hpp>
@@ -41,8 +40,11 @@ private:
     size_type _order;
     size_type _size{fft::size(order())};
     bitrevorder_plan _reorder{static_cast<size_t>(_order)};
-    stdex::mdarray<Complex, stdex::dextents<size_type, 1>> _twiddles{
+    stdex::mdarray<Complex, stdex::dextents<size_type, 1>> _wf{
         make_twiddle_lut_radix2<Complex>(_size, direction::forward),
+    };
+    stdex::mdarray<Complex, stdex::dextents<size_type, 1>> _wb{
+        make_twiddle_lut_radix2<Complex>(_size, direction::backward),
     };
 };
 
@@ -84,9 +86,9 @@ auto c2c_dit2_plan<Complex, Kernel>::operator()(Vec x, direction dir) noexcept -
     _reorder(x);
 
     if (auto const kernel = Kernel{}; dir == direction::forward) {
-        kernel(x, _twiddles.to_mdspan());
+        kernel(x, _wf.to_mdspan());
     } else {
-        kernel(x, conjugate_view{_twiddles.to_mdspan()});
+        kernel(x, _wb.to_mdspan());
     }
 }
 

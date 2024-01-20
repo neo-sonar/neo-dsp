@@ -6,7 +6,6 @@
 #include <neo/fft/direction.hpp>
 #include <neo/fft/reference/bitrevorder.hpp>
 #include <neo/fft/reference/c2c_dit2_plan.hpp>
-#include <neo/fft/reference/conjugate_view.hpp>
 #include <neo/fft/twiddle.hpp>
 
 #include <cmath>
@@ -106,7 +105,8 @@ struct c2c_dit2_plan
 
     c2c_dit2_plan(from_order_tag /*tag*/, size_type order)
         : _order{order}
-        , _w{neo::fft::make_twiddle_lut_radix2<std::complex<Float>>(size(), direction::forward)}
+        , _wf{neo::fft::make_twiddle_lut_radix2<std::complex<Float>>(size(), direction::forward)}
+        , _wb{neo::fft::make_twiddle_lut_radix2<std::complex<Float>>(size(), direction::backward)}
     {}
 
     [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
@@ -122,16 +122,17 @@ struct c2c_dit2_plan
         _rev(x);
 
         if (dir == direction::forward) {
-            detail::c2c_kernel{}(x, _w.to_mdspan());
+            detail::c2c_kernel{}(x, _wf.to_mdspan());
         } else {
-            detail::c2c_kernel{}(x, conjugate_view{_w.to_mdspan()});
+            detail::c2c_kernel{}(x, _wb.to_mdspan());
         }
     }
 
 private:
     size_type _order;
     bitrevorder_plan _rev{_order};
-    stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>> _w;
+    stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>> _wf;
+    stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>> _wb;
 };
 
 template<std::floating_point Float>
