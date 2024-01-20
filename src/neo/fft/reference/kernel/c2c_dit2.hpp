@@ -176,7 +176,7 @@ struct c2c_dit2_v4
         auto const order = bit_log2(size);
 
         {
-            // stage 0
+            // stage = 0
             static constexpr auto const stage_length = 1;  // ipow<2>(0)
             static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
 
@@ -211,6 +211,7 @@ struct c2c_dit2_v4
         }
 
         {
+            // stage = order - 1
             auto const stage_length = size / 2UL;
 
             for (auto pair{0ULL}; pair < stage_length; ++pair) {

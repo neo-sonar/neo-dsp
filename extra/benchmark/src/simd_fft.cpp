@@ -271,9 +271,10 @@ auto simd_split_c2c(benchmark::State& state) -> void
 
 }  // namespace
 
-BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v1>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v2>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v3>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(simd_split_c2c<xsimd::batch<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v1>)->RangeMultiplier(2)->Range(1 << 7, 1 << 16);
+BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v2>)->RangeMultiplier(2)->Range(1 << 7, 1 << 16);
+BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v3>)->RangeMultiplier(2)->Range(1 << 7, 1 << 16);
+BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v4>)->RangeMultiplier(2)->Range(1 << 7, 1 << 16);
+BENCHMARK(simd_split_c2c<xsimd::batch<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 16);
 
 BENCHMARK_MAIN();
