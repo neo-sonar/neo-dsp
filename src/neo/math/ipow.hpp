@@ -20,10 +20,19 @@ template<auto Base>
     requires std::integral<decltype(Base)>
 [[nodiscard]] constexpr auto ipow(decltype(Base) exponent) -> decltype(Base)
 {
-    using Int = decltype(Base);
+    using Int  = decltype(Base);
+    using UInt = std::make_unsigned_t<Int>;
 
     if constexpr (Base == Int(2)) {
-        return static_cast<Int>(Int(1) << exponent);
+        return static_cast<Int>(UInt(1) << UInt(exponent));
+    } else if constexpr (Base == Int(4)) {
+        return static_cast<Int>(UInt(1) << UInt(exponent * Int(2)));
+    } else if constexpr (Base == Int(8)) {
+        return static_cast<Int>(UInt(1) << UInt(exponent * Int(3)));
+    } else if constexpr (Base == Int(16)) {
+        return static_cast<Int>(UInt(1) << UInt(exponent * Int(4)));
+    } else if constexpr (Base == Int(32)) {
+        return static_cast<Int>(UInt(1) << UInt(exponent * Int(5)));
     } else {
         return ipow(Base, exponent);
     }
