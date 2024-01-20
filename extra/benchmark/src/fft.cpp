@@ -39,6 +39,41 @@ auto c2c(benchmark::State& state) -> void
 }
 
 template<typename Plan>
+auto c2c_r4(benchmark::State& state) -> void
+{
+    using Complex = typename Plan::value_type;
+    using Float   = typename Complex::value_type;
+
+    auto const len   = static_cast<std::size_t>(state.range(0));
+    auto const order = neo::bit_log2(len) / 2UL;
+    auto const noise = neo::generate_noise_signal<Complex>(len, std::random_device{}());
+
+    auto plan = Plan{neo::fft::from_order, order};
+    if (plan.size() != len) {
+        throw std::runtime_error{
+            std::to_string(order) + ", " + std::to_string(len) + ", " + std::to_string(plan.size())
+        };
+    }
+    auto work = noise;
+
+    for (auto _ : state) {
+        state.PauseTiming();
+        neo::copy(noise.to_mdspan(), work.to_mdspan());
+        state.ResumeTiming();
+
+        neo::fft::fft(plan, work.to_mdspan());
+
+        benchmark::DoNotOptimize(work.data());
+        benchmark::ClobberMemory();
+    }
+
+    auto const items       = static_cast<int64_t>(state.iterations()) * plan.size();
+    auto const flop        = 5UL * size_t(plan.order() * 2) * items;
+    state.counters["flop"] = benchmark::Counter(static_cast<double>(flop), benchmark::Counter::kIsRate);
+    state.SetBytesProcessed(items * sizeof(Complex));
+}
+
+template<typename Plan>
 auto split_c2c(benchmark::State& state) -> void
 {
     using Float = typename Plan::value_type;
@@ -77,32 +112,36 @@ auto split_c2c(benchmark::State& state) -> void
 
 using namespace neo::fft;
 
-BENCHMARK(c2c<c2c_dit2_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(c2c<c2c_stockham_dif2r_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(c2c<c2c_stockham_dif2i_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(c2c<fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c_r4<c2c_radix4_plan<neo::complex64, true>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
+BENCHMARK(c2c_r4<c2c_radix4_plan<neo::complex64, false>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
+
+BENCHMARK(c2c<c2c_dit2_plan<neo::complex64>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
+BENCHMARK(c2c<c2c_stockham_dif2r_plan<neo::complex64>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
+BENCHMARK(c2c<c2c_stockham_dif2i_plan<neo::complex64>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
+
+BENCHMARK(c2c<fft_plan<neo::complex64>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
 
 #if defined(NEO_HAS_APPLE_ACCELERATE)
-BENCHMARK(c2c<apple_vdsp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<apple_vdsp_fft_plan<neo::complex64>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
 #endif
 
 #if defined(NEO_HAS_INTEL_IPP)
-BENCHMARK(c2c<intel_ipp_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<intel_ipp_fft_plan<neo::complex64>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
 #endif
 
 #if defined(NEO_HAS_INTEL_MKL)
-BENCHMARK(c2c<intel_mkl_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<intel_mkl_fft_plan<neo::complex64>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
 #endif
 
-BENCHMARK(split_c2c<split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(split_c2c<fallback_split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(split_c2c<split_fft_plan<float>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
+BENCHMARK(split_c2c<fallback_split_fft_plan<float>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
 
 #if defined(NEO_HAS_INTEL_IPP)
-BENCHMARK(split_c2c<intel_ipp_split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(split_c2c<intel_ipp_split_fft_plan<float>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
 #endif
 
 #if defined(NEO_HAS_APPLE_ACCELERATE)
-BENCHMARK(split_c2c<apple_vdsp_split_fft_plan<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(split_c2c<apple_vdsp_split_fft_plan<float>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
 #endif
 
 BENCHMARK_MAIN();
