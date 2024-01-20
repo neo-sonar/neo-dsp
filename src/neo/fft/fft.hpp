@@ -6,11 +6,11 @@
 
 #include <neo/algorithm/copy.hpp>
 #include <neo/container/mdspan.hpp>
-#include <neo/fft/fallback/fallback_fft_plan.hpp>
 #include <neo/fft/order.hpp>
 
 #include <neo/fft/reference/c2c_dif3_plan.hpp>
 #include <neo/fft/reference/c2c_dif5_plan.hpp>
+#include <neo/fft/reference/c2c_dit2_plan.hpp>
 #include <neo/fft/reference/c2c_dit4_plan.hpp>
 #include <neo/fft/reference/c2c_stockham_dif2_plan.hpp>
 #include <neo/fft/reference/c2c_stockham_dif3_plan.hpp>
@@ -44,7 +44,7 @@ template<complex Complex>
 using fft_plan = intel_mkl_fft_plan<Complex>;
 #else
 template<complex Complex>
-using fft_plan = fallback_fft_plan<Complex>;
+using fft_plan = c2c_dit2_plan<Complex>;
 #endif
 
 template<typename Plan, inout_vector Vec>

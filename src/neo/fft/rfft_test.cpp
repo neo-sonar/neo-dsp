@@ -136,7 +136,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::fft", "", float, double)
         CAPTURE(order);
         CAPTURE(size);
 
-        auto plan = neo::fft::experimental::fallback_fft_plan<Float>{neo::fft::from_order, order};
+        auto plan = neo::fft::experimental::c2c_dit2_plan<Float>{neo::fft::from_order, order};
         REQUIRE(plan.size() == size);
         REQUIRE(plan.order() == order);
 
@@ -173,7 +173,7 @@ TEMPLATE_TEST_CASE("neo/fft: experimental::fft", "", float, double)
         auto const expected = std::array<Float, 8>{10, 0, -2, 2, -2, 0, -2, -2};
 
         auto x    = input;
-        auto plan = neo::fft::experimental::fallback_fft_plan<Float>{
+        auto plan = neo::fft::experimental::c2c_dit2_plan<Float>{
             neo::fft::from_order,
             neo::bit_log2(input.size() / 2),
         };

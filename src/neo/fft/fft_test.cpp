@@ -28,7 +28,7 @@ namespace {
 template<typename Complex, typename Kernel>
 struct kernel_tester
 {
-    using plan_type    = neo::fft::fallback_fft_plan<Complex, Kernel>;
+    using plan_type    = neo::fft::c2c_dit2_plan<Complex, Kernel>;
     using complex_type = Complex;
     using kernel_type  = Kernel;
 };
@@ -231,7 +231,7 @@ TEMPLATE_TEST_CASE("neo/fft: fft_plan", "", neo::complex64, std::complex<float>,
 }
 
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft: fallback_fft_plan",
+    "neo/fft: c2c_dit2_plan",
     "",
     (kernel_v1, kernel_v2, kernel_v3),
     (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>, std::complex<long double>)
@@ -242,7 +242,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
 #if defined(NEO_HAS_XSIMD)
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft: fallback_fft_plan",
+    "neo/fft: c2c_dit2_plan",
     "",
     (kernel_v1, kernel_v2, kernel_v3),
     (xsimd::batch<std::complex<float>>, xsimd::batch<std::complex<double>>)
