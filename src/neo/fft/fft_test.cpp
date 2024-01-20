@@ -42,6 +42,9 @@ using kernel_v2 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v2>;
 template<typename Complex>
 using kernel_v3 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v3>;
 
+template<typename Complex>
+using kernel_v4 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v4>;
+
 constexpr auto execute_dit2_kernel = [](auto kernel, neo::inout_vector auto x, auto const& twiddles) -> void {
     neo::fft::bitrevorder(x);
     kernel(x, twiddles);
@@ -233,7 +236,7 @@ TEMPLATE_TEST_CASE("neo/fft: fft_plan", "", neo::complex64, std::complex<float>,
 TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft: c2c_dit2_plan",
     "",
-    (kernel_v1, kernel_v2, kernel_v3),
+    (kernel_v1, kernel_v2, kernel_v3, kernel_v4),
     (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>, std::complex<long double>)
 )
 {
@@ -244,7 +247,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
 TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft: c2c_dit2_plan",
     "",
-    (kernel_v1, kernel_v2, kernel_v3),
+    (kernel_v1, kernel_v2, kernel_v3, kernel_v4),
     (xsimd::batch<std::complex<float>>, xsimd::batch<std::complex<double>>)
 )
 {

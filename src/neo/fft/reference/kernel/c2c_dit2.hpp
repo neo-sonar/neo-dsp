@@ -164,4 +164,67 @@ struct c2c_dit2_v3
     }
 };
 
+struct c2c_dit2_v4
+{
+    c2c_dit2_v4() = default;
+
+    template<inout_vector Vec>
+        requires complex<typename Vec::value_type>
+    auto operator()(Vec x, auto const& twiddles) const noexcept -> void
+    {
+        auto const size  = x.size();
+        auto const order = bit_log2(size);
+
+        {
+            // stage 0
+            static constexpr auto const stage_length = 1;  // ipow<2>(0)
+            static constexpr auto const stride       = 2;  // ipow<2>(0 + 1)
+
+            for (auto k{0}; k < static_cast<int>(size); k += stride) {
+                auto const i1 = k;
+                auto const i2 = k + stage_length;
+
+                auto const temp = x[i1] + x[i2];
+                x[i2]           = x[i1] - x[i2];
+                x[i1]           = temp;
+            }
+        }
+
+        for (auto stage{1ULL}; stage < order - 1; ++stage) {
+
+            auto const stage_length = ipow<2ULL>(stage);
+            auto const stride       = ipow<2ULL>(stage + 1);
+            auto const tw_stride    = ipow<2ULL>(order - stage - 1ULL);
+
+            for (auto k{0ULL}; k < size; k += stride) {
+                for (auto pair{0ULL}; pair < stage_length; ++pair) {
+                    auto const tw = twiddles[pair * tw_stride];
+
+                    auto const i1 = k + pair;
+                    auto const i2 = k + pair + stage_length;
+
+                    auto const temp = x[i1] + tw * x[i2];
+                    x[i2]           = x[i1] - tw * x[i2];
+                    x[i1]           = temp;
+                }
+            }
+        }
+
+        {
+            auto const stage_length = size / 2UL;
+
+            for (auto pair{0ULL}; pair < stage_length; ++pair) {
+                auto const tw = twiddles[pair];
+
+                auto const i1 = pair;
+                auto const i2 = pair + stage_length;
+
+                auto const temp = x[i1] + tw * x[i2];
+                x[i2]           = x[i1] - tw * x[i2];
+                x[i1]           = temp;
+            }
+        }
+    }
+};
+
 }  // namespace neo::fft::kernel

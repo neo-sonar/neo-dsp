@@ -111,11 +111,16 @@ auto split_c2c(benchmark::State& state) -> void
 }  // namespace
 
 using namespace neo::fft;
+namespace kernel = neo::fft::kernel;
 
-BENCHMARK(c2c_r4<c2c_radix4_plan<neo::complex64, true>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
-BENCHMARK(c2c_r4<c2c_radix4_plan<neo::complex64, false>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
+BENCHMARK(c2c<c2c_dit2_plan<neo::complex64, kernel::c2c_dit2_v1>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
+BENCHMARK(c2c<c2c_dit2_plan<neo::complex64, kernel::c2c_dit2_v2>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
+BENCHMARK(c2c<c2c_dit2_plan<neo::complex64, kernel::c2c_dit2_v3>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
+BENCHMARK(c2c<c2c_dit2_plan<neo::complex64, kernel::c2c_dit2_v4>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
 
-BENCHMARK(c2c<c2c_dit2_plan<neo::complex64>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
+BENCHMARK(c2c_r4<c2c_dit4_plan<neo::complex64>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
+BENCHMARK(c2c_r4<c2c_dif4_plan<neo::complex64>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
+
 BENCHMARK(c2c<c2c_stockham_dif2r_plan<neo::complex64>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
 BENCHMARK(c2c<c2c_stockham_dif2i_plan<neo::complex64>>)->RangeMultiplier(4)->Range(1 << 8, 1 << 20);
 
