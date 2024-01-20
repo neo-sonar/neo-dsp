@@ -11,7 +11,7 @@
 #include <neo/math/conj.hpp>
 #include <neo/math/ipow.hpp>
 
-namespace neo::fft::experimental {
+namespace neo::fft {
 
 /// Chapter 3.3
 /// Fast Fourier Transform Algorithms for Parallel Computers
@@ -84,4 +84,4 @@ private:
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _work{size()};
 };
 
-}  // namespace neo::fft::experimental
+}  // namespace neo::fft

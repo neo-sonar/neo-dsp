@@ -78,8 +78,8 @@ auto split_c2c(benchmark::State& state) -> void
 using namespace neo::fft;
 
 BENCHMARK(c2c<fallback_fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(c2c<experimental::c2c_stockham_dif2r_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(c2c<experimental::c2c_stockham_dif2i_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<c2c_stockham_dif2r_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(c2c<c2c_stockham_dif2i_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 // BENCHMARK(c2c<fft_plan<neo::complex64>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
 
 // #if defined(NEO_HAS_APPLE_ACCELERATE)

@@ -10,7 +10,7 @@
 #include <neo/fft/twiddle.hpp>
 #include <neo/math/ipow.hpp>
 
-namespace neo::fft::experimental {
+namespace neo::fft {
 
 /// https://github.com/scientificgo/fft/blob/master/radix5.go
 template<complex Complex>
@@ -93,4 +93,4 @@ private:
     digitrevorder_plan<5> _reorder{size()};
 };
 
-}  // namespace neo::fft::experimental
+}  // namespace neo::fft

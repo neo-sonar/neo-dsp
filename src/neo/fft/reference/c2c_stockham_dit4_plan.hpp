@@ -11,7 +11,7 @@
 #include <neo/math/conj.hpp>
 #include <neo/math/ipow.hpp>
 
-namespace neo::fft::experimental {
+namespace neo::fft {
 
 template<complex Complex>
 struct c2c_stockham_dit4_plan
@@ -108,4 +108,4 @@ private:
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _work{size()};
 };
 
-}  // namespace neo::fft::experimental
+}  // namespace neo::fft

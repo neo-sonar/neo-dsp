@@ -254,10 +254,10 @@ TEMPLATE_PRODUCT_TEST_CASE(
 }
 #endif
 
-using namespace neo::fft::experimental;
+using namespace neo::fft;
 
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft: experimental",
+    "neo/fft: ",
     "",
     (c2c_dif3_plan,
      c2c_dif4_plan,

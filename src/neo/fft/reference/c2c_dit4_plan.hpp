@@ -10,7 +10,7 @@
 #include <neo/fft/twiddle.hpp>
 #include <neo/math/ipow.hpp>
 
-namespace neo::fft::experimental {
+namespace neo::fft {
 
 template<complex Complex, bool UseDIT>
 struct c2c_radix4_plan
@@ -209,4 +209,4 @@ using c2c_dit4_plan = c2c_radix4_plan<Complex, true>;
 template<typename Complex>
 using c2c_dif4_plan = c2c_radix4_plan<Complex, false>;
 
-}  // namespace neo::fft::experimental
+}  // namespace neo::fft

@@ -14,7 +14,7 @@
 
 #include <cstdint>
 
-namespace neo::fft::experimental {
+namespace neo::fft {
 
 /// http://wwwa.pikara.ne.jp/okojisan/otfft-en/stockham2.html
 template<complex Complex>
@@ -200,4 +200,4 @@ private:
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _work{size()};
 };
 
-}  // namespace neo::fft::experimental
+}  // namespace neo::fft

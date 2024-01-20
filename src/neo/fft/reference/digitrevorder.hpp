@@ -5,7 +5,7 @@
 #include <neo/complex/complex.hpp>
 #include <neo/container/mdspan.hpp>
 
-namespace neo::fft::experimental {
+namespace neo::fft {
 
 /// Reorder input using base-radix digit reversal permutation.
 template<std::size_t Radix>
@@ -47,4 +47,4 @@ private:
     std::vector<std::uint32_t> _lut;
 };
 
-}  // namespace neo::fft::experimental
+}  // namespace neo::fft
