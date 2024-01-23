@@ -16,7 +16,8 @@
 
 namespace neo::fft {
 
-/// http://wwwa.pikara.ne.jp/okojisan/otfft-en/stockham2.html
+/// \brief C2C Stockham Radix-2 DIF (Recursive)
+/// \details http://wwwa.pikara.ne.jp/okojisan/otfft-en/stockham2.html
 template<complex Complex>
 struct c2c_stockham_dif2r_plan
 {
@@ -115,10 +116,12 @@ private:
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 1>> _work{size()};
 };
 
-/// Chapter 2.5
-/// Fast Fourier Transform Algorithms for Parallel Computers
-/// Daisuke Takahashi (2019)
-/// ISBN 978-981-13-9964-0
+/// \brief C2C Stockham Radix-2 DIF (Iterative)
+///
+/// Chapter 2.5 \n
+/// Fast Fourier Transform Algorithms for Parallel Computers \n
+/// Daisuke Takahashi (2019) \n
+/// ISBN 978-981-13-9964-0 \n
 template<complex Complex>
 struct c2c_stockham_dif2i_plan
 {

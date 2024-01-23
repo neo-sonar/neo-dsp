@@ -16,6 +16,7 @@
 
 namespace neo::fft {
 
+/// \brief C2C Cooley–Tukey Radix-2 DIT
 template<typename Complex, typename Kernel = kernel::c2c_dit2_v3>
 struct c2c_dit2_plan
 {

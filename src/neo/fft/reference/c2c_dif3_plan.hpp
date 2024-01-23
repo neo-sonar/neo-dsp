@@ -12,7 +12,8 @@
 
 namespace neo::fft {
 
-/// https://github.com/scientificgo/fft/blob/master/radix3.go
+/// \brief C2C Cooley–Tukey Radix-3 DIF
+/// \details https://github.com/scientificgo/fft/blob/master/radix3.go
 template<complex Complex>
 struct c2c_dif3_plan
 {

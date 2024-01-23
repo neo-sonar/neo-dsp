@@ -14,6 +14,7 @@
 
 namespace neo::fft {
 
+/// Reorder input using bit reversal permutation.
 struct bitrevorder_plan
 {
     explicit bitrevorder_plan(std::size_t order) : _table{make(std::size_t(1) << order)} {}

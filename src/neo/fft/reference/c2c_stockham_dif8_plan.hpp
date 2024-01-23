@@ -13,10 +13,12 @@
 
 namespace neo::fft {
 
-/// Chapter 3.5
-/// Fast Fourier Transform Algorithms for Parallel Computers
-/// Daisuke Takahashi (2019)
-/// ISBN 978-981-13-9964-0
+/// \brief C2C Stockham Radix-8 DIF
+///
+/// Chapter 3.5 \n
+/// Fast Fourier Transform Algorithms for Parallel Computers \n
+/// Daisuke Takahashi (2019) \n
+/// ISBN 978-981-13-9964-0 \n
 template<complex Complex>
 struct c2c_stockham_dif8_plan
 {

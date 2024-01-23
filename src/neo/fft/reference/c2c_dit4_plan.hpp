@@ -12,6 +12,7 @@
 
 namespace neo::fft {
 
+/// \brief C2C Cooley–Tukey Radix-4
 template<complex Complex, bool UseDIT>
 struct c2c_radix4_plan
 {
@@ -203,9 +204,11 @@ private:
     stdex::mdarray<Complex, stdex::dextents<std::size_t, 2>> _w{make_twiddle_lut(size())};
 };
 
+/// \brief C2C Cooley–Tukey Radix-4 DIT
 template<typename Complex>
 using c2c_dit4_plan = c2c_radix4_plan<Complex, true>;
 
+/// \brief C2C Cooley–Tukey Radix-4 DIF
 template<typename Complex>
 using c2c_dif4_plan = c2c_radix4_plan<Complex, false>;
 
