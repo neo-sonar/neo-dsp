@@ -483,7 +483,7 @@ static auto test_simd_fixed_point()
     }
 }
 
-#if defined(NEO_HAS_ISA_SSE2)
+#if defined(NEO_HAS_ISA_SSE2) or defined(NEO_HAS_ISA_NEON)
 
 TEMPLATE_TEST_CASE("neo/fixed_point: batch", "", neo::q7x16, neo::q15x8)
 {
