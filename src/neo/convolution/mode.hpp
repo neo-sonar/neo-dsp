@@ -8,6 +8,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 enum struct mode
 {
     full,
@@ -15,6 +16,8 @@ enum struct mode
     same,
 };
 
+/// \relates mode
+/// \ingroup neo-convolution
 template<mode Mode, std::integral Int>
 [[nodiscard]] auto output_size(Int signal, Int patch) -> Int
 {

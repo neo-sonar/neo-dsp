@@ -4,6 +4,7 @@
 
 namespace neo::fft {
 
+/// \ingroup neo-fft
 enum struct direction : int
 {
     forward  = -1,

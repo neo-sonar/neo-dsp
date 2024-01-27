@@ -12,6 +12,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<complex FloatComplex, complex IntComplex>
 struct compressed_fdl
 {

@@ -8,6 +8,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<typename IndexType = std::size_t>
 struct fdl_index
 {

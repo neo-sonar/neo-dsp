@@ -113,6 +113,7 @@ template<typename Setup>
 
 }  // namespace detail
 
+/// \ingroup neo-fft
 template<complex Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
 struct intel_ipp_fft_plan
@@ -215,6 +216,7 @@ private:
     detail::ipp_buffer _work_buf;
 };
 
+/// \ingroup neo-fft
 template<complex Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
 struct intel_ipp_dft_plan
@@ -298,6 +300,7 @@ private:
     detail::ipp_buffer _work_buf;
 };
 
+/// \ingroup neo-fft
 template<std::floating_point Float>
     requires(std::same_as<Float, float> or std::same_as<Float, double>)
 struct intel_ipp_split_fft_plan
@@ -389,6 +392,7 @@ private:
     detail::ipp_buffer _work_buf;
 };
 
+/// \ingroup neo-fft
 template<std::floating_point Float, complex Complex = std::complex<Float>>
     requires((std::same_as<Float, float> or std::same_as<Float, double>) and std::same_as<typename Complex::value_type, Float>)
 struct intel_ipp_rfft_plan
@@ -485,6 +489,7 @@ private:
     detail::ipp_buffer _work_buf;
 };
 
+/// \ingroup neo-fft
 template<std::floating_point Float, direction Direction>
     requires(std::same_as<Float, float> or std::same_as<Float, double>)
 struct intel_ipp_dct_plan

@@ -18,7 +18,8 @@
 
 namespace neo::fft {
 
-// Bluestein FFT
+/// Bluestein FFT
+/// \ingroup neo-fft
 template<complex Complex>
 struct fallback_dft_plan
 {

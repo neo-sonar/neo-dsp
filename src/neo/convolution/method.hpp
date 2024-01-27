@@ -4,6 +4,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 enum struct method
 {
     automatic,

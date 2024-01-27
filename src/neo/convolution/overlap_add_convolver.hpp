@@ -16,6 +16,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<complex Complex, typename Fdl, typename Filter>
 struct overlap_add_convolver
 {

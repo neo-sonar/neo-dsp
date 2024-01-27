@@ -4,6 +4,9 @@
 
 #include <neo/config.hpp>
 
+/// \defgroup neo-convolution Convolution
+/// Convolution functions
+
 #include <neo/convolution/compressed_fdl.hpp>
 #include <neo/convolution/dense_convolver.hpp>
 #include <neo/convolution/dense_fdl.hpp>

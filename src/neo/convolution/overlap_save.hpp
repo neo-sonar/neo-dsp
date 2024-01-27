@@ -16,6 +16,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<complex Complex>
 struct overlap_save
 {

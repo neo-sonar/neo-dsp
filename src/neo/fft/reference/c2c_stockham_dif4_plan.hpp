@@ -19,6 +19,7 @@ namespace neo::fft {
 /// Fast Fourier Transform Algorithms for Parallel Computers \n
 /// Daisuke Takahashi (2019) \n
 /// ISBN 978-981-13-9964-0 \n
+/// \ingroup neo-fft
 template<complex Complex>
 struct c2c_stockham_dif4_plan
 {

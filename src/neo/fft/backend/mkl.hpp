@@ -13,6 +13,7 @@
 
 namespace neo::fft {
 
+/// \ingroup neo-fft
 template<complex Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
 struct intel_mkl_fft_plan

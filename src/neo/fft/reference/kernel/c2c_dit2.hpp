@@ -13,6 +13,7 @@
 
 namespace neo::fft::kernel {
 
+/// \ingroup neo-fft
 struct c2c_dit2_v1
 {
     c2c_dit2_v1() = default;
@@ -64,6 +65,7 @@ struct c2c_dit2_v1
     }
 };
 
+/// \ingroup neo-fft
 struct c2c_dit2_v2
 {
     c2c_dit2_v2() = default;
@@ -116,6 +118,7 @@ struct c2c_dit2_v2
     }
 };
 
+/// \ingroup neo-fft
 struct c2c_dit2_v3
 {
     c2c_dit2_v3() = default;
@@ -164,6 +167,7 @@ struct c2c_dit2_v3
     }
 };
 
+/// \ingroup neo-fft
 struct c2c_dit2_v4
 {
     c2c_dit2_v4() = default;

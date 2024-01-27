@@ -34,25 +34,31 @@
 namespace neo::fft {
 
 #if defined(NEO_HAS_APPLE_ACCELERATE)
+/// \ingroup neo-fft
 template<complex Complex>
 using fft_plan = apple_vdsp_fft_plan<Complex>;
 #elif defined(NEO_HAS_INTEL_IPP)
+/// \ingroup neo-fft
 template<complex Complex>
 using fft_plan = intel_ipp_fft_plan<Complex>;
 #elif defined(NEO_HAS_INTEL_MKL)
+/// \ingroup neo-fft
 template<complex Complex>
 using fft_plan = intel_mkl_fft_plan<Complex>;
 #else
+/// \ingroup neo-fft
 template<complex Complex>
 using fft_plan = c2c_dit2_plan<Complex>;
 #endif
 
+/// \ingroup neo-fft
 template<typename Plan, inout_vector Vec>
 constexpr auto fft(Plan& plan, Vec inout) -> void
 {
     plan(inout, direction::forward);
 }
 
+/// \ingroup neo-fft
 template<typename Plan, in_vector InVec, out_vector OutVec>
 constexpr auto fft(Plan& plan, InVec input, OutVec output) -> void
 {
@@ -64,12 +70,14 @@ constexpr auto fft(Plan& plan, InVec input, OutVec output) -> void
     }
 }
 
+/// \ingroup neo-fft
 template<typename Plan, inout_vector Vec>
 constexpr auto ifft(Plan& plan, Vec inout) -> void
 {
     plan(inout, direction::backward);
 }
 
+/// \ingroup neo-fft
 template<typename Plan, in_vector InVec, out_vector OutVec>
 constexpr auto ifft(Plan& plan, InVec input, OutVec output) -> void
 {

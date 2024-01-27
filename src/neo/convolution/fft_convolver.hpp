@@ -15,6 +15,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<std::floating_point Float>
 struct fft_convolver
 {

@@ -8,6 +8,7 @@
 namespace neo::fft {
 
 /// Reorder input using base-radix digit reversal permutation.
+/// \ingroup neo-fft
 template<std::size_t Radix>
 struct digitrevorder_plan
 {
