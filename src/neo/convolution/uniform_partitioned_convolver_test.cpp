@@ -35,8 +35,9 @@ static_assert(is_sparse_convolver<neo::convolution::sparse_upola_convolver<std::
 TEMPLATE_PRODUCT_TEST_CASE(
     "neo/convolution: convolver",
     "",
-    (neo::convolution::upola_convolver,
-     neo::convolution::upols_convolver,
+    (neo::convolution::upols_convolver,
+     neo::convolution::upola_convolver,
+     neo::convolution::upola_convolver_v2,
      neo::convolution::split_upola_convolver,
      neo::convolution::split_upols_convolver,
      neo::convolution::sparse_upola_convolver,
