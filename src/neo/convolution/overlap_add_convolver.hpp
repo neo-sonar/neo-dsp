@@ -120,13 +120,13 @@ auto overlap_add_convolver<Complex, Fdl, Filter>::operator()(inout_vector_of<rea
         _input_pos += num_to_process;
 
         if (_input_pos == _block_size) {
-            fill(real_window, real_type{});
             _input_pos = 0;
 
             copy(
                 stdex::submdspan(real_window, std::tuple{_block_size, _block_size * 2}),
                 stdex::submdspan(overlap, std::tuple{0, _block_size})
             );
+            fill(real_window, real_type{});
 
             _current_segment = (_current_segment > 0) ? (_current_segment - 1) : (_num_segments - 1);
         }
