@@ -34,6 +34,7 @@ struct log2_fn
 
 }  // namespace detail
 
+/// \ingroup neo-math
 inline constexpr auto const log2 = detail::log2_fn{};
 
 }  // namespace neo::math

@@ -9,6 +9,8 @@
 
 namespace neo {
 
+/// Scale \f$obj = obj * alpha\f$
+/// \ingroup neo-linalg
 template<typename Scalar, inout_object InOutObj>
 constexpr auto scale(Scalar alpha, InOutObj obj) -> void
 {

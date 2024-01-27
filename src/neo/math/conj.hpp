@@ -37,6 +37,7 @@ struct conj_fn
 
 }  // namespace detail
 
+/// \ingroup neo-math
 inline constexpr auto const conj = detail::conj_fn{};
 
 }  // namespace neo::math

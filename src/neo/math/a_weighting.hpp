@@ -8,6 +8,8 @@
 
 namespace neo {
 
+/// \pre \p frequency must be greater 0.0
+/// \ingroup neo-math
 template<std::floating_point Float>
 [[nodiscard]] auto a_weighting(Float frequency) noexcept -> Float
 {

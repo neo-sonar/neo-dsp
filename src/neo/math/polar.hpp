@@ -28,6 +28,7 @@ struct polar_fn
 
 }  // namespace detail
 
+/// \ingroup neo-math
 inline constexpr auto const polar = detail::polar_fn{};
 
 }  // namespace neo::math

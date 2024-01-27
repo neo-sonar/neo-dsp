@@ -4,6 +4,7 @@
 
 namespace neo {
 
+/// \ingroup neo-math
 enum struct precision
 {
     accurate,

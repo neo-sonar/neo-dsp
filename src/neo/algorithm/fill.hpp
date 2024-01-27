@@ -6,6 +6,7 @@
 
 namespace neo {
 
+/// \ingroup neo-linalg
 template<inout_object InOutObj, typename T>
 constexpr auto fill(InOutObj obj, T const& val) noexcept -> void
 {

@@ -10,6 +10,7 @@
 
 namespace neo::float_equality {
 
+/// \ingroup neo-math
 template<typename FloatOrComplex>
 [[nodiscard]] auto exact(FloatOrComplex x, FloatOrComplex y) -> bool
 {

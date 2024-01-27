@@ -14,6 +14,7 @@
 
 namespace neo {
 
+/// \ingroup neo-linalg
 template<in_object InObj, out_object OutObj>
     requires(InObj::rank() == OutObj::rank())
 constexpr auto copy(InObj in_obj, OutObj out_obj) noexcept -> void

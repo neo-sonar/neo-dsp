@@ -12,6 +12,7 @@
 
 namespace neo {
 
+/// \ingroup neo-satistics
 template<in_object InObj>
 [[nodiscard]] constexpr auto standard_deviation(InObj x) noexcept -> std::optional<typename InObj::value_type>
 {

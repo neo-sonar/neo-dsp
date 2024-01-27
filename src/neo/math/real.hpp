@@ -44,6 +44,7 @@ struct real_fn
 
 }  // namespace detail
 
+/// \ingroup neo-math
 inline constexpr auto const real = detail::real_fn{};
 
 }  // namespace neo::math
