@@ -58,14 +58,14 @@ struct scalar_complex
 
     friend constexpr auto operator/(scalar_complex lhs, scalar_complex rhs) noexcept -> scalar_complex
     {
-        auto const a     = lhs.real();
-        auto const b     = lhs.imag();
-        auto const c     = rhs.real();
-        auto const d     = rhs.imag();
-        auto const denom = c * c + d * d;
+        auto const lr    = lhs.real();
+        auto const li    = lhs.imag();
+        auto const rr    = rhs.real();
+        auto const ri    = rhs.imag();
+        auto const denom = rr * rr + ri * ri;
         return scalar_complex{
-            (a * c + b * d) / denom,
-            (b * c - a * d) / denom,
+            (lr * rr + li * ri) / denom,
+            (li * rr - lr * ri) / denom,
         };
     }
 

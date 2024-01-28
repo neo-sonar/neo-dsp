@@ -2,6 +2,9 @@
 
 #pragma once
 
+/// \defgroup neo-fft FFT
+/// Fourier transformations
+
 #include <neo/config.hpp>
 
 #include <neo/fft/dct.hpp>
@@ -16,7 +19,4 @@
 #include <neo/fft/stft.hpp>
 #include <neo/fft/twiddle.hpp>
 
-#include <neo/fft/experimental/radix3_plan.hpp>
-#include <neo/fft/experimental/radix4_plan.hpp>
-#include <neo/fft/experimental/radix5_plan.hpp>
 #include <neo/fft/experimental/rfft.hpp>

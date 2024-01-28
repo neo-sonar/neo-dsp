@@ -5,9 +5,10 @@
 #include <neo/complex/complex.hpp>
 #include <neo/container/mdspan.hpp>
 
-namespace neo::fft::experimental {
+namespace neo::fft {
 
 /// Reorder input using base-radix digit reversal permutation.
+/// \ingroup neo-fft
 template<std::size_t Radix>
 struct digitrevorder_plan
 {
@@ -47,4 +48,4 @@ private:
     std::vector<std::uint32_t> _lut;
 };
 
-}  // namespace neo::fft::experimental
+}  // namespace neo::fft

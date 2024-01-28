@@ -16,17 +16,19 @@
 
 namespace neo::fft {
 
-// https://dsp.stackexchange.com/questions/2807/fast-cosine-transform-via-fft/10606#10606
-// Type 2 DCT using N FFT (Makhoul)
+/// Type 2 DCT using N FFT (Makhoul)
+///
+/// https://dsp.stackexchange.com/questions/2807/fast-cosine-transform-via-fft/10606#10606
+/// \ingroup neo-fft
 template<std::floating_point Float>
 struct fallback_dct2_plan
 {
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit fallback_dct2_plan(fft::order order) : _fft{order} {}
+    fallback_dct2_plan(from_order_tag tag, size_type order) : _fft{tag, order} {}
 
-    [[nodiscard]] auto order() const noexcept -> fft::order { return _fft.order(); }
+    [[nodiscard]] auto order() const noexcept -> size_type { return _fft.order(); }
 
     [[nodiscard]] auto size() const noexcept -> size_type { return _fft.size(); }
 

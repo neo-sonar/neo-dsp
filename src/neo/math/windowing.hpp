@@ -10,6 +10,7 @@
 
 namespace neo {
 
+/// \ingroup neo-math
 template<std::floating_point Float>
 struct rectangular_window
 {
@@ -23,6 +24,7 @@ struct rectangular_window
     }
 };
 
+/// \ingroup neo-math
 template<std::floating_point Float>
 struct hann_window
 {
@@ -38,6 +40,7 @@ struct hann_window
     }
 };
 
+/// \ingroup neo-math
 template<std::floating_point Float>
 struct hamming_window
 {
@@ -53,6 +56,7 @@ struct hamming_window
     }
 };
 
+/// \ingroup neo-math
 auto fill_window(inout_vector auto vec, auto window)
 {
     auto const size = static_cast<std::size_t>(vec.extent(0));
@@ -61,6 +65,7 @@ auto fill_window(inout_vector auto vec, auto window)
     }
 }
 
+/// \ingroup neo-math
 template<std::floating_point Float, typename Window = hann_window<Float>>
 [[nodiscard]] auto generate_window(std::size_t length) -> stdex::mdarray<Float, stdex::dextents<std::size_t, 1>>
 {

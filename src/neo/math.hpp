@@ -4,6 +4,9 @@
 
 #include <neo/config.hpp>
 
+/// \defgroup neo-math Math
+/// Math functions
+
 #include <neo/math/a_weighting.hpp>
 #include <neo/math/abs.hpp>
 #include <neo/math/conj.hpp>
@@ -12,6 +15,8 @@
 #include <neo/math/idiv.hpp>
 #include <neo/math/imag.hpp>
 #include <neo/math/ipow.hpp>
+#include <neo/math/is_even.hpp>
+#include <neo/math/is_odd.hpp>
 #include <neo/math/log2.hpp>
 #include <neo/math/polar.hpp>
 #include <neo/math/precision.hpp>

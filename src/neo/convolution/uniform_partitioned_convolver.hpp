@@ -9,6 +9,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<typename Overlap, typename Fdl, typename Filter>
 struct uniform_partitioned_convolver
 {

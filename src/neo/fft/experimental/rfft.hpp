@@ -4,9 +4,8 @@
 
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/direction.hpp>
-#include <neo/fft/fallback/bitrevorder.hpp>
-#include <neo/fft/fallback/conjugate_view.hpp>
-#include <neo/fft/fallback/fallback_fft_plan.hpp>
+#include <neo/fft/reference/bitrevorder.hpp>
+#include <neo/fft/reference/c2c_dit2_plan.hpp>
 #include <neo/fft/twiddle.hpp>
 
 #include <cmath>
@@ -99,14 +98,15 @@ struct c2c_kernel
 }  // namespace detail
 
 template<std::floating_point Float>
-struct fallback_fft_plan
+struct c2c_dit2_plan
 {
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit fallback_fft_plan(size_type order)
+    c2c_dit2_plan(from_order_tag /*tag*/, size_type order)
         : _order{order}
-        , _w{neo::fft::make_twiddle_lut_radix2<std::complex<Float>>(size(), direction::forward)}
+        , _wf{neo::fft::make_twiddle_lut_radix2<std::complex<Float>>(size(), direction::forward)}
+        , _wb{neo::fft::make_twiddle_lut_radix2<std::complex<Float>>(size(), direction::backward)}
     {}
 
     [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
@@ -122,16 +122,17 @@ struct fallback_fft_plan
         _rev(x);
 
         if (dir == direction::forward) {
-            detail::c2c_kernel{}(x, _w.to_mdspan());
+            detail::c2c_kernel{}(x, _wf.to_mdspan());
         } else {
-            detail::c2c_kernel{}(x, conjugate_view{_w.to_mdspan()});
+            detail::c2c_kernel{}(x, _wb.to_mdspan());
         }
     }
 
 private:
     size_type _order;
     bitrevorder_plan _rev{_order};
-    stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>> _w;
+    stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>> _wf;
+    stdex::mdarray<std::complex<Float>, stdex::dextents<std::size_t, 1>> _wb;
 };
 
 template<std::floating_point Float>
@@ -140,7 +141,7 @@ struct rfft_plan
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit rfft_plan(size_type order) : _order{order} {}
+    rfft_plan(from_order_tag /*tag*/, size_type order) : _order{order} {}
 
     [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
@@ -202,7 +203,7 @@ struct rfft_plan
 
 private:
     size_type _order;
-    fallback_fft_plan<Float> _fft{_order - 1U};
+    c2c_dit2_plan<Float> _fft{from_order, _order - 1U};
 };
 
 }  // namespace neo::fft::experimental

@@ -11,6 +11,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<complex Complex>
 struct sparse_filter
 {

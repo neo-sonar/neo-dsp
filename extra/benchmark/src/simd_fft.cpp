@@ -14,13 +14,13 @@ struct simd_fft_plan
     using value_type = xsimd::batch<Complex>;
     using size_type  = std::size_t;
 
-    explicit simd_fft_plan(neo::fft::order order) : _order{order} {}
+    simd_fft_plan(neo::fft::from_order_tag /*tag*/, size_type order) : _order{order} {}
 
-    [[nodiscard]] static constexpr auto max_order() noexcept -> neo::fft::order { return neo::fft::order{27}; }
+    [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return size_type{27}; }
 
     [[nodiscard]] static constexpr auto max_size() noexcept -> size_type { return neo::fft::size(max_order()); }
 
-    [[nodiscard]] auto order() const noexcept -> neo::fft::order { return _order; }
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
     [[nodiscard]] auto size() const noexcept -> size_type { return neo::fft::size(order()); }
 
@@ -52,7 +52,7 @@ private:
         return vec;
     }
 
-    neo::fft::order _order;
+    size_type _order;
     neo::fft::bitrevorder_plan _reorder{static_cast<size_t>(_order)};
     stdex::mdarray<value_type, stdex::dextents<size_type, 1>> _twiddles{twiddle(size())};
 };
@@ -63,9 +63,9 @@ struct simd_split_fft_plan
     using value_type = FloatBatch;
     using size_type  = std::size_t;
 
-    explicit simd_split_fft_plan(neo::fft::order order) : _order{order} {}
+    simd_split_fft_plan(neo::fft::from_order_tag /*tag*/, size_type order) : _order{order} {}
 
-    [[nodiscard]] auto order() const noexcept -> neo::fft::order { return _order; }
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
     [[nodiscard]] auto size() const noexcept -> size_type { return neo::fft::size(order()); }
 
@@ -187,7 +187,7 @@ private:
         return w_buf;
     }
 
-    neo::fft::order _order;
+    size_type _order;
     neo::fft::bitrevorder_plan _reorder{static_cast<size_t>(_order)};
     stdex::mdarray<FloatBatch, stdex::dextents<size_t, 2>> _tw{twiddle(size())};
 };
@@ -200,7 +200,7 @@ auto simd_c2c(benchmark::State& state) -> void
 
     auto len   = static_cast<std::size_t>(state.range(0));
     auto order = neo::fft::next_order(len);
-    auto plan  = Plan{order};
+    auto plan  = Plan{neo::fft::from_order, order};
 
     auto const noise_s = neo::generate_noise_signal<ScalarComplex>(len, std::random_device{}());
     auto noise_v       = stdex::mdarray<SimdComplex, stdex::dextents<size_t, 1>>{noise_s.extent(0)};
@@ -235,7 +235,7 @@ auto simd_split_c2c(benchmark::State& state) -> void
 
     auto const len   = static_cast<std::size_t>(state.range(0));
     auto const order = neo::fft::next_order(len);
-    auto plan        = Plan{order};
+    auto plan        = Plan{neo::fft::from_order, order};
 
     auto const noise = neo::generate_noise_signal<Float>(len, std::random_device{}());
     auto noise_v     = stdex::mdarray<SimdFloat, stdex::dextents<size_t, 2>>{2, noise.extent(0)};
@@ -271,9 +271,10 @@ auto simd_split_c2c(benchmark::State& state) -> void
 
 }  // namespace
 
-BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v1>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v2>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v3>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
-BENCHMARK(simd_split_c2c<xsimd::batch<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 20);
+BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v1>)->RangeMultiplier(2)->Range(1 << 7, 1 << 16);
+BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v2>)->RangeMultiplier(2)->Range(1 << 7, 1 << 16);
+BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v3>)->RangeMultiplier(2)->Range(1 << 7, 1 << 16);
+BENCHMARK(simd_c2c<std::complex<float>, neo::fft::kernel::c2c_dit2_v4>)->RangeMultiplier(2)->Range(1 << 7, 1 << 16);
+BENCHMARK(simd_split_c2c<xsimd::batch<float>>)->RangeMultiplier(2)->Range(1 << 7, 1 << 16);
 
 BENCHMARK_MAIN();

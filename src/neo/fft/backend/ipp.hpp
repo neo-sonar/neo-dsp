@@ -113,6 +113,7 @@ template<typename Setup>
 
 }  // namespace detail
 
+/// \ingroup neo-fft
 template<complex Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
 struct intel_ipp_fft_plan
@@ -121,9 +122,9 @@ struct intel_ipp_fft_plan
     using real_type  = typename Complex::value_type;
     using size_type  = std::size_t;
 
-    explicit intel_ipp_fft_plan(fft::order order) : _order{order}
+    intel_ipp_fft_plan(from_order_tag /*tag*/, size_type order) : _order{order}
     {
-        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<setup>(static_cast<size_type>(order));
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<setup>(order);
         _buffer                                 = stdex::mdarray<Complex, stdex::dextents<size_t, 1>>{size()};
     }
 
@@ -133,11 +134,11 @@ struct intel_ipp_fft_plan
     intel_ipp_fft_plan(intel_ipp_fft_plan&& other)                    = default;
     auto operator=(intel_ipp_fft_plan&& other) -> intel_ipp_fft_plan& = default;
 
-    [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order { return setup::max_order; }
+    [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return setup::max_order; }
 
     [[nodiscard]] static constexpr auto max_size() noexcept -> size_type { return fft::size(max_order()); }
 
-    [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
     [[nodiscard]] auto size() const noexcept -> size_type { return fft::size(order()); }
 
@@ -184,7 +185,7 @@ private:
     {
         using complex_type                     = ::Ipp32fc;
         using handle_type                      = ::IppsFFTSpec_C_32fc;
-        static constexpr auto max_order        = fft::order{28};
+        static constexpr auto max_order        = size_type{28};
         static constexpr auto get_size         = ::ippsFFTGetSize_C_32fc;
         static constexpr auto init             = ::ippsFFTInit_C_32fc;
         static constexpr auto forward_copy     = ::ippsFFTFwd_CToC_32fc;
@@ -197,7 +198,7 @@ private:
     {
         using complex_type                     = ::Ipp64fc;
         using handle_type                      = ::IppsFFTSpec_C_64fc;
-        static constexpr auto max_order        = fft::order{27};
+        static constexpr auto max_order        = size_type{27};
         static constexpr auto get_size         = ::ippsFFTGetSize_C_64fc;
         static constexpr auto init             = ::ippsFFTInit_C_64fc;
         static constexpr auto forward_copy     = ::ippsFFTFwd_CToC_64fc;
@@ -208,13 +209,14 @@ private:
 
     using setup = std::conditional_t<std::same_as<real_type, float>, setup_f32, setup_f64>;
 
-    fft::order _order;
+    size_type _order;
     stdex::mdarray<Complex, stdex::dextents<size_t, 1>> _buffer{};
     typename setup::handle_type* _handle;
     detail::ipp_buffer _spec_buf;
     detail::ipp_buffer _work_buf;
 };
 
+/// \ingroup neo-fft
 template<complex Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
 struct intel_ipp_dft_plan
@@ -298,6 +300,7 @@ private:
     detail::ipp_buffer _work_buf;
 };
 
+/// \ingroup neo-fft
 template<std::floating_point Float>
     requires(std::same_as<Float, float> or std::same_as<Float, double>)
 struct intel_ipp_split_fft_plan
@@ -305,9 +308,9 @@ struct intel_ipp_split_fft_plan
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit intel_ipp_split_fft_plan(fft::order order) : _order{order}
+    intel_ipp_split_fft_plan(from_order_tag /*tag*/, size_type order) : _order{order}
     {
-        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<setup>(static_cast<size_type>(order));
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<setup>(order);
     }
 
     intel_ipp_split_fft_plan(intel_ipp_split_fft_plan const& other)                    = delete;
@@ -316,7 +319,7 @@ struct intel_ipp_split_fft_plan
     intel_ipp_split_fft_plan(intel_ipp_split_fft_plan&& other)                    = default;
     auto operator=(intel_ipp_split_fft_plan&& other) -> intel_ipp_split_fft_plan& = default;
 
-    [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
     [[nodiscard]] auto size() const noexcept -> size_type { return fft::size(order()); }
 
@@ -382,13 +385,14 @@ private:
 
     using setup = std::conditional_t<std::same_as<Float, float>, setup_f32, setup_f64>;
 
-    fft::order _order;
+    size_type _order;
     stdex::mdarray<Float, stdex::dextents<size_t, 2>> _buffer{2, size()};
     typename setup::handle_type* _handle;
     detail::ipp_buffer _spec_buf;
     detail::ipp_buffer _work_buf;
 };
 
+/// \ingroup neo-fft
 template<std::floating_point Float, complex Complex = std::complex<Float>>
     requires((std::same_as<Float, float> or std::same_as<Float, double>) and std::same_as<typename Complex::value_type, Float>)
 struct intel_ipp_rfft_plan
@@ -397,9 +401,9 @@ struct intel_ipp_rfft_plan
     using complex_type = Complex;
     using size_type    = std::size_t;
 
-    explicit intel_ipp_rfft_plan(fft::order order) : _order{order}
+    intel_ipp_rfft_plan(from_order_tag /*tag*/, size_type order) : _order{order}
     {
-        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<setup>(static_cast<size_type>(order));
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_fft_handle<setup>(order);
     }
 
     intel_ipp_rfft_plan(intel_ipp_rfft_plan const& other)                    = delete;
@@ -408,7 +412,7 @@ struct intel_ipp_rfft_plan
     intel_ipp_rfft_plan(intel_ipp_rfft_plan&& other)                    = default;
     auto operator=(intel_ipp_rfft_plan&& other) -> intel_ipp_rfft_plan& = default;
 
-    [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
     [[nodiscard]] auto size() const noexcept -> size_type { return fft::size(order()); }
 
@@ -478,13 +482,14 @@ private:
 
     using setup = std::conditional_t<std::same_as<real_type, float>, setup_f32, setup_f64>;
 
-    fft::order _order;
+    size_type _order;
     stdex::mdarray<typename setup::float_type, stdex::dextents<size_t, 1>> _buffer{size() * 2};
     typename setup::handle_type* _handle;
     detail::ipp_buffer _spec_buf;
     detail::ipp_buffer _work_buf;
 };
 
+/// \ingroup neo-fft
 template<std::floating_point Float, direction Direction>
     requires(std::same_as<Float, float> or std::same_as<Float, double>)
 struct intel_ipp_dct_plan
@@ -492,9 +497,9 @@ struct intel_ipp_dct_plan
     using value_type = Float;
     using size_type  = std::size_t;
 
-    explicit intel_ipp_dct_plan(fft::order order) : _order{order}
+    intel_ipp_dct_plan(from_order_tag /*tag*/, size_type order) : _order{order}
     {
-        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_dct_handle<setup>(static_cast<size_type>(order));
+        std::tie(_handle, _spec_buf, _work_buf) = detail::make_ipp_dct_handle<setup>(order);
     }
 
     intel_ipp_dct_plan(intel_ipp_dct_plan const& other)                    = delete;
@@ -503,7 +508,7 @@ struct intel_ipp_dct_plan
     intel_ipp_dct_plan(intel_ipp_dct_plan&& other)                    = default;
     auto operator=(intel_ipp_dct_plan&& other) -> intel_ipp_dct_plan& = default;
 
-    [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
     [[nodiscard]] auto size() const noexcept -> size_type { return fft::size(order()); }
 
@@ -562,7 +567,7 @@ private:
     using dct3_setup = std::conditional_t<std::same_as<Float, float>, dct3_setup_f32, dct3_setup_f64>;
     using setup      = std::conditional_t<Direction == direction::forward, dct2_setup, dct3_setup>;
 
-    fft::order _order;
+    size_type _order;
     stdex::mdarray<typename setup::value_type, stdex::dextents<size_t, 1>> _buffer{size()};
     typename setup::handle_type* _handle;
     detail::ipp_buffer _spec_buf;

@@ -5,35 +5,31 @@
 #include <neo/complex/complex.hpp>
 #include <neo/container/mdspan.hpp>
 #include <neo/fft/direction.hpp>
-#include <neo/fft/experimental/digitrevorder.hpp>
 #include <neo/fft/order.hpp>
+#include <neo/fft/reference/digitrevorder.hpp>
 #include <neo/fft/twiddle.hpp>
 #include <neo/math/ipow.hpp>
 
-namespace neo::fft::experimental {
+namespace neo::fft {
 
-/// https://github.com/scientificgo/fft/blob/master/radix3.go
+/// \brief C2C Cooley–Tukey Radix-3 DIF
+/// \details https://github.com/scientificgo/fft/blob/master/radix3.go
+/// \ingroup neo-fft
 template<complex Complex>
-struct radix3_plan
+struct c2c_dif3_plan
 {
     using value_type = Complex;
     using size_type  = std::size_t;
 
-    explicit radix3_plan(fft::order order) : _order{order} {}
+    explicit c2c_dif3_plan(from_order_tag /*tag*/, size_type order) : _order{order} {}
 
-    [[nodiscard]] static constexpr auto max_order() noexcept -> fft::order { return fft::order{17}; }
+    [[nodiscard]] static constexpr auto max_order() noexcept -> size_type { return 17; }
 
-    [[nodiscard]] static constexpr auto max_size() noexcept -> size_type
-    {
-        return ipow<size_type(3)>(static_cast<size_type>(max_order()));
-    }
+    [[nodiscard]] static constexpr auto max_size() noexcept -> size_type { return ipow<size_type(3)>(max_order()); }
 
-    [[nodiscard]] auto order() const noexcept -> fft::order { return _order; }
+    [[nodiscard]] auto order() const noexcept -> size_type { return _order; }
 
-    [[nodiscard]] auto size() const noexcept -> size_type
-    {
-        return ipow<size_type(3)>(static_cast<size_type>(order()));
-    }
+    [[nodiscard]] auto size() const noexcept -> size_type { return ipow<size_type(3)>(order()); }
 
     template<inout_vector Vec>
         requires std::same_as<typename Vec::value_type, Complex>
@@ -84,8 +80,8 @@ struct radix3_plan
     }
 
 private:
-    fft::order _order;
+    size_type _order;
     digitrevorder_plan<3> _reorder{size()};
 };
 
-}  // namespace neo::fft::experimental
+}  // namespace neo::fft

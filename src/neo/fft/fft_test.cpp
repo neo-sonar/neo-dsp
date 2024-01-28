@@ -17,6 +17,7 @@
 #include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <algorithm>
@@ -27,7 +28,7 @@ namespace {
 template<typename Complex, typename Kernel>
 struct kernel_tester
 {
-    using plan_type    = neo::fft::fallback_fft_plan<Complex, Kernel>;
+    using plan_type    = neo::fft::c2c_dit2_plan<Complex, Kernel>;
     using complex_type = Complex;
     using kernel_type  = Kernel;
 };
@@ -40,6 +41,9 @@ using kernel_v2 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v2>;
 
 template<typename Complex>
 using kernel_v3 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v3>;
+
+template<typename Complex>
+using kernel_v4 = kernel_tester<Complex, neo::fft::kernel::c2c_dit2_v4>;
 
 constexpr auto execute_dit2_kernel = [](auto kernel, neo::inout_vector auto x, auto const& twiddles) -> void {
     neo::fft::bitrevorder(x);
@@ -59,13 +63,13 @@ auto test_fft_plan()
     {
         auto const next = neo::fft::next_order(Plan::max_size() + 1U);
         CAPTURE(int(next));
-        REQUIRE_THROWS(Plan{next});
+        REQUIRE_THROWS(Plan{neo::fft::from_order, next});
     }
 
-    auto const order = GENERATE(as<neo::fft::order>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
+    auto const order = GENERATE(as<std::size_t>{}, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
     CAPTURE(order);
 
-    auto plan = Plan{order};
+    auto plan = Plan{neo::fft::from_order, order};
     REQUIRE(plan.order() == order);
     REQUIRE(plan.size() == neo::fft::size(order));
     REQUIRE(neo::fft::next_order(plan.size()) == plan.order());
@@ -230,9 +234,9 @@ TEMPLATE_TEST_CASE("neo/fft: fft_plan", "", neo::complex64, std::complex<float>,
 }
 
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft: fallback_fft_plan",
+    "neo/fft: c2c_dit2_plan",
     "",
-    (kernel_v1, kernel_v2, kernel_v3),
+    (kernel_v1, kernel_v2, kernel_v3, kernel_v4),
     (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>, std::complex<long double>)
 )
 {
@@ -241,9 +245,9 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
 #if defined(NEO_HAS_XSIMD)
 TEMPLATE_PRODUCT_TEST_CASE(
-    "neo/fft: fallback_fft_plan",
+    "neo/fft: c2c_dit2_plan",
     "",
-    (kernel_v1, kernel_v2, kernel_v3),
+    (kernel_v1, kernel_v2, kernel_v3, kernel_v4),
     (xsimd::batch<std::complex<float>>, xsimd::batch<std::complex<double>>)
 )
 {
@@ -252,3 +256,45 @@ TEMPLATE_PRODUCT_TEST_CASE(
     test_complex_batch_roundtrip_fft<Complex, Kernel>();
 }
 #endif
+
+using namespace neo::fft;
+
+TEMPLATE_PRODUCT_TEST_CASE(
+    "neo/fft: ",
+    "",
+    (c2c_dif3_plan,
+     c2c_dif4_plan,
+     c2c_dif5_plan,
+     c2c_dit4_plan,
+     c2c_stockham_dif2r_plan,
+     c2c_stockham_dif2i_plan,
+     c2c_stockham_dif3_plan,
+     c2c_stockham_dif4_plan,
+     c2c_stockham_dif5_plan,
+     c2c_stockham_dif8_plan,
+     c2c_stockham_dit4_plan),
+    (std::complex<float>, std::complex<double>, std::complex<long double>, neo::complex64, neo::complex128)
+)
+{
+    using Plan    = TestType;
+    using Complex = typename Plan::value_type;
+    using Float   = typename Complex::value_type;
+
+    auto const order = GENERATE(range(size_t(1), static_cast<size_t>(Plan::max_order()) - 6));
+    CAPTURE(order);
+
+    auto plan        = Plan{neo::fft::from_order, order};
+    auto const noise = neo::generate_noise_signal<Complex>(plan.size(), Catch::getSeed());
+
+    SECTION("inplace")
+    {
+        auto copy = noise;
+        auto io   = copy.to_mdspan();
+
+        neo::fft::fft(plan, io);
+        neo::fft::ifft(plan, io);
+
+        neo::scale(Float(1) / static_cast<Float>(plan.size()), io);
+        REQUIRE(neo::allclose(noise.to_mdspan(), io, Float(0.001)));
+    }
+}

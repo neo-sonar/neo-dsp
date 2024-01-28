@@ -97,6 +97,90 @@ auto c2c_dit4(std::span<std::complex<double>> x, std::size_t order, double sign)
     }
 }
 
+auto c2c_dit4(
+    std::span<std::complex<double>> x,
+    std::span<std::complex<double> const> w,
+    std::size_t order,
+    double sign
+) -> void
+{
+    static constexpr auto Radix = 4UL;
+    static constexpr auto TwoPi = 3.14159265359 * 2.0;
+
+    auto const I = std::complex{0.0, sign};
+    auto const t = order;
+    auto const n = x.size();
+
+    digitrevorder<Radix>(x);
+
+    for (auto q{1UL}; q <= t; ++q) {
+        auto const L  = ipow(Radix, q);
+        auto const LR = L / Radix;
+        auto const r  = n / L;
+
+        for (auto j{0UL}; j < LR; ++j) {
+            auto const w1 = w[j];
+            auto const w2 = w1 * w1;
+            auto const w3 = w2 * w1;
+
+            for (auto k{0UL}; k < r; ++k) {
+                auto const a = x[k * L + LR * 0 + j];
+                auto const b = x[k * L + LR * 1 + j] * w1;
+                auto const c = x[k * L + LR * 2 + j] * w2;
+                auto const d = x[k * L + LR * 3 + j] * w3;
+
+                auto const t0 = a + c;
+                auto const t1 = a - c;
+                auto const t2 = b + d;
+                auto const t3 = b - d;
+
+                x[k * L + LR * 0 + j] = t0 + t2;
+                x[k * L + LR * 1 + j] = t1 - t3 * I;
+                x[k * L + LR * 2 + j] = t0 - t2;
+                x[k * L + LR * 3 + j] = t1 + t3 * I;
+            }
+        }
+    }
+}
+
+auto c2c_stockham(
+    std::span<std::complex<double>> x,
+    std::span<std::complex<double>> work,
+    std::size_t order,
+    double sign
+) -> void
+{
+    static constexpr auto Radix = 2UL;
+    static constexpr auto TwoPi = 3.14159265359 * 2.0;
+
+    auto const n = ipow(std::size_t(2), order);
+
+    auto l = n / 2U;
+    auto m = 1UL;
+
+    for (auto t{1UL}; t <= order; ++t) {
+        for (auto j{0UL}; j < l; ++j) {
+            auto const angle = sign * TwoPi * static_cast<double>(j) / static_cast<double>(2 * l);
+            auto const w     = std::polar(1.0, angle);
+            for (auto k{0UL}; k < m; ++k) {
+                auto const c0 = x[k + j * m];
+                auto const c1 = x[k + j * m + l * m];
+
+                work[k + 2 * j * m]     = c0 + c1;
+                work[k + 2 * j * m + m] = (c0 - c1) * w;
+            }
+        }
+
+        l = l / 2U;
+        m = m * 2U;
+        std::swap(x, work);
+    }
+
+    if ((order & 1U) != 0) {
+        std::ranges::copy(x, work.begin());
+    }
+}
+
 auto main() -> int
 {
     auto print = [](auto const* msg, auto x, auto scale) {
@@ -107,13 +191,24 @@ auto main() -> int
         std::puts("");
     };
 
+    static constexpr auto TwoPi = 3.14159265359 * 2.0;
+    static constexpr auto Radix = 4;
     static constexpr auto Order = 2;
-    static constexpr auto Size  = ipow(4, Order);
+    static constexpr auto Size  = ipow(Radix, Order);
 
-    auto x = std::array<std::complex<double>, Size>{};
-    x[0]   = 1.0;
-    x[1]   = 2.0;
-    x[2]   = 3.0;
+    auto w_fwd = std::array<std::complex<double>, Size / 4>{};
+    auto w_bwd = std::array<std::complex<double>, Size / 4>{};
+    for (auto i{0U}; i < w_fwd.size(); ++i) {
+        auto angle = TwoPi * static_cast<double>(i) / static_cast<double>(Size);
+        w_fwd[i]   = std::polar(1.0, -angle);
+        w_bwd[i]   = std::polar(1.0, +angle);
+    }
+
+    auto x    = std::array<std::complex<double>, Size>{};
+    auto work = std::array<std::complex<double>, Size>{};
+    x[0]      = 1.0;
+    x[1]      = 2.0;
+    x[2]      = 3.0;
     print("input", x, 1.0);
 
     c2c_dit4(x, Order, -1.0);

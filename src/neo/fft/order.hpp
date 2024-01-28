@@ -13,21 +13,29 @@
 
 namespace neo::fft {
 
-enum struct order : std::size_t
+/// \ingroup neo-fft
+struct from_order_tag
 {
+    explicit from_order_tag() = default;
 };
 
-[[nodiscard]] constexpr auto size(order o) noexcept -> std::underlying_type_t<order>
+/// \ingroup neo-fft
+/// \relates from_order_tag
+inline constexpr auto from_order = from_order_tag{};
+
+/// \ingroup neo-fft
+template<std::integral Int>
+[[nodiscard]] constexpr auto size(Int sz) noexcept -> Int
 {
-    using Int = std::underlying_type_t<order>;
-    return ipow<Int(2)>(static_cast<Int>(o));
+    return ipow<Int(2)>(sz);
 }
 
+/// \ingroup neo-fft
 template<std::integral Int>
-[[nodiscard]] constexpr auto next_order(Int size) noexcept -> order
+[[nodiscard]] constexpr auto next_order(Int size) noexcept -> Int
 {
     auto const usize = static_cast<std::make_unsigned_t<Int>>(size);
-    return static_cast<order>(bit_log2(bit_ceil(usize)));
+    return static_cast<Int>(bit_log2(bit_ceil(usize)));
 }
 
 }  // namespace neo::fft

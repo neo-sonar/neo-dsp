@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-latest] # windows-latest
+        platform: [macos-latest, ubuntu-latest, windows-latest]
         python-version: ["3.7", "3.12", "pypy-3.9"]
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +26,7 @@ jobs:
         run: pip install --verbose .[test]
 
       - name: Test
-        run: pytest --cov=neo --cov-branch extra/python/test/*
+        run: pytest --cov=neo --cov-branch
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v3

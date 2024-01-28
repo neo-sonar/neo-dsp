@@ -102,6 +102,107 @@ inline constexpr auto const mul_kernel_avx512_s16 = [](__m512i lhs, __m512i rhs)
 
 }  // namespace detail
 
+#if defined(NEO_HAS_ISA_NEON)
+
+struct alignas(16) q7x16
+{
+    using value_type    = neo::q7;
+    using register_type = int8x16_t;
+
+    static constexpr auto const alignment = alignof(register_type);
+    static constexpr auto const size      = sizeof(register_type) / sizeof(value_type);
+
+    q7x16() = default;
+
+    NEO_ALWAYS_INLINE q7x16(register_type reg) noexcept : _reg{reg} {}
+
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
+
+    [[nodiscard]] static auto broadcast(value_type val) noexcept -> q7x16
+    {
+        auto const v = val.value();
+        return vld1q_dup_s8(&v);
+    }
+
+    [[nodiscard]] static auto load_unaligned(value_type const* input) noexcept -> q7x16
+    {
+        auto const* integer = reinterpret_cast<value_type::storage_type const*>(input);
+        return vld1q_s8(integer);
+    }
+
+    auto store_unaligned(value_type* output) const noexcept -> void
+    {
+        auto* integer = reinterpret_cast<value_type::storage_type*>(output);
+        return vst1q_s8(integer, _reg);
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator+(q7x16 lhs, q7x16 rhs) noexcept -> q7x16
+    {
+        return vqaddq_s8(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator-(q7x16 lhs, q7x16 rhs) noexcept -> q7x16
+    {
+        return vqsubq_s8(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+private:
+    register_type _reg;
+};
+
+struct alignas(16) q15x8
+{
+    using value_type    = neo::q15;
+    using register_type = int16x8_t;
+
+    static constexpr auto const alignment = alignof(register_type);
+    static constexpr auto const size      = sizeof(register_type) / sizeof(value_type);
+
+    q15x8() = default;
+
+    NEO_ALWAYS_INLINE q15x8(register_type reg) noexcept : _reg{reg} {}
+
+    [[nodiscard]] NEO_ALWAYS_INLINE explicit operator register_type() const noexcept { return _reg; }
+
+    [[nodiscard]] static auto broadcast(value_type val) noexcept -> q15x8
+    {
+        auto const v = val.value();
+        return vld1q_dup_s16(&v);
+    }
+
+    [[nodiscard]] static auto load_unaligned(value_type const* input) noexcept -> q15x8
+    {
+        auto const* integer = reinterpret_cast<value_type::storage_type const*>(input);
+        return vld1q_s16(integer);
+    }
+
+    auto store_unaligned(value_type* output) const noexcept -> void
+    {
+        auto* integer = reinterpret_cast<value_type::storage_type*>(output);
+        return vst1q_s16(integer, _reg);
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator+(q15x8 lhs, q15x8 rhs) noexcept -> q15x8
+    {
+        return vqaddq_s16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator-(q15x8 lhs, q15x8 rhs) noexcept -> q15x8
+    {
+        return vqsubq_s16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+    NEO_ALWAYS_INLINE friend auto operator*(q15x8 lhs, q15x8 rhs) noexcept -> q15x8
+    {
+        return vqdmulhq_s16(static_cast<register_type>(lhs), static_cast<register_type>(rhs));
+    }
+
+private:
+    register_type _reg;
+};
+
+#endif
+
 #if defined(NEO_HAS_ISA_SSE2)
 
 struct alignas(16) q7x16

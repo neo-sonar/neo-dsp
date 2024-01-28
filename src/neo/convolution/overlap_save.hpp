@@ -16,6 +16,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<complex Complex>
 struct overlap_save
 {
@@ -49,7 +50,7 @@ private:
 
     size_type _block_size;
     size_type _filter_size;
-    fft::rfft_plan<real_type, complex_type> _plan{fft::next_order(_block_size + _filter_size - 1UL)};
+    fft::rfft_plan<real_type, complex_type> _plan{fft::from_order, fft::next_order(_block_size + _filter_size - 1UL)};
 
     stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _window{_plan.size()};
     stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _real_buffer{_plan.size()};

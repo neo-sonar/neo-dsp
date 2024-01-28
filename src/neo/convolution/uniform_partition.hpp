@@ -8,6 +8,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<in_matrix InMat>
 [[nodiscard]] auto uniform_partition(InMat impulse_response, std::size_t block_size)
 {

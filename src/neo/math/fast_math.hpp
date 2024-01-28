@@ -8,6 +8,7 @@
 
 namespace neo {
 
+/// \ingroup neo-math
 [[nodiscard]] constexpr auto fast_log2(float x) noexcept -> float
 {
     auto const vx = bit_cast<std::uint32_t>(x);
@@ -16,6 +17,7 @@ namespace neo {
     return y - 124.22551499F - 1.498030302F * mx - 1.72587999F / (0.3520887068F + mx);
 }
 
+/// \ingroup neo-math
 [[nodiscard]] constexpr auto fast_log10(float x) noexcept -> float
 {
     constexpr auto scale = 0.30102999566F;  // 1 / log2(10);

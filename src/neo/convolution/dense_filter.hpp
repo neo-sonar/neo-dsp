@@ -12,6 +12,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<typename Complex>
 struct dense_filter
 {
@@ -37,6 +38,7 @@ private:
     stdex::mdarray<Complex, stdex::dextents<size_t, 2>> _filter;
 };
 
+/// \ingroup neo-convolution
 template<typename Float>
 struct dense_split_filter
 {

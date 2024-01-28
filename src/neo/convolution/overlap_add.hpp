@@ -19,6 +19,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<complex Complex>
 struct overlap_add
 {
@@ -32,28 +33,27 @@ struct overlap_add
     [[nodiscard]] auto block_size() const noexcept -> size_type;
     [[nodiscard]] auto filter_size() const noexcept -> size_type;
     [[nodiscard]] auto transform_size() const noexcept -> size_type;
-    [[nodiscard]] auto num_overlaps() const noexcept -> size_type;
 
     auto operator()(inout_vector auto block, auto callback) -> void;
 
 private:
     size_type _block_size;
     size_type _filter_size;
-    size_type _usable_coeffs{output_size<mode::full>(_block_size, _filter_size)};
 
-    fft::rfft_plan<real_type, complex_type> _rfft{fft::next_order(_usable_coeffs)};
+    fft::rfft_plan<real_type, complex_type> _rfft{
+        fft::from_order,
+        fft::next_order(output_size<mode::full>(_block_size, _filter_size)),
+    };
+
     stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
-    stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size()};
-
-    size_type _overlap_write_idx{0};
-    stdex::mdarray<real_type, stdex::dextents<size_t, 2>> _overlaps;
+    stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size() / 2 + 1};
+    stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _overlap{_block_size};
 };
 
 template<complex Complex>
 overlap_add<Complex>::overlap_add(size_type block_size, size_type filter_size)
     : _block_size{block_size}
     , _filter_size{filter_size}
-    , _overlaps{idiv(_usable_coeffs, _block_size), _usable_coeffs}
 {}
 
 template<complex Complex>
@@ -75,59 +75,34 @@ auto overlap_add<Complex>::transform_size() const noexcept -> size_type
 }
 
 template<complex Complex>
-auto overlap_add<Complex>::num_overlaps() const noexcept -> size_type
-{
-    return _overlaps.extent(0);
-}
-
-template<complex Complex>
 auto overlap_add<Complex>::operator()(inout_vector auto block, auto callback) -> void
 {
     assert(block.extent(0) == block_size());
 
     auto const real_buffer    = _real_buffer.to_mdspan();
+    auto const real_window    = stdex::submdspan(real_buffer, std::tuple{0, block_size()});
     auto const complex_buffer = _complex_buffer.to_mdspan();
+    auto const overlap        = _overlap.to_mdspan();
 
     // Copy and zero-pad input
     fill(real_buffer, real_type(0));
-    copy(block, stdex::submdspan(real_buffer, std::tuple{0, block_size()}));
+    copy(block, real_window);
 
     // K-point rfft
     _rfft(real_buffer, complex_buffer);
 
     // Process
-    auto const coeffs = stdex::submdspan(complex_buffer, std::tuple{0, _rfft.size() / 2 + 1});
-    callback(coeffs);
+    callback(complex_buffer);
 
     // K-point irfft
     _rfft(complex_buffer, real_buffer);
     scale(1.0F / static_cast<real_type>(_rfft.size()), real_buffer);
 
     // Copy to output
-    copy(stdex::submdspan(real_buffer, std::tuple{0, block_size()}), block);
+    add(real_window, overlap, block);
 
     // Save overlap for next iteration
-    auto const signal = stdex::submdspan(real_buffer, std::tuple{0, _usable_coeffs});
-    auto const save   = stdex::submdspan(_overlaps.to_mdspan(), _overlap_write_idx, stdex::full_extent);
-    copy(signal, save);
-
-    // Add older iterations
-    for (auto i{1UL}; i < num_overlaps(); ++i) {
-        auto const overlap_idx = (_overlap_write_idx + num_overlaps() - i) % num_overlaps();
-        auto const start_idx   = block_size() * i;
-        auto const num_samples = std::min(block_size(), _usable_coeffs - start_idx);
-        auto const last_idx    = start_idx + num_samples;
-
-        auto const overlap = stdex::submdspan(_overlaps.to_mdspan(), overlap_idx, std::tuple{start_idx, last_idx});
-        auto const out     = stdex::submdspan(block, std::tuple{0, num_samples});
-        add(overlap, out, out);
-    }
-
-    // Increment overlap write position
-    ++_overlap_write_idx;
-    if (_overlap_write_idx == num_overlaps()) {
-        _overlap_write_idx = 0;
-    }
+    copy(stdex::submdspan(real_buffer, std::tuple{block_size(), block_size() * 2UL}), overlap);
 }
 
 }  // namespace neo::convolution

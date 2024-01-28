@@ -49,6 +49,7 @@ struct abs_fn
 
 }  // namespace detail
 
+/// \ingroup neo-math
 inline constexpr auto const abs = detail::abs_fn{};
 
 }  // namespace neo::math

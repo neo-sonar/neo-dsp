@@ -44,16 +44,18 @@ auto conv(benchmark::State& state) -> void
     state.SetBytesProcessed(items * sizeof(Real));
 }
 
-constexpr auto const min_block  = 128;
-constexpr auto const max_block  = 1 << 16;
-constexpr auto const min_filter = 1 << 16;
-constexpr auto const max_filter = 1 << 16;
+constexpr auto const min_block  = 512;
+constexpr auto const max_block  = 512;
+constexpr auto const min_filter = 1 << 11;
+constexpr auto const max_filter = 1 << 17;
 
 }  // namespace
 
+BENCHMARK(conv<neo::convolution::upols_convolver<std::complex<float>>>)
+    ->ArgsProduct({benchmark::CreateRange(min_block, max_block, 2), benchmark::CreateRange(min_filter, max_filter, 2)});
 BENCHMARK(conv<neo::convolution::upola_convolver<std::complex<float>>>)
     ->ArgsProduct({benchmark::CreateRange(min_block, max_block, 2), benchmark::CreateRange(min_filter, max_filter, 2)});
-BENCHMARK(conv<neo::convolution::upols_convolver<std::complex<float>>>)
+BENCHMARK(conv<neo::convolution::upola_convolver_v2<std::complex<float>>>)
     ->ArgsProduct({benchmark::CreateRange(min_block, max_block, 2), benchmark::CreateRange(min_filter, max_filter, 2)});
 
 BENCHMARK(conv<neo::convolution::split_upola_convolver<std::complex<float>>>)

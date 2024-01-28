@@ -13,6 +13,7 @@
 
 namespace neo::fft {
 
+/// \ingroup neo-fft
 template<complex Complex>
 [[nodiscard]] constexpr auto twiddle(std::integral auto size, std::integral auto index, direction dir) noexcept
     -> Complex
@@ -27,6 +28,7 @@ template<complex Complex>
     return Complex{w.real(), w.imag()};           // convert to custom complex (maybe)
 }
 
+/// \ingroup neo-fft
 template<inout_vector OutVec>
 auto fill_twiddle_lut_radix2(OutVec lut, direction dir) noexcept -> void
 {
@@ -40,6 +42,7 @@ auto fill_twiddle_lut_radix2(OutVec lut, direction dir) noexcept -> void
     }
 }
 
+/// \ingroup neo-fft
 template<complex Complex>
 auto make_twiddle_lut_radix2(std::size_t size, direction dir)
 {

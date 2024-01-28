@@ -123,8 +123,9 @@ BenchmarkTab::BenchmarkTab(PluginProcessor& processor, juce::AudioFormatManager&
         juce::var{"juce::dsp::Convolution"},
         juce::var{"neo::Convolution"},
         juce::var{"DenseConvolution"},
-        juce::var{"upola_convolver"},
         juce::var{"upols_convolver"},
+        juce::var{"upola_convolver"},
+        juce::var{"upola_convolver_v2"},
         juce::var{"split_upola_convolver"},
         juce::var{"split_upols_convolver"},
         juce::var{"sparse_upola_convolver"},
@@ -282,11 +283,14 @@ auto BenchmarkTab::runBenchmarks() -> void
     if (hasEngineEnabled("DenseConvolution")) {
         _threadPool.addJob([this] { runDenseConvolutionBenchmark(); });
     }
+    if (hasEngineEnabled("upols_convolver")) {
+        _threadPool.addJob([this] { runDenseBenchmark<neo::convolution::upols_convolver<Complex>>("UPOLS"); });
+    }
     if (hasEngineEnabled("upola_convolver")) {
         _threadPool.addJob([this] { runDenseBenchmark<neo::convolution::upola_convolver<Complex>>("UPOLA"); });
     }
-    if (hasEngineEnabled("upols_convolver")) {
-        _threadPool.addJob([this] { runDenseBenchmark<neo::convolution::upols_convolver<Complex>>("UPOLS"); });
+    if (hasEngineEnabled("upola_convolver_v2")) {
+        _threadPool.addJob([this] { runDenseBenchmark<neo::convolution::upola_convolver_v2<Complex>>("UPOLA-V2"); });
     }
     if (hasEngineEnabled("split_upola_convolver")) {
         _threadPool.addJob([this] {

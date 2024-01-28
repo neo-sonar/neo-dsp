@@ -11,10 +11,12 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<complex Complex>
 using sparse_upols_convolver
     = uniform_partitioned_convolver<overlap_save<Complex>, dense_fdl<Complex>, sparse_filter<Complex>>;
 
+/// \ingroup neo-convolution
 template<complex Complex>
 using sparse_upola_convolver
     = uniform_partitioned_convolver<overlap_add<Complex>, dense_fdl<Complex>, sparse_filter<Complex>>;

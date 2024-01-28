@@ -44,6 +44,7 @@ struct imag_fn
 
 }  // namespace detail
 
+/// \ingroup neo-math
 inline constexpr auto const imag = detail::imag_fn{};
 
 }  // namespace neo::math

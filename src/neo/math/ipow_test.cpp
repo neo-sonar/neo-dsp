@@ -8,8 +8,6 @@
 TEMPLATE_TEST_CASE(
     "neo/math: ipow",
     "",
-    std::int8_t,
-    std::uint8_t,
     std::int16_t,
     std::uint16_t,
     std::int32_t,
@@ -35,7 +33,27 @@ TEMPLATE_TEST_CASE(
     REQUIRE(neo::ipow<Int(3)>(Int(2)) == Int(9));
     REQUIRE(neo::ipow<Int(3)>(Int(3)) == Int(27));
 
+    REQUIRE(neo::ipow<Int(4)>(Int(0)) == Int(1));
+    REQUIRE(neo::ipow<Int(4)>(Int(1)) == Int(4));
+    REQUIRE(neo::ipow<Int(4)>(Int(2)) == Int(16));
+    REQUIRE(neo::ipow<Int(4)>(Int(3)) == Int(64));
+
+    REQUIRE(neo::ipow<Int(8)>(Int(0)) == Int(1));
+    REQUIRE(neo::ipow<Int(8)>(Int(1)) == Int(8));
+    REQUIRE(neo::ipow<Int(8)>(Int(2)) == Int(64));
+    REQUIRE(neo::ipow<Int(8)>(Int(3)) == Int(512));
+
     REQUIRE(neo::ipow<Int(10)>(Int(0)) == Int(1));
     REQUIRE(neo::ipow<Int(10)>(Int(1)) == Int(10));
     REQUIRE(neo::ipow<Int(10)>(Int(2)) == Int(100));
+
+    REQUIRE(neo::ipow<Int(16)>(Int(0)) == Int(1));
+    REQUIRE(neo::ipow<Int(16)>(Int(1)) == Int(16));
+    REQUIRE(neo::ipow<Int(16)>(Int(2)) == Int(256));
+    REQUIRE(neo::ipow<Int(16)>(Int(3)) == Int(4096));
+
+    REQUIRE(neo::ipow<Int(32)>(Int(0)) == Int(1));
+    REQUIRE(neo::ipow<Int(32)>(Int(1)) == Int(32));
+    REQUIRE(neo::ipow<Int(32)>(Int(2)) == Int(1024));
+    REQUIRE(neo::ipow<Int(32)>(Int(3)) == Int(32768));
 }
