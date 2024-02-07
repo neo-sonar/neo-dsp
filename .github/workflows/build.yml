@@ -75,7 +75,7 @@ jobs:
             generator: Ninja
             clang_version: latest
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
-            cmake_prefix_path: ""
+            cmake_prefix_path: C:\Program Files (x86)\Intel\oneAPI\ipp\latest\lib\cmake\ipp
             cmake_targets: all
             macos_target: ""
             ipp_dir: C:\Program Files (x86)\Intel\oneAPI\ipp\latest\lib\cmake\ipp
@@ -86,7 +86,7 @@ jobs:
             generator: Ninja
             clang_version: ""
             cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2 /EHsc" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
-            cmake_prefix_path: ""
+            cmake_prefix_path: C:\Program Files (x86)\Intel\oneAPI\ipp\latest\lib\cmake\ipp
             cmake_targets: all
             macos_target: ""
             ipp_dir: C:\Program Files (x86)\Intel\oneAPI\ipp\latest\lib\cmake\ipp
