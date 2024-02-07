@@ -44,8 +44,8 @@ auto conv(benchmark::State& state) -> void
     state.SetBytesProcessed(items * sizeof(Real));
 }
 
-constexpr auto const min_block  = 512;
-constexpr auto const max_block  = 512;
+constexpr auto const min_block  = 4096;
+constexpr auto const max_block  = 4096;
 constexpr auto const min_filter = 1 << 11;
 constexpr auto const max_filter = 1 << 17;
 
