@@ -45,8 +45,8 @@ private:
         fft::next_order(output_size<mode::full>(_block_size, _filter_size)),
     };
 
-    stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _real_buffer{_rfft.size()};
-    stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _complex_buffer{_rfft.size() / 2 + 1};
+    stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _window{_rfft.size()};
+    stdex::mdarray<complex_type, stdex::dextents<size_t, 1>> _spectrum{_rfft.size() / 2 + 1};
     stdex::mdarray<real_type, stdex::dextents<size_t, 1>> _overlap{_block_size};
 };
 
@@ -79,30 +79,31 @@ auto overlap_add<Complex>::operator()(inout_vector auto block, auto callback) ->
 {
     assert(block.extent(0) == block_size());
 
-    auto const real_buffer    = _real_buffer.to_mdspan();
-    auto const real_window    = stdex::submdspan(real_buffer, std::tuple{0, block_size()});
-    auto const complex_buffer = _complex_buffer.to_mdspan();
-    auto const overlap        = _overlap.to_mdspan();
+    auto const window   = _window.to_mdspan();
+    auto const signal   = stdex::submdspan(window, std::tuple{0, block_size()});
+    auto const padding  = stdex::submdspan(window, std::tuple{block_size(), block_size() * 2U});
+    auto const spectrum = _spectrum.to_mdspan();
+    auto const overlap  = _overlap.to_mdspan();
 
     // Copy and zero-pad input
-    fill(real_buffer, real_type(0));
-    copy(block, real_window);
+    copy(block, signal);
+    fill(padding, real_type(0));
 
     // K-point rfft
-    _rfft(real_buffer, complex_buffer);
+    rfft(_rfft, window, spectrum);
 
-    // Process
-    callback(complex_buffer);
+    // Convolve
+    callback(spectrum);
 
     // K-point irfft
-    _rfft(complex_buffer, real_buffer);
-    scale(1.0F / static_cast<real_type>(_rfft.size()), real_buffer);
+    irfft(_rfft, spectrum, window);
+    scale(1.0F / static_cast<real_type>(_rfft.size()), window);
 
     // Copy to output
-    add(real_window, overlap, block);
+    add(signal, overlap, block);
 
     // Save overlap for next iteration
-    copy(stdex::submdspan(real_buffer, std::tuple{block_size(), block_size() * 2UL}), overlap);
+    copy(padding, overlap);
 }
 
 }  // namespace neo::convolution
