@@ -149,9 +149,7 @@ jobs:
           sudo apt install
           libcurl4-openssl-dev
           libasound2-dev
-          libx11-dev
-          libxinerama-dev
-          libxext-dev
+          xorg-dev
           libfreetype6-dev
           libglu1-mesa-dev
           xvfb
