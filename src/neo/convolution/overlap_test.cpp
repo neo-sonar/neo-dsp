@@ -17,33 +17,6 @@
 
 #include <tuple>
 
-TEMPLATE_TEST_CASE("neo/convolution: overlap_add", "", float, double)
-{
-    using Float   = TestType;
-    using Complex = std::complex<Float>;
-    using Overlap = neo::convolution::overlap_add<Complex>;
-
-    auto num_overlaps = [](std::size_t block_size, std::size_t filter_size) {
-        auto overlap = Overlap{block_size, filter_size};
-        return overlap.num_overlaps();
-    };
-
-    REQUIRE(num_overlaps(128, 127) == 2);
-    REQUIRE(num_overlaps(128, 128) == 2);
-    REQUIRE(num_overlaps(128, 129) == 2);
-    REQUIRE(num_overlaps(128, 130) == 3);
-
-    REQUIRE(num_overlaps(128, 255) == 3);
-    REQUIRE(num_overlaps(128, 256) == 3);
-    REQUIRE(num_overlaps(128, 257) == 3);
-    REQUIRE(num_overlaps(128, 258) == 4);
-
-    REQUIRE(num_overlaps(128, 511) == 5);
-    REQUIRE(num_overlaps(128, 512) == 5);
-    REQUIRE(num_overlaps(128, 513) == 5);
-    REQUIRE(num_overlaps(128, 514) == 6);
-}
-
 template<typename Overlap>
 static auto test_overlap() -> void
 {

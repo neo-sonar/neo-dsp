@@ -14,6 +14,7 @@
 namespace neo::fft {
 
 /// \brief C2C Stockham Radix-4 DIT
+/// \ingroup neo-fft
 template<complex Complex>
 struct c2c_stockham_dit4_plan
 {

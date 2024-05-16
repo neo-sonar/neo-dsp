@@ -16,8 +16,10 @@
 
 namespace neo::fft {
 
-// https://dsp.stackexchange.com/questions/2807/fast-cosine-transform-via-fft/10606#10606
-// Type 2 DCT using N FFT (Makhoul)
+/// Type 2 DCT using N FFT (Makhoul)
+///
+/// https://dsp.stackexchange.com/questions/2807/fast-cosine-transform-via-fft/10606#10606
+/// \ingroup neo-fft
 template<std::floating_point Float>
 struct fallback_dct2_plan
 {

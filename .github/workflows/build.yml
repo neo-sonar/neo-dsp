@@ -85,8 +85,8 @@ jobs:
             generator: Ninja
             clang_version: latest
             cmake_bin: "cmake"
-            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native"'
-            cmake_prefix_path: ""
+            cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
+            cmake_prefix_path: C:\Program Files (x86)\Intel\oneAPI\ipp\latest;C:\Program Files (x86)\Intel\oneAPI\mkl\latest
             cmake_targets: all
             macos_target: ""
 
@@ -96,8 +96,8 @@ jobs:
             generator: Ninja
             clang_version: ""
             cmake_bin: "cmake"
-            cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2 /EHsc"'
-            cmake_prefix_path: ""
+            cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2 /EHsc" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
+            cmake_prefix_path: C:\Program Files (x86)\Intel\oneAPI\ipp\latest;C:\Program Files (x86)\Intel\oneAPI\mkl\latest
             cmake_targets: all
             macos_target: ""
 
@@ -182,13 +182,28 @@ jobs:
           sudo apt update
           sudo apt install intel-oneapi-mkl-devel intel-oneapi-ipp-devel
 
-      # - name: Install IPP/MKL (Windows)
-      #   if: runner.os == 'Windows'
-      #   shell: bash
-      #   run: |
-      #     curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/irc_nas/19078/w_BaseKit_p_2023.0.0.25940_offline.exe
-      #     ./oneapi.exe -s -x -f oneapi
-      #     ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel:intel.oneapi.win.mkl.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
+      - name: Cache IPP (Windows)
+        if: runner.os == 'Windows'
+        id: cache-ipp
+        uses: actions/cache@v4
+        with:
+          key: ipp-v4
+          path: C:\Program Files (x86)\Intel
+
+      - name: Install IPP (Windows)
+        if: (runner.os == 'Windows') && (steps.cache-ipp.outputs.cache-hit != 'true')
+        shell: bash
+        run: |
+          curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/5cb30fb9-21e9-47e8-82da-a91e00191670/w_BaseKit_p_2024.0.1.45_offline.exe
+          ./oneapi.exe -s -x -f oneapi
+          ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel:intel.oneapi.win.mkl.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
+
+      - name: Save IPP cache (even on CI fail)
+        if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
+        uses: actions/cache/save@v4
+        with:
+          path: C:\Program Files (x86)\Intel
+          key: ipp-v4
 
       - name: Setup emsdk
         if: matrix.name == 'Emscripten'

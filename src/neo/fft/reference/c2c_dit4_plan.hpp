@@ -13,6 +13,7 @@
 namespace neo::fft {
 
 /// \brief C2C Cooley–Tukey Radix-4
+/// \ingroup neo-fft
 template<complex Complex, bool UseDIT>
 struct c2c_radix4_plan
 {
@@ -205,10 +206,12 @@ private:
 };
 
 /// \brief C2C Cooley–Tukey Radix-4 DIT
+/// \ingroup neo-fft
 template<typename Complex>
 using c2c_dit4_plan = c2c_radix4_plan<Complex, true>;
 
 /// \brief C2C Cooley–Tukey Radix-4 DIF
+/// \ingroup neo-fft
 template<typename Complex>
 using c2c_dif4_plan = c2c_radix4_plan<Complex, false>;
 

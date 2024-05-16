@@ -2,6 +2,9 @@
 
 #pragma once
 
+/// \defgroup neo-fft FFT
+/// Fourier transformations
+
 #include <neo/config.hpp>
 
 #include <neo/fft/dct.hpp>

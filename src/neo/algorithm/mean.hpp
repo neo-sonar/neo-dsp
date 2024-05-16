@@ -11,6 +11,10 @@
 
 namespace neo {
 
+/// Returns the arithmetic mean of vector \p x
+///
+/// \pre The extent of \p x must be greater 0
+/// \ingroup neo-satistics
 template<in_object InObj>
 [[nodiscard]] constexpr auto mean_unchecked(InObj x) noexcept -> value_type_t<InObj>
 {
@@ -33,6 +37,9 @@ template<in_object InObj>
     return sum / static_cast<Float>(x.size());
 }
 
+/// Returns the arithmetic mean of vector \p x. If the vector is empty
+/// std::nullopt is returned.
+/// \ingroup neo-satistics
 template<in_object InObj>
 [[nodiscard]] constexpr auto mean(InObj x) noexcept -> std::optional<value_type_t<InObj>>
 {

@@ -4,6 +4,9 @@
 
 #include <neo/config.hpp>
 
+/// \defgroup neo-math Math
+/// Math functions
+
 #include <neo/math/a_weighting.hpp>
 #include <neo/math/abs.hpp>
 #include <neo/math/conj.hpp>

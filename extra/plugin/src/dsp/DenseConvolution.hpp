@@ -47,20 +47,21 @@ dense_convolve(juce::AudioBuffer<float> const& signal, juce::AudioBuffer<float> 
     neo::convolution::normalize_impulse(matrix.to_mdspan());
     auto partitions = neo::convolution::uniform_partition(matrix.to_mdspan(), static_cast<std::size_t>(blockSize));
 
-    for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
-        auto convolver     = Convolver{};
-        auto const channel = static_cast<size_t>(ch);
-        auto const full    = stdex::full_extent;
-        convolver.filter(stdex::submdspan(partitions.to_mdspan(), channel, full, full));
+    auto convolvers = std::vector<Convolver>(static_cast<std::size_t>(signal.getNumChannels()));
+    for (auto ch{0U}; ch < static_cast<size_t>(signal.getNumChannels()); ++ch) {
+        auto channel = stdex::submdspan(partitions.to_mdspan(), ch, stdex::full_extent, stdex::full_extent);
+        convolvers[ch].filter(channel);
+    }
 
-        auto const* const in = signal.getReadPointer(ch);
-        auto* const out      = output.getWritePointer(ch);
+    for (auto i{0}; i < output.getNumSamples(); i += blockSize) {
+        for (auto ch{0}; ch < signal.getNumChannels(); ++ch) {
+            auto const* const in = signal.getReadPointer(ch);
+            auto* const out      = output.getWritePointer(ch);
 
-        for (auto i{0}; i < output.getNumSamples(); i += blockSize) {
             auto const numSamples = std::min(output.getNumSamples() - i, blockSize);
             std::fill(block.begin(), block.end(), 0.0F);
             std::copy(std::next(in, i), std::next(in, i + numSamples), block.begin());
-            convolver(stdex::mdspan{block.data(), stdex::extents{block.size()}});
+            convolvers[size_t(ch)](stdex::mdspan{block.data(), stdex::extents{block.size()}});
             std::copy(block.begin(), std::next(block.begin(), numSamples), std::next(out, i));
         }
     }

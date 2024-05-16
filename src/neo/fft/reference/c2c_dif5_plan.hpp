@@ -14,6 +14,7 @@ namespace neo::fft {
 
 /// \brief C2C Cooley–Tukey Radix-5 DIF
 /// \details https://github.com/scientificgo/fft/blob/master/radix5.go
+/// \ingroup neo-fft
 template<complex Complex>
 struct c2c_dif5_plan
 {

@@ -13,13 +13,16 @@
 namespace neo::fft {
 
 #if defined(NEO_HAS_INTEL_IPP)
+/// \ingroup neo-fft
 template<std::floating_point Float, typename Complex = std::complex<Float>>
 using rfft_plan = intel_ipp_rfft_plan<Float, Complex>;
 #else
+/// \ingroup neo-fft
 template<std::floating_point Float, typename Complex = std::complex<Float>>
 using rfft_plan = fallback_rfft_plan<Float, Complex>;
 #endif
 
+/// \ingroup neo-fft
 template<typename Plan, in_vector InVec, out_vector OutVec>
     requires(std::floating_point<value_type_t<InVec>> and complex<value_type_t<OutVec>>)
 constexpr auto rfft(Plan& plan, InVec input, OutVec output)
@@ -27,6 +30,7 @@ constexpr auto rfft(Plan& plan, InVec input, OutVec output)
     return plan(input, output);
 }
 
+/// \ingroup neo-fft
 template<typename Plan, in_vector InVec, out_vector OutVec>
     requires(complex<value_type_t<InVec>> and std::floating_point<value_type_t<OutVec>>)
 constexpr auto irfft(Plan& plan, InVec input, OutVec output)
@@ -34,6 +38,7 @@ constexpr auto irfft(Plan& plan, InVec input, OutVec output)
     return plan(input, output);
 }
 
+/// \ingroup neo-fft
 template<in_vector InVec, out_vector OutVecX, out_vector OutVecY>
     requires(complex<value_type_t<InVec>> and complex<value_type_t<OutVecX>> and complex<value_type_t<OutVecY>>)
 auto rfft_deinterleave(InVec dft, OutVecX x, OutVecY y) -> void

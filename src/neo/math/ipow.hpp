@@ -6,6 +6,7 @@
 
 namespace neo {
 
+/// \ingroup neo-math
 template<std::integral T>
 [[nodiscard]] constexpr auto ipow(T base, T exponent) -> T
 {
@@ -16,6 +17,7 @@ template<std::integral T>
     return result;
 }
 
+/// \ingroup neo-math
 template<auto Base>
     requires std::integral<decltype(Base)>
 [[nodiscard]] constexpr auto ipow(decltype(Base) exponent) -> decltype(Base)

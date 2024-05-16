@@ -18,6 +18,7 @@
 
 namespace neo::fft {
 
+/// \ingroup neo-fft
 template<typename Complex>
     requires(std::same_as<typename Complex::value_type, float> or std::same_as<typename Complex::value_type, double>)
 struct apple_vdsp_fft_plan
@@ -144,6 +145,7 @@ auto apple_vdsp_fft_plan<Complex>::operator()(InOutVec x, direction dir) noexcep
     }
 }
 
+/// \ingroup neo-fft
 template<std::floating_point Float>
     requires(std::same_as<Float, float> or std::same_as<Float, double>)
 struct apple_vdsp_split_fft_plan

@@ -8,6 +8,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<typename IndexType = std::size_t>
 struct fdl_index
 {
@@ -15,7 +16,7 @@ struct fdl_index
 
     fdl_index() noexcept = default;
 
-    explicit fdl_index(IndexType num_subfilter) : _num_subfilter{num_subfilter} {}
+    explicit fdl_index(IndexType num_segments) : _num_segments{num_segments} {}
 
     auto reset() -> void { _write_pos = 0; }
 
@@ -24,18 +25,18 @@ struct fdl_index
     {
         copy_callback(_write_pos);
 
-        for (IndexType i{0}; i < _num_subfilter; ++i) {
-            auto const filter_index = static_cast<IndexType>((_write_pos + _num_subfilter - i) % _num_subfilter);
-            callback(i, filter_index);
+        for (IndexType segment{0}; segment < _num_segments; ++segment) {
+            auto const filter_index = static_cast<IndexType>((_write_pos + _num_segments - segment) % _num_segments);
+            callback(segment, filter_index);
         }
 
-        if (++_write_pos; _write_pos >= _num_subfilter) {
+        if (++_write_pos; _write_pos >= _num_segments) {
             reset();
         }
     }
 
 private:
-    IndexType _num_subfilter{0};
+    IndexType _num_segments{0};
     IndexType _write_pos{0};
 };
 

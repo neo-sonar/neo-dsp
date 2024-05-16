@@ -8,6 +8,7 @@
 
 namespace neo {
 
+/// \ingroup neo-fft
 template<std::floating_point T>
 [[nodiscard]] constexpr auto rfftfreq(std::integral auto size, std::integral auto index, double inv_sample_rate) -> T
 {
@@ -16,6 +17,7 @@ template<std::floating_point T>
     return static_cast<T>(index) * fs * inv_size;
 }
 
+/// \ingroup neo-fft
 template<out_vector Vec>
     requires(std::floating_point<typename Vec::value_type>)
 constexpr auto rfftfreq(Vec vec, double inv_sample_rate) noexcept -> void

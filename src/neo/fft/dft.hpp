@@ -21,13 +21,16 @@
 namespace neo::fft {
 
 #if defined(NEO_HAS_INTEL_IPP)
+/// \ingroup neo-fft
 template<complex Complex>
 using dft_plan = intel_ipp_dft_plan<Complex>;
 #else
+/// \ingroup neo-fft
 template<complex Complex>
 using dft_plan = fallback_dft_plan<Complex>;
 #endif
 
+/// \ingroup neo-fft
 template<in_vector InVec, out_vector OutVec>
     requires std::same_as<value_type_t<InVec>, value_type_t<OutVec>>
 auto dft(InVec in, OutVec out, direction dir = direction::forward) -> void
@@ -53,12 +56,14 @@ auto dft(InVec in, OutVec out, direction dir = direction::forward) -> void
     }
 }
 
+/// \ingroup neo-fft
 template<typename Plan, inout_vector Vec>
 constexpr auto dft(Plan& plan, Vec inout) -> void
 {
     plan(inout, direction::forward);
 }
 
+/// \ingroup neo-fft
 template<typename Plan, in_vector InVec, out_vector OutVec>
 constexpr auto dft(Plan& plan, InVec input, OutVec output) -> void
 {
@@ -70,12 +75,14 @@ constexpr auto dft(Plan& plan, InVec input, OutVec output) -> void
     }
 }
 
+/// \ingroup neo-fft
 template<typename Plan, inout_vector Vec>
 constexpr auto idft(Plan& plan, Vec inout) -> void
 {
     plan(inout, direction::backward);
 }
 
+/// \ingroup neo-fft
 template<typename Plan, in_vector InVec, out_vector OutVec>
 constexpr auto idft(Plan& plan, InVec input, OutVec output) -> void
 {

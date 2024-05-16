@@ -11,6 +11,7 @@
 
 namespace neo::fft {
 
+/// \ingroup neo-fft
 template<std::floating_point Float>
 struct fallback_split_fft_plan
 {

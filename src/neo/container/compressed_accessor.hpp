@@ -11,6 +11,7 @@
 
 namespace neo {
 
+/// \ingroup neo-container
 template<typename ElementType, typename NestedAccessor>
 struct compressed_accessor
 {

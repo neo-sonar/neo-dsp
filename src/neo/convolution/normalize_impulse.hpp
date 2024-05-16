@@ -7,6 +7,7 @@
 
 namespace neo::convolution {
 
+/// \ingroup neo-convolution
 template<inout_object InOutObj>
     requires std::floating_point<value_type_t<InOutObj>>
 auto normalize_impulse(InOutObj obj) noexcept -> void

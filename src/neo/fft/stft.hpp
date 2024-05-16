@@ -26,6 +26,7 @@ num_sftf_frames(std::size_t signal_size, std::size_t frame_size, std::size_t ove
 
 }  // namespace detail
 
+/// \ingroup neo-fft
 template<std::floating_point Float>
 struct stft_options
 {
@@ -35,6 +36,7 @@ struct stft_options
     std::function<Float(std::size_t, std::size_t)> window{hann_window<Float>{}};
 };
 
+/// \ingroup neo-fft
 template<std::floating_point Float, complex Complex = std::complex<Float>>
 struct stft_plan
 {
@@ -106,6 +108,7 @@ private:
     stdex::mdarray<Float, stdex::dextents<std::size_t, 1>> _window{_rfft.size()};
 };
 
+/// \ingroup neo-fft
 template<in_matrix InMat>
 [[nodiscard]] auto stft(InMat x, stft_options<typename InMat::value_type> options)
 {
@@ -113,6 +116,7 @@ template<in_matrix InMat>
     return plan(x);
 }
 
+/// \ingroup neo-fft
 template<in_matrix InMat>
 [[nodiscard]] auto stft(InMat x, std::size_t window_size)
 {

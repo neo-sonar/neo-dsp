@@ -10,6 +10,7 @@
 
 namespace neo::fft {
 
+/// \ingroup neo-fft
 template<typename Float, typename Complex = std::complex<Float>>
 struct fallback_rfft_plan
 {

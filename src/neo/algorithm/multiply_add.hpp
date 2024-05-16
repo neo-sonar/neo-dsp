@@ -274,7 +274,8 @@ auto multiply_add(
 
 namespace neo {
 
-// out = x * y + z
+/// Multiply-Add \f$out = x * y + z\f$
+/// \ingroup neo-linalg
 template<in_vector VecX, in_vector VecY, in_vector VecZ, out_vector VecOut>
 constexpr auto multiply_add(VecX x, VecY y, VecZ z, VecOut out) noexcept -> void
 {
@@ -299,7 +300,8 @@ constexpr auto multiply_add(VecX x, VecY y, VecZ z, VecOut out) noexcept -> void
     }
 }
 
-// out = x * y + z
+/// Multiply-Add \f$out = x * y[row] + z\f$
+/// \ingroup neo-linalg
 template<typename U, typename IndexType, typename ValueContainer, typename IndexContainer>
 auto multiply_add(
     in_vector auto x,
@@ -321,7 +323,8 @@ auto multiply_add(
     }
 }
 
-// out = x * y + z
+/// Multiply-Add \f$out = x * y + z\f$
+/// \ingroup neo-linalg
 template<in_vector VecX, in_vector VecY, in_vector VecZ, out_vector VecOut>
 constexpr auto
 multiply_add(split_complex<VecX> x, split_complex<VecY> y, split_complex<VecZ> z, split_complex<VecOut> out) noexcept

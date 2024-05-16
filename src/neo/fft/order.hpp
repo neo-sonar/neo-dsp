@@ -13,19 +13,24 @@
 
 namespace neo::fft {
 
+/// \ingroup neo-fft
 struct from_order_tag
 {
     explicit from_order_tag() = default;
 };
 
+/// \ingroup neo-fft
+/// \relates from_order_tag
 inline constexpr auto from_order = from_order_tag{};
 
+/// \ingroup neo-fft
 template<std::integral Int>
 [[nodiscard]] constexpr auto size(Int sz) noexcept -> Int
 {
     return ipow<Int(2)>(sz);
 }
 
+/// \ingroup neo-fft
 template<std::integral Int>
 [[nodiscard]] constexpr auto next_order(Int size) noexcept -> Int
 {

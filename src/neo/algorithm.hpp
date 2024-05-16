@@ -2,6 +2,12 @@
 
 #pragma once
 
+/// \defgroup neo-linalg Linear algebra
+/// Linear algebra algorithms working on mdspan & split_complex
+
+/// \defgroup neo-satistics Satistics
+/// Satistics algorithms working on mdspan
+
 #include <neo/algorithm/add.hpp>
 #include <neo/algorithm/allclose.hpp>
 #include <neo/algorithm/allmatch.hpp>

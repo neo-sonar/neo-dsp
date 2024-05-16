@@ -12,6 +12,7 @@
 
 namespace neo {
 
+/// \ingroup neo-container
 template<
     typename T,
     typename IndexType      = std::size_t,
