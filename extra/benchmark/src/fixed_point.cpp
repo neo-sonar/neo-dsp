@@ -90,7 +90,8 @@ struct cmulp
 {
     explicit cmulp() : _lhs(2, Size), _rhs(2, Size), _out(2, Size)
     {
-        if constexpr (std::same_as<FloatOrFixed, neo::q7> or std::same_as<FloatOrFixed, neo::q15> or std::same_as<FloatOrFixed, neo::fixed_point<int16_t, 14>>) {
+        if constexpr (std::same_as<FloatOrFixed, neo::q7> or std::same_as<FloatOrFixed, neo::q15>
+                      or std::same_as<FloatOrFixed, neo::fixed_point<int16_t, 14>>) {
             auto copy_to_fixed_point = [](auto src, auto dest) {
                 for (auto i{0}; i < src.extent(0); ++i) {
                     dest[i] = FloatOrFixed(src[i]);

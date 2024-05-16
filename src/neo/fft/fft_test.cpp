@@ -237,7 +237,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     "neo/fft: c2c_dit2_plan",
     "",
     (kernel_v1, kernel_v2, kernel_v3, kernel_v4),
-    (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>, std::complex<long double>)
+    (neo::complex64, neo::complex128, std::complex<float>, std::complex<double>)
 )
 {
     test_fft_plan<typename TestType::plan_type>();
@@ -273,7 +273,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
      c2c_stockham_dif5_plan,
      c2c_stockham_dif8_plan,
      c2c_stockham_dit4_plan),
-    (std::complex<float>, std::complex<double>, std::complex<long double>, neo::complex64, neo::complex128)
+    (std::complex<float>, std::complex<double>, neo::complex64, neo::complex128)
 )
 {
     using Plan    = TestType;

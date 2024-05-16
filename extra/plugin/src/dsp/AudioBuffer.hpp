@@ -16,12 +16,12 @@ struct BufferWithSampleRate
     double sampleRate;
 };
 
-[[nodiscard]] auto resample(BufferWithSampleRate<float> const& buf, double destSampleRate)
-    -> BufferWithSampleRate<float>;
+[[nodiscard]] auto
+resample(BufferWithSampleRate<float> const& buf, double destSampleRate) -> BufferWithSampleRate<float>;
 
 template<std::floating_point Float>
-[[nodiscard]] auto to_mdarray(juce::AudioBuffer<Float> const& buffer)
-    -> stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>
+[[nodiscard]] auto to_mdarray(juce::AudioBuffer<Float> const& buffer
+) -> stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>
 {
     auto result = stdex::mdarray<Float, stdex::dextents<std::size_t, 2>>{
         static_cast<std::size_t>(buffer.getNumChannels()),

@@ -118,6 +118,6 @@ inline constexpr auto apply_kernel = [](auto lhs, auto rhs, auto out, auto scala
     }
 };
 
-}
+}  // namespace simd
 
 }  // namespace neo

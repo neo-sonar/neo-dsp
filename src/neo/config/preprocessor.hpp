@@ -70,6 +70,10 @@
     #define NEO_PLATFORM_WINDOWS
 #endif
 
+#if defined(__EMSCRIPTEN__)
+    #define NEO_PLATFORM_EMSCRIPTEN
+#endif
+
 #if defined(__APPLE__)
     #if not defined(CF_EXCLUDE_CSTD_HEADERS)
         #define CF_EXCLUDE_CSTD_HEADERS
@@ -91,6 +95,8 @@
 
 #if defined(NEO_PLATFORM_APPLE)
     #define NEO_HAS_BUILTIN_FLOAT16
+#elif defined(NEO_PLATFORM_EMSCRIPTEN)
+// #define NEO_HAS_BUILTIN_FLOAT16
 #elif defined(NEO_HAS_ISA_SSE41) and defined(NEO_COMPILER_CLANG)
     #define NEO_HAS_BUILTIN_FLOAT16
 #endif

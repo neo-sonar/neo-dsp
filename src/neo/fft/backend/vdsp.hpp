@@ -75,16 +75,16 @@ template<typename Complex>
 apple_vdsp_fft_plan<Complex>::apple_vdsp_fft_plan(from_order_tag /*tag*/, size_type order)
     : _order{order}
     , _plan{[order] {
-    if (order > max_order()) {
-        throw std::runtime_error{"vdsp: unsupported order '" + std::to_string(int(order)) + "'"};
-    }
+        if (order > max_order()) {
+            throw std::runtime_error{"vdsp: unsupported order '" + std::to_string(int(order)) + "'"};
+        }
 
-    if constexpr (std::same_as<real_type, float>) {
-        return vDSP_create_fftsetup(static_cast<vDSP_Length>(order), 2);
-    } else {
-        return vDSP_create_fftsetupD(static_cast<vDSP_Length>(order), 2);
-    }
-}()}
+        if constexpr (std::same_as<real_type, float>) {
+            return vDSP_create_fftsetup(static_cast<vDSP_Length>(order), 2);
+        } else {
+            return vDSP_create_fftsetupD(static_cast<vDSP_Length>(order), 2);
+        }
+    }()}
 {
     assert(_plan != nullptr);
 }
@@ -200,12 +200,12 @@ template<std::floating_point Float>
 apple_vdsp_split_fft_plan<Float>::apple_vdsp_split_fft_plan(from_order_tag /*tag*/, size_type order)
     : _order{order}
     , _plan{[order] {
-    if constexpr (std::same_as<Float, float>) {
-        return vDSP_create_fftsetup(static_cast<vDSP_Length>(order), 2);
-    } else {
-        return vDSP_create_fftsetupD(static_cast<vDSP_Length>(order), 2);
-    }
-}()}
+        if constexpr (std::same_as<Float, float>) {
+            return vDSP_create_fftsetup(static_cast<vDSP_Length>(order), 2);
+        } else {
+            return vDSP_create_fftsetupD(static_cast<vDSP_Length>(order), 2);
+        }
+    }()}
 {
     assert(_plan != nullptr);
 }
