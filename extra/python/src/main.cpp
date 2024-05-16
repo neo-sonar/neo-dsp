@@ -167,8 +167,8 @@ auto fft(py::array_t<Complex> array, std::optional<std::size_t> n, neo::fft::nor
 }
 
 template<neo::convolution::method Method, std::floating_point Float>
-[[nodiscard]] auto convolve(py::array_t<Float> in1, py::array_t<Float> in2, neo::convolution::mode mode)
-    -> py::array_t<Float>
+[[nodiscard]] auto
+convolve(py::array_t<Float> in1, py::array_t<Float> in2, neo::convolution::mode mode) -> py::array_t<Float>
 {
     if (in1.ndim() != 1 or in1.ndim() != 1) {
         throw std::runtime_error{"unsupported dimension: in1 and in2 must be 1-D"};

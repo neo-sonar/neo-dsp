@@ -51,8 +51,8 @@ inline auto ipp_check(int status) -> void
 }
 
 template<typename Setup>
-[[nodiscard]] auto make_ipp_fft_handle(std::size_t order)
-    -> std::tuple<typename Setup::handle_type*, ipp_buffer, ipp_buffer>
+[[nodiscard]] auto make_ipp_fft_handle(std::size_t order
+) -> std::tuple<typename Setup::handle_type*, ipp_buffer, ipp_buffer>
 {
     static constexpr auto flag = IPP_FFT_NODIV_BY_ANY;
     static constexpr auto hint = ippAlgHintNone;
@@ -71,8 +71,8 @@ template<typename Setup>
 }
 
 template<typename Setup>
-[[nodiscard]] auto make_ipp_dft_handle(std::size_t size)
-    -> std::tuple<typename Setup::handle_type*, ipp_buffer, ipp_buffer>
+[[nodiscard]] auto make_ipp_dft_handle(std::size_t size
+) -> std::tuple<typename Setup::handle_type*, ipp_buffer, ipp_buffer>
 {
     static constexpr auto flag = IPP_FFT_NODIV_BY_ANY;
     static constexpr auto hint = ippAlgHintNone;
@@ -91,8 +91,8 @@ template<typename Setup>
 }
 
 template<typename Setup>
-[[nodiscard]] auto make_ipp_dct_handle(std::size_t order)
-    -> std::tuple<typename Setup::handle_type*, ipp_buffer, ipp_buffer>
+[[nodiscard]] auto make_ipp_dct_handle(std::size_t order
+) -> std::tuple<typename Setup::handle_type*, ipp_buffer, ipp_buffer>
 {
     static constexpr auto hint = ippAlgHintNone;
 
@@ -421,7 +421,8 @@ struct intel_ipp_rfft_plan
     {
         assert(std::cmp_equal(in.extent(0), size()));
 
-        if constexpr (always_vectorizable<InVec> and always_vectorizable<OutVec> and (sizeof(complex_type) == sizeof(Float) * 2)) {
+        if constexpr (always_vectorizable<InVec> and always_vectorizable<OutVec>
+                      and (sizeof(complex_type) == sizeof(Float) * 2)) {
             auto* const out_ptr = reinterpret_cast<Float*>(out.data_handle());
             setup::forward_copy(in.data_handle(), out_ptr, _handle, _work_buf.get());
         } else {
@@ -440,7 +441,8 @@ struct intel_ipp_rfft_plan
     template<in_vector_of<complex_type> InVec, out_vector_of<Float> OutVec>
     auto operator()(InVec in, OutVec out) noexcept -> void
     {
-        if constexpr (always_vectorizable<InVec> and always_vectorizable<OutVec> and (sizeof(complex_type) == sizeof(Float) * 2)) {
+        if constexpr (always_vectorizable<InVec> and always_vectorizable<OutVec>
+                      and (sizeof(complex_type) == sizeof(Float) * 2)) {
             auto* const in_ptr = reinterpret_cast<Float*>(in.data_handle());
             setup::backward_copy(in_ptr, out.data_handle(), _handle, _work_buf.get());
         } else {

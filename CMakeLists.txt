@@ -64,4 +64,3 @@ if(NEO_ENABLE_TOOLS)
     add_subdirectory(extra/cli)
     add_subdirectory(extra/plugin)
 endif()
-

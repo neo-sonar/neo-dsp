@@ -42,10 +42,10 @@ struct stft_plan
 {
     explicit stft_plan(std::size_t transform_size)
         : stft_plan({
-            .frame_size     = transform_size,
-            .transform_size = transform_size,
-            .overlap_size   = transform_size / 2,
-        })
+              .frame_size     = transform_size,
+              .transform_size = transform_size,
+              .overlap_size   = transform_size / 2,
+          })
     {}
 
     explicit stft_plan(stft_options<Float> options) : _options{std::move(options)}
