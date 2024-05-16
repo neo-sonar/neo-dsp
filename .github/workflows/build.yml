@@ -57,24 +57,24 @@ jobs:
             cmake_targets: all
             macos_target: ""
 
-          - name: macOS-13.3
+          - name: macOS-ARM64
+            os: macos-14
+            build_type: Release
+            generator: Ninja
+            clang_version: ""
+            cmake_bin: "cmake"
+            cmake_flags: ""
+            cmake_prefix_path: ""
+            cmake_targets: all
+            macos_target: "11.0"
+
+          - name: macOS-X64
             os: macos-13
             build_type: Release
             generator: Ninja
             clang_version: ""
             cmake_bin: "cmake"
-            cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
-            cmake_prefix_path: ""
-            cmake_targets: all
-            macos_target: "13.3"
-
-          - name: macOS-10.15
-            os: macos-12
-            build_type: Release
-            generator: Ninja
-            clang_version: ""
-            cmake_bin: "cmake"
-            cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
+            cmake_flags: ""
             cmake_prefix_path: ""
             cmake_targets: all
             macos_target: "10.15"
