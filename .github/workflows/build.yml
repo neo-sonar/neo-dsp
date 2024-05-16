@@ -97,13 +97,13 @@ jobs:
             generator: Ninja
             clang_version: ""
             cmake_bin: "cmake"
-            cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2 /EHsc" -D NEO_ENABLE_INTEL_IPP=OFF -D NEO_ENABLE_INTEL_MKL=OFF'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2 /EHsc" -D NEO_ENABLE_INTEL_IPP=OFF -D NEO_ENABLE_INTEL_MKL=OFF -D NEO_ENABLE_BENCHMARKS=OFF'
             cmake_prefix_path: C:\Program Files (x86)\Intel\oneAPI\ipp\latest;C:\Program Files (x86)\Intel\oneAPI\mkl\latest
             cmake_targets: all
             macos_target: ""
 
           - name: Coverage-Native
-            os: ubuntu-24.04
+            os: ubuntu-22.04
             build_type: Debug
             generator: Ninja
             clang_version: ""
@@ -114,23 +114,23 @@ jobs:
             macos_target: ""
 
           - name: Coverage-SSE41
-            os: ubuntu-24.04
+            os: ubuntu-22.04
             build_type: Debug
             generator: Ninja
             clang_version: ""
             cmake_bin: "cmake"
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=x86-64-v2" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
             cmake_targets: neosonar-neo-tests
             macos_target: ""
 
           - name: Coverage-SSE2
-            os: ubuntu-24.04
+            os: ubuntu-22.04
             build_type: Debug
             generator: Ninja
             clang_version: ""
             cmake_bin: "cmake"
-            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
+            cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=x86-64" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
             cmake_targets: neosonar-neo-tests
             macos_target: ""
