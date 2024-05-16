@@ -260,7 +260,7 @@ jobs:
           -o build/coverage.xml
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         if: contains(matrix.name, 'Coverage')
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
