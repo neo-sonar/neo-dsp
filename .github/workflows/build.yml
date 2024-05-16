@@ -237,9 +237,14 @@ jobs:
         shell: bash
         run: cmake --build build --config ${{ matrix.build_type }} --target ${{ matrix.cmake_targets }}
 
-      - name: CTest
+      - name: Test
+        if: matrix.name != 'Emscripten'
         shell: bash
         run: ctest --test-dir build -C ${{ matrix.build_type }} --output-on-failure
+
+      - name: Test (Emscripten)
+        if: matrix.name == 'Emscripten'
+        run: node build/test/neosonar-neo-tests.js -v high
 
       - name: Coverage report
         if: contains(matrix.name, 'Coverage')
