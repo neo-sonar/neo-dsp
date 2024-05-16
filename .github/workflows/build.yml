@@ -25,10 +25,10 @@ jobs:
       matrix:
         include:
           - name: Linux-Clang
-            os: ubuntu-20.04
+            os: ubuntu-24.04
             build_type: Release
             generator: Ninja
-            clang_version: 15
+            clang_version: latest
             cmake_bin: "cmake"
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
@@ -36,7 +36,7 @@ jobs:
             macos_target: ""
 
           - name: Linux-GCC
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             build_type: Debug
             generator: Ninja
             clang_version: ""
@@ -102,7 +102,7 @@ jobs:
             macos_target: ""
 
           - name: Coverage-Native
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             build_type: Debug
             generator: Ninja
             clang_version: ""
@@ -113,7 +113,7 @@ jobs:
             macos_target: ""
 
           - name: Coverage-SSE41
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             build_type: Debug
             generator: Ninja
             clang_version: ""
@@ -124,7 +124,7 @@ jobs:
             macos_target: ""
 
           - name: Coverage-SSE2
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             build_type: Debug
             generator: Ninja
             clang_version: ""
