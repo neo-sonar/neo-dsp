@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.23...3.27)
 project(neosonar-neo-dev VERSION 0.1.0)
 
+option(NEO_ENABLE_BENCHMARKS "Build benchmarks" ON)
+option(NEO_ENABLE_TESTS "Build tests" ON)
+option(NEO_ENABLE_TOOLS "Build tools" ON)
+
 option(NEO_ENABLE_APPLE_ACCELERATE "Link against Apple Accelerate" ON)
 option(NEO_ENABLE_INTEL_IPP "Link against Intel IPP" OFF)
 option(NEO_ENABLE_INTEL_MKL "Link against Intel MKL" OFF)
@@ -48,8 +52,16 @@ if(DEFINED SKBUILD)
     return()
 endif()
 
-add_subdirectory(test)
+if(NEO_ENABLE_TESTS)
+    add_subdirectory(test)
+endif()
 
-add_subdirectory(extra/benchmark)
-add_subdirectory(extra/cli)
-add_subdirectory(extra/plugin)
+if(NEO_ENABLE_BENCHMARKS)
+    add_subdirectory(extra/benchmark)
+endif()
+
+if(NEO_ENABLE_TOOLS)
+    add_subdirectory(extra/cli)
+    add_subdirectory(extra/plugin)
+endif()
+

@@ -5,7 +5,7 @@ FetchContent_MakeAvailable(Catch2)
 include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 
 add_executable(neosonar-neo-tests)
-target_link_libraries(neosonar-neo-tests PRIVATE neosonar::neo Catch2::Catch2WithMain juce::juce_recommended_warning_flags)
+target_link_libraries(neosonar-neo-tests PRIVATE neosonar::neo Catch2::Catch2WithMain)
 catch_discover_tests(neosonar-neo-tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 target_sources(neosonar-neo-tests
