@@ -29,6 +29,7 @@ jobs:
             build_type: Release
             generator: Ninja
             clang_version: 15
+            cmake_bin: "cmake"
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
             cmake_targets: all
@@ -39,8 +40,20 @@ jobs:
             build_type: Debug
             generator: Ninja
             clang_version: ""
+            cmake_bin: "cmake"
             cmake_flags: '-D CMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -march=native" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
+            cmake_targets: all
+            macos_target: ""
+
+          - name: Emscripten
+            os: ubuntu-24.04
+            build_type: Release
+            generator: Ninja
+            clang_version: ""
+            cmake_bin: "emcmake cmake"
+            cmake_flags: '-D CMAKE_CXX_FLAGS="-msimd128 -msse4.2 -fexceptions"  -D NEO_ENABLE_BENCHMARKS=OFF -D NEO_ENABLE_TOOLS=OFF -D NEO_ENABLE_XSIMD=ON'
+            cmake_prefix_path: ""
             cmake_targets: all
             macos_target: ""
 
@@ -49,6 +62,7 @@ jobs:
             build_type: Release
             generator: Ninja
             clang_version: ""
+            cmake_bin: "cmake"
             cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
             cmake_prefix_path: ""
             cmake_targets: all
@@ -59,6 +73,7 @@ jobs:
             build_type: Release
             generator: Ninja
             clang_version: ""
+            cmake_bin: "cmake"
             cmake_flags: '-D CMAKE_OSX_ARCHITECTURES="arm64;x86_64"'
             cmake_prefix_path: ""
             cmake_targets: all
@@ -69,6 +84,7 @@ jobs:
             build_type: Release
             generator: Ninja
             clang_version: latest
+            cmake_bin: "cmake"
             cmake_flags: '-D CMAKE_CXX_FLAGS="-march=native"'
             cmake_prefix_path: ""
             cmake_targets: all
@@ -79,6 +95,7 @@ jobs:
             build_type: Release
             generator: Ninja
             clang_version: ""
+            cmake_bin: "cmake"
             cmake_flags: '-D CMAKE_CXX_FLAGS="/arch:AVX2 /EHsc"'
             cmake_prefix_path: ""
             cmake_targets: all
@@ -89,6 +106,7 @@ jobs:
             build_type: Debug
             generator: Ninja
             clang_version: ""
+            cmake_bin: "cmake"
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=native" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
             cmake_targets: neosonar-neo-tests
@@ -99,6 +117,7 @@ jobs:
             build_type: Debug
             generator: Ninja
             clang_version: ""
+            cmake_bin: "cmake"
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -march=nehalem" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
             cmake_targets: neosonar-neo-tests
@@ -109,6 +128,7 @@ jobs:
             build_type: Debug
             generator: Ninja
             clang_version: ""
+            cmake_bin: "cmake"
             cmake_flags: '-D CMAKE_CXX_FLAGS="--coverage -msse2" -D NEO_ENABLE_INTEL_IPP=ON -D NEO_ENABLE_INTEL_MKL=ON'
             cmake_prefix_path: "/opt/intel/oneapi/ipp/latest:/opt/intel/oneapi/mkl/latest"
             cmake_targets: neosonar-neo-tests
@@ -154,7 +174,7 @@ jobs:
           version: ${{ matrix.clang_version }}
 
       - name: Install IPP/MKL (Linux)
-        if: runner.os == 'Linux'
+        if: contains(matrix.name, 'Linux')
         shell: bash
         run: |
           wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
@@ -169,6 +189,12 @@ jobs:
       #     curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/irc_nas/19078/w_BaseKit_p_2023.0.0.25940_offline.exe
       #     ./oneapi.exe -s -x -f oneapi
       #     ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel:intel.oneapi.win.mkl.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
+
+      - name: Setup emsdk
+        if: matrix.name == 'Emscripten'
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: latest
 
       - name: Set up Visual Studio shell
         if: ${{ matrix.name }} == 'Windows-MSVC'
@@ -187,7 +213,7 @@ jobs:
       - name: CMake configure
         shell: bash
         run: >
-          cmake -S .
+          ${{ matrix.cmake_bin }} -S .
           -B build
           -G "${{ matrix.generator }}"
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
