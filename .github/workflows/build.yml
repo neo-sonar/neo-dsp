@@ -174,7 +174,7 @@ jobs:
           version: ${{ matrix.clang_version }}
 
       - name: Install IPP/MKL (Linux)
-        if: contains(matrix.name, 'Linux')
+        if: contains(matrix.name, 'Linux') || contains(matrix.name, 'Coverage')
         shell: bash
         run: |
           wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
